@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import PizZip from "pizzip";
+import Docxtemplater from "docxtemplater";
+import { saveAs } from "file-saver";
 import {
   FileText,
   Plus,
@@ -14,8 +17,6 @@ import {
   CreditCard,
   CheckCircle2,
   AlertCircle,
-  Copy,
-  Check,
   ExternalLink,
   ArrowRight,
   FileCheck2,
@@ -23,6 +24,7 @@ import {
 } from 'lucide-react';
 
 export interface GroupMember {
+  no: number;
   nrp: string;
   nama: string;
   no_hp: string;
@@ -38,17 +40,16 @@ export const LetterGeneratorView: React.FC = () => {
 
   // Group Members Dynamic State
   const [members, setMembers] = useState<GroupMember[]>([
-    { nrp: '', nama: '', no_hp: '' },
+    { no: 1, nrp: '', nama: '', no_hp: '' },
   ]);
 
-  // Success modal / toast feedback state
+  // Success modal feedback state
   const [generatedData, setGeneratedData] = useState<any | null>(null);
-  const [isCopied, setIsCopied] = useState(false);
 
   // Add Member handler
   const handleAddMember = () => {
     if (members.length < 10) {
-      setMembers([...members, { nrp: '', nama: '', no_hp: '' }]);
+      setMembers([...members, { no: members.length + 1, nrp: '', nama: '', no_hp: '' }]);
     }
   };
 
@@ -56,7 +57,9 @@ export const LetterGeneratorView: React.FC = () => {
   const handleRemoveMember = (index: number) => {
     if (members.length > 1) {
       const updated = members.filter((_, i) => i !== index);
-      setMembers(updated);
+      // Re-calculate the "no" for the table array
+      const renumbered = updated.map((m, i) => ({ ...m, no: i + 1 }));
+      setMembers(renumbered);
     }
   };
 
@@ -67,7 +70,7 @@ export const LetterGeneratorView: React.FC = () => {
     value: string
   ) => {
     const updated = [...members];
-    updated[index][field] = value;
+    updated[index] = { ...updated[index], [field]: value };
     setMembers(updated);
   };
 
@@ -81,46 +84,45 @@ export const LetterGeneratorView: React.FC = () => {
       mata_kuliah: mataKuliah,
       tema_wawancara: temaWawancara,
       tanggal_kegiatan: tanggalKegiatan,
-      anggota_kelompok: members,
+      mahasiswa: members,
     };
-
-    console.log('=== DATA AJUAN SURAT TURLAP GENERATED ===');
-    console.log(JSON.stringify(payload, null, 2));
 
     setGeneratedData(payload);
   };
 
-  const handleCopyJson = () => {
-    if (generatedData) {
-      navigator.clipboard.writeText(JSON.stringify(generatedData, null, 2));
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000);
-    }
-  };
-
-  const handleDownloadDocx = () => {
+  const handleDownloadDocx = async () => {
     if (!generatedData) return;
-    const dummyContent = `SURAT TURLAP / IZIN PENELITIAN TU
-Instansi Tujuan: ${generatedData.pimpinan_instansi || ''}
-Alamat: ${generatedData.alamat_instansi || ''}
-Mata Kuliah: ${generatedData.mata_kuliah || ''}
-Tanggal Kegiatan: ${generatedData.tanggal_kegiatan || ''}
-Tema Wawancara: ${generatedData.tema_wawancara || ''}
 
-Daftar Anggota Kelompok:
-${generatedData.anggota_kelompok?.map((m: GroupMember, i: number) => `${i + 1}. ${m.nama || '-'} (${m.nrp || '-'}) - ${m.no_hp || '-'}`).join('\n') || ''}
-`;
-    const blob = new Blob([dummyContent], {
-      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `Surat_Turlap_${(generatedData.pimpinan_instansi || 'TU').replace(/[^a-zA-Z0-9]/g, '_')}.docx`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    try {
+      // Mengambil template dari folder public
+      const response = await fetch("/surat_Pengantar.docx"); 
+      if (!response.ok) throw new Error("Template surat_Pengantar.docx tidak ditemukan di folder public");
+      
+      const blob = await response.blob();
+      const arrayBuffer = await blob.arrayBuffer();
+  
+      const zip = new PizZip(arrayBuffer);
+      const doc = new Docxtemplater(zip, {
+        paragraphLoop: true,
+        linebreaks: true,
+      });
+  
+      // Mengisi dokumen dengan data dari form
+      doc.render(generatedData);
+  
+      // Menyimpan dokumen
+      const out = doc.getZip().generate({
+        type: "blob",
+        mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      });
+      
+      const namaFile = `Surat_Turlap_${(generatedData.pimpinan_instansi || 'TU').replace(/[^a-zA-Z0-9]/g, '_')}.docx`;
+      saveAs(out, namaFile);
+  
+    } catch (error) {
+      console.error("Gagal mencetak surat:", error);
+      alert("Gagal mencetak surat! Pastikan file surat_Pengantar.docx ada di folder public.");
+    }
   };
 
   return (
@@ -169,7 +171,7 @@ ${generatedData.anggota_kelompok?.map((m: GroupMember, i: number) => `${i + 1}. 
                   required
                   value={pimpinanInstansi}
                   onChange={(e) => setPimpinanInstansi(e.target.value)}
-                  placeholder="Misal: Pimpinan Desa Gebang Putih"
+                  placeholder="Misal: Pimpinan SLB-A YPAB Gebang Putih"
                   className="w-full pl-10 pr-4 py-2.5 text-xs rounded-2xl bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                 />
               </div>
@@ -187,7 +189,7 @@ ${generatedData.anggota_kelompok?.map((m: GroupMember, i: number) => `${i + 1}. 
                   required
                   value={alamatInstansi}
                   onChange={(e) => setAlamatInstansi(e.target.value)}
-                  placeholder="Misal: Jl. Gebang Putih, Kec. Sukolilo, Surabaya"
+                  placeholder="Misal: Jl. Gebang Putih No. 5, Gebang Putih, Kec. Sukolilo Surabaya"
                   className="w-full pl-10 pr-4 py-2.5 text-xs rounded-2xl bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-none"
                 />
               </div>
@@ -223,7 +225,7 @@ ${generatedData.anggota_kelompok?.map((m: GroupMember, i: number) => `${i + 1}. 
                   required
                   value={tanggalKegiatan}
                   onChange={(e) => setTanggalKegiatan(e.target.value)}
-                  placeholder="Misal: 12 - 22 Mei 2026"
+                  placeholder="Misal: 12 - 22 Juni 2026"
                   className="w-full pl-10 pr-4 py-2.5 text-xs rounded-2xl bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                 />
               </div>
@@ -249,7 +251,7 @@ ${generatedData.anggota_kelompok?.map((m: GroupMember, i: number) => `${i + 1}. 
           </div>
         </div>
 
-        {/* Section 2: Daftar Anggota Kelompok (Divider Line Above) */}
+        {/* Section 2: Daftar Anggota Kelompok */}
         <div className="border-t border-slate-100 dark:border-zinc-800 pt-6 space-y-5">
           <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-zinc-800">
             <div className="flex items-center gap-2">
@@ -289,7 +291,7 @@ ${generatedData.anggota_kelompok?.map((m: GroupMember, i: number) => `${i + 1}. 
                       onChange={(e) =>
                         handleMemberChange(index, 'nrp', e.target.value)
                       }
-                      placeholder="NRP (Misal: 5033251067)"
+                      placeholder="NRP (Misal: 5033251046)"
                       className="w-full pl-9 pr-3 py-2 text-xs rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
                     />
                   </div>
@@ -304,7 +306,7 @@ ${generatedData.anggota_kelompok?.map((m: GroupMember, i: number) => `${i + 1}. 
                       onChange={(e) =>
                         handleMemberChange(index, 'nama', e.target.value)
                       }
-                      placeholder="Nama (Misal: Bintang Rafi...)"
+                      placeholder="Nama (Misal: Shagy Aero B. R.)"
                       className="w-full pl-9 pr-3 py-2 text-xs rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
                     />
                   </div>
@@ -366,7 +368,7 @@ ${generatedData.anggota_kelompok?.map((m: GroupMember, i: number) => `${i + 1}. 
           </div>
         </div>
 
-        {/* Section 3: Submit Action Button (Divider Line Above) */}
+        {/* Section 3: Submit Action Button */}
         <div className="border-t border-slate-100 dark:border-zinc-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="text-xs text-slate-500 dark:text-zinc-400 flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
@@ -484,13 +486,13 @@ ${generatedData.anggota_kelompok?.map((m: GroupMember, i: number) => `${i + 1}. 
 
               <div className="space-y-1">
                 <span className="text-slate-500 dark:text-zinc-400 font-semibold text-[11px]">
-                  Anggota Kelompok ({generatedData.anggota_kelompok.length}):
+                  Anggota Kelompok ({generatedData.mahasiswa.length}):
                 </span>
                 <div className="p-3 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 text-[11px] overflow-x-auto space-y-1.5 max-h-36">
-                  {generatedData.anggota_kelompok.map(
+                  {generatedData.mahasiswa.map(
                     (m: GroupMember, i: number) => (
                       <div key={i} className="flex items-center justify-between gap-2 text-slate-800 dark:text-zinc-200 border-b border-slate-200/60 dark:border-zinc-700/60 pb-1.5 last:border-0">
-                        <span className="font-medium">{i + 1}. {m.nama || '-'} <span className="text-slate-500 dark:text-zinc-400 font-normal">({m.nrp || '-'})</span></span>
+                        <span className="font-medium">{m.no}. {m.nama || '-'} <span className="text-slate-500 dark:text-zinc-400 font-normal">({m.nrp || '-'})</span></span>
                         <span className="text-slate-500 dark:text-zinc-400 shrink-0">{m.no_hp || '-'}</span>
                       </div>
                     )
@@ -511,14 +513,14 @@ ${generatedData.anggota_kelompok?.map((m: GroupMember, i: number) => `${i + 1}. 
               </button>
             </div>
 
-            {/* Instruction Text (Subtle Box) */}
+            {/* Instruction Text */}
             <div className="p-3.5 rounded-2xl bg-blue-50/60 dark:bg-zinc-800/60 border border-blue-100/80 dark:border-zinc-700/60 text-center">
               <p className="text-xs font-medium text-slate-600 dark:text-zinc-300 leading-relaxed">
-                Silakan unduh draft surat melalui tombol di atas. Setelah selesai, tutup jendela ini dan lanjutkan ke step &apos;Kirim File Surat ke TU ya!
+                Silakan unduh draft surat melalui tombol di atas. Setelah selesai, tutup jendela ini dan lanjutkan ke step &apos;Kirim File Surat ke TU&apos; ya!
               </p>
             </div>
 
-            {/* Secondary Action: Close Button (Outline / Muted) */}
+            {/* Secondary Action: Close Button */}
             <div>
               <button
                 type="button"
@@ -534,4 +536,3 @@ ${generatedData.anggota_kelompok?.map((m: GroupMember, i: number) => `${i + 1}. 
     </div>
   );
 };
-
