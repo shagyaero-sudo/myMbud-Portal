@@ -171,7 +171,7 @@ export const LetterGeneratorView: React.FC = () => {
                   required
                   value={pimpinanInstansi}
                   onChange={(e) => setPimpinanInstansi(e.target.value)}
-                  placeholder="Misal: Pimpinan SLB-A YPAB Gebang Putih"
+                  placeholder="Misal: Pimpinan Desa Gebang Putih"
                   className="w-full pl-10 pr-4 py-2.5 text-xs rounded-2xl bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                 />
               </div>
@@ -261,7 +261,7 @@ export const LetterGeneratorView: React.FC = () => {
               </h3>
             </div>
             <span className="text-xs font-semibold text-slate-400 dark:text-zinc-500">
-              {members.length} / 10 Anggota
+              {members.length} Anggota
             </span>
           </div>
 
@@ -291,7 +291,7 @@ export const LetterGeneratorView: React.FC = () => {
                       onChange={(e) =>
                         handleMemberChange(index, 'nrp', e.target.value)
                       }
-                      placeholder="NRP (Misal: 5033251046)"
+                      placeholder="NRP (Misal: 5033251067)"
                       className="w-full pl-9 pr-3 py-2 text-xs rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
                     />
                   </div>
@@ -306,7 +306,7 @@ export const LetterGeneratorView: React.FC = () => {
                       onChange={(e) =>
                         handleMemberChange(index, 'nama', e.target.value)
                       }
-                      placeholder="Nama (Misal: Shagy Aero B. R.)"
+                      placeholder="Nama (Misal: Bintang Rafi)"
                       className="w-full pl-9 pr-3 py-2 text-xs rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
                     />
                   </div>
