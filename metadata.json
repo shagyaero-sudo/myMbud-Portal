@@ -1,0 +1,6 @@
+{
+  "name": "myMbud",
+  "description": "Portal Informasi Terintegrasi Kelas A untuk Manajemen Akademik, Tugas, Bank Materi, Kontak, dan Alat Kelas",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
