@@ -340,8 +340,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     key={item.id}
                     className="p-4 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/60 hover:bg-slate-100/60 dark:hover:bg-zinc-800 transition-all flex flex-col space-y-3 border border-slate-100 dark:border-zinc-800/80"
                   >
-                    {/* Upper Section: Info Matkul & (Jam + Lokasi di Pojok Kanan Atas) */}
+                    {/* Upper Section */}
                     <div className="flex items-start justify-between gap-3">
+                      {/* Left Side: Matkul, SKS, Dosen & PJ */}
                       <div className="space-y-1 min-w-0 flex-1">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-sm font-bold text-slate-800 dark:text-zinc-100">{item.course}</span>
@@ -351,7 +352,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         <p className="text-xs text-slate-500 dark:text-zinc-400 truncate">PJ Matkul: {item.pjMatkul.replace(/\s*08\d+/g, '')}</p>
                       </div>
 
-                      <div className="flex flex-col items-end shrink-0 text-right space-y-0.5">
+                      {/* Right Side: Jam & Lokasi sejajar dengan Dosen & PJ */}
+                      <div className="flex flex-col items-end shrink-0 text-right space-y-0.5 pt-5">
                         <span className="text-xs font-bold text-slate-900 dark:text-zinc-100 font-sans whitespace-nowrap">
                           {item.time}
                         </span>
