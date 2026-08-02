@@ -17,8 +17,18 @@ import { SpinwheelView } from './components/SpinwheelView';
 import { GradeCalculatorView } from './components/GradeCalculatorView';
 import { LetterGeneratorView } from './components/LetterGeneratorView';
 import { PdfViewerModal } from './components/PdfViewerModal';
-import { AppState, MaterialFile, Task, Contact, Announcement, GroupResult } from './types';
+
+import {
+  AppState,
+  MaterialFile,
+  Task,
+  Contact,
+  Announcement,
+  GroupResult,
+} from './types';
+
 import { initialAppState } from './data/mockData';
+
 import {
   fetchAppState,
   addAnnouncementApi,
@@ -35,27 +45,57 @@ import {
 } from './services/api';
 
 export default function App() {
+  // ============================================================
+  // NAVIGATION
+  // ============================================================
+
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
-  const [selectedContactCourse, setSelectedContactCourse] = useState<string>('ALL');
+
+  const [selectedContactCourse, setSelectedContactCourse] =
+    useState<string>('ALL');
+
   const [isOfficer, setIsOfficer] = useState<boolean>(false);
 
-  const handleNavigateTab = useCallback((tab: TabType, courseFilter?: string) => {
-    if (tab === 'contacts' && courseFilter) {
-      setSelectedContactCourse(courseFilter);
-    }
-    setActiveTab(tab);
-  }, []);
-  
-  const [appState, setAppState] = useState<AppState>(initialAppState);
-  const [isSyncing, setIsSyncing] = useState<boolean>(false);
-  const [previewMaterial, setPreviewMaterial] = useState<MaterialFile | null>(null);
+  const handleNavigateTab = useCallback(
+    (tab: TabType, courseFilter?: string) => {
+      if (tab === 'contacts' && courseFilter) {
+        setSelectedContactCourse(courseFilter);
+      }
 
-  // Dark Mode State
+      setActiveTab(tab);
+    },
+    []
+  );
+
+  // ============================================================
+  // APP STATE
+  // ============================================================
+
+  const [appState, setAppState] = useState<AppState>(() => ({
+    ...initialAppState,
+
+    // IMPORTANT:
+    // Tasks sekarang 100% berasal dari Firebase.
+    // Tidak ada lagi dummy/mock task sebagai fallback.
+    tasks: [],
+  }));
+
+  const [isSyncing, setIsSyncing] = useState<boolean>(false);
+
+  const [previewMaterial, setPreviewMaterial] =
+    useState<MaterialFile | null>(null);
+
+  // ============================================================
+  // DARK MODE
+  // ============================================================
+
   const [darkMode, setDarkMode] = useState<boolean>(() => {
     const saved = localStorage.getItem('theme');
+
     if (saved !== null) {
       return saved === 'dark';
     }
+
     return window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
 
@@ -69,152 +109,422 @@ export default function App() {
     }
   }, [darkMode]);
 
-  const toggleDarkMode = useCallback(() => {
-    setDarkMode((prev) => !prev);
-  }, []);
+  // ============================================================
+  // FIREBASE SYNC
+  // ============================================================
 
-  // Poll & Pull data dari Firebase Firestore
   const syncState = useCallback(async () => {
     setIsSyncing(true);
-    const data = await fetchAppState();
 
     try {
-      // 1. Menarik Data Courses & Contacts
-      const querySnapshotCourses = await getDocs(collection(db, "courses"));
-      const firebaseSchedules: any[] = [];
-      const firebaseContacts: any[] = [];
+      // ----------------------------------------------------------
+      // 1. Ambil state lama/API untuk data lain
+      // ----------------------------------------------------------
 
-      querySnapshotCourses.forEach((doc) => {
-        const d = doc.data();
-        
+      const data = await fetchAppState();
+
+      // ----------------------------------------------------------
+      // 2. Ambil COURSES dari Firebase
+      // ----------------------------------------------------------
+
+      const querySnapshotCourses = await getDocs(
+        collection(db, 'courses')
+      );
+
+      const firebaseSchedules: AppState['schedules'] = [];
+      const firebaseContacts: AppState['contacts'] = [];
+
+      querySnapshotCourses.forEach((courseDoc) => {
+        const d = courseDoc.data();
+
+        const scheduleDay =
+          d.scheduleDay ||
+          (d.scheduleDayTime
+            ? String(d.scheduleDayTime).split(',')[0]?.trim()
+            : 'Senin');
+
+        const scheduleTime =
+          d.scheduleTime ||
+          (d.scheduleDayTime
+            ? String(d.scheduleDayTime).split(',').slice(1).join(',').trim()
+            : '');
+
+        const courseName = d.name || d.course || '';
+
         firebaseSchedules.push({
-          id: doc.id,
-          day: d.scheduleDay || (d.scheduleDayTime ? d.scheduleDayTime.split(',')[0] : 'Senin'),
-          time: d.scheduleTime || (d.scheduleDayTime ? d.scheduleDayTime.split(',')[1] || '' : ''),
+          id: courseDoc.id,
+          day: scheduleDay,
+          course: courseName,
+          code: d.code || '',
+          time: scheduleTime,
           room: d.room || '',
-          course: d.name || d.course || '',
-          sks: d.sks || 0,
           lecturer: d.lecturerName || '',
-          pjMatkul: d.pjName ? d.pjName.trim() : ''
+          pjMatkul: d.pjName ? String(d.pjName).trim() : '',
+          sks: Number(d.sks) || 0,
         });
 
         firebaseContacts.push({
-          id: doc.id,
+          id: courseDoc.id,
           code: d.code || '',
-          course: d.name || d.course || '',
-          sks: d.sks || 0,
+          course: courseName,
+          sks: Number(d.sks) || 0,
           lecturerName: d.lecturerName || '',
           lecturerPhone: d.lecturerPhone || '',
           pjName: d.pjName || '',
           pjPhone: d.pjPhone || '',
           room: d.room || '',
-          scheduleDayTime: d.scheduleDayTime || `${d.scheduleDay || 'Senin'}, ${d.scheduleTime || ''}`
+          scheduleDayTime:
+            d.scheduleDayTime ||
+            `${scheduleDay}, ${scheduleTime}`,
         });
       });
 
-      // 2. Menarik Data Tasks
-      const querySnapshotTasks = await getDocs(collection(db, "tasks"));
-      const firebaseTasks: any[] = [];
-      querySnapshotTasks.forEach((doc) => {
-        firebaseTasks.push({ id: doc.id, ...doc.data() });
+      // ----------------------------------------------------------
+      // 3. Ambil TASKS dari Firebase
+      // ----------------------------------------------------------
+
+      const querySnapshotTasks = await getDocs(
+        collection(db, 'tasks')
+      );
+
+      const firebaseTasks: Task[] = [];
+
+      querySnapshotTasks.forEach((taskDoc) => {
+        const d = taskDoc.data();
+
+        firebaseTasks.push({
+          id: taskDoc.id,
+          title: d.title || '',
+          course: d.course || '',
+          description: d.description || '',
+          type:
+            d.type === 'Kelompok'
+              ? 'Kelompok'
+              : 'Individu',
+          assigner: d.assigner || '',
+          deadline: d.deadline || '',
+          status:
+            d.status === 'done'
+              ? 'done'
+              : d.status === 'in_progress'
+              ? 'in_progress'
+              : 'todo',
+          priority:
+            d.priority === 'Low'
+              ? 'Low'
+              : d.priority === 'Medium'
+              ? 'Medium'
+              : 'High',
+          classroomUrl: d.classroomUrl || undefined,
+          attachment: d.attachment
+            ? {
+                fileName: d.attachment.fileName || '',
+                fileUrl: d.attachment.fileUrl || '',
+              }
+            : undefined,
+        });
       });
 
-      // Gabungkan ke state (Jika Firebase tasks kosong, gunakan initialAppState.tasks sebagai fallback aman)
-      setAppState((prevState) => {
-        const baseData = data || prevState; 
+      // ----------------------------------------------------------
+      // 4. Update App State
+      // ----------------------------------------------------------
+
+      setAppState((previousState) => {
+        const baseData = data || previousState;
+
         return {
           ...baseData,
+
+          // Courses dari Firebase
           schedules: firebaseSchedules,
-          contacts: firebaseContacts.length > 0 ? firebaseContacts : baseData.contacts,
-          tasks: firebaseTasks.length > 0 ? firebaseTasks : initialAppState.tasks
+
+          // Kalau Firebase courses kosong, pertahankan data lama.
+          contacts:
+            firebaseContacts.length > 0
+              ? firebaseContacts
+              : baseData.contacts,
+
+          // ======================================================
+          // PENTING:
+          // TASKS SELALU Firebase.
+          //
+          // Kalau Firestore kosong → [].
+          // Tidak kembali ke mockData.
+          // ======================================================
+          tasks: firebaseTasks,
+
+          lastUpdated: new Date().toISOString(),
         };
       });
     } catch (error) {
-      console.error("Gagal menarik data dari Firebase:", error);
-      setAppState((prevState) => data || prevState); 
-    }
+      console.error('Gagal melakukan sinkronisasi:', error);
 
-    setIsSyncing(false);
+      // Jangan menghancurkan state yang sedang tampil
+      // kalau sync gagal.
+      setAppState((previousState) => previousState);
+    } finally {
+      setIsSyncing(false);
+    }
   }, []);
+
+  // ============================================================
+  // INITIAL LOAD + POLLING
+  // ============================================================
 
   useEffect(() => {
     syncState();
-    const interval = setInterval(() => {
+
+    const interval = window.setInterval(() => {
       syncState();
-    }, 4000);
-    return () => clearInterval(interval);
+    }, 5000);
+
+    return () => {
+      window.clearInterval(interval);
+    };
   }, [syncState]);
 
-  const urgentTaskCount = appState.tasks.filter((t) => {
-    if (t.status === 'done') return false;
-    const diffHours = (new Date(t.deadline).getTime() - Date.now()) / (1000 * 3600);
+  // ============================================================
+  // URGENT TASK COUNT
+  // ============================================================
+
+  const urgentTaskCount = appState.tasks.filter((task) => {
+    if (task.status === 'done') {
+      return false;
+    }
+
+    const deadlineTime = new Date(task.deadline).getTime();
+
+    if (Number.isNaN(deadlineTime)) {
+      return false;
+    }
+
+    const diffHours =
+      (deadlineTime - Date.now()) / (1000 * 3600);
+
     return diffHours >= 0 && diffHours < 48;
   }).length;
 
-  // Handlers
-  const handleAddAnnouncement = async (ann: Omit<Announcement, 'id' | 'date'>) => {
-    const updated = await addAnnouncementApi(ann);
-    if (updated) setAppState(updated);
+  // ============================================================
+  // ANNOUNCEMENTS
+  // ============================================================
+
+  const handleAddAnnouncement = async (
+    announcement: Omit<Announcement, 'id' | 'date'>
+  ) => {
+    try {
+      const updated = await addAnnouncementApi(announcement);
+
+      if (updated) {
+        setAppState(updated);
+      } else {
+        await syncState();
+      }
+    } catch (error) {
+      console.error('Gagal menambahkan pengumuman:', error);
+    }
   };
 
   const handleDeleteAnnouncement = async (id: string) => {
-    const updated = await deleteAnnouncementApi(id);
-    if (updated) setAppState(updated);
+    try {
+      const updated = await deleteAnnouncementApi(id);
+
+      if (updated) {
+        setAppState(updated);
+      } else {
+        await syncState();
+      }
+    } catch (error) {
+      console.error('Gagal menghapus pengumuman:', error);
+    }
   };
 
-  const handleAddContact = async (contact: Omit<Contact, 'id'>) => {
-    await addContactApi(contact);
-    syncState(); 
+  // ============================================================
+  // CONTACTS / COURSES
+  // ============================================================
+
+  const handleAddContact = async (
+    contact: Omit<Contact, 'id'>
+  ) => {
+    try {
+      await addContactApi(contact);
+      await syncState();
+    } catch (error) {
+      console.error('Gagal menambahkan mata kuliah:', error);
+      alert(
+        'Gagal menyimpan data mata kuliah. Cek koneksi Firebase.'
+      );
+    }
   };
 
-  const handleUpdateContact = async (id: string, contact: Partial<Contact>) => {
-    await updateContactApi(id, contact);
-    syncState(); 
+  const handleUpdateContact = async (
+    id: string,
+    contact: Partial<Contact>
+  ) => {
+    try {
+      await updateContactApi(id, contact);
+      await syncState();
+    } catch (error) {
+      console.error('Gagal mengubah mata kuliah:', error);
+      alert(
+        'Gagal mengubah data mata kuliah. Cek koneksi Firebase.'
+      );
+    }
   };
 
   const handleDeleteContact = async (id: string) => {
-    await deleteContactApi(id);
-    syncState(); 
+    try {
+      await deleteContactApi(id);
+      await syncState();
+    } catch (error) {
+      console.error('Gagal menghapus mata kuliah:', error);
+      alert(
+        'Gagal menghapus data mata kuliah. Cek koneksi Firebase.'
+      );
+    }
   };
 
-  const handleAddMaterial = async (mat: Omit<MaterialFile, 'id' | 'uploadDate'>) => {
-    const updated = await addMaterialApi(mat);
-    if (updated) setAppState(updated);
+  // ============================================================
+  // MATERIALS
+  // ============================================================
+
+  const handleAddMaterial = async (
+    material: Omit<MaterialFile, 'id' | 'uploadDate'>
+  ) => {
+    try {
+      const updated = await addMaterialApi(material);
+
+      if (updated) {
+        setAppState(updated);
+      } else {
+        await syncState();
+      }
+    } catch (error) {
+      console.error('Gagal menambahkan materi:', error);
+    }
   };
 
   const handleDeleteMaterial = async (id: string) => {
-    const updated = await deleteMaterialApi(id);
-    if (updated) setAppState(updated);
+    try {
+      const updated = await deleteMaterialApi(id);
+
+      if (updated) {
+        setAppState(updated);
+      } else {
+        await syncState();
+      }
+    } catch (error) {
+      console.error('Gagal menghapus materi:', error);
+    }
   };
 
-  // Handler Tasks
-  const handleAddTask = async (task: Omit<Task, 'id'>) => {
-    await addTaskApi(task);
-    syncState();
+  // ============================================================
+  // TASKS — FIREBASE
+  // ============================================================
+
+  const handleAddTask = async (
+    task: Omit<Task, 'id'>
+  ) => {
+    try {
+      console.log('[Task] Menambahkan tugas:', task);
+
+      await addTaskApi(task);
+
+      console.log('[Task] Berhasil tersimpan ke Firebase');
+
+      await syncState();
+    } catch (error) {
+      console.error('[Task] Gagal menambahkan tugas:', error);
+
+      alert(
+        'Tugas gagal disimpan ke Firebase. Cek Console untuk detail error.'
+      );
+    }
   };
 
-  const handleUpdateTask = async (id: string, updates: Partial<Task>) => {
-    await updateTaskApi(id, updates);
-    syncState();
+  const handleUpdateTask = async (
+    id: string,
+    updates: Partial<Task>
+  ) => {
+    try {
+      console.log('[Task] Mengubah tugas:', id, updates);
+
+      await updateTaskApi(id, updates);
+
+      console.log('[Task] Berhasil diubah di Firebase');
+
+      await syncState();
+    } catch (error) {
+      console.error('[Task] Gagal mengubah tugas:', error);
+
+      alert(
+        'Tugas gagal diperbarui. Cek Console untuk detail error.'
+      );
+    }
   };
 
-  const handleUpdateTaskStatus = async (id: string, status: 'todo' | 'in_progress' | 'done') => {
-    await updateTaskApi(id, { status });
-    syncState();
+  const handleUpdateTaskStatus = async (
+    id: string,
+    status: 'todo' | 'in_progress' | 'done'
+  ) => {
+    try {
+      await updateTaskApi(id, { status });
+      await syncState();
+    } catch (error) {
+      console.error(
+        '[Task] Gagal mengubah status tugas:',
+        error
+      );
+    }
   };
 
   const handleDeleteTask = async (id: string) => {
-    await deleteTaskApi(id);
-    syncState();
+    try {
+      console.log('[Task] Menghapus tugas:', id);
+
+      await deleteTaskApi(id);
+
+      console.log('[Task] Berhasil dihapus dari Firebase');
+
+      await syncState();
+    } catch (error) {
+      console.error('[Task] Gagal menghapus tugas:', error);
+
+      alert(
+        'Tugas gagal dihapus. Cek Console untuk detail error.'
+      );
+    }
   };
 
-  const handleSaveGroupResult = async (res: Omit<GroupResult, 'id' | 'createdAt'>) => {
-    const updated = await saveGroupResultApi(res);
-    if (updated) setAppState(updated);
+  // ============================================================
+  // GROUP RESULTS
+  // ============================================================
+
+  const handleSaveGroupResult = async (
+    result: Omit<GroupResult, 'id' | 'createdAt'>
+  ) => {
+    try {
+      const updated = await saveGroupResultApi(result);
+
+      if (updated) {
+        setAppState(updated);
+      } else {
+        await syncState();
+      }
+    } catch (error) {
+      console.error(
+        'Gagal menyimpan hasil kelompok:',
+        error
+      );
+    }
   };
+
+  // ============================================================
+  // RENDER
+  // ============================================================
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-200">
+
       <Header
         isOfficer={isOfficer}
         setIsOfficer={setIsOfficer}
@@ -229,9 +539,19 @@ export default function App() {
       />
 
       <div className="flex-1 max-w-7xl w-full mx-auto flex flex-col lg:flex-row gap-6">
-        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} urgentTaskCount={urgentTaskCount} />
+
+        <Sidebar
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          urgentTaskCount={urgentTaskCount}
+        />
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto space-y-6">
+
+          {/* ====================================================
+              DASHBOARD
+          ==================================================== */}
+
           {activeTab === 'dashboard' && (
             <DashboardView
               state={appState}
@@ -241,6 +561,10 @@ export default function App() {
               onNavigateTab={handleNavigateTab}
             />
           )}
+
+          {/* ====================================================
+              CONTACTS
+          ==================================================== */}
 
           {activeTab === 'contacts' && (
             <ContactsView
@@ -253,15 +577,25 @@ export default function App() {
             />
           )}
 
+          {/* ====================================================
+              MATERIALS
+          ==================================================== */}
+
           {activeTab === 'materials' && (
             <KnowledgeBaseView
               materials={appState.materials}
               isOfficer={isOfficer}
               onAddMaterial={handleAddMaterial}
               onDeleteMaterial={handleDeleteMaterial}
-              onPreviewPdf={(mat) => setPreviewMaterial(mat)}
+              onPreviewPdf={(material) =>
+                setPreviewMaterial(material)
+              }
             />
           )}
+
+          {/* ====================================================
+              TASK TRACKER
+          ==================================================== */}
 
           {activeTab === 'tasks' && (
             <TaskTrackerView
@@ -274,6 +608,10 @@ export default function App() {
             />
           )}
 
+          {/* ====================================================
+              SPINWHEEL
+          ==================================================== */}
+
           {activeTab === 'spinwheel' && (
             <SpinwheelView
               onSaveGroupResult={handleSaveGroupResult}
@@ -282,15 +620,36 @@ export default function App() {
             />
           )}
 
+          {/* ====================================================
+              GRADE CALCULATOR
+          ==================================================== */}
+
           {activeTab === 'calculator' && (
-            <GradeCalculatorView courseGrades={appState.courseGrades} />
+            <GradeCalculatorView
+              courseGrades={appState.courseGrades}
+            />
           )}
 
-          {activeTab === 'letter' && <LetterGeneratorView />}
+          {/* ====================================================
+              LETTER GENERATOR
+          ==================================================== */}
+
+          {activeTab === 'letter' && (
+            <LetterGeneratorView />
+          )}
+
         </main>
       </div>
 
-      <PdfViewerModal material={previewMaterial} onClose={() => setPreviewMaterial(null)} />
+      {/* ========================================================
+          PDF VIEWER
+      ======================================================== */}
+
+      <PdfViewerModal
+        material={previewMaterial}
+        onClose={() => setPreviewMaterial(null)}
+      />
+
     </div>
   );
 }
