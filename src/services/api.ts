@@ -1,4 +1,6 @@
 import { AppState, Task, Contact, MaterialFile, Announcement, ScheduleItem, GroupResult } from '../types';
+import { collection, addDoc, updateDoc, doc, deleteDoc } from 'firebase/firestore';
+import { db } from './firebase'; // Pastikan path ini sesuai
 
 export async function fetchAppState(): Promise<AppState | null> {
   try {
@@ -48,46 +50,42 @@ export async function deleteAnnouncementApi(id: string): Promise<AppState | null
   }
 }
 
+// --- FIREBASE INTEGRATION UNTUK COURSES / KONTAK ---
+
 export async function addContactApi(contact: Omit<Contact, 'id'>): Promise<AppState | null> {
   try {
-    const res = await fetch('/api/contacts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(contact),
-    });
-    const data = await res.json();
-    return data.state;
+    await addDoc(collection(db, 'courses'), contact);
+    // Mengembalikan null agar App.tsx mengandalkan sinkronisasi berkala (polling) untuk memperbarui layar
+    return null; 
   } catch (err) {
-    console.error('API addContact error:', err);
+    console.error('Firebase addContact error:', err);
     return null;
   }
 }
 
 export async function updateContactApi(id: string, contact: Partial<Contact>): Promise<AppState | null> {
   try {
-    const res = await fetch(`/api/contacts/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(contact),
-    });
-    const data = await res.json();
-    return data.state;
+    const courseRef = doc(db, 'courses', id);
+    await updateDoc(courseRef, contact);
+    return null;
   } catch (err) {
-    console.error('API updateContact error:', err);
+    console.error('Firebase updateContact error:', err);
     return null;
   }
 }
 
 export async function deleteContactApi(id: string): Promise<AppState | null> {
   try {
-    const res = await fetch(`/api/contacts/${id}`, { method: 'DELETE' });
-    const data = await res.json();
-    return data.state;
+    const courseRef = doc(db, 'courses', id);
+    await deleteDoc(courseRef);
+    return null;
   } catch (err) {
-    console.error('API deleteContact error:', err);
+    console.error('Firebase deleteContact error:', err);
     return null;
   }
 }
+
+// --- AKHIR FIREBASE INTEGRATION ---
 
 export async function addMaterialApi(material: Omit<MaterialFile, 'id' | 'uploadDate'>): Promise<AppState | null> {
   try {

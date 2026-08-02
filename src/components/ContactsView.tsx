@@ -41,6 +41,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
   const [formPjPhone, setFormPjPhone] = useState('');
   const [formRoom, setFormRoom] = useState('');
   const [formScheduleDayTime, setFormScheduleDayTime] = useState('');
+  const [formSks, setFormSks] = useState<number | ''>(''); // State baru untuk SKS
 
   // Template message modal
   const [showTemplateModal, setShowTemplateModal] = useState(false);
@@ -76,10 +77,11 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
     setFormPjPhone('');
     setFormRoom('');
     setFormScheduleDayTime('');
+    setFormSks(''); // Reset SKS
     setShowModal(true);
   };
 
-  const handleOpenEditModal = (c: Contact) => {
+  const handleOpenEditModal = (c: any) => {
     setEditingId(c.id);
     setFormCode(c.code || '');
     setFormCourse(c.course);
@@ -89,6 +91,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
     setFormPjPhone(c.pjPhone);
     setFormRoom(c.room || '');
     setFormScheduleDayTime(c.scheduleDayTime || '');
+    setFormSks(c.sks || ''); // Load data SKS jika ada
     setShowModal(true);
   };
 
@@ -96,28 +99,23 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
     e.preventDefault();
     if (!formCourse.trim() || !formLecturerName.trim()) return;
 
+    // Payload yang akan dikirim, disisipkan nilai SKS
+    const payload: any = {
+      code: formCode,
+      course: formCourse,
+      lecturerName: formLecturerName,
+      lecturerPhone: formLecturerPhone,
+      pjName: formPjName,
+      pjPhone: formPjPhone,
+      room: formRoom,
+      scheduleDayTime: formScheduleDayTime,
+      sks: Number(formSks) || 0,
+    };
+
     if (editingId) {
-      onUpdateContact(editingId, {
-        code: formCode,
-        course: formCourse,
-        lecturerName: formLecturerName,
-        lecturerPhone: formLecturerPhone,
-        pjName: formPjName,
-        pjPhone: formPjPhone,
-        room: formRoom,
-        scheduleDayTime: formScheduleDayTime,
-      });
+      onUpdateContact(editingId, payload);
     } else {
-      onAddContact({
-        code: formCode,
-        course: formCourse,
-        lecturerName: formLecturerName,
-        lecturerPhone: formLecturerPhone,
-        pjName: formPjName,
-        pjPhone: formPjPhone,
-        room: formRoom,
-        scheduleDayTime: formScheduleDayTime,
-      });
+      onAddContact(payload);
     }
 
     setShowModal(false);
@@ -192,7 +190,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
             Tidak ada kontak ditemukan untuk pencarian atau filter saat ini.
           </div>
         ) : (
-          filteredContacts.map((c) => (
+          filteredContacts.map((c: any) => (
             <div
               key={c.id}
               className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-4 flex flex-col justify-between"
@@ -202,7 +200,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                 <div className="flex items-start justify-between gap-2 pb-3 mb-4">
                   <div>
                     <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-3 py-1 rounded-full">
-                      {c.code || 'Mata Kuliah'}
+                      {c.code || 'Mata Kuliah'} {c.sks ? `• ${c.sks} SKS` : ''}
                     </span>
                     <h3 className="text-base font-bold text-slate-800 dark:text-zinc-100 mt-2">{c.course}</h3>
                     {c.scheduleDayTime && (
@@ -410,6 +408,21 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                       value={formScheduleDayTime}
                       onChange={(e) => setFormScheduleDayTime(e.target.value)}
                       placeholder="Senin, 08:00 - 10:30 WIB"
+                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">SKS</label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="6"
+                      value={formSks}
+                      onChange={(e) => setFormSks(e.target.value === '' ? '' : Number(e.target.value))}
+                      placeholder="3"
                       className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>

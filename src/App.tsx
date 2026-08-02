@@ -4,6 +4,9 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from './services/firebase';
+
 import { Header } from './components/Header';
 import { Sidebar, TabType } from './components/Sidebar';
 import { DashboardView } from './components/DashboardView';
@@ -42,6 +45,7 @@ export default function App() {
     }
     setActiveTab(tab);
   }, []);
+  
   const [appState, setAppState] = useState<AppState>(initialAppState);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [previewMaterial, setPreviewMaterial] = useState<MaterialFile | null>(null);
@@ -69,13 +73,44 @@ export default function App() {
     setDarkMode((prev) => !prev);
   }, []);
 
-  // Poll state from Express backend every 4 seconds
+  // Poll state from Express backend every 4 seconds, diinjeksi dengan Firebase
   const syncState = useCallback(async () => {
     setIsSyncing(true);
     const data = await fetchAppState();
-    if (data) {
-      setAppState(data);
+
+    try {
+      // 1. Tarik data dari koleksi "courses" di Firestore
+      const querySnapshot = await getDocs(collection(db, "courses"));
+      const firebaseSchedules: any[] = [];
+
+      // 2. Format ulang data dari Firebase agar sesuai dengan tipe ScheduleItem
+      querySnapshot.forEach((doc) => {
+        const d = doc.data();
+        firebaseSchedules.push({
+          id: doc.id,
+          day: d.scheduleDay || 'Senin',
+          time: d.scheduleTime || '',
+          room: d.room || '',
+          course: d.name || '',
+          sks: d.sks || 0,
+          lecturer: d.lecturerName || '',
+          pjMatkul: d.pjName ? `${d.pjName} ${d.pjPhone ? `(${d.pjPhone})` : ''}`.trim() : ''
+        });
+      });
+
+      // 3. Timpa data schedules dengan data dari Firebase (jika ada)
+      if (data) {
+        setAppState({
+          ...data,
+          schedules: firebaseSchedules.length > 0 ? firebaseSchedules : data.schedules 
+        });
+      }
+    } catch (error) {
+      console.error("Gagal menarik data dari Firebase:", error);
+      // Fallback ke data mock/dummy jika Firebase gagal ditarik
+      if (data) setAppState(data); 
     }
+
     setIsSyncing(false);
   }, []);
 
