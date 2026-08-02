@@ -37,7 +37,7 @@ import {
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
   const [selectedContactCourse, setSelectedContactCourse] = useState<string>('ALL');
-  const [isOfficer, setIsOfficer] = useState<boolean>(false); // Default to normal student mode
+  const [isOfficer, setIsOfficer] = useState<boolean>(false);
 
   const handleNavigateTab = useCallback((tab: TabType, courseFilter?: string) => {
     if (tab === 'contacts' && courseFilter) {
@@ -50,7 +50,7 @@ export default function App() {
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [previewMaterial, setPreviewMaterial] = useState<MaterialFile | null>(null);
 
-  // Dark Mode State with LocalStorage Persistence
+  // Dark Mode State
   const [darkMode, setDarkMode] = useState<boolean>(() => {
     const saved = localStorage.getItem('theme');
     if (saved !== null) {
@@ -73,41 +73,55 @@ export default function App() {
     setDarkMode((prev) => !prev);
   }, []);
 
-  // Poll state from Express backend every 4 seconds, diinjeksi dengan Firebase
+  // Poll & Pull data dari Firebase Firestore
   const syncState = useCallback(async () => {
     setIsSyncing(true);
     const data = await fetchAppState();
 
     try {
-      // 1. Tarik data dari koleksi "courses" di Firestore
       const querySnapshot = await getDocs(collection(db, "courses"));
       const firebaseSchedules: any[] = [];
+      const firebaseContacts: any[] = [];
 
-      // 2. Format ulang data dari Firebase agar sesuai dengan tipe ScheduleItem
       querySnapshot.forEach((doc) => {
         const d = doc.data();
+        
+        // 1. Format untuk Jadwal Perkuliahan
         firebaseSchedules.push({
           id: doc.id,
-          day: d.scheduleDay || 'Senin',
-          time: d.scheduleTime || '',
+          day: d.scheduleDay || (d.scheduleDayTime ? d.scheduleDayTime.split(',')[0] : 'Senin'),
+          time: d.scheduleTime || (d.scheduleDayTime ? d.scheduleDayTime.split(',')[1] || '' : ''),
           room: d.room || '',
-          course: d.name || '',
+          course: d.name || d.course || '',
           sks: d.sks || 0,
           lecturer: d.lecturerName || '',
           pjMatkul: d.pjName ? `${d.pjName} ${d.pjPhone ? `(${d.pjPhone})` : ''}`.trim() : ''
         });
+
+        // 2. Format untuk Direktori Kontak
+        firebaseContacts.push({
+          id: doc.id,
+          code: d.code || '',
+          course: d.name || d.course || '',
+          sks: d.sks || 0,
+          lecturerName: d.lecturerName || '',
+          lecturerPhone: d.lecturerPhone || '',
+          pjName: d.pjName || '',
+          pjPhone: d.pjPhone || '',
+          room: d.room || '',
+          scheduleDayTime: d.scheduleDayTime || `${d.scheduleDay || 'Senin'}, ${d.scheduleTime || ''}`
+        });
       });
 
-      // 3. Timpa data schedules dengan data dari Firebase (jika ada)
       if (data) {
         setAppState({
           ...data,
-          schedules: firebaseSchedules.length > 0 ? firebaseSchedules : data.schedules 
+          schedules: firebaseSchedules,
+          contacts: firebaseContacts.length > 0 ? firebaseContacts : data.contacts
         });
       }
     } catch (error) {
       console.error("Gagal menarik data dari Firebase:", error);
-      // Fallback ke data mock/dummy jika Firebase gagal ditarik
       if (data) setAppState(data); 
     }
 
@@ -122,14 +136,13 @@ export default function App() {
     return () => clearInterval(interval);
   }, [syncState]);
 
-  // Urgent task count calculation (< 48 hours remaining)
   const urgentTaskCount = appState.tasks.filter((t) => {
     if (t.status === 'done') return false;
     const diffHours = (new Date(t.deadline).getTime() - Date.now()) / (1000 * 3600);
     return diffHours >= 0 && diffHours < 48;
   }).length;
 
-  // Handler mutations with optimistic update & API calls
+  // Handlers
   const handleAddAnnouncement = async (ann: Omit<Announcement, 'id' | 'date'>) => {
     const updated = await addAnnouncementApi(ann);
     if (updated) setAppState(updated);
@@ -141,18 +154,18 @@ export default function App() {
   };
 
   const handleAddContact = async (contact: Omit<Contact, 'id'>) => {
-    const updated = await addContactApi(contact);
-    if (updated) setAppState(updated);
+    await addContactApi(contact);
+    syncState(); // Langsung re-fetch data setelah add
   };
 
   const handleUpdateContact = async (id: string, contact: Partial<Contact>) => {
-    const updated = await updateContactApi(id, contact);
-    if (updated) setAppState(updated);
+    await updateContactApi(id, contact);
+    syncState(); // Langsung re-fetch data setelah edit
   };
 
   const handleDeleteContact = async (id: string) => {
-    const updated = await deleteContactApi(id);
-    if (updated) setAppState(updated);
+    await deleteContactApi(id);
+    syncState(); // Langsung re-fetch data setelah delete
   };
 
   const handleAddMaterial = async (mat: Omit<MaterialFile, 'id' | 'uploadDate'>) => {
@@ -192,7 +205,6 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-200">
-      {/* Top Header */}
       <Header
         isOfficer={isOfficer}
         setIsOfficer={setIsOfficer}
@@ -206,12 +218,9 @@ export default function App() {
         setDarkMode={setDarkMode}
       />
 
-      {/* Main Container Layout */}
       <div className="flex-1 max-w-7xl w-full mx-auto flex flex-col lg:flex-row gap-6">
-        {/* Navigation Sidebar */}
         <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} urgentTaskCount={urgentTaskCount} />
 
-        {/* Content Area */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto space-y-6">
           {activeTab === 'dashboard' && (
             <DashboardView
@@ -271,7 +280,6 @@ export default function App() {
         </main>
       </div>
 
-      {/* PDF Viewer Modal */}
       <PdfViewerModal material={previewMaterial} onClose={() => setPreviewMaterial(null)} />
     </div>
   );
