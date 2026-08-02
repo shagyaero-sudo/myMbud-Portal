@@ -79,14 +79,15 @@ export default function App() {
     const data = await fetchAppState(); // Di Vercel ini akan return null
 
     try {
-      const querySnapshot = await getDocs(collection(db, "courses"));
+      // 1. Menarik Data Courses & Contacts
+      const querySnapshotCourses = await getDocs(collection(db, "courses"));
       const firebaseSchedules: any[] = [];
       const firebaseContacts: any[] = [];
 
-      querySnapshot.forEach((doc) => {
+      querySnapshotCourses.forEach((doc) => {
         const d = doc.data();
         
-        // 1. Format untuk Jadwal Perkuliahan
+        // Format untuk Jadwal Perkuliahan (Hanya menampilkan nama PJ, tanpa nomor/tanda kurung)
         firebaseSchedules.push({
           id: doc.id,
           day: d.scheduleDay || (d.scheduleDayTime ? d.scheduleDayTime.split(',')[0] : 'Senin'),
@@ -95,10 +96,10 @@ export default function App() {
           course: d.name || d.course || '',
           sks: d.sks || 0,
           lecturer: d.lecturerName || '',
-          pjMatkul: d.pjName ? `${d.pjName} ${d.pjPhone ? `(${d.pjPhone})` : ''}`.trim() : ''
+          pjMatkul: d.pjName ? d.pjName.trim() : ''
         });
 
-        // 2. Format untuk Direktori Kontak
+        // Format untuk Direktori Kontak
         firebaseContacts.push({
           id: doc.id,
           code: d.code || '',
@@ -113,13 +114,21 @@ export default function App() {
         });
       });
 
-      // Gunakan prevState sebagai cadangan jika 'data' dari API bernilai null
+      // 2. Menarik Data Tasks
+      const querySnapshotTasks = await getDocs(collection(db, "tasks"));
+      const firebaseTasks: any[] = [];
+      querySnapshotTasks.forEach((doc) => {
+        firebaseTasks.push({ id: doc.id, ...doc.data() });
+      });
+
+      // Gabungkan semua ke state
       setAppState((prevState) => {
         const baseData = data || prevState; 
         return {
           ...baseData,
           schedules: firebaseSchedules,
-          contacts: firebaseContacts.length > 0 ? firebaseContacts : baseData.contacts
+          contacts: firebaseContacts.length > 0 ? firebaseContacts : baseData.contacts,
+          tasks: firebaseTasks.length > 0 ? firebaseTasks : baseData.tasks
         };
       });
     } catch (error) {
@@ -157,17 +166,17 @@ export default function App() {
 
   const handleAddContact = async (contact: Omit<Contact, 'id'>) => {
     await addContactApi(contact);
-    syncState(); // Langsung re-fetch data setelah add
+    syncState(); 
   };
 
   const handleUpdateContact = async (id: string, contact: Partial<Contact>) => {
     await updateContactApi(id, contact);
-    syncState(); // Langsung re-fetch data setelah edit
+    syncState(); 
   };
 
   const handleDeleteContact = async (id: string) => {
     await deleteContactApi(id);
-    syncState(); // Langsung re-fetch data setelah delete
+    syncState(); 
   };
 
   const handleAddMaterial = async (mat: Omit<MaterialFile, 'id' | 'uploadDate'>) => {
@@ -180,24 +189,25 @@ export default function App() {
     if (updated) setAppState(updated);
   };
 
+  // Handler Tasks
   const handleAddTask = async (task: Omit<Task, 'id'>) => {
-    const updated = await addTaskApi(task);
-    if (updated) setAppState(updated);
+    await addTaskApi(task);
+    syncState();
   };
 
   const handleUpdateTask = async (id: string, updates: Partial<Task>) => {
-    const updated = await updateTaskApi(id, updates);
-    if (updated) setAppState(updated);
+    await updateTaskApi(id, updates);
+    syncState();
   };
 
   const handleUpdateTaskStatus = async (id: string, status: 'todo' | 'in_progress' | 'done') => {
-    const updated = await updateTaskApi(id, { status });
-    if (updated) setAppState(updated);
+    await updateTaskApi(id, { status });
+    syncState();
   };
 
   const handleDeleteTask = async (id: string) => {
-    const updated = await deleteTaskApi(id);
-    if (updated) setAppState(updated);
+    await deleteTaskApi(id);
+    syncState();
   };
 
   const handleSaveGroupResult = async (res: Omit<GroupResult, 'id' | 'createdAt'>) => {

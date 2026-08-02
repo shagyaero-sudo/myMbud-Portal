@@ -3,6 +3,7 @@ import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { getAnalytics } from "firebase/analytics";
+import { getStorage } from "firebase/storage"; // <-- BARU: Tambahan untuk fitur upload file
 
 // Mengambil kunci dari brankas .env
 const firebaseConfig = {
@@ -22,5 +23,6 @@ const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app); // Untuk Database Dosen & Tugas
 export const auth = getAuth(app);    // Untuk Login Pengurus/Admin
 export const analytics = getAnalytics(app); // Untuk memantau trafik web
+export const storage = getStorage(app); // <-- BARU: Layanan penyimpanan file/lampiran tugas
 
 export default app;
