@@ -35,7 +35,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
   // Modal State
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [formCourseName, setFormCourseName] = useState(DEFAULT_COURSES[0]);
-  const [formSession, setFormSession] = useState('Pertemuan 1');
+  const [formSession, setFormSession] = useState('');
   const [formTitle, setFormTitle] = useState('');
   const [formUploader, setFormUploader] = useState('Pengurus Kelas A');
   const [formFileUrl, setFormFileUrl] = useState('https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf');
@@ -54,7 +54,8 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
 
   const handleUploadSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formCourseName.trim() || !formTitle.trim()) return;
+    // Validasi ditambahkan untuk mencegah formSession kosong
+    if (!formCourseName.trim() || !formTitle.trim() || !formSession.trim()) return;
 
     onAddMaterial({
       courseId: formCourseName.slice(0, 6).toUpperCase().replace(/\s+/g, ''),
@@ -68,6 +69,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
     });
 
     setFormTitle('');
+    setFormSession('');
     setShowUploadModal(false);
   };
 
@@ -289,21 +291,17 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Sesi / Pertemuan yang sudah diubah jadi teks bebas */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">Sesi / Pertemuan</label>
-                    <select
+                    <input
+                      type="text"
+                      required
                       value={formSession}
                       onChange={(e) => setFormSession(e.target.value)}
+                      placeholder="Misal: Pertemuan 14, UTS, UAS"
                       className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="Pertemuan 1">Pertemuan 1</option>
-                      <option value="Pertemuan 2">Pertemuan 2</option>
-                      <option value="Pertemuan 3">Pertemuan 3</option>
-                      <option value="Pertemuan 4">Pertemuan 4</option>
-                      <option value="Pertemuan 5">Pertemuan 5</option>
-                      <option value="Pertemuan 6">Pertemuan 6</option>
-                      <option value="Pertemuan 7">Pertemuan 7</option>
-                    </select>
+                    />
                   </div>
 
                   <div>
