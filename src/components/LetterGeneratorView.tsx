@@ -78,6 +78,14 @@ export const LetterGeneratorView: React.FC = () => {
   const handleGenerate = (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Mengambil waktu saat ini dan memformat ke gaya bahasa Indonesia
+    const tanggalHariIni = new Date();
+    const formatTanggal = new Intl.DateTimeFormat('id-ID', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    }).format(tanggalHariIni);
+
     const payload = {
       pimpinan_instansi: pimpinanInstansi,
       alamat_instansi: alamatInstansi,
@@ -85,6 +93,7 @@ export const LetterGeneratorView: React.FC = () => {
       tema_wawancara: temaWawancara,
       tanggal_kegiatan: tanggalKegiatan,
       mahasiswa: members,
+      tanggal_surat: formatTanggal, // Tanggal otomatis disisipkan ke sini
     };
 
     setGeneratedData(payload);
@@ -110,13 +119,13 @@ export const LetterGeneratorView: React.FC = () => {
       // Mengisi dokumen dengan data dari form
       doc.render(generatedData);
   
-      // Menyimpan dokumen
+      // Menyimpan dokumen dengan nama file baru sesuai permintaan
       const out = doc.getZip().generate({
         type: "blob",
         mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       });
       
-      const namaFile = `Surat_Turlap_${(generatedData.pimpinan_instansi || 'TU').replace(/[^a-zA-Z0-9]/g, '_')}.docx`;
+      const namaFile = `Surat_Pengantar_Wawancara_${(generatedData.pimpinan_instansi || 'TU').replace(/[^a-zA-Z0-9]/g, '_')}.docx`;
       saveAs(out, namaFile);
   
     } catch (error) {
@@ -398,7 +407,7 @@ export const LetterGeneratorView: React.FC = () => {
               Langkah Selanjutnya
             </h3>
             <p className="text-xs text-slate-500 dark:text-zinc-400">
-              Pastikan Anda sudah mengunduh &apos;Hasil Surat docx.&apos; sebelum melanjutkan.
+              Pastikan Anda sudah mengunduh 'Hasil Surat docx.' sebelum melanjutkan.
             </p>
           </div>
         </div>
@@ -516,7 +525,7 @@ export const LetterGeneratorView: React.FC = () => {
             {/* Instruction Text */}
             <div className="p-3.5 rounded-2xl bg-blue-50/60 dark:bg-zinc-800/60 border border-blue-100/80 dark:border-zinc-700/60 text-center">
               <p className="text-xs font-medium text-slate-600 dark:text-zinc-300 leading-relaxed">
-                Silakan unduh draft surat melalui tombol di atas. Setelah selesai, tutup jendela ini dan lanjutkan ke step &apos;Kirim File Surat ke TU&apos; ya!
+                Silakan unduh draft surat melalui tombol di atas. Setelah selesai, tutup jendela ini dan lanjutkan ke step 'Kirim File Surat ke TU' ya!
               </p>
             </div>
 
