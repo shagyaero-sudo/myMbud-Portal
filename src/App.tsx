@@ -76,7 +76,7 @@ export default function App() {
   // Poll & Pull data dari Firebase Firestore
   const syncState = useCallback(async () => {
     setIsSyncing(true);
-    const data = await fetchAppState(); // Di Vercel ini akan return null
+    const data = await fetchAppState();
 
     try {
       // 1. Menarik Data Courses & Contacts
@@ -87,7 +87,6 @@ export default function App() {
       querySnapshotCourses.forEach((doc) => {
         const d = doc.data();
         
-        // Format untuk Jadwal Perkuliahan
         firebaseSchedules.push({
           id: doc.id,
           day: d.scheduleDay || (d.scheduleDayTime ? d.scheduleDayTime.split(',')[0] : 'Senin'),
@@ -99,7 +98,6 @@ export default function App() {
           pjMatkul: d.pjName ? d.pjName.trim() : ''
         });
 
-        // Format untuk Direktori Kontak
         firebaseContacts.push({
           id: doc.id,
           code: d.code || '',
@@ -121,14 +119,14 @@ export default function App() {
         firebaseTasks.push({ id: doc.id, ...doc.data() });
       });
 
-      // Gabungkan semua ke state (Timpa penuh dengan data Firebase, seperti halnya contacts & schedules)
+      // Gabungkan ke state (Jika Firebase tasks kosong, gunakan initialAppState.tasks sebagai fallback aman)
       setAppState((prevState) => {
         const baseData = data || prevState; 
         return {
           ...baseData,
           schedules: firebaseSchedules,
           contacts: firebaseContacts.length > 0 ? firebaseContacts : baseData.contacts,
-          tasks: firebaseTasks // Langsung pakai data Firebase (jika kosong, tampil kosong / tidak pakai dummy)
+          tasks: firebaseTasks.length > 0 ? firebaseTasks : initialAppState.tasks
         };
       });
     } catch (error) {
