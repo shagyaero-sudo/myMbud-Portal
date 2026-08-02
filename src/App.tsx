@@ -76,7 +76,7 @@ export default function App() {
   // Poll & Pull data dari Firebase Firestore
   const syncState = useCallback(async () => {
     setIsSyncing(true);
-    const data = await fetchAppState();
+    const data = await fetchAppState(); // Di Vercel ini akan return null
 
     try {
       const querySnapshot = await getDocs(collection(db, "courses"));
@@ -113,16 +113,18 @@ export default function App() {
         });
       });
 
-      if (data) {
-        setAppState({
-          ...data,
+      // Gunakan prevState sebagai cadangan jika 'data' dari API bernilai null
+      setAppState((prevState) => {
+        const baseData = data || prevState; 
+        return {
+          ...baseData,
           schedules: firebaseSchedules,
-          contacts: firebaseContacts.length > 0 ? firebaseContacts : data.contacts
-        });
-      }
+          contacts: firebaseContacts.length > 0 ? firebaseContacts : baseData.contacts
+        };
+      });
     } catch (error) {
       console.error("Gagal menarik data dari Firebase:", error);
-      if (data) setAppState(data); 
+      setAppState((prevState) => data || prevState); 
     }
 
     setIsSyncing(false);
