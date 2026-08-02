@@ -87,7 +87,7 @@ export default function App() {
       querySnapshotCourses.forEach((doc) => {
         const d = doc.data();
         
-        // Format untuk Jadwal Perkuliahan (Hanya menampilkan nama PJ, tanpa nomor/tanda kurung)
+        // Format untuk Jadwal Perkuliahan
         firebaseSchedules.push({
           id: doc.id,
           day: d.scheduleDay || (d.scheduleDayTime ? d.scheduleDayTime.split(',')[0] : 'Senin'),
@@ -121,14 +121,14 @@ export default function App() {
         firebaseTasks.push({ id: doc.id, ...doc.data() });
       });
 
-      // Gabungkan semua ke state
+      // Gabungkan semua ke state (Timpa penuh dengan data Firebase, seperti halnya contacts & schedules)
       setAppState((prevState) => {
         const baseData = data || prevState; 
         return {
           ...baseData,
           schedules: firebaseSchedules,
           contacts: firebaseContacts.length > 0 ? firebaseContacts : baseData.contacts,
-          tasks: firebaseTasks.length > 0 ? firebaseTasks : baseData.tasks
+          tasks: firebaseTasks // Langsung pakai data Firebase (jika kosong, tampil kosong / tidak pakai dummy)
         };
       });
     } catch (error) {
