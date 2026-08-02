@@ -3,13 +3,13 @@ import {
   Clock,
   Calendar,
   AlertTriangle,
-  Megaphone,
   CheckCircle2,
   Plus,
   Trash2,
   Pin,
   ExternalLink,
   ChevronRight,
+  ChevronLeft,
   Flame,
   BookOpen,
   Paperclip,
@@ -36,10 +36,61 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [selectedDay, setSelectedDay] = useState<DayOfWeek>('Senin');
   const [showAnnModal, setShowAnnModal] = useState(false);
   const [selectedTaskModal, setSelectedTaskModal] = useState<Task | null>(null);
+  const [selectedAnnModal, setSelectedAnnModal] = useState<Announcement | null>(null);
   const [newAnnTitle, setNewAnnTitle] = useState('');
   const [newAnnContent, setNewAnnContent] = useState('');
   const [newAnnCategory, setNewAnnCategory] = useState<'Penting' | 'Akademik' | 'Kegiatan' | 'Info'>('Penting');
   const [newAnnPinned, setNewAnnPinned] = useState(true);
+
+  // Carousel state for mobile announcements
+  const [mobileAnnIndex, setMobileAnnIndex] = useState(0);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [isPaused, setIsPaused] = useState(false);
+
+  const totalAnn = state.announcements.length;
+  const activeAnnIndex = Math.min(mobileAnnIndex, Math.max(0, totalAnn - 1));
+  const currentMobileAnn = state.announcements[activeAnnIndex];
+
+  // Auto-play timer (4 seconds per slide, pauses on hover/touch or when detail modal is open)
+  useEffect(() => {
+    if (totalAnn <= 1 || isPaused || selectedAnnModal !== null) return;
+
+    const interval = setInterval(() => {
+      setMobileAnnIndex((prev) => (prev < totalAnn - 1 ? prev + 1 : 0));
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [totalAnn, isPaused, selectedAnnModal]);
+
+  const handlePrevAnn = () => {
+    if (totalAnn <= 1) return;
+    setMobileAnnIndex((prev) => (prev > 0 ? prev - 1 : totalAnn - 1));
+  };
+
+  const handleNextAnn = () => {
+    if (totalAnn <= 1) return;
+    setMobileAnnIndex((prev) => (prev < totalAnn - 1 ? prev + 1 : 0));
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setIsPaused(true);
+    setTouchStartX(e.touches[0].clientX);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    setIsPaused(false);
+    if (touchStartX === null) return;
+    const touchEndX = e.changedTouches[0].clientX;
+    const diff = touchStartX - touchEndX;
+    if (Math.abs(diff) > 40) {
+      if (diff > 0) {
+        handleNextAnn();
+      } else {
+        handlePrevAnn();
+      }
+    }
+    setTouchStartX(null);
+  };
 
   // Set default selected day based on current day
   useEffect(() => {
@@ -56,6 +107,24 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const upcomingTasks = state.tasks
     .filter((t) => t.status !== 'done' && new Date(t.deadline).getTime() > now)
     .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime());
+
+  // Helper to format announcement date to DD/MM/YYYY
+  const formatAnnouncementDate = (dateStr: string) => {
+    if (!dateStr) return '';
+    const parts = dateStr.split('-');
+    if (parts.length === 3 && parts[0].length === 4) {
+      const [year, month, day] = parts;
+      return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
+    }
+    const d = new Date(dateStr);
+    if (!isNaN(d.getTime())) {
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const year = d.getFullYear();
+      return `${day}/${month}/${year}`;
+    }
+    return dateStr;
+  };
 
   // Helper to format date and time deadline string (e.g. "5 Agu 2026 • 23:59 WIB")
   const formatDeadlineDetails = (dateStr: string) => {
@@ -122,6 +191,117 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   return (
     <div className="space-y-6 pb-12">
+      {/* Mobile & Tablet Announcements Carousel (Visible on screens < lg) */}
+      <div className="block lg:hidden bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl px-6 sm:px-8 py-3.5 sm:py-4 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-2.5 transition-colors">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <h3 className="text-base font-bold text-slate-800 dark:text-zinc-100 truncate">Pengumuman</h3>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            {isOfficer && (
+              <button
+                onClick={() => setShowAnnModal(true)}
+                className="px-2.5 py-1 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-all text-xs font-semibold flex items-center gap-1 shadow-xs"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Buat</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Carousel Content Card */}
+        {totalAnn === 0 ? (
+          <div className="p-4 text-center text-slate-400 dark:text-zinc-500 text-xs bg-slate-50/70 dark:bg-zinc-800/40 rounded-2xl">
+            Belum ada pengumuman kelas.
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <div
+              onClick={() => setSelectedAnnModal(currentMobileAnn)}
+              onMouseEnter={() => setIsPaused(true)}
+              onMouseLeave={() => setIsPaused(false)}
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+              className="p-3.5 sm:p-4 rounded-2xl bg-slate-50/90 dark:bg-zinc-800/70 border border-slate-100 dark:border-zinc-800/80 space-y-1.5 transition-all select-none cursor-pointer hover:bg-slate-100/80 dark:hover:bg-zinc-800 active:scale-[0.99]"
+            >
+              <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-zinc-400">
+                <span className="font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2.5 py-0.5 rounded-full text-[10px]">
+                  {currentMobileAnn.category}
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-slate-400 dark:text-zinc-500">
+                    {formatAnnouncementDate(currentMobileAnn.date)}
+                  </span>
+                  {isOfficer && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDeleteAnnouncement(currentMobileAnn.id);
+                      }}
+                      className="text-slate-400 hover:text-rose-600 transition-colors p-0.5"
+                      title="Hapus Pengumuman"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <h4 className="text-xs font-bold text-slate-800 dark:text-zinc-100 line-clamp-1">
+                {currentMobileAnn.title}
+              </h4>
+              <p className="text-xs text-slate-600 dark:text-zinc-300 leading-relaxed line-clamp-2">
+                {currentMobileAnn.content}
+              </p>
+            </div>
+
+            {/* Bottom Controls: Navigation Arrows centered right next to Pagination Dots */}
+            {totalAnn > 1 && (
+              <div className="flex items-center justify-center gap-2.5 pt-0.5">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handlePrevAnn();
+                  }}
+                  aria-label="Pengumuman sebelumnya"
+                  className="p-1 rounded-xl text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-100 hover:bg-slate-100 dark:hover:bg-zinc-800 active:scale-95 transition-all"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+
+                <div className="flex items-center justify-center gap-1.5">
+                  {state.announcements.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setMobileAnnIndex(idx)}
+                      aria-label={`Ke pengumuman ${idx + 1}`}
+                      className={`h-1.5 rounded-full transition-all duration-200 ${
+                        idx === activeAnnIndex
+                          ? 'w-5 bg-blue-600 dark:bg-blue-400'
+                          : 'w-1.5 bg-slate-300 dark:bg-zinc-700 hover:bg-slate-400 dark:hover:bg-zinc-600'
+                      }`}
+                    />
+                  ))}
+                </div>
+
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleNextAnn();
+                  }}
+                  aria-label="Pengumuman selanjutnya"
+                  className="p-1 rounded-xl text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-100 hover:bg-slate-100 dark:hover:bg-zinc-800 active:scale-95 transition-all"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
       {/* Main Grid: Weekly Schedule & Pinned Announcements */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column (2 Cols): Jadwal Kuliah & Tugas Mendatang */}
@@ -256,12 +436,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
 
-        {/* Right Column (1 Col): Pengumuman Kelas & Pintas Cepat */}
-        <div className="space-y-6">
+        {/* Right Column (1 Col): Pengumuman Kelas (Desktop View) */}
+        <div className="hidden lg:block space-y-6">
           <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-4 transition-colors">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-base font-bold text-slate-800 dark:text-zinc-100">Pengumuman Kelas</h3>
+                <h3 className="text-base font-bold text-slate-800 dark:text-zinc-100">Pengumuman</h3>
               </div>
 
               {isOfficer && (
@@ -285,22 +465,27 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 state.announcements.map((ann) => (
                   <div
                     key={ann.id}
-                    className="p-4 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/60 space-y-1.5 border border-slate-100 dark:border-zinc-800"
+                    onClick={() => setSelectedAnnModal(ann)}
+                    className="p-4 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/60 space-y-1.5 border border-slate-100 dark:border-zinc-800 cursor-pointer hover:bg-slate-100/90 dark:hover:bg-zinc-800 transition-colors"
                   >
                     <div className="flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400">
                       <span className="font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2.5 py-0.5 rounded-full">{ann.category}</span>
                       {isOfficer && (
                         <button
-                          onClick={() => onDeleteAnnouncement(ann.id)}
-                          className="text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDeleteAnnouncement(ann.id);
+                          }}
+                          className="text-slate-400 hover:text-rose-600 transition-colors p-0.5"
+                          title="Hapus Pengumuman"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       )}
                     </div>
                     <h4 className="text-xs font-bold text-slate-800 dark:text-zinc-100 pt-1">{ann.title}</h4>
-                    <p className="text-xs text-slate-600 dark:text-zinc-300 leading-relaxed">{ann.content}</p>
-                    <div className="text-[11px] text-slate-400 dark:text-zinc-500 pt-1">{ann.date} • {ann.author}</div>
+                    <p className="text-xs text-slate-600 dark:text-zinc-300 leading-relaxed line-clamp-2">{ann.content}</p>
+                    <div className="text-[11px] text-slate-400 dark:text-zinc-500 pt-1">{formatAnnouncementDate(ann.date)}</div>
                   </div>
                 ))
               )}
@@ -486,6 +671,65 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
               <button
                 onClick={() => setSelectedTaskModal(null)}
+                className="px-5 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 text-xs font-semibold hover:bg-slate-200 dark:hover:bg-zinc-700 transition-all"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Detail Announcement */}
+      {selectedAnnModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            {/* Modal Header */}
+            <div className="px-6 sm:px-8 py-5 border-b border-slate-100 dark:border-zinc-800 flex items-start justify-between gap-3 shrink-0 bg-white dark:bg-zinc-900">
+              <div className="pr-2 space-y-1.5">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-3 py-1 rounded-full">
+                    {selectedAnnModal.category}
+                  </span>
+                  <span className="text-xs text-slate-400 dark:text-zinc-500 font-medium">
+                    {formatAnnouncementDate(selectedAnnModal.date)}
+                  </span>
+                </div>
+                <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-zinc-100 leading-snug">
+                  {selectedAnnModal.title}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedAnnModal(null)}
+                className="p-2 rounded-2xl text-slate-400 hover:text-slate-800 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors shrink-0"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-4">
+              <div>
+                <h4 className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
+                  Isi Pengumuman
+                </h4>
+                <p className="text-xs sm:text-sm text-slate-700 dark:text-zinc-200 leading-relaxed whitespace-pre-line bg-slate-50 dark:bg-zinc-800/80 p-4 rounded-2xl border border-slate-100 dark:border-zinc-700/60">
+                  {selectedAnnModal.content}
+                </p>
+              </div>
+
+              <div className="flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400 pt-2 border-t border-slate-100 dark:border-zinc-800">
+                <span>Oleh: <strong className="text-slate-700 dark:text-zinc-200">{selectedAnnModal.author}</strong></span>
+                <span>Diposting: {formatAnnouncementDate(selectedAnnModal.date)}</span>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 sm:px-8 py-4 border-t border-slate-100 dark:border-zinc-800 flex justify-end shrink-0 bg-white dark:bg-zinc-900">
+              <button
+                type="button"
+                onClick={() => setSelectedAnnModal(null)}
                 className="px-5 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 text-xs font-semibold hover:bg-slate-200 dark:hover:bg-zinc-700 transition-all"
               >
                 Tutup
