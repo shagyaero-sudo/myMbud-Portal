@@ -95,7 +95,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
     } else if (diffDays <= 2) {
       const dayText = diffDays <= 0 ? 'H-0' : `H-${diffDays}`;
       return {
-        label: `Mendesak ${dayText}`,
+        label: `URGENT ${dayText}`,
         bg: 'bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-900/50 animate-pulse',
       };
     } else if (diffDays <= 5) {

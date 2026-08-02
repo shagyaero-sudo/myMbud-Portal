@@ -79,7 +79,7 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
             ) : (
               <>
                 <Share2 className="w-4 h-4 text-slate-500 dark:text-zinc-400" />
-                <span>Bagikan Tautan</span>
+                <span>Bagikan</span>
               </>
             )}
           </button>
