@@ -195,7 +195,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       <div className="block lg:hidden bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl px-6 sm:px-8 py-3.5 sm:py-4 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-2.5 transition-colors">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
-            <h3 className="text-base font-bold text-slate-800 dark:text-zinc-100 truncate">Pengumuman Kelas</h3>
+            <h3 className="text-base font-bold text-slate-800 dark:text-zinc-100 truncate">Informasi Terbaru</h3>
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
