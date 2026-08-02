@@ -160,7 +160,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
     setShowModal(true);
   };
 
-  // Drag and Drop Handlers
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(true);
@@ -246,11 +245,11 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
         onAddTask({ ...taskData, status: 'todo' });
       }
 
-      // Reset Modal
       setEditingTaskId(null);
       setShowModal(false);
     } catch (error) {
-      alert("Gagal mengunggah file. Silakan coba lagi.");
+      console.error("Gagal menyimpan tugas:", error);
+      alert("Gagal menyimpan tugas. Pastikan koneksi atau izin storage aktif.");
     } finally {
       setIsUploading(false);
     }
@@ -388,9 +387,25 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                       <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100 group-hover:text-blue-600 transition-colors leading-snug">{t.title}</h3>
                       <p className="text-xs font-medium text-slate-500 mt-1">Dosen: {t.assigner}</p>
                     </div>
+
+                    {/* Deskripsi Singkat */}
+                    <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed bg-slate-50/70 dark:bg-zinc-800/60 p-3 rounded-2xl line-clamp-2">
+                      {t.description || 'Klik untuk melihat rincian instruksi tugas lengkap.'}
+                    </p>
+
                     <div className="space-y-1 pt-1 text-xs text-slate-500 border-t border-slate-50 dark:border-zinc-800">
+                      <div className="flex items-center justify-between text-[11px] pt-1">
+                        <span className="font-semibold text-slate-700 dark:text-zinc-300">Tugas {t.type}</span>
+                        <span className="text-slate-400">Prioritas: {t.priority}</span>
+                      </div>
                       <div className="flex items-center gap-1.5 pt-1 font-medium"><Clock className="w-3.5 h-3.5" /><span>Deadline: {formattedDate} WIB</span></div>
                     </div>
+                  </div>
+
+                  {/* Bagian Bawah Card */}
+                  <div className="pt-3 flex items-center justify-between text-xs font-semibold text-blue-600 dark:text-blue-400 border-t border-slate-100/60 dark:border-zinc-800">
+                    <span className="group-hover:underline">Detail Tugas</span>
+                    <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </div>
                 </div>
               );
@@ -459,7 +474,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
         </div>
       )}
 
-      {/* Modal: Add or Edit Task (Upload Drag and Drop) */}
+      {/* Modal: Add or Edit Task */}
       {showModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white dark:bg-zinc-900 border dark:border-zinc-800 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
@@ -470,7 +485,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
 
             <form onSubmit={handleTaskFormSubmit} className="flex flex-col flex-1 overflow-hidden">
               <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-4">
-                {/* Basic Fields */}
                 <div>
                   <label className="block text-xs font-semibold mb-1.5">Judul Tugas</label>
                   <input type="text" required value={title} onChange={(e) => setTitle(e.target.value)} className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 border dark:border-zinc-700 text-xs focus:ring-2 focus:ring-blue-500 outline-none" />
@@ -536,7 +550,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                     )}
                   </div>
                   
-                  {/* Upload Progress Indicator */}
                   {isUploading && (
                      <div className="mt-3 bg-slate-100 dark:bg-zinc-800 rounded-full h-2 w-full overflow-hidden">
                        <div className="h-full bg-blue-600 transition-all duration-300" style={{ width: `${uploadProgress}%` }}></div>
