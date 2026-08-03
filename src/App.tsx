@@ -17,7 +17,7 @@ import { SpinwheelView } from './components/SpinwheelView';
 import { GradeCalculatorView } from './components/GradeCalculatorView';
 import { LetterGeneratorView } from './components/LetterGeneratorView';
 import { PdfViewerModal } from './components/PdfViewerModal';
-import { InstallPrompt } from './components/InstallPrompt';
+import { SoftForceModal } from './components/SoftForceModal';
 
 import {
   AppState,
@@ -661,10 +661,10 @@ export default function App() {
       />
 
       {/* ========================================================
-          PWA INSTALL PROMPT
+          PWA SOFT FORCE MODAL
       ======================================================== */}
       
-      <InstallPrompt />
+      <SoftForceModal />
 
     </div>
   );
