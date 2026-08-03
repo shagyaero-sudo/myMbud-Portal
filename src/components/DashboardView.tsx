@@ -172,7 +172,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   };
 
   const dayTabs: DayOfWeek[] = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
-  const filteredSchedule = state.schedules.filter((s) => s.day === selectedDay);
+  
+  // LOGIKA BARU: Filter dan Sorting secara Ascending berdasarkan Jam (Terpagi di Atas)
+  const filteredSchedule = state.schedules
+    .filter((s) => s.day === selectedDay)
+    .sort((a, b) => {
+      const startA = a.time.split('-')[0].trim();
+      const startB = b.time.split('-')[0].trim();
+      return startA.localeCompare(startB);
+    });
 
   const handleCreateAnnouncement = (e: React.FormEvent) => {
     e.preventDefault();
@@ -344,7 +352,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                           <span className="text-[11px] text-slate-500 dark:text-zinc-400 font-medium shrink-0">{item.sks} SKS</span>
                         </div>
                         <p className="text-xs text-slate-500 dark:text-zinc-400 truncate">Dosen: {item.lecturer}</p>
-                        <p className="text-xs text-slate-500 dark:text-zinc-400 truncate">PJ Matkul: {item.pjMatkul.replace(/\s*08\d+/g, '')}</p>
+                        {/* UPDATE TEKS PJ MENJADI LEBIH RINGKAS */}
+                        <p className="text-xs text-slate-500 dark:text-zinc-400 truncate">PJ: {item.pjMatkul.replace(/\s*08\d+/g, '')}</p>
                       </div>
 
                       {/* Right Side: Ruangan DI ATAS, Jam DI BAWAH */}
