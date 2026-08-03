@@ -27,8 +27,8 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/60 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-hidden">
-      <div className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 rounded-3xl w-full max-w-5xl h-[92vh] max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-50 bg-slate-900/60 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-hidden animate-in fade-in duration-150">
+      <div className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 rounded-3xl w-full max-w-5xl h-[92vh] max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150">
         {/* Modal Header */}
         <div className="flex items-center justify-between px-6 sm:px-8 py-4 bg-white dark:bg-zinc-900 border-b border-slate-100 dark:border-zinc-800 shrink-0">
           <div className="flex items-center gap-3 min-w-0 pr-2">
@@ -54,13 +54,15 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
           </button>
         </div>
 
-        {/* Modal Body: Maximized PDF Viewer Container */}
+        {/* Modal Body: Google Docs Engine PDF Viewer */}
         <div className="flex-1 p-3 sm:p-5 bg-slate-50/50 dark:bg-zinc-950/50 flex flex-col min-h-0 overflow-hidden">
           <div className="flex-1 rounded-2xl bg-slate-900 dark:bg-black border border-slate-200/80 dark:border-zinc-800 overflow-hidden shadow-inner flex flex-col relative">
             <iframe
-              src={material.fileUrl}
+              src={`https://docs.google.com/viewer?url=${encodeURIComponent(
+                material.fileUrl
+              )}&embedded=true`}
               title={material.title}
-              className="w-full h-full border-0 flex-1"
+              className="w-full h-full border-0 flex-1 bg-white"
             />
           </div>
         </div>
@@ -85,7 +87,6 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
           </button>
 
           <div className="flex items-center gap-2.5">
-            {/* Tombol Tutup dihapus dari sini */}
             <a
               href={material.fileUrl}
               download={material.title}
