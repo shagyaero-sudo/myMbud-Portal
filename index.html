@@ -22,8 +22,25 @@
     <!-- Meta Tag Android Adaptif (Light & Dark Mode) -->
     <meta name="theme-color" content="#f8fafc" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#09090b" media="(prefers-color-scheme: dark)" />
+
+    <!-- SCRIPT CEGAH FLICKER & DEFAULT DARK MODE -->
+    <script>
+      (function() {
+        const savedTheme = localStorage.getItem('theme');
+        // Jika user baru (null) ATAU user lama memilih 'dark', set default ke dark mode
+        if (savedTheme === 'dark' || savedTheme === null) {
+          document.documentElement.classList.add('dark');
+          if (savedTheme === null) {
+            localStorage.setItem('theme', 'dark');
+          }
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      })();
+    </script>
   </head>
-  <body>
+  <!-- Penambahan background & transisi di body agar tidak ada kedipan sama sekali -->
+  <body class="bg-slate-50 dark:bg-zinc-950 text-slate-800 dark:text-zinc-100 transition-colors duration-200">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
