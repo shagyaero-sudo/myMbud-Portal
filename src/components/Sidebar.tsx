@@ -118,7 +118,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, urgen
 
         <div className="mt-auto pt-4 border-t border-slate-100/60 dark:border-zinc-800 px-2 text-xs text-slate-400 dark:text-zinc-500">
           <p className="font-bold text-slate-600 dark:text-zinc-300"><span className="font-light">my</span>Mbud<span className="font-light"> Portal</span></p>
-          <p className="text-[11px] text-slate-400 dark:text-zinc-500">Built for Kelas A</p>
+          <p className="text-[11px] text-slate-400 dark:text-zinc-500">by AER046</p>
         </div>
       </aside>
 
