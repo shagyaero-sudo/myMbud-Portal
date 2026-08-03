@@ -19,6 +19,7 @@ import {
   Moon,
   FileEdit,
   Handshake,
+  Sparkles,
 } from 'lucide-react';
 import { TabType } from './Sidebar';
 
@@ -31,8 +32,8 @@ interface HeaderProps {
   lastUpdated?: string;
   onRefresh?: () => void;
   urgentTaskCount?: number;
-  darkMode?: boolean;
-  setDarkMode?: (val: boolean) => void;
+  theme?: 'light' | 'dark' | 'pink';
+  setTheme?: (val: 'light' | 'dark' | 'pink') => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -40,20 +41,19 @@ export const Header: React.FC<HeaderProps> = ({
   setIsOfficer,
   activeTab,
   setActiveTab,
-  darkMode = false,
-  setDarkMode,
+  theme = 'light',
+  setTheme,
 }) => {
   const [showPinModal, setShowPinModal] = useState(false);
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isThemeDropdownOpen, setIsThemeDropdownOpen] = useState(false);
 
   const handleLogoClick = () => {
     if (isOfficer) {
-      // Deactivate officer mode quietly if already active
       setIsOfficer(false);
     } else {
-      // Trigger secret PIN authentication modal
       setPinInput('');
       setPinError(false);
       setShowPinModal(true);
@@ -110,19 +110,61 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Top Right Mobile Hamburger & Quick Actions */}
           <div className="flex items-center gap-2">
-            {/* Dark Mode Toggle Button */}
-            {setDarkMode && (
-              <button
-                onClick={() => setDarkMode((prev: boolean) => !prev)}
-                className="p-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 transition-all flex items-center justify-center text-xs font-bold cursor-pointer"
-                title={darkMode ? 'Beralih ke Mode Terang' : 'Beralih ke Mode Gelap'}
-              >
-                {darkMode ? (
-                  <Sun className="w-5 h-5 text-amber-400" />
-                ) : (
-                  <Moon className="w-5 h-5 text-slate-700 dark:text-zinc-200" />
+            {/* Theme Toggle Button with Dropdown */}
+            {setTheme && (
+              <div className="relative">
+                <button
+                  onClick={() => setIsThemeDropdownOpen(!isThemeDropdownOpen)}
+                  className="p-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 transition-all flex items-center justify-center text-xs font-bold cursor-pointer"
+                  title="Pilih Tema"
+                >
+                  {theme === 'pink' ? (
+                    <Sparkles className="w-5 h-5 text-pink-500" />
+                  ) : theme === 'dark' ? (
+                    <Moon className="w-5 h-5 text-slate-700 dark:text-zinc-200" />
+                  ) : (
+                    <Sun className="w-5 h-5 text-amber-400" />
+                  )}
+                </button>
+
+                {isThemeDropdownOpen && (
+                  <>
+                    <div 
+                      className="fixed inset-0 z-40" 
+                      onClick={() => setIsThemeDropdownOpen(false)}
+                    />
+                    <div className="absolute right-0 mt-2 w-36 bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-2xl shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-100">
+                      <button
+                        onClick={() => { setTheme('light'); setIsThemeDropdownOpen(false); }}
+                        className={`w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold transition-all rounded-t-2xl ${
+                          theme === 'light' ? 'text-blue-600 dark:text-blue-400 bg-slate-50 dark:bg-zinc-800/50' : 'text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-zinc-800/50'
+                        }`}
+                      >
+                        <Sun className="w-4 h-4" />
+                        <span>Terang</span>
+                      </button>
+                      <button
+                        onClick={() => { setTheme('dark'); setIsThemeDropdownOpen(false); }}
+                        className={`w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold transition-all ${
+                          theme === 'dark' ? 'text-blue-600 dark:text-blue-400 bg-slate-50 dark:bg-zinc-800/50' : 'text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-zinc-800/50'
+                        }`}
+                      >
+                        <Moon className="w-4 h-4" />
+                        <span>Gelap</span>
+                      </button>
+                      <button
+                        onClick={() => { setTheme('pink'); setIsThemeDropdownOpen(false); }}
+                        className={`w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold transition-all rounded-b-2xl ${
+                          theme === 'pink' ? 'text-pink-600 bg-pink-50' : 'text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-zinc-800/50'
+                        }`}
+                      >
+                        <Sparkles className="w-4 h-4" />
+                        <span>Pink Mode</span>
+                      </button>
+                    </div>
+                  </>
                 )}
-              </button>
+              </div>
             )}
 
             <button

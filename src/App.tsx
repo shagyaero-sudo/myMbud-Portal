@@ -50,9 +50,7 @@ import {
 // ============================================================
 const AppSkeleton = () => (
   <div className="animate-pulse space-y-6">
-    {/* Skeleton Info/Carousel atas */}
     <div className="h-40 bg-slate-200/60 dark:bg-zinc-800/60 rounded-3xl w-full border border-slate-200 dark:border-zinc-800"></div>
-    {/* Skeleton Grid Konten */}
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2 space-y-6">
         <div className="h-64 bg-slate-200/60 dark:bg-zinc-800/60 rounded-3xl w-full border border-slate-200 dark:border-zinc-800"></div>
@@ -64,10 +62,6 @@ const AppSkeleton = () => (
 );
 
 export default function App() {
-  // ============================================================
-  // NAVIGATION
-  // ============================================================
-
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
   const [selectedContactCourse, setSelectedContactCourse] = useState<string>('ALL');
   const [isOfficer, setIsOfficer] = useState<boolean>(false);
@@ -82,52 +76,48 @@ export default function App() {
     []
   );
 
-  // ============================================================
-  // APP STATE & LOADING
-  // ============================================================
-
   const [appState, setAppState] = useState<AppState>(() => ({
     ...initialAppState,
     tasks: [],
   }));
 
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
-  // Tambahan state untuk Skeleton Loader saat pertama kali load
   const [isInitialLoad, setIsInitialLoad] = useState<boolean>(true);
-  
   const [previewMaterial, setPreviewMaterial] = useState<MaterialFile | null>(null);
 
   // ============================================================
-  // DARK MODE (Membaca hasil script index.html)
+  // THEME SWITCHER LOGIC (Membaca hasil script index.html)
   // ============================================================
-
-  const [darkMode, setDarkMode] = useState<boolean>(() => {
-    // Membaca langsung class HTML yang sudah diatur script anti-flicker
-    return document.documentElement.classList.contains('dark');
+  const [theme, setTheme] = useState<'light' | 'dark' | 'pink'>(() => {
+    const root = document.documentElement;
+    if (root.classList.contains('pink')) return 'pink';
+    if (root.classList.contains('dark')) return 'dark';
+    return 'light';
   });
 
   useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
+    const root = document.documentElement;
+    root.classList.remove('dark', 'pink');
+    
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else if (theme === 'pink') {
+      root.classList.add('pink');
     }
+    
+    localStorage.setItem('theme', theme);
 
     const metaThemeColor = document.querySelector("meta[name='theme-color']");
     if (metaThemeColor) {
-      metaThemeColor.setAttribute(
-        'content',
-        darkMode ? '#09090b' : '#f8fafc' 
-      );
+      if (theme === 'dark') metaThemeColor.setAttribute('content', '#09090b');
+      else if (theme === 'pink') metaThemeColor.setAttribute('content', '#fff0f3');
+      else metaThemeColor.setAttribute('content', '#f8fafc');
     }
-  }, [darkMode]);
+  }, [theme]);
 
   // ============================================================
   // FIREBASE SYNC
   // ============================================================
-
   const syncState = useCallback(async () => {
     setIsSyncing(true);
 
@@ -210,29 +200,19 @@ export default function App() {
       setAppState((previousState) => previousState);
     } finally {
       setIsSyncing(false);
-      setIsInitialLoad(false); // Matikan skeleton setelah load data pertama selesai
+      setIsInitialLoad(false); 
     }
   }, []);
 
-  // ============================================================
-  // INITIAL LOAD + POLLING
-  // ============================================================
-
   useEffect(() => {
     syncState();
-
     const interval = window.setInterval(() => {
       syncState();
     }, 5000);
-
     return () => {
       window.clearInterval(interval);
     };
   }, [syncState]);
-
-  // ============================================================
-  // URGENT TASK COUNT
-  // ============================================================
 
   const urgentTaskCount = appState.tasks.filter((task) => {
     if (task.status === 'done') return false;
@@ -241,10 +221,6 @@ export default function App() {
     const diffHours = (deadlineTime - Date.now()) / (1000 * 3600);
     return diffHours >= 0 && diffHours < 48;
   }).length;
-
-  // ============================================================
-  // CRUD HANDLERS
-  // ============================================================
 
   const handleAddAnnouncement = async (announcement: Omit<Announcement, 'id' | 'date'>) => {
     try {
@@ -365,10 +341,6 @@ export default function App() {
     }
   };
 
-  // ============================================================
-  // RENDER
-  // ============================================================
-
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-200">
 
@@ -381,8 +353,8 @@ export default function App() {
         lastUpdated={appState.lastUpdated}
         onRefresh={syncState}
         urgentTaskCount={urgentTaskCount}
-        darkMode={darkMode}
-        setDarkMode={setDarkMode}
+        theme={theme}
+        setTheme={setTheme}
       />
 
       <div className="flex-1 max-w-7xl w-full mx-auto flex flex-col lg:flex-row gap-6">
@@ -395,14 +367,10 @@ export default function App() {
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto space-y-6">
 
-          {/* TAMPILKAN SKELETON JIKA SEDANG INITIAL LOAD */}
           {isInitialLoad ? (
             <AppSkeleton />
           ) : (
             <>
-              {/* ====================================================
-                  DASHBOARD
-              ==================================================== */}
               {activeTab === 'dashboard' && (
                 <DashboardView
                   state={appState}
@@ -413,9 +381,6 @@ export default function App() {
                 />
               )}
 
-              {/* ====================================================
-                  CONTACTS
-              ==================================================== */}
               {activeTab === 'contacts' && (
                 <ContactsView
                   contacts={appState.contacts}
@@ -427,9 +392,6 @@ export default function App() {
                 />
               )}
 
-              {/* ====================================================
-                  MATERIALS
-              ==================================================== */}
               {activeTab === 'materials' && (
                 <KnowledgeBaseView
                   materials={appState.materials}
@@ -442,9 +404,6 @@ export default function App() {
                 />
               )}
 
-              {/* ====================================================
-                  TASK TRACKER
-              ==================================================== */}
               {activeTab === 'tasks' && (
                 <TaskTrackerView
                   tasks={appState.tasks}
@@ -456,9 +415,6 @@ export default function App() {
                 />
               )}
 
-              {/* ====================================================
-                  SPINWHEEL
-              ==================================================== */}
               {activeTab === 'spinwheel' && (
                 <SpinwheelView
                   onSaveGroupResult={handleSaveGroupResult}
@@ -467,18 +423,12 @@ export default function App() {
                 />
               )}
 
-              {/* ====================================================
-                  GRADE CALCULATOR
-              ==================================================== */}
               {activeTab === 'calculator' && (
                 <GradeCalculatorView
                   courseGrades={appState.courseGrades}
                 />
               )}
 
-              {/* ====================================================
-                  LETTER GENERATOR
-              ==================================================== */}
               {activeTab === 'letter' && (
                 <LetterGeneratorView />
               )}

@@ -1,3 +1,30 @@
 @import "tailwindcss";
 
 @custom-variant dark (&:where(.dark, .dark *));
+@custom-variant pink (&:where(.pink, .pink *));
+
+/* === PINK MODE OVERRIDES === */
+.pink {
+  /* Backgrounds & Surfaces */
+  --color-slate-50: #fff0f3; /* Latar belakang body utama (Sangat pastel) */
+  --color-slate-100: #ffe4e8; /* Latar belakang hover & kartu */
+  --color-slate-200: #FDB3C2; /* Garis tepi (Border) */
+  
+  /* Text Colors */
+  --color-slate-400: #F891A5; /* Teks pudar / Ikon */
+  --color-slate-500: #E56D85; /* Teks sekunder */
+  --color-slate-600: #BF3853; /* Teks paragraf / label */
+  --color-slate-700: #A41F39; /* Teks tebal */
+  --color-slate-800: #801328; /* Judul / Heading */
+  --color-slate-900: #590a1a; /* Teks paling gelap */
+
+  /* Primary Accents (Mengubah biru bawaan menjadi palet Pink) */
+  --color-blue-50: #ffe4e8;
+  --color-blue-100: #FDB3C2;
+  --color-blue-400: #F891A5;
+  --color-blue-500: #E56D85;
+  --color-blue-600: #E56D85; /* Warna Tombol Utama (Rose Pink) */
+  --color-blue-700: #BF3853; /* Hover Tombol Utama (Berry Pink) */
+  --color-blue-900: #A41F39;
+  --color-blue-950: #801328;
+}
