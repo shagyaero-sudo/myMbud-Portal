@@ -378,7 +378,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     {/* Presensi, QR, & Kontak Buttons at bottom of each card */}
                     <div className="flex items-center gap-2 pt-2 border-t border-slate-200/60 dark:border-zinc-700/60 w-full">
                       
-                      {/* GABUNGAN TOMBOL PRESENSI & SCAN QR (Dengan Padding & Round UI) */}
+                      {/* GABUNGAN TOMBOL PRESENSI & SCAN QR (Lebih Panjang & Proporsional) */}
                       <div className="flex-1 flex items-center bg-blue-600 hover:bg-blue-700 rounded-xl p-1 shadow-xs transition-all">
                         {/* Sub-Tombol 1: Presensi Manual/Web */}
                         <a
@@ -391,20 +391,20 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                           <span>Presensi</span>
                         </a>
 
-                        {/* Sub-Tombol 2: Quick Scan QR (Lebih Pop-out) */}
+                        {/* Sub-Tombol 2: Quick Scan QR (Lebih Lebar dan Teks "Scan QR") */}
                         <a
                           href="https://presensi.its.ac.id/kehadiran-mahasiswa/qr-scan"
                           target="_blank"
                           rel="noreferrer"
-                          className="shrink-0 px-3.5 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-white text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all shadow-sm ml-1"
+                          className="shrink-0 px-4 sm:px-5 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-white text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all shadow-sm ml-1"
                           title="Scan QR Presensi"
                         >
                           <QrCode className="w-4 h-4" />
-                          <span>QR</span>
+                          <span>Scan QR</span>
                         </a>
                       </div>
 
-                      {/* TOMBOL KONTAK (Lebih Compact & Tidak Flex-1) */}
+                      {/* TOMBOL KONTAK (Tetap Compact) */}
                       <button
                         onClick={() => onNavigateTab('contacts', item.course)}
                         className="shrink-0 px-4 py-2 rounded-xl bg-slate-200/80 dark:bg-zinc-700 hover:bg-slate-200 dark:hover:bg-zinc-600 text-slate-700 dark:text-zinc-200 text-[11px] sm:text-xs font-semibold transition-all flex items-center justify-center gap-1"
