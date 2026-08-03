@@ -5,6 +5,9 @@ export const SoftForceModal: React.FC = () => {
   const [isStandalone, setIsStandalone] = useState(false);
   const [isMobileOrTablet, setIsMobileOrTablet] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  
+  // Status instalasi: 'idle' | 'installing' | 'success'
+  const [installStatus, setInstallStatus] = useState<'idle' | 'installing' | 'success'>('idle');
 
   useEffect(() => {
     // 1. Cek ukuran layar (HP / Tablet)
@@ -47,6 +50,15 @@ export const SoftForceModal: React.FC = () => {
       const { outcome } = await deferredPrompt.userChoice;
       if (outcome === 'accepted') {
         setDeferredPrompt(null);
+        
+        // 1. Masuk ke mode "Sedang Menginstal" (Animasi Loading)
+        setInstallStatus('installing');
+        
+        // 2. Beri jeda 4.5 detik untuk mengelabui/menunggu proses background Android
+        setTimeout(() => {
+          // 3. Masuk ke mode "Sukses" (Centang Hijau)
+          setInstallStatus('success');
+        }, 4500);
       }
     }
   };
@@ -75,7 +87,7 @@ export const SoftForceModal: React.FC = () => {
           </p>
         </div>
 
-        {/* Content Pembeda OS */}
+        {/* Content Pembeda OS & Status */}
         {isIOS ? (
           /* ================= VISUAL GUIDE UNTUK IOS / IPADOS ================= */
           <div className="bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-2xl p-4 text-left space-y-3">
@@ -100,8 +112,39 @@ export const SoftForceModal: React.FC = () => {
               </div>
             </div>
           </div>
+        ) : installStatus === 'installing' ? (
+          /* ================= INSTALLING STATE ANDROID (LOADING) ================= */
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-5 text-center space-y-3 animate-fade-in">
+             <div className="w-14 h-14 bg-blue-100 dark:bg-blue-800/50 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center mx-auto mb-2">
+               <svg className="w-7 h-7 animate-spin" fill="none" viewBox="0 0 24 24">
+                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+               </svg>
+             </div>
+             <div>
+               <h3 className="text-blue-800 dark:text-blue-400 font-bold text-sm">Sedang Menginstal...</h3>
+               <p className="text-[13px] text-blue-700/80 dark:text-blue-500 mt-1.5 leading-relaxed">
+                 Sistem sedang menyiapkan myMbud Portal di HP kamu. Mohon tunggu sebentar...
+               </p>
+             </div>
+          </div>
+        ) : installStatus === 'success' ? (
+          /* ================= SUCCESS STATE ANDROID ================= */
+          <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-2xl p-5 text-center space-y-3 animate-fade-in">
+             <div className="w-14 h-14 bg-green-100 dark:bg-green-800/50 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center mx-auto mb-2">
+               <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+               </svg>
+             </div>
+             <div>
+               <h3 className="text-green-800 dark:text-green-400 font-bold text-sm">Pemasangan Berhasil!</h3>
+               <p className="text-[13px] text-green-700/80 dark:text-green-500 mt-1.5 leading-relaxed">
+                 Silakan <strong className="font-bold">tutup browser ini</strong>, kembali ke layar utama HP (Home Screen), dan buka aplikasi <strong className="font-bold">myMbud</strong> dari sana!
+               </p>
+             </div>
+          </div>
         ) : (
-          /* ================= ONE-CLICK INSTALL UNTUK ANDROID ================= */
+          /* ================= ONE-CLICK INSTALL UNTUK ANDROID (IDLE) ================= */
           <div className="space-y-3 pt-2">
             <button
               onClick={handleInstallAndroid}
@@ -111,7 +154,7 @@ export const SoftForceModal: React.FC = () => {
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
               </svg>
-              {deferredPrompt ? 'Install Sekarang!' : 'Menyiapkan Instalasi...'}
+              {deferredPrompt ? 'Install Sekarang (One-Click)' : 'Menyiapkan Instalasi...'}
             </button>
             <p className="text-[11px] text-slate-400 dark:text-zinc-500">
               *Jika tombol tidak merespon, buka menu titik tiga Chrome lalu pilih "Install App".
