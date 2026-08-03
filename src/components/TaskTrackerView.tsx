@@ -633,7 +633,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                         {t.title}
                       </h3>
 
-                      <p className="text-xs font-medium text-slate-500 mt-1">
+                      <p className="text-xs font-medium text-slate-500 dark:text-zinc-400 mt-1">
                         Dosen: {t.assigner}
                       </p>
                     </div>
@@ -643,7 +643,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                         'Klik untuk melihat rincian instruksi tugas lengkap.'}
                     </p>
 
-                    <div className="space-y-1 pt-1 text-xs text-slate-500 border-t border-slate-50 dark:border-zinc-800">
+                    <div className="space-y-1 pt-1 text-xs text-slate-500 dark:text-zinc-400 border-t border-slate-50 dark:border-zinc-800">
                       <div className="flex items-center justify-between text-[11px] pt-1">
                         <span className="font-semibold text-slate-700 dark:text-zinc-300">
                           Tugas {t.type}
@@ -673,7 +673,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
             })}
           </div>
         ) : (
-          /* PERBAIKAN: Layout Riwayat Kartu Tugas (History Tab) */
+          /* History Tab Task Cards */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredTasks.map((t) => {
               const formattedDate =
@@ -690,35 +690,35 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                 <div
                   key={t.id}
                   onClick={() => setSelectedDetailTask(t)}
-                  className="p-4 rounded-2xl bg-slate-900/90 dark:bg-zinc-900/90 hover:bg-slate-800/80 dark:hover:bg-zinc-800/80 border border-slate-800 dark:border-zinc-800 transition-all cursor-pointer flex flex-col justify-between space-y-3 group shadow-sm"
+                  className="p-4 rounded-2xl bg-white dark:bg-zinc-900 hover:bg-slate-50 dark:hover:bg-zinc-800/80 border border-slate-100 dark:border-zinc-800 transition-all cursor-pointer flex flex-col justify-between space-y-3 group shadow-xs"
                 >
                   {/* TOP ROW: Badge Mata Kuliah & Badge Selesai */}
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-[11px] font-semibold text-slate-400 dark:text-zinc-400 bg-slate-800/80 dark:bg-zinc-800/80 px-2.5 py-0.5 rounded-full border border-slate-700/50 dark:border-zinc-700/50">
+                    <span className="text-[11px] font-semibold text-slate-600 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-800 px-2.5 py-0.5 rounded-full border border-slate-200/60 dark:border-zinc-700/50">
                       {t.course}
                     </span>
                     
-                    <span className="text-[10px] font-bold text-slate-400 dark:text-zinc-400 bg-slate-800 dark:bg-zinc-800/90 px-2 py-0.5 rounded-md border border-slate-700/60 dark:border-zinc-700/60">
+                    <span className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-800 px-2 py-0.5 rounded-md border border-slate-200/60 dark:border-zinc-700/60">
                       Selesai
                     </span>
                   </div>
 
                   {/* MIDDLE ROW: Judul Tugas & Nama Dosen */}
                   <div className="space-y-1">
-                    <h3 className="text-sm font-bold text-slate-100 dark:text-zinc-100 group-hover:text-blue-400 transition-colors line-clamp-1">
+                    <h3 className="text-sm font-bold text-slate-800 dark:text-zinc-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-1">
                       {t.title}
                     </h3>
-                    <p className="text-xs text-slate-400 dark:text-zinc-400 truncate">
+                    <p className="text-xs text-slate-500 dark:text-zinc-400 truncate">
                       Dosen: {t.assigner || 'Dosen Pengampu'}
                     </p>
                   </div>
 
                   {/* BOTTOM ROW: Tipe Tugas (Kiri) & Deadline Jam (Kanan) */}
-                  <div className="flex items-center justify-between text-[11px] text-slate-400 dark:text-zinc-400 pt-1.5 border-t border-slate-800/60 dark:border-zinc-800/60">
-                    <span className="font-medium text-slate-300 dark:text-zinc-300">
+                  <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-zinc-400 pt-1.5 border-t border-slate-100 dark:border-zinc-800">
+                    <span className="font-medium text-slate-700 dark:text-zinc-300">
                       Tugas {t.type || 'Individu'}
                     </span>
-                    <div className="flex items-center gap-1.5 text-slate-400 dark:text-zinc-400">
+                    <div className="flex items-center gap-1.5">
                       <Clock className="w-3.5 h-3.5" />
                       <span>{formattedDate} WIB</span>
                     </div>
@@ -733,102 +733,85 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
       {/* DETAIL MODAL */}
       {selectedDetailTask && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-zinc-900 border dark:border-zinc-800 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
-            <div className="px-6 py-5 border-b dark:border-zinc-800 flex justify-between items-start gap-4">
+          <div className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+            
+            {/* Header Modal */}
+            <div className="px-6 py-5 border-b border-slate-100 dark:border-zinc-800 flex justify-between items-start gap-4">
               <div className="space-y-1.5">
-                <span className="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+                <span className="text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-3 py-1 rounded-full">
                   {selectedDetailTask.course}
                 </span>
 
-                <h2 className="text-lg font-bold pt-1">
+                <h2 className="text-lg font-bold pt-1 text-slate-900 dark:text-zinc-100">
                   {selectedDetailTask.title}
                 </h2>
               </div>
 
               <button
-                onClick={() =>
-                  setSelectedDetailTask(null)
-                }
-                className="p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-zinc-800"
+                onClick={() => setSelectedDetailTask(null)}
+                className="p-2 rounded-2xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
+            {/* Body Content */}
             <div className="flex-1 overflow-y-auto p-6 space-y-5">
               <div className="grid grid-cols-2 gap-3 bg-slate-50 dark:bg-zinc-800/60 p-4 rounded-2xl text-xs border border-slate-100 dark:border-zinc-800">
                 <div>
-                  <span className="text-slate-400 block">
-                    Dosen:
-                  </span>
-
-                  <span className="font-bold">
+                  <span className="text-slate-400 dark:text-zinc-400 block mb-0.5">Dosen:</span>
+                  <span className="font-bold text-slate-800 dark:text-zinc-200">
                     {selectedDetailTask.assigner}
                   </span>
                 </div>
 
                 <div>
-                  <span className="text-slate-400 block">
-                    Prioritas:
-                  </span>
-
-                  <span className="font-bold">
+                  <span className="text-slate-400 dark:text-zinc-400 block mb-0.5">Prioritas:</span>
+                  <span className="font-bold text-slate-800 dark:text-zinc-200">
                     {selectedDetailTask.priority}
                   </span>
                 </div>
 
-                <div className="col-span-2 pt-2">
-                  <span className="text-slate-400 block">
-                    Tenggat:
-                  </span>
-
-                  <span className="font-bold text-blue-600 text-sm">
-                    {formatDeadlineDetails(
-                      selectedDetailTask.deadline
-                    )}
+                <div className="col-span-2 pt-2 border-t border-slate-200/50 dark:border-zinc-700/50">
+                  <span className="text-slate-400 dark:text-zinc-400 block mb-0.5">Tenggat:</span>
+                  <span className="font-bold text-blue-600 dark:text-blue-400 text-sm">
+                    {formatDeadlineDetails(selectedDetailTask.deadline)}
                   </span>
                 </div>
               </div>
 
               {selectedDetailTask.classroomUrl && (
                 <div className="space-y-2">
-                  <h4 className="text-xs font-bold uppercase">
+                  <h4 className="text-[11px] font-bold text-slate-400 dark:text-zinc-400 uppercase tracking-wider">
                     Google Classroom
                   </h4>
 
                   <a
-                    href={
-                      selectedDetailTask.classroomUrl
-                    }
+                    href={selectedDetailTask.classroomUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center gap-3 p-3.5 rounded-2xl bg-blue-50 hover:bg-blue-100 border border-blue-100 text-xs font-semibold text-blue-700"
+                    className="flex items-center gap-3 p-3.5 rounded-2xl bg-blue-50/80 hover:bg-blue-100/80 dark:bg-blue-950/40 dark:hover:bg-blue-900/50 border border-blue-100 dark:border-blue-900/50 text-xs font-semibold text-blue-700 dark:text-blue-300 transition-colors"
                   >
                     <BookOpenCheck className="w-4 h-4" />
-
-                    <span className="flex-1 truncate">
-                      Buka Classroom
-                    </span>
-
+                    <span className="flex-1 truncate">Buka Classroom</span>
                     <ExternalLink className="w-3.5 h-3.5" />
                   </a>
                 </div>
               )}
 
               <div className="space-y-2">
-                <h4 className="text-xs font-bold uppercase">
+                <h4 className="text-[11px] font-bold text-slate-400 dark:text-zinc-400 uppercase tracking-wider">
                   Rincian Tugas
                 </h4>
 
-                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-zinc-800/80 text-xs whitespace-pre-wrap">
-                  {selectedDetailTask.description ||
-                    'Tidak ada instruksi.'}
+                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-zinc-800/80 text-xs leading-relaxed text-slate-700 dark:text-zinc-300 whitespace-pre-wrap border border-slate-100 dark:border-zinc-700/60">
+                  {selectedDetailTask.description || 'Tidak ada instruksi.'}
                 </div>
               </div>
 
-              {/* PERBAIKAN: Tombol Lampiran File di Modal */}
+              {/* Lampiran File (Cloudinary Integrated) */}
               {selectedDetailTask.attachment && (
-                <div className="space-y-2 pt-2">
+                <div className="space-y-2 pt-1">
                   <h4 className="text-[11px] font-bold text-slate-400 dark:text-zinc-400 uppercase tracking-wider">
                     Lampiran File / Dokumen
                   </h4>
@@ -837,10 +820,10 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                     href={typeof selectedDetailTask.attachment === 'string' ? selectedDetailTask.attachment : (selectedDetailTask.attachment.fileUrl || (selectedDetailTask.attachment as any).url)}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-800/80 hover:bg-slate-800 dark:bg-zinc-800/80 dark:hover:bg-zinc-800 border border-slate-700/60 dark:border-zinc-700/60 text-slate-200 dark:text-zinc-200 text-xs font-semibold transition-all group shadow-sm"
+                    className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-200/80 dark:border-zinc-700 text-slate-800 dark:text-zinc-200 text-xs font-semibold transition-all group shadow-xs"
                   >
                     <div className="flex items-center gap-3 min-w-0 pr-2">
-                      <Paperclip className="w-4 h-4 text-blue-400 shrink-0 group-hover:scale-110 transition-transform" />
+                      <Paperclip className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 group-hover:scale-110 transition-transform" />
                       <span className="truncate">
                         {typeof selectedDetailTask.attachment === 'object' && selectedDetailTask.attachment.fileName
                           ? selectedDetailTask.attachment.fileName
@@ -849,24 +832,23 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                           : 'Dokumen Lampiran.pdf'}
                       </span>
                     </div>
-                    <ExternalLink className="w-4 h-4 text-slate-400 dark:text-zinc-400 group-hover:text-white shrink-0 transition-colors" />
+                    <ExternalLink className="w-4 h-4 text-slate-400 dark:text-zinc-400 group-hover:text-slate-800 dark:group-hover:text-white shrink-0 transition-colors" />
                   </a>
                 </div>
               )}
             </div>
 
-            <div className="px-6 py-4 border-t dark:border-zinc-800 flex justify-between bg-white dark:bg-zinc-900">
+            {/* Footer Modal (Buttons) */}
+            <div className="px-6 py-4 border-t border-slate-100 dark:border-zinc-800 flex justify-between items-center bg-white dark:bg-zinc-900">
               {isOfficer ? (
                 <div className="flex gap-2">
                   <button
                     onClick={() => {
-                      const t =
-                        selectedDetailTask;
-
+                      const t = selectedDetailTask;
                       setSelectedDetailTask(null);
                       handleOpenEditModal(t);
                     }}
-                    className="px-3.5 py-2 bg-slate-100 rounded-2xl text-xs font-semibold flex items-center gap-1.5"
+                    className="px-3.5 py-2 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 rounded-2xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
                   >
                     <Edit2 className="w-3.5 h-3.5" />
                     Edit
@@ -874,13 +856,10 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
 
                   <button
                     onClick={() => {
-                      onDeleteTask(
-                        selectedDetailTask.id
-                      );
-
+                      onDeleteTask(selectedDetailTask.id);
                       setSelectedDetailTask(null);
                     }}
-                    className="px-3.5 py-2 bg-red-50 text-red-600 rounded-2xl text-xs font-semibold flex items-center gap-1.5"
+                    className="px-3.5 py-2 bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/60 rounded-2xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                     Hapus
@@ -891,14 +870,13 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
               )}
 
               <button
-                onClick={() =>
-                  setSelectedDetailTask(null)
-                }
-                className="px-6 py-2 bg-slate-100 rounded-2xl font-bold text-xs"
+                onClick={() => setSelectedDetailTask(null)}
+                className="px-6 py-2 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-200 rounded-2xl font-bold text-xs transition-colors"
               >
                 Tutup
               </button>
             </div>
+
           </div>
         </div>
       )}
@@ -906,9 +884,9 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
       {/* ADD / EDIT MODAL */}
       {showModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-zinc-900 border dark:border-zinc-800 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             <div className="px-6 sm:px-8 py-5 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between shrink-0">
-              <h3 className="text-lg font-bold">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-100">
                 {editingTaskId
                   ? 'Edit Tugas'
                   : 'Tambah Tugas Baru'}
@@ -916,10 +894,8 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
 
               <button
                 type="button"
-                onClick={() =>
-                  setShowModal(false)
-                }
-                className="p-2 rounded-2xl text-slate-400 hover:bg-slate-100"
+                onClick={() => setShowModal(false)}
+                className="p-2 rounded-2xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -931,7 +907,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
             >
               <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
                     Judul Tugas
                   </label>
 
@@ -939,16 +915,14 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                     type="text"
                     required
                     value={title}
-                    onChange={(e) =>
-                      setTitle(e.target.value)
-                    }
-                    className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 border dark:border-zinc-700 text-xs focus:ring-2 focus:ring-blue-500 outline-none"
+                    onChange={(e) => setTitle(e.target.value)}
+                    className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:ring-2 focus:ring-blue-500 outline-none"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold mb-1.5">
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
                       Mata Kuliah
                     </label>
 
@@ -956,15 +930,13 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                       type="text"
                       required
                       value={course}
-                      onChange={(e) =>
-                        setCourse(e.target.value)
-                      }
-                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 border dark:border-zinc-700 text-xs focus:ring-2 focus:ring-blue-500 outline-none"
+                      onChange={(e) => setCourse(e.target.value)}
+                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:ring-2 focus:ring-blue-500 outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold mb-1.5">
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
                       Jenis Tugas
                     </label>
 
@@ -977,7 +949,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                             | 'Kelompok'
                         )
                       }
-                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 border dark:border-zinc-700 text-xs outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="Individu">
                         Individu
@@ -992,7 +964,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold mb-1.5">
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
                       Tanggal Deadline
                     </label>
 
@@ -1000,72 +972,56 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                       type="date"
                       required
                       value={deadlineDate}
-                      onChange={(e) =>
-                        setDeadlineDate(
-                          e.target.value
-                        )
-                      }
-                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 border dark:border-zinc-700 text-xs outline-none focus:ring-2 focus:ring-blue-500"
+                      onChange={(e) => setDeadlineDate(e.target.value)}
+                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold mb-1.5">
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
                       Jam Deadline
                     </label>
 
                     <input
                       type="time"
                       value={deadlineTime}
-                      onChange={(e) =>
-                        setDeadlineTime(
-                          e.target.value
-                        )
-                      }
-                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 border dark:border-zinc-700 text-xs outline-none focus:ring-2 focus:ring-blue-500"
+                      onChange={(e) => setDeadlineTime(e.target.value)}
+                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
                     Instruksi Tugas
                   </label>
 
                   <textarea
                     rows={2}
                     value={description}
-                    onChange={(e) =>
-                      setDescription(
-                        e.target.value
-                      )
-                    }
-                    className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 border dark:border-zinc-700 text-xs outline-none focus:ring-2 focus:ring-blue-500"
+                    onChange={(e) => setDescription(e.target.value)}
+                    className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
 
                 {/* CLASSROOM URL */}
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
                     Link Google Classroom (Opsional)
                   </label>
 
                   <input
                     type="url"
                     value={classroomUrl}
-                    onChange={(e) =>
-                      setClassroomUrl(
-                        e.target.value
-                      )
-                    }
+                    onChange={(e) => setClassroomUrl(e.target.value)}
                     placeholder="https://classroom.google.com/..."
-                    className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 border dark:border-zinc-700 text-xs outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
 
                 {/* CLOUDINARY ATTACHMENT */}
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
                     Lampiran File (Opsional)
                   </label>
 
@@ -1073,9 +1029,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
                     onDrop={handleDrop}
-                    onClick={() =>
-                      fileInputRef.current?.click()
-                    }
+                    onClick={() => fileInputRef.current?.click()}
                     className={`relative border-2 border-dashed rounded-3xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-all ${
                       isDragOver
                         ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
@@ -1099,7 +1053,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                           {selectedFile.name}
                         </p>
 
-                        <p className="text-[10px] text-slate-500">
+                        <p className="text-[10px] text-slate-500 dark:text-zinc-400">
                           {(
                             selectedFile.size /
                             1024 /
@@ -1118,9 +1072,8 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                           {existingAttachment.fileName}
                         </p>
 
-                        <p className="text-[10px] text-slate-500">
-                          File sudah tersimpan sebelumnya.
-                          Klik untuk mengganti.
+                        <p className="text-[10px] text-slate-500 dark:text-zinc-400">
+                          File sudah tersimpan sebelumnya. Klik untuk mengganti.
                         </p>
                       </div>
                     ) : (
@@ -1133,7 +1086,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                           Klik atau seret file ke sini
                         </p>
 
-                        <p className="text-[10px] text-slate-500">
+                        <p className="text-[10px] text-slate-500 dark:text-zinc-400">
                           PDF, Word, Excel, Gambar
                         </p>
                       </div>
@@ -1142,17 +1095,9 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
 
                   {isUploading && (
                     <div className="mt-3 space-y-1.5">
-                      <div className="flex items-center justify-between text-[10px] text-slate-500">
-                        <span>
-                          Mengunggah ke Cloudinary...
-                        </span>
-
-                        <span>
-                          {Math.round(
-                            uploadProgress
-                          )}
-                          %
-                        </span>
+                      <div className="flex items-center justify-between text-[10px] text-slate-500 dark:text-zinc-400">
+                        <span>Mengunggah ke Cloudinary...</span>
+                        <span>{Math.round(uploadProgress)}%</span>
                       </div>
 
                       <div className="bg-slate-100 dark:bg-zinc-800 rounded-full h-2 w-full overflow-hidden">
@@ -1168,14 +1113,12 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                 </div>
               </div>
 
-              <div className="px-6 py-4 border-t dark:border-zinc-800 flex justify-end gap-3 bg-white dark:bg-zinc-900">
+              <div className="px-6 py-4 border-t border-slate-100 dark:border-zinc-800 flex justify-end gap-3 bg-white dark:bg-zinc-900">
                 <button
                   type="button"
                   disabled={isUploading}
-                  onClick={() =>
-                    setShowModal(false)
-                  }
-                  className="px-5 py-2.5 rounded-2xl bg-slate-100 font-semibold text-xs disabled:opacity-50"
+                  onClick={() => setShowModal(false)}
+                  className="px-5 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 font-semibold text-xs disabled:opacity-50 transition-colors"
                 >
                   Batal
                 </button>
@@ -1183,7 +1126,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                 <button
                   type="submit"
                   disabled={isUploading}
-                  className="px-5 py-2.5 rounded-2xl bg-blue-600 text-white font-semibold text-xs flex items-center gap-2 disabled:opacity-70"
+                  className="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs flex items-center gap-2 disabled:opacity-70 transition-colors shadow-md shadow-blue-500/20"
                 >
                   {isUploading ? (
                     <>
