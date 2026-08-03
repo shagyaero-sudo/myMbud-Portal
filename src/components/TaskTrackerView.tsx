@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Plus,
   Search,
@@ -19,7 +19,7 @@ import { Task, Contact } from '../types';
 
 interface TaskTrackerViewProps {
   tasks: Task[];
-  contacts?: Contact[]; // <-- Tambahan Data Kontak Dosen
+  contacts?: Contact[];
   isOfficer: boolean;
   onAddTask: (task: Omit<Task, 'id'>) => void;
   onUpdateTask?: (id: string, updatedTask: Partial<Task>) => void;
@@ -100,13 +100,19 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
   const [isDragOver, setIsDragOver] = useState(false);
 
   /* =========================
-     BASIC DATA & AUTO-SYNC
+     BASIC DATA & AUTO-SYNC (FIXED)
   ========================= */
 
-  // Ambil daftar unik matkul dari Kontak Dosen + Task yang ada
+  // Helper untuk mengambil nama matkul secara aman dari kontak
+  const getContactCourse = (c: any) => c.course || c.courseName || '';
+
+  // Helper untuk mengambil nama dosen secara aman dari kontak
+  const getContactLecturer = (c: any) => c.lecturerName || c.lecturer || c.name || '';
+
+  // Ambil daftar unik MATA KULIAH murni (Bukan nama dosen!)
   const availableCourseOptions = Array.from(
     new Set([
-      ...contacts.map((c) => c.course).filter((c) => c && c.trim() !== ''),
+      ...contacts.map((c) => getContactCourse(c)).filter((c) => c && c.trim() !== ''),
       ...tasks.map((t) => t.course).filter((c) => c && c.trim() !== ''),
     ])
   ).sort();
@@ -115,17 +121,17 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
     new Set(tasks.map((t) => t.course))
   );
 
-  // Handler Auto-Sync Dosen saat Matkul dipilih
+  // Handler Auto-Sync: Pilih Matkul -> Auto Fill Dosen Pengampu!
   const handleCourseChange = (selectedCourseName: string) => {
     setCourse(selectedCourseName);
     
-    // Cari dosen di kontak yang mengampu matkul ini
+    // Cari dosen yang mengampu matkul ini di daftar kontak
     const matchedContact = contacts.find(
-      (c) => c.course.toLowerCase() === selectedCourseName.toLowerCase()
+      (c) => getContactCourse(c).toLowerCase() === selectedCourseName.toLowerCase()
     );
 
     if (matchedContact) {
-      setAssigner(matchedContact.name);
+      setAssigner(getContactLecturer(matchedContact));
     }
   };
 
@@ -288,9 +294,9 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
     // Auto sync dosen pertama
     if (defaultCourse) {
       const matchedContact = contacts.find(
-        (c) => c.course.toLowerCase() === defaultCourse.toLowerCase()
+        (c) => getContactCourse(c).toLowerCase() === defaultCourse.toLowerCase()
       );
-      setAssigner(matchedContact ? matchedContact.name : '');
+      setAssigner(matchedContact ? getContactLecturer(matchedContact) : '');
     } else {
       setAssigner('');
     }
@@ -1031,7 +1037,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
         </div>
       )}
 
-      {/* ADD / EDIT MODAL (UPDATED WITH DOSEN AUTO-SYNC) */}
+      {/* ADD / EDIT MODAL (FIXED AUTO-SYNC) */}
       {showModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
@@ -1116,7 +1122,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                   </div>
                 </div>
 
-                {/* DOSEN PENGAMPU (NEW INPUT WITH AUTO-FILL) */}
+                {/* DOSEN PENGAMPU */}
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
                     Dosen Pengampu
