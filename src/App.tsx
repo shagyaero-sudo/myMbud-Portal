@@ -425,6 +425,7 @@ export default function App() {
                 <KnowledgeBaseView
                   materials={appState.materials}
                   isOfficer={isOfficer}
+                  availableCourses={appState.schedules.map((s) => s.course)}
                   onAddMaterial={handleAddMaterial}
                   onDeleteMaterial={handleDeleteMaterial}
                   onPreviewPdf={(material) =>

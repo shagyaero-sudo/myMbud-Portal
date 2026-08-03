@@ -16,22 +16,11 @@ import { MaterialFile } from '../types';
 interface KnowledgeBaseViewProps {
   materials: MaterialFile[];
   isOfficer: boolean;
+  availableCourses?: string[]; // Matkul riil dari Firebase Firestore
   onAddMaterial: (material: Omit<MaterialFile, 'id' | 'uploadDate'>) => void;
   onDeleteMaterial: (id: string) => void;
   onPreviewPdf: (material: MaterialFile) => void;
 }
-
-const DEFAULT_COURSES = [
-  'Sosiologi Pembangunan',
-  'Komunikasi Politik & Publik',
-  'Metode Penelitian Sosial',
-  'Teori Sosiologi Modern',
-  'Statistik untuk Ilmu Sosial',
-  'Sosiologi Perkotaan & Desa',
-  'Ekologi Sosial & Lingkungan',
-  'Sosiologi Kebudayaan',
-  'Masalah Sosial & Kebijakan',
-];
 
 const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
 const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
@@ -39,6 +28,7 @@ const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
   materials,
   isOfficer,
+  availableCourses = [],
   onAddMaterial,
   onDeleteMaterial,
   onPreviewPdf,
@@ -46,9 +36,19 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
   const [search, setSearch] = useState('');
   const [selectedCourse, setSelectedCourse] = useState<string>('ALL');
 
+  // Menggabungkan matkul dari Firebase Firestore (contacts/schedules) + matkul yang sudah ada di list materi
+  const dynamicCoursesList = Array.from(
+    new Set([
+      ...availableCourses.filter((c) => c && c.trim() !== ''),
+      ...materials.map((m) => m.courseName).filter((c) => c && c.trim() !== ''),
+    ])
+  ).sort();
+
   // Modal State
   const [showUploadModal, setShowUploadModal] = useState(false);
-  const [formCourseName, setFormCourseName] = useState(DEFAULT_COURSES[0]);
+  const [formCourseName, setFormCourseName] = useState(
+    dynamicCoursesList[0] || 'Umum'
+  );
   const [formSession, setFormSession] = useState('');
   const [formTitle, setFormTitle] = useState('');
   const [formUploader, setFormUploader] = useState('Pengurus Kelas A');
@@ -59,10 +59,6 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const allCoursesList = Array.from(
-    new Set([...DEFAULT_COURSES, ...materials.map((m) => m.courseName)])
-  );
 
   const filteredMaterials = materials.filter((m) => {
     const matchSearch =
@@ -97,6 +93,13 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
     const data = await response.json();
     setUploadProgress(100);
     return data.secure_url;
+  };
+
+  const handleOpenUploadModal = () => {
+    if (dynamicCoursesList.length > 0) {
+      setFormCourseName(dynamicCoursesList[0]);
+    }
+    setShowUploadModal(true);
   };
 
   const handleUploadSubmit = async (e: React.FormEvent) => {
@@ -164,7 +167,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
 
         {isOfficer && (
           <button
-            onClick={() => setShowUploadModal(true)}
+            onClick={handleOpenUploadModal}
             className="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition-all shadow-md shadow-blue-500/20 flex items-center gap-2 shrink-0"
           >
             <Upload className="w-4 h-4" />
@@ -202,7 +205,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
               </span>
             </button>
 
-            {allCoursesList.map((course) => {
+            {dynamicCoursesList.map((course) => {
               const count = materials.filter((m) => m.courseName === course).length;
               const isSelected = selectedCourse === course;
               return (
@@ -251,7 +254,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
               className="w-full px-4 py-3 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none"
             >
               <option value="ALL">Semua Mata Kuliah ({materials.length} berkas)</option>
-              {allCoursesList.map((course) => {
+              {dynamicCoursesList.map((course) => {
                 const count = materials.filter((m) => m.courseName === course).length;
                 return (
                   <option key={course} value={course}>
@@ -346,17 +349,28 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                   <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
                     Mata Kuliah
                   </label>
-                  <select
-                    value={formCourseName}
-                    onChange={(e) => setFormCourseName(e.target.value)}
-                    className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    {allCoursesList.map((c) => (
-                      <option key={c} value={c}>
-                        {c}
-                      </option>
-                    ))}
-                  </select>
+                  {dynamicCoursesList.length > 0 ? (
+                    <select
+                      value={formCourseName}
+                      onChange={(e) => setFormCourseName(e.target.value)}
+                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      {dynamicCoursesList.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      required
+                      value={formCourseName}
+                      onChange={(e) => setFormCourseName(e.target.value)}
+                      placeholder="Masukkan Nama Mata Kuliah"
+                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  )}
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
