@@ -141,7 +141,7 @@ export const Header: React.FC<HeaderProps> = ({
                         }`}
                       >
                         <Sun className="w-4 h-4" />
-                        <span>Terang</span>
+                        <span>Light</span>
                       </button>
                       <button
                         onClick={() => { setTheme('dark'); setIsThemeDropdownOpen(false); }}
@@ -150,7 +150,7 @@ export const Header: React.FC<HeaderProps> = ({
                         }`}
                       >
                         <Moon className="w-4 h-4" />
-                        <span>Gelap</span>
+                        <span>Dark</span>
                       </button>
                       <button
                         onClick={() => { setTheme('pink'); setIsThemeDropdownOpen(false); }}
@@ -159,7 +159,7 @@ export const Header: React.FC<HeaderProps> = ({
                         }`}
                       >
                         <Sparkles className="w-4 h-4" />
-                        <span>Pink Mode</span>
+                        <span>Pink</span>
                       </button>
                     </div>
                   </>
