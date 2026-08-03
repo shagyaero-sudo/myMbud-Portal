@@ -170,7 +170,7 @@ export const SoftForceModal: React.FC = () => {
                 Akses Browser Ditolak
               </h3>
               <p className="text-[13px] text-red-700/90 dark:text-red-400 mt-2 leading-relaxed">
-                Portal ini terdeteksi sudah terpasang di HP-mu. <strong className="font-bold underline">Tutup browser ini</strong> dan buka <strong className="font-bold">myMbud</strong>langsung melalui ikon di <strong className="font-bold">Home Screen</strong>.
+                Portal ini terdeteksi sudah terpasang di HP-mu. <strong className="font-bold underline">Tutup browser ini</strong> dan buka <strong className="font-bold">myMbud</strong> langsung melalui ikon di <strong className="font-bold">Home Screen</strong>.
               </p>
             </div>
 
