@@ -780,25 +780,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                 </div>
               </div>
 
-              {selectedDetailTask.classroomUrl && (
-                <div className="space-y-2">
-                  <h4 className="text-[11px] font-bold text-slate-400 dark:text-zinc-400 uppercase tracking-wider">
-                    Google Classroom
-                  </h4>
-
-                  <a
-                    href={selectedDetailTask.classroomUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center gap-3 p-3.5 rounded-2xl bg-blue-50/80 hover:bg-blue-100/80 dark:bg-blue-950/40 dark:hover:bg-blue-900/50 border border-blue-100 dark:border-blue-900/50 text-xs font-semibold text-blue-700 dark:text-blue-300 transition-colors"
-                  >
-                    <BookOpenCheck className="w-4 h-4" />
-                    <span className="flex-1 truncate">Buka Classroom</span>
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </a>
-                </div>
-              )}
-
               <div className="space-y-2">
                 <h4 className="text-[11px] font-bold text-slate-400 dark:text-zinc-400 uppercase tracking-wider">
                   Rincian Tugas
@@ -820,7 +801,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                     href={typeof selectedDetailTask.attachment === 'string' ? selectedDetailTask.attachment : (selectedDetailTask.attachment.fileUrl || (selectedDetailTask.attachment as any).url)}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-200/80 dark:border-zinc-700 text-slate-800 dark:text-zinc-200 text-xs font-semibold transition-all group shadow-xs"
+                    className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-100 hover:bg-slate-200/80 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-200/80 dark:border-zinc-700 text-slate-800 dark:text-zinc-200 text-xs font-semibold transition-all group shadow-xs"
                   >
                     <div className="flex items-center gap-3 min-w-0 pr-2">
                       <Paperclip className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 group-hover:scale-110 transition-transform" />
@@ -869,12 +850,26 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                 <div />
               )}
 
-              <button
-                onClick={() => setSelectedDetailTask(null)}
-                className="px-6 py-2 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-200 rounded-2xl font-bold text-xs transition-colors"
-              >
-                Tutup
-              </button>
+              <div className="flex items-center gap-2">
+                {selectedDetailTask.classroomUrl && (
+                  <a
+                    href={selectedDetailTask.classroomUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-xs font-bold transition-colors flex items-center gap-1.5 shadow-sm shadow-blue-500/20"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    <span>Link Pengumpulan</span>
+                  </a>
+                )}
+                
+                <button
+                  onClick={() => setSelectedDetailTask(null)}
+                  className="px-6 py-2 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-200 rounded-2xl font-bold text-xs transition-colors"
+                >
+                  Tutup
+                </button>
+              </div>
             </div>
 
           </div>
@@ -1007,7 +1002,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                 {/* CLASSROOM URL */}
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
-                    Link Google Classroom (Opsional)
+                    Link Pengumpulan (Opsional)
                   </label>
 
                   <input
