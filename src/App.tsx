@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, addDoc, deleteDoc, doc, query, orderBy, Timestamp } from 'firebase/firestore';
 import { db } from './services/firebase';
 import { subscribeAnnouncements } from './services/announcements';
 
@@ -36,8 +36,6 @@ import {
   addContactApi,
   updateContactApi,
   deleteContactApi,
-  addMaterialApi,
-  deleteMaterialApi,
   addTaskApi,
   updateTaskApi,
   deleteTaskApi,
@@ -79,6 +77,7 @@ export default function App() {
     ...initialAppState,
     tasks: [],
     announcements: [],
+    materials: [],
   }));
 
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
@@ -138,7 +137,7 @@ export default function App() {
   }, []);
 
   // ============================================================
-  // FIREBASE SYNC (Schedules, Contacts, Tasks)
+  // FIREBASE SYNC (Schedules, Contacts, Tasks, Materials)
   // ============================================================
   const syncState = useCallback(async () => {
     setIsSyncing(true);
@@ -206,6 +205,27 @@ export default function App() {
         });
       });
 
+      // Fetch Materials dari Firestore
+      const querySnapshotMaterials = await getDocs(collection(db, 'materials'));
+      const firebaseMaterials: MaterialFile[] = [];
+
+      querySnapshotMaterials.forEach((matDoc) => {
+        const d = matDoc.data();
+        firebaseMaterials.push({
+          id: matDoc.id,
+          courseId: d.courseId || '',
+          courseName: d.courseName || '',
+          session: d.session || '',
+          title: d.title || '',
+          fileUrl: d.fileUrl || '',
+          fileType: 'pdf',
+          fileSize: d.fileSize || '3.0 MB',
+          uploadDate: d.uploadDate || new Date().toISOString(),
+          uploader: d.uploader || 'Pengurus Kelas A',
+          description: d.description || '',
+        });
+      });
+
       // Update State
       setAppState((previousState) => {
         const baseData = data || previousState;
@@ -214,6 +234,7 @@ export default function App() {
           schedules: firebaseSchedules,
           contacts: firebaseContacts.length > 0 ? firebaseContacts : baseData.contacts,
           tasks: firebaseTasks,
+          materials: firebaseMaterials,
           lastUpdated: new Date().toISOString(),
         };
       });
@@ -274,23 +295,29 @@ export default function App() {
     }
   };
 
+  /* HANDLER BANK MATERI FIRESTORE */
   const handleAddMaterial = async (material: Omit<MaterialFile, 'id' | 'uploadDate'>) => {
     try {
-      const updated = await addMaterialApi(material);
-      if (updated) setAppState(updated);
-      else await syncState();
+      await addDoc(collection(db, 'materials'), {
+        ...material,
+        uploadDate: new Date().toISOString(),
+        createdAt: Timestamp.now(),
+      });
+      await syncState();
     } catch (error) {
-      console.error('Gagal menambahkan materi:', error);
+      console.error('Gagal menambahkan materi ke Firestore:', error);
+      alert('Gagal menyimpan berkas ke Firebase.');
     }
   };
 
   const handleDeleteMaterial = async (id: string) => {
+    if (!confirm('Apakah kamu yakin ingin menghapus berkas materi ini?')) return;
     try {
-      const updated = await deleteMaterialApi(id);
-      if (updated) setAppState(updated);
-      else await syncState();
+      await deleteDoc(doc(db, 'materials', id));
+      await syncState();
     } catch (error) {
-      console.error('Gagal menghapus materi:', error);
+      console.error('Gagal menghapus materi dari Firestore:', error);
+      alert('Gagal menghapus berkas dari Firebase.');
     }
   };
 
