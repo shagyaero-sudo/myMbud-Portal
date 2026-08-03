@@ -343,24 +343,30 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     key={item.id}
                     className="p-4 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/60 hover:bg-slate-100/60 dark:hover:bg-zinc-800 transition-all flex flex-col space-y-3 border border-slate-100 dark:border-zinc-800/80"
                   >
-                    {/* Upper Section */}
+                    {/* Upper Section (Diperbarui) */}
                     <div className="flex items-start justify-between gap-3">
-                      {/* Left Side: Matkul, SKS, Dosen & PJ */}
+                      {/* KOLOM KIRI: Matkul, Dosen & PJ */}
                       <div className="space-y-1 min-w-0 flex-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-sm font-bold text-slate-800 dark:text-zinc-100">{item.course}</span>
-                          <span className="text-[11px] text-slate-500 dark:text-zinc-400 font-medium shrink-0">{item.sks} SKS</span>
-                        </div>
+                        <h3 className="text-sm font-bold text-slate-800 dark:text-zinc-100 leading-snug pr-2">
+                          {item.course}
+                        </h3>
                         <p className="text-xs text-slate-500 dark:text-zinc-400 truncate">Dosen: {item.lecturer}</p>
-                        {/* UPDATE TEKS PJ MENJADI LEBIH RINGKAS */}
                         <p className="text-xs text-slate-500 dark:text-zinc-400 truncate">PJ: {item.pjMatkul.replace(/\s*08\d+/g, '')}</p>
                       </div>
 
-                      {/* Right Side: Ruangan DI ATAS, Jam DI BAWAH */}
-                      <div className="flex flex-col items-end shrink-0 text-right space-y-0.5 pt-5">
+                      {/* KOLOM KANAN: SKS, Ruangan DI TENGAH, Jam DI BAWAH */}
+                      <div className="flex flex-col items-end shrink-0 text-right space-y-1">
+                        {/* BADGE SKS DI PALING ATAS (Pakai class multi-tema biru) */}
+                        <span className="inline-block px-2 py-0.5 text-[10px] font-bold rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/50 mb-0.5">
+                          {item.sks} SKS
+                        </span>
+                        
+                        {/* KODE RUANG */}
                         <span className="text-xs font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap">
                           {item.room}
                         </span>
+                        
+                        {/* WAKTU / JAM */}
                         <span className="text-xs font-bold text-slate-900 dark:text-zinc-100 font-sans whitespace-nowrap">
                           {item.time}
                         </span>
