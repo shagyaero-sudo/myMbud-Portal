@@ -331,13 +331,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
         `${deadlineDate}T${deadlineTime || '23:59'}:00`
       ).toISOString();
 
-      /*
-       * PENTING:
-       * Jangan kirim undefined ke Firestore.
-       *
-       * classroomUrl selalu string.
-       * attachment hanya dimasukkan jika memang ada.
-       */
       const taskData: Omit<Task, 'id'> = {
         title: title.trim(),
         course: course.trim(),
@@ -577,26 +570,19 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                         'Klik untuk melihat rincian instruksi tugas lengkap.'}
                     </p>
 
-                    <div className="space-y-1 pt-1 text-xs text-slate-500 border-t border-slate-50 dark:border-zinc-800">
-
-                      <div className="flex items-center justify-between text-[11px] pt-1">
-                        <span className="font-semibold text-slate-700 dark:text-zinc-300">
+                    {/* BAGIAN YANG DIPERBARUI: HANYA 1 BARIS */}
+                    <div className="pt-2 text-xs border-t border-slate-50 dark:border-zinc-800">
+                      <div className="flex justify-between items-center">
+                        <span className="font-medium text-slate-500 dark:text-zinc-400">
                           Tugas {t.type}
                         </span>
-
-                        <span className="text-slate-400">
-                          Prioritas: {t.priority}
-                        </span>
+                        <div className="flex items-center gap-1.5 text-slate-600 dark:text-zinc-300 font-medium">
+                          <Clock className="w-3.5 h-3.5 text-slate-400" />
+                          <span>Deadline: {formattedDate} WIB</span>
+                        </div>
                       </div>
-
-                      <div className="flex items-center gap-1.5 pt-1 font-medium">
-                        <Clock className="w-3.5 h-3.5" />
-                        <span>
-                          Deadline: {formattedDate} WIB
-                        </span>
-                      </div>
-
                     </div>
+
                   </div>
 
                   <div className="pt-3 flex items-center justify-between text-xs font-semibold text-blue-600 dark:text-blue-400 border-t border-slate-100/60 dark:border-zinc-800">
