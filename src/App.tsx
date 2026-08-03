@@ -6,6 +6,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from './services/firebase';
+import { subscribeAnnouncements } from './services/announcements';
 
 import { Header } from './components/Header';
 import { Sidebar, TabType } from './components/Sidebar';
@@ -32,8 +33,6 @@ import { initialAppState } from './data/mockData';
 
 import {
   fetchAppState,
-  addAnnouncementApi,
-  deleteAnnouncementApi,
   addContactApi,
   updateContactApi,
   deleteContactApi,
@@ -79,6 +78,7 @@ export default function App() {
   const [appState, setAppState] = useState<AppState>(() => ({
     ...initialAppState,
     tasks: [],
+    announcements: [],
   }));
 
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
@@ -124,7 +124,21 @@ export default function App() {
   }, [theme]);
 
   // ============================================================
-  // FIREBASE SYNC
+  // FIREBASE REALTIME ANNOUNCEMENTS LISTENER
+  // ============================================================
+  useEffect(() => {
+    const unsubscribe = subscribeAnnouncements((announcementsData) => {
+      setAppState((prev) => ({
+        ...prev,
+        announcements: announcementsData,
+      }));
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // ============================================================
+  // FIREBASE SYNC (Schedules, Contacts, Tasks)
   // ============================================================
   const syncState = useCallback(async () => {
     setIsSyncing(true);
@@ -229,26 +243,6 @@ export default function App() {
     const diffHours = (deadlineTime - Date.now()) / (1000 * 3600);
     return diffHours >= 0 && diffHours < 48;
   }).length;
-
-  const handleAddAnnouncement = async (announcement: Omit<Announcement, 'id' | 'date'>) => {
-    try {
-      const updated = await addAnnouncementApi(announcement);
-      if (updated) setAppState(updated);
-      else await syncState();
-    } catch (error) {
-      console.error('Gagal menambahkan pengumuman:', error);
-    }
-  };
-
-  const handleDeleteAnnouncement = async (id: string) => {
-    try {
-      const updated = await deleteAnnouncementApi(id);
-      if (updated) setAppState(updated);
-      else await syncState();
-    } catch (error) {
-      console.error('Gagal menghapus pengumuman:', error);
-    }
-  };
 
   const handleAddContact = async (contact: Omit<Contact, 'id'>) => {
     try {
@@ -383,8 +377,8 @@ export default function App() {
                 <DashboardView
                   state={appState}
                   isOfficer={isOfficer}
-                  onAddAnnouncement={handleAddAnnouncement}
-                  onDeleteAnnouncement={handleDeleteAnnouncement}
+                  onAddAnnouncement={() => {}}
+                  onDeleteAnnouncement={() => {}}
                   onNavigateTab={handleNavigateTab}
                 />
               )}

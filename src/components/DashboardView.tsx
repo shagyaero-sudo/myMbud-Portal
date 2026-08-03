@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   Plus,
   Trash2,
+  Edit2,
   Pin,
   ExternalLink,
   ChevronRight,
@@ -18,15 +19,24 @@ import {
   UserCheck,
   Download,
   File as FileIcon,
+  Loader2,
 } from 'lucide-react';
 import { AppState, DayOfWeek, Task, Announcement, ScheduleItem } from '../types';
+import {
+  addAnnouncement,
+  updateAnnouncement,
+  deleteAnnouncement,
+} from '../services/announcements';
 
 interface DashboardViewProps {
   state: AppState;
   isOfficer: boolean;
   onAddAnnouncement: (announcement: Omit<Announcement, 'id' | 'date'>) => void;
   onDeleteAnnouncement: (id: string) => void;
-  onNavigateTab: (tab: 'tasks' | 'contacts' | 'materials' | 'spinwheel' | 'calculator', courseFilter?: string) => void;
+  onNavigateTab: (
+    tab: 'tasks' | 'contacts' | 'materials' | 'spinwheel' | 'calculator',
+    courseFilter?: string
+  ) => void;
 }
 
 interface AttachmentData {
@@ -37,24 +47,30 @@ interface AttachmentData {
 export const DashboardView: React.FC<DashboardViewProps> = ({
   state,
   isOfficer,
-  onAddAnnouncement,
-  onDeleteAnnouncement,
   onNavigateTab,
 }) => {
   const [selectedDay, setSelectedDay] = useState<DayOfWeek>('Senin');
-  const [showAnnModal, setShowAnnModal] = useState(false);
-  const [selectedTaskModal, setSelectedTaskModal] = useState<Task | null>(null);
-  const [selectedAnnModal, setSelectedAnnModal] = useState<Announcement | null>(null);
   
   /* =========================
-     ATTACHMENT PREVIEW STATE
+     ANNOUNCEMENT MODAL STATE
   ========================= */
-  const [previewAttachment, setPreviewAttachment] = useState<AttachmentData | null>(null);
+  const [showAnnModal, setShowAnnModal] = useState(false);
+  const [editingAnnId, setEditingAnnId] = useState<string | null>(null);
+  const [isSubmittingAnn, setIsSubmittingAnn] = useState(false);
 
   const [newAnnTitle, setNewAnnTitle] = useState('');
   const [newAnnContent, setNewAnnContent] = useState('');
-  const [newAnnCategory, setNewAnnCategory] = useState<'Penting' | 'Akademik' | 'Kegiatan' | 'Info'>('Penting');
+  const [newAnnCategory, setNewAnnCategory] = useState<
+    'Penting' | 'Akademik' | 'Kegiatan' | 'Info'
+  >('Penting');
   const [newAnnPinned, setNewAnnPinned] = useState(true);
+
+  /* =========================
+     DETAIL & PREVIEW MODALS
+  ========================= */
+  const [selectedTaskModal, setSelectedTaskModal] = useState<Task | null>(null);
+  const [selectedAnnModal, setSelectedAnnModal] = useState<Announcement | null>(null);
+  const [previewAttachment, setPreviewAttachment] = useState<AttachmentData | null>(null);
 
   // Carousel state for mobile announcements
   const [mobileAnnIndex, setMobileAnnIndex] = useState(0);
@@ -65,7 +81,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const activeAnnIndex = Math.min(mobileAnnIndex, Math.max(0, totalAnn - 1));
   const currentMobileAnn = state.announcements[activeAnnIndex];
 
-  // Auto-play timer
+  // Auto-play timer for mobile carousel
   useEffect(() => {
     if (totalAnn <= 1 || isPaused || selectedAnnModal !== null) return;
 
@@ -108,7 +124,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   // Set default selected day based on current day
   useEffect(() => {
-    const days: DayOfWeek[] = ['Minggu' as DayOfWeek, 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    const days: DayOfWeek[] = [
+      'Minggu' as DayOfWeek,
+      'Senin',
+      'Selasa',
+      'Rabu',
+      'Kamis',
+      'Jumat',
+      'Sabtu',
+    ];
     const currentDayIndex = new Date().getDay();
     const todayName = days[currentDayIndex];
     if (todayName && todayName !== ('Minggu' as DayOfWeek)) {
@@ -116,13 +140,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }
   }, []);
 
-  // Filter tasks that are not done and deadline is not expired
   const now = Date.now();
   const upcomingTasks = state.tasks
     .filter((t) => t.status !== 'done' && new Date(t.deadline).getTime() > now)
-    .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime());
+    .sort(
+      (a, b) =>
+        new Date(a.deadline).getTime() - new Date(b.deadline).getTime()
+    );
 
-  // Helper to format announcement date to DD/MM/YYYY
   const formatAnnouncementDate = (dateStr: string) => {
     if (!dateStr) return '';
     const parts = dateStr.split('-');
@@ -140,7 +165,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     return dateStr;
   };
 
-  // Helper to format deadline date details (e.g. "Senin, 10 Agustus 2026 pukul 23.59 WIB")
   const formatDeadlineDetails = (dateStr: string) => {
     const d = new Date(dateStr);
     if (isNaN(d.getTime())) return dateStr;
@@ -156,34 +180,47 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     );
   };
 
-  // Helper for task deadline pill badge
   const getPillBadge = (deadlineStr: string) => {
-    const now = new Date();
+    const nowDate = new Date();
     const deadline = new Date(deadlineStr);
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-    const deadlineStart = new Date(deadline.getFullYear(), deadline.getMonth(), deadline.getDate()).getTime();
-    const diffDays = Math.round((deadlineStart - todayStart) / (1000 * 3600 * 24));
+    const todayStart = new Date(
+      nowDate.getFullYear(),
+      nowDate.getMonth(),
+      nowDate.getDate()
+    ).getTime();
+    const deadlineStart = new Date(
+      deadline.getFullYear(),
+      deadline.getMonth(),
+      deadline.getDate()
+    ).getTime();
+    const diffDays = Math.round(
+      (deadlineStart - todayStart) / (1000 * 3600 * 24)
+    );
 
     if (diffDays < 0) {
       return {
         label: 'Tenggat Lewat',
-        badgeClass: 'bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400 border border-slate-200 dark:border-zinc-700 font-bold',
+        badgeClass:
+          'bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400 border border-slate-200 dark:border-zinc-700 font-bold',
       };
     } else if (diffDays <= 2) {
       const dayText = diffDays <= 0 ? 'H-0' : `H-${diffDays}`;
       return {
         label: `Mendesak ${dayText}`,
-        badgeClass: 'bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-200 dark:border-rose-900/50 animate-pulse font-bold',
+        badgeClass:
+          'bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-200 dark:border-rose-900/50 animate-pulse font-bold',
       };
     } else if (diffDays <= 5) {
       return {
         label: `Mepet H-${diffDays}`,
-        badgeClass: 'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400 border border-amber-200 dark:border-amber-900/50 font-bold',
+        badgeClass:
+          'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400 border border-amber-200 dark:border-amber-900/50 font-bold',
       };
     } else {
       return {
         label: `Masih H-${diffDays}`,
-        badgeClass: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-900/50 font-bold',
+        badgeClass:
+          'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-900/50 font-bold',
       };
     }
   };
@@ -195,7 +232,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     if (!attachment) return null;
     if (typeof attachment === 'string') {
       return {
-        fileName: attachment.split('/').pop()?.split('?')[0] || 'Dokumen Lampiran',
+        fileName:
+          attachment.split('/').pop()?.split('?')[0] || 'Dokumen Lampiran',
         fileUrl: attachment,
       };
     }
@@ -212,7 +250,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   };
 
   const isImageFile = (fileName: string) => {
-    return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg', 'avif'].includes(getFileExtension(fileName));
+    return [
+      'jpg',
+      'jpeg',
+      'png',
+      'gif',
+      'webp',
+      'bmp',
+      'svg',
+      'avif',
+    ].includes(getFileExtension(fileName));
   };
 
   const isPdfFile = (fileName: string) => {
@@ -220,7 +267,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   };
 
   const dayTabs: DayOfWeek[] = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
-  
+
   const filteredSchedule = state.schedules
     .filter((s) => s.day === selectedDay)
     .sort((a, b) => {
@@ -229,19 +276,72 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       return startA.localeCompare(startB);
     });
 
-  const handleCreateAnnouncement = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newAnnTitle.trim()) return;
-    onAddAnnouncement({
-      title: newAnnTitle,
-      content: newAnnContent,
-      category: newAnnCategory,
-      author: 'Pengurus Kelas A',
-      pinned: newAnnPinned,
-    });
+  /* =========================
+     HANDLERS PENGUMUMAN FIREBASE
+  ========================= */
+  const handleOpenAddAnn = () => {
+    setEditingAnnId(null);
     setNewAnnTitle('');
     setNewAnnContent('');
-    setShowAnnModal(false);
+    setNewAnnCategory('Penting');
+    setNewAnnPinned(true);
+    setShowAnnModal(true);
+  };
+
+  const handleOpenEditAnn = (ann: Announcement) => {
+    setEditingAnnId(ann.id);
+    setNewAnnTitle(ann.title);
+    setNewAnnContent(ann.content);
+    setNewAnnCategory(ann.category);
+    setNewAnnPinned(ann.pinned);
+    setShowAnnModal(true);
+  };
+
+  const handleDeleteAnn = async (id: string) => {
+    if (confirm('Apakah kamu yakin ingin menghapus pengumuman ini?')) {
+      try {
+        await deleteAnnouncement(id);
+      } catch (err) {
+        console.error('Gagal menghapus pengumuman:', err);
+        alert('Gagal menghapus pengumuman.');
+      }
+    }
+  };
+
+  const handleSaveAnnouncement = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newAnnTitle.trim() || !newAnnContent.trim()) return;
+
+    setIsSubmittingAnn(true);
+
+    try {
+      if (editingAnnId) {
+        await updateAnnouncement(editingAnnId, {
+          title: newAnnTitle.trim(),
+          content: newAnnContent.trim(),
+          category: newAnnCategory,
+          pinned: newAnnPinned,
+        });
+      } else {
+        await addAnnouncement({
+          title: newAnnTitle.trim(),
+          content: newAnnContent.trim(),
+          category: newAnnCategory,
+          author: 'Pengurus Kelas A',
+          pinned: newAnnPinned,
+        });
+      }
+
+      setNewAnnTitle('');
+      setNewAnnContent('');
+      setEditingAnnId(null);
+      setShowAnnModal(false);
+    } catch (error) {
+      console.error('Gagal menyimpan pengumuman:', error);
+      alert('Terjadi kesalahan saat menyimpan pengumuman.');
+    } finally {
+      setIsSubmittingAnn(false);
+    }
   };
 
   return (
@@ -251,7 +351,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         {isOfficer && (
           <div className="flex justify-end pb-1">
             <button
-              onClick={() => setShowAnnModal(true)}
+              onClick={handleOpenAddAnn}
               className="px-2.5 py-1 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-all text-xs font-semibold flex items-center gap-1 shadow-xs"
             >
               <Plus className="w-3.5 h-3.5" />
@@ -283,16 +383,28 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     {formatAnnouncementDate(currentMobileAnn.date)}
                   </span>
                   {isOfficer && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDeleteAnnouncement(currentMobileAnn.id);
-                      }}
-                      className="text-slate-400 hover:text-rose-600 transition-colors p-0.5"
-                      title="Hapus Pengumuman"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenEditAnn(currentMobileAnn);
+                        }}
+                        className="text-slate-400 hover:text-blue-600 transition-colors p-0.5"
+                        title="Edit Pengumuman"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteAnn(currentMobileAnn.id);
+                        }}
+                        className="text-slate-400 hover:text-rose-600 transition-colors p-0.5"
+                        title="Hapus Pengumuman"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>
@@ -355,7 +467,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           {/* Jadwal Kuliah */}
           <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-4 transition-colors">
             <div>
-              <h3 className="text-base font-bold text-slate-800 dark:text-zinc-100">Jadwal Perkuliahan</h3>
+              <h3 className="text-base font-bold text-slate-800 dark:text-zinc-100">
+                Jadwal Perkuliahan
+              </h3>
             </div>
 
             <div className="grid grid-cols-5 gap-1 p-1 bg-slate-100/80 dark:bg-zinc-800/80 rounded-2xl w-full">
@@ -390,8 +504,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         <h3 className="text-sm font-bold text-slate-800 dark:text-zinc-100 leading-snug pr-2">
                           {item.course}
                         </h3>
-                        <p className="text-xs text-slate-500 dark:text-zinc-400 truncate">Dosen: {item.lecturer}</p>
-                        <p className="text-xs text-slate-500 dark:text-zinc-400 truncate">PJ: {item.pjMatkul.replace(/\s*08\d+/g, '')}</p>
+                        <p className="text-xs text-slate-500 dark:text-zinc-400 truncate">
+                          Dosen: {item.lecturer}
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-zinc-400 truncate">
+                          PJ: {item.pjMatkul.replace(/\s*08\d+/g, '')}
+                        </p>
                       </div>
 
                       <div className="flex flex-col items-end shrink-0 text-right space-y-1">
@@ -448,7 +566,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-4 transition-colors">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-base font-bold text-slate-800 dark:text-zinc-100">Daftar Tugas</h3>
+                <h3 className="text-base font-bold text-slate-800 dark:text-zinc-100">
+                  Daftar Tugas
+                </h3>
               </div>
               <button
                 onClick={() => onNavigateTab('tasks')}
@@ -476,18 +596,26 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     >
                       <div className="space-y-1 flex-1">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-sm font-bold text-slate-800 dark:text-zinc-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{task.title}</span>
+                          <span className="text-sm font-bold text-slate-800 dark:text-zinc-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                            {task.title}
+                          </span>
                         </div>
                         <div className="text-xs text-slate-500 dark:text-zinc-400 flex items-center gap-2 flex-wrap">
-                          <span className="font-medium text-slate-700 dark:text-zinc-300">{task.course}</span>
+                          <span className="font-medium text-slate-700 dark:text-zinc-300">
+                            {task.course}
+                          </span>
                           <span>•</span>
-                          <span className="text-slate-500 dark:text-zinc-400 font-medium">{deadlineFormatted}</span>
+                          <span className="text-slate-500 dark:text-zinc-400 font-medium">
+                            {deadlineFormatted}
+                          </span>
                         </div>
                       </div>
 
                       {badge && (
                         <div className="flex items-center gap-3 shrink-0">
-                          <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${badge.badgeClass}`}>
+                          <span
+                            className={`text-xs font-semibold px-2.5 py-1 rounded-full ${badge.badgeClass}`}
+                          >
                             {badge.label}
                           </span>
                         </div>
@@ -505,12 +633,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-4 transition-colors">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-base font-bold text-slate-800 dark:text-zinc-100">Pengumuman</h3>
+                <h3 className="text-base font-bold text-slate-800 dark:text-zinc-100">
+                  Pengumuman
+                </h3>
               </div>
 
               {isOfficer && (
                 <button
-                  onClick={() => setShowAnnModal(true)}
+                  onClick={handleOpenAddAnn}
                   className="px-3 py-1.5 rounded-2xl bg-blue-600 text-white hover:bg-blue-700 transition-all text-xs font-semibold flex items-center gap-1.5 shadow-md shadow-blue-500/20"
                 >
                   <Plus className="w-4 h-4" />
@@ -529,26 +659,46 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   <div
                     key={ann.id}
                     onClick={() => setSelectedAnnModal(ann)}
-                    className="p-4 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/60 space-y-1.5 border border-slate-100 dark:border-zinc-800 cursor-pointer hover:bg-slate-100/90 dark:hover:bg-zinc-800 transition-colors"
+                    className="p-4 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/60 space-y-1.5 border border-slate-100 dark:border-zinc-800 cursor-pointer hover:bg-slate-100/90 dark:hover:bg-zinc-800 transition-colors group"
                   >
                     <div className="flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400">
-                      <span className="font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2.5 py-0.5 rounded-full">{ann.category}</span>
+                      <span className="font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2.5 py-0.5 rounded-full">
+                        {ann.category}
+                      </span>
                       {isOfficer && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onDeleteAnnouncement(ann.id);
-                          }}
-                          className="text-slate-400 hover:text-rose-600 transition-colors p-0.5"
-                          title="Hapus Pengumuman"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenEditAnn(ann);
+                            }}
+                            className="text-slate-400 hover:text-blue-600 transition-colors p-0.5"
+                            title="Edit Pengumuman"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteAnn(ann.id);
+                            }}
+                            className="text-slate-400 hover:text-rose-600 transition-colors p-0.5"
+                            title="Hapus Pengumuman"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       )}
                     </div>
-                    <h4 className="text-xs font-bold text-slate-800 dark:text-zinc-100 pt-1">{ann.title}</h4>
-                    <p className="text-xs text-slate-600 dark:text-zinc-300 leading-relaxed line-clamp-2">{ann.content}</p>
-                    <div className="text-[11px] text-slate-400 dark:text-zinc-500 pt-1">{formatAnnouncementDate(ann.date)}</div>
+                    <h4 className="text-xs font-bold text-slate-800 dark:text-zinc-100 pt-1 group-hover:text-blue-600 transition-colors">
+                      {ann.title}
+                    </h4>
+                    <p className="text-xs text-slate-600 dark:text-zinc-300 leading-relaxed line-clamp-2">
+                      {ann.content}
+                    </p>
+                    <div className="text-[11px] text-slate-400 dark:text-zinc-500 pt-1">
+                      {formatAnnouncementDate(ann.date)}
+                    </div>
                   </div>
                 ))
               )}
@@ -557,12 +707,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
       </div>
 
-      {/* Modal: Create Announcement */}
+      {/* Modal: Create / Edit Announcement */}
       {showAnnModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             <div className="px-6 sm:px-8 py-5 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between shrink-0 bg-white dark:bg-zinc-900">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-100">Buat Pengumuman Baru Kelas A</h3>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-100">
+                {editingAnnId ? 'Edit Pengumuman' : 'Buat Pengumuman Baru'}
+              </h3>
               <button
                 type="button"
                 onClick={() => setShowAnnModal(false)}
@@ -572,10 +724,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </button>
             </div>
 
-            <form onSubmit={handleCreateAnnouncement} className="flex flex-col flex-1 overflow-hidden">
+            <form onSubmit={handleSaveAnnouncement} className="flex flex-col flex-1 overflow-hidden">
               <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">Judul Pengumuman</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
+                    Judul Pengumuman
+                  </label>
                   <input
                     type="text"
                     required
@@ -587,7 +741,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">Kategori</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
+                    Kategori
+                  </label>
                   <select
                     value={newAnnCategory}
                     onChange={(e) => setNewAnnCategory(e.target.value as any)}
@@ -601,13 +757,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">Isi Pesan / Informasi</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
+                    Isi Pesan / Informasi
+                  </label>
                   <textarea
                     rows={4}
                     required
                     value={newAnnContent}
                     onChange={(e) => setNewAnnContent(e.target.value)}
-                    placeholder="Tuliskan instruksi atau pengumuman lengkap untuk teman-teman Kelas A..."
+                    placeholder="Tuliskan instruksi atau pengumuman lengkap untuk teman-teman..."
                     className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -629,16 +787,27 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <div className="px-6 sm:px-8 py-4 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-end gap-3 shrink-0 bg-white dark:bg-zinc-900">
                 <button
                   type="button"
+                  disabled={isSubmittingAnn}
                   onClick={() => setShowAnnModal(false)}
-                  className="px-5 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 text-xs font-semibold hover:bg-slate-200 dark:hover:bg-zinc-700 transition-all"
+                  className="px-5 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 text-xs font-semibold hover:bg-slate-200 dark:hover:bg-zinc-700 transition-all disabled:opacity-50"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-2xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 shadow-md shadow-blue-500/20 transition-all"
+                  disabled={isSubmittingAnn}
+                  className="px-5 py-2.5 rounded-2xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 shadow-md shadow-blue-500/20 transition-all flex items-center gap-2 disabled:opacity-70"
                 >
-                  Terbitkan Pengumuman
+                  {isSubmittingAnn ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Menyimpan...</span>
+                    </>
+                  ) : editingAnnId ? (
+                    'Simpan Perubahan'
+                  ) : (
+                    'Terbitkan Pengumuman'
+                  )}
                 </button>
               </div>
             </form>
@@ -646,11 +815,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
       )}
 
-      {/* Modal: Task Detail (Sudah Dilengkapi Dosen, Prioritas, & Tanggal Tenggat Lengkap) */}
+      {/* Modal: Task Detail */}
       {selectedTaskModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            {/* Modal Header */}
             <div className="px-6 sm:px-8 py-5 border-b border-slate-100 dark:border-zinc-800 flex items-start justify-between gap-3 shrink-0 bg-white dark:bg-zinc-900">
               <div className="pr-2">
                 <div className="flex items-center gap-2 flex-wrap">
@@ -673,9 +841,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </button>
             </div>
 
-            {/* Scrollable Content Body */}
             <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-4">
-              {/* Card Ringkasan Meta Info: Dosen, Prioritas, & Tenggat */}
               <div className="grid grid-cols-2 gap-3 bg-slate-50 dark:bg-zinc-800/60 p-4 rounded-2xl text-xs border border-slate-100 dark:border-zinc-800">
                 <div>
                   <span className="text-slate-400 dark:text-zinc-400 block mb-0.5">Dosen:</span>
@@ -741,7 +907,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               )}
             </div>
 
-            {/* Modal Sticky Footer */}
             <div className="px-6 sm:px-8 py-4 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-end gap-3 shrink-0 bg-white dark:bg-zinc-900">
               {selectedTaskModal.classroomUrl && (
                 <a
@@ -759,7 +924,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
       )}
 
-      {/* ATTACHMENT VIEWER MODAL (GOOGLE DOCS ENGINE FOR PDF) */}
+      {/* ATTACHMENT VIEWER MODAL */}
       {previewAttachment && (
         <div
           className="fixed inset-0 z-[70] bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6"
@@ -769,7 +934,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             className="relative w-full max-w-6xl h-[92vh] bg-white dark:bg-zinc-950 rounded-3xl overflow-hidden shadow-2xl flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* VIEWER HEADER */}
             <div className="shrink-0 h-16 px-4 sm:px-6 flex items-center justify-between border-b border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/50 shrink-0">
@@ -813,7 +977,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
             </div>
 
-            {/* VIEWER CONTENT */}
             <div className="flex-1 min-h-0 bg-slate-100 dark:bg-zinc-900 flex items-center justify-center overflow-hidden">
               {isImageFile(previewAttachment.fileName) ? (
                 <div className="w-full h-full overflow-auto flex items-center justify-center p-4 sm:p-8">
@@ -856,7 +1019,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               )}
             </div>
 
-            {/* MOBILE DOWNLOAD */}
             <div className="sm:hidden shrink-0 border-t border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-3">
               <a
                 href={previewAttachment.fileUrl}
@@ -882,9 +1044,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-3 py-1 rounded-full">
                   {selectedAnnModal.category}
                 </span>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-100 pt-1">{selectedAnnModal.title}</h3>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-100 pt-1">
+                  {selectedAnnModal.title}
+                </h3>
                 <p className="text-[11px] text-slate-400 dark:text-zinc-500">
-                  Diterbitkan: {formatAnnouncementDate(selectedAnnModal.date)} • {selectedAnnModal.author || 'Pengurus Kelas'}
+                  Diterbitkan: {formatAnnouncementDate(selectedAnnModal.date)} •{' '}
+                  {selectedAnnModal.author || 'Pengurus Kelas'}
                 </p>
               </div>
               <button
@@ -901,7 +1066,37 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </p>
             </div>
 
-            <div className="px-6 sm:px-8 py-4 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-end gap-3 shrink-0 bg-white dark:bg-zinc-900">
+            <div className="px-6 sm:px-8 py-4 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-between shrink-0 bg-white dark:bg-zinc-900">
+              {isOfficer ? (
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      const ann = selectedAnnModal;
+                      setSelectedAnnModal(null);
+                      handleOpenEditAnn(ann);
+                    }}
+                    className="px-3.5 py-2 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 rounded-2xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                  >
+                    <Edit2 className="w-3.5 h-3.5" />
+                    Edit
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      const annId = selectedAnnModal.id;
+                      setSelectedAnnModal(null);
+                      handleDeleteAnn(annId);
+                    }}
+                    className="px-3.5 py-2 bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/60 rounded-2xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    Hapus
+                  </button>
+                </div>
+              ) : (
+                <div />
+              )}
+
               <button
                 type="button"
                 onClick={() => setSelectedAnnModal(null)}
