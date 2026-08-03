@@ -100,16 +100,12 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
   const [isDragOver, setIsDragOver] = useState(false);
 
   /* =========================
-     BASIC DATA & AUTO-SYNC (FIXED)
+     BASIC DATA & AUTO-SYNC
   ========================= */
 
-  // Helper untuk mengambil nama matkul secara aman dari kontak
   const getContactCourse = (c: any) => c.course || c.courseName || '';
-
-  // Helper untuk mengambil nama dosen secara aman dari kontak
   const getContactLecturer = (c: any) => c.lecturerName || c.lecturer || c.name || '';
 
-  // Ambil daftar unik MATA KULIAH murni (Bukan nama dosen!)
   const availableCourseOptions = Array.from(
     new Set([
       ...contacts.map((c) => getContactCourse(c)).filter((c) => c && c.trim() !== ''),
@@ -121,11 +117,8 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
     new Set(tasks.map((t) => t.course))
   );
 
-  // Handler Auto-Sync: Pilih Matkul -> Auto Fill Dosen Pengampu!
   const handleCourseChange = (selectedCourseName: string) => {
     setCourse(selectedCourseName);
-    
-    // Cari dosen yang mengampu matkul ini di daftar kontak
     const matchedContact = contacts.find(
       (c) => getContactCourse(c).toLowerCase() === selectedCourseName.toLowerCase()
     );
@@ -291,7 +284,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
     const defaultCourse = availableCourseOptions[0] || '';
     setCourse(defaultCourse);
 
-    // Auto sync dosen pertama
     if (defaultCourse) {
       const matchedContact = contacts.find(
         (c) => getContactCourse(c).toLowerCase() === defaultCourse.toLowerCase()
@@ -770,7 +762,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
         )}
       </div>
 
-      {/* DETAIL MODAL */}
+      {/* DETAIL MODAL (CLEANED UP PRIORITAS) */}
       {selectedDetailTask && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-150">
           <div className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
@@ -796,7 +788,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
 
             {/* BODY */}
             <div className="flex-1 overflow-y-auto p-6 space-y-5">
-              <div className="grid grid-cols-2 gap-3 bg-slate-50 dark:bg-zinc-800/60 p-4 rounded-2xl text-xs border border-slate-100 dark:border-zinc-800">
+              <div className="bg-slate-50 dark:bg-zinc-800/60 p-4 rounded-2xl text-xs border border-slate-100 dark:border-zinc-800 space-y-3">
                 <div>
                   <span className="text-slate-400 dark:text-zinc-400 block mb-0.5">
                     Dosen:
@@ -806,16 +798,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                   </span>
                 </div>
 
-                <div>
-                  <span className="text-slate-400 dark:text-zinc-400 block mb-0.5">
-                    Prioritas:
-                  </span>
-                  <span className="font-bold text-slate-800 dark:text-zinc-200">
-                    {selectedDetailTask.priority}
-                  </span>
-                </div>
-
-                <div className="col-span-2 pt-2 border-t border-slate-200/50 dark:border-zinc-700/50">
+                <div className="pt-2 border-t border-slate-200/50 dark:border-zinc-700/50">
                   <span className="text-slate-400 dark:text-zinc-400 block mb-0.5">
                     Tenggat:
                   </span>
@@ -1037,7 +1020,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
         </div>
       )}
 
-      {/* ADD / EDIT MODAL (FIXED AUTO-SYNC) */}
+      {/* ADD / EDIT MODAL */}
       {showModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
