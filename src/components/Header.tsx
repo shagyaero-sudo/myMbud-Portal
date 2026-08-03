@@ -18,6 +18,7 @@ import {
   Sun,
   Moon,
   FileEdit,
+  Handshake,
 } from 'lucide-react';
 import { TabType } from './Sidebar';
 
@@ -285,6 +286,18 @@ export const Header: React.FC<HeaderProps> = ({
                   <ChevronRight className="w-3 h-3 text-slate-400" />
                 </a>
                 <a
+                  href="https://kemahasiswaan.its.ac.id/beranda"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 hover:text-blue-600 dark:hover:text-blue-400 text-xs font-medium transition-all"
+                >
+                  <span className="flex items-center gap-2">
+                    <Handshake className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                    <span>myITS StudentConnect</span>
+                  </span>
+                  <ChevronRight className="w-3 h-3 text-slate-400" />
+                </a>
+                <a
                   href="https://classroom.its.ac.id/my/"
                   target="_blank"
                   rel="noreferrer"
@@ -382,4 +395,3 @@ export const Header: React.FC<HeaderProps> = ({
     </>
   );
 };
-

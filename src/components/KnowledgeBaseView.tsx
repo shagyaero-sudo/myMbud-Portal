@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileText, Download, Eye, Plus, Search, Trash2, Upload, BookOpen, ExternalLink, X } from 'lucide-react';
+import { FileText, Search, Trash2, Upload, BookOpen, ExternalLink, X } from 'lucide-react';
 import { MaterialFile } from '../types';
 
 interface KnowledgeBaseViewProps {
@@ -153,7 +153,19 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
 
         {/* Right Column (~70%): Files List View & Mobile Select Filter */}
         <div className="md:col-span-8 lg:col-span-9 space-y-4">
-          {/* Mobile Course Filter Dropdown */}
+          {/* POSISI DITUKAR: Search Bar sekarang di atas */}
+          <div className="relative w-full">
+            <Search className="w-4 h-4 absolute left-4 top-3 text-slate-400" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Cari berkas PDF, judul, atau pertemuan..."
+              className="w-full pl-11 pr-4 py-2.5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none"
+            />
+          </div>
+
+          {/* POSISI DITUKAR: Mobile Course Filter Dropdown sekarang di bawah */}
           <div className="block md:hidden w-full">
             <select
               value={selectedCourse}
@@ -170,18 +182,6 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                 );
               })}
             </select>
-          </div>
-
-          {/* Search Bar */}
-          <div className="relative w-full">
-            <Search className="w-4 h-4 absolute left-4 top-3 text-slate-400" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Cari berkas PDF, judul, atau pertemuan..."
-              className="w-full pl-11 pr-4 py-2.5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none"
-            />
           </div>
 
           {/* Files List View */}
@@ -218,31 +218,19 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                     </span>
                   </div>
 
-                  {/* Right: Action Icons (Minimalist) */}
-                  <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+                  {/* Right: Action Buttons (Minimalist Button Buka) */}
+                  <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
                     <button
                       onClick={() => onPreviewPdf(mat)}
-                      className="p-2 rounded-xl text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white dark:hover:bg-zinc-800 transition-all"
-                      title="Pratinjau PDF"
+                      className="px-4 py-1.5 rounded-xl bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 hover:bg-slate-200 dark:hover:bg-zinc-700 text-[11px] font-bold transition-all"
                     >
-                      <Eye className="w-4 h-4" />
+                      Buka
                     </button>
-
-                    <a
-                      href={mat.fileUrl}
-                      download={mat.title}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="p-2 rounded-xl text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white dark:hover:bg-zinc-800 transition-all"
-                      title="Unduh Berkas"
-                    >
-                      <Download className="w-4 h-4" />
-                    </a>
 
                     {isOfficer && (
                       <button
                         onClick={() => onDeleteMaterial(mat.id)}
-                        className="p-2 rounded-xl text-slate-400 hover:text-red-600 hover:bg-white dark:hover:bg-zinc-800 transition-all"
+                        className="p-2 rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-zinc-800 transition-all"
                         title="Hapus Berkas"
                       >
                         <Trash2 className="w-4 h-4" />
