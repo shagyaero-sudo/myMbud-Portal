@@ -161,7 +161,7 @@ export const SoftForceModal: React.FC = () => {
              </div>
 
              <p className="text-[12px] text-blue-700/80 dark:text-blue-400 leading-relaxed">
-               Membuat paket aplikasi WebAPK & melakukan pemindaian keamanan Android...
+               Sedang Menginstall.. Mohon tunggu hingga loading selesai...
              </p>
           </div>
         ) : installStatus === 'success' ? (
@@ -173,9 +173,9 @@ export const SoftForceModal: React.FC = () => {
                </svg>
              </div>
              <div>
-               <h3 className="text-green-800 dark:text-green-400 font-bold text-sm">Pemasangan Berhasil!</h3>
+               <h3 className="text-green-800 dark:text-green-400 font-bold text-sm">Instalasi Berhasil!</h3>
                <p className="text-[13px] text-green-700/80 dark:text-green-500 mt-1.5 leading-relaxed">
-                 Silakan <strong className="font-bold">tutup browser ini</strong>, kembali ke layar utama HP (Home Screen), dan buka aplikasi <strong className="font-bold">myMbud</strong> dari sana!
+                 Silakan <strong className="font-bold">tutup browser ini</strong>, kembali ke layar Home Screen, dan buka aplikasi <strong className="font-bold">myMbud</strong> dari sana!
                </p>
              </div>
           </div>
