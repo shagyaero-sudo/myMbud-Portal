@@ -179,7 +179,7 @@ export const SoftForceModal: React.FC = () => {
               onClick={handleResetInstallation}
               className="text-[11px] text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-200 underline pt-2 block mx-auto font-medium"
             >
-              Belum terinstal / Ingin tampilkan opsi install lagi?
+              "Eh, Aplikasinya tidak ada di Homescreen ku"
             </button>
           </div>
         ) : isIOS ? (
