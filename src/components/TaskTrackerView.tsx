@@ -1266,17 +1266,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                     </span>
                   </a>
                 )}
-
-                <button
-                  onClick={() =>
-                    setSelectedDetailTask(
-                      null
-                    )
-                  }
-                  className="px-6 py-2 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-200 rounded-2xl font-bold text-xs transition-colors"
-                >
-                  Tutup
-                </button>
               </div>
             </div>
           </div>

@@ -16,7 +16,7 @@ import { MaterialFile } from '../types';
 interface KnowledgeBaseViewProps {
   materials: MaterialFile[];
   isOfficer: boolean;
-  availableCourses?: string[]; // Matkul riil dari Firebase Firestore
+  availableCourses?: string[];
   onAddMaterial: (material: Omit<MaterialFile, 'id' | 'uploadDate'>) => void;
   onDeleteMaterial: (id: string) => void;
   onPreviewPdf: (material: MaterialFile) => void;
@@ -36,7 +36,6 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
   const [search, setSearch] = useState('');
   const [selectedCourse, setSelectedCourse] = useState<string>('ALL');
 
-  // Menggabungkan matkul dari Firebase Firestore (contacts/schedules) + matkul yang sudah ada di list materi
   const dynamicCoursesList = Array.from(
     new Set([
       ...availableCourses.filter((c) => c && c.trim() !== ''),
@@ -292,12 +291,10 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                     </div>
                   </div>
 
+                  {/* Pertemuan Badge (Ukuran MB Dihapus) */}
                   <div className="hidden sm:flex items-center gap-2 shrink-0">
                     <span className="text-xs font-semibold text-slate-600 dark:text-zinc-300 bg-white dark:bg-zinc-800 px-3 py-1 rounded-full shadow-xs border border-slate-100 dark:border-zinc-700">
                       {mat.session}
-                    </span>
-                    <span className="text-xs font-medium text-slate-400 dark:text-zinc-500 font-mono">
-                      {mat.fileSize}
                     </span>
                   </div>
 
