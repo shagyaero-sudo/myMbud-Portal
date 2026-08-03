@@ -50,7 +50,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onNavigateTab,
 }) => {
   const [selectedDay, setSelectedDay] = useState<DayOfWeek>('Senin');
-  
+
   /* =========================
      ANNOUNCEMENT MODAL STATE
   ========================= */
@@ -223,6 +223,33 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-900/50 font-bold',
       };
     }
+  };
+
+  /* =========================
+     LINK PARSER HELPER
+  ========================= */
+  const renderFormattedContent = (content: string) => {
+    if (!content) return null;
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const parts = content.split(urlRegex);
+
+    return parts.map((part, i) => {
+      if (part.match(urlRegex)) {
+        return (
+          <a
+            key={i}
+            href={part}
+            target="_blank"
+            rel="noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="text-blue-600 dark:text-blue-400 hover:underline font-semibold break-all"
+          >
+            {part}
+          </a>
+        );
+      }
+      return part;
+    });
   };
 
   /* =========================
@@ -413,7 +440,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 {currentMobileAnn.title}
               </h4>
               <p className="text-xs text-slate-600 dark:text-zinc-300 leading-relaxed line-clamp-2">
-                {currentMobileAnn.content}
+                {renderFormattedContent(currentMobileAnn.content)}
               </p>
             </div>
 
@@ -694,7 +721,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       {ann.title}
                     </h4>
                     <p className="text-xs text-slate-600 dark:text-zinc-300 leading-relaxed line-clamp-2">
-                      {ann.content}
+                      {renderFormattedContent(ann.content)}
                     </p>
                     <div className="text-[11px] text-slate-400 dark:text-zinc-500 pt-1">
                       {formatAnnouncementDate(ann.date)}
@@ -1061,9 +1088,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
 
             <div className="flex-1 overflow-y-auto p-6 sm:p-8">
-              <p className="text-xs text-slate-600 dark:text-zinc-300 bg-slate-50 dark:bg-zinc-800/80 p-4 rounded-2xl leading-relaxed whitespace-pre-line border border-slate-100 dark:border-zinc-700/60">
-                {selectedAnnModal.content}
-              </p>
+              <div className="text-xs text-slate-600 dark:text-zinc-300 bg-slate-50 dark:bg-zinc-800/80 p-4 rounded-2xl leading-relaxed whitespace-pre-line border border-slate-100 dark:border-zinc-700/60">
+                {renderFormattedContent(selectedAnnModal.content)}
+              </div>
             </div>
 
             <div className="px-6 sm:px-8 py-4 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-between shrink-0 bg-white dark:bg-zinc-900">
