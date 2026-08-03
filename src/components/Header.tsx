@@ -99,7 +99,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <h1 className="text-lg font-bold text-slate-900 dark:text-zinc-100 tracking-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                   <span className="font-light">my</span>Mbud<span className="font-light"> Portal</span>
                 </h1>
-                <span className="text-xs font-normal text-slate-400 dark:text-zinc-500">v2.1</span>
+                <span className="text-xs font-normal text-slate-400 dark:text-zinc-500">v2.5</span>
                 {isOfficer && (
                   <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800/60 animate-pulse ml-1">
                     <ShieldCheck className="w-3 h-3" />
@@ -217,7 +217,7 @@ export const Header: React.FC<HeaderProps> = ({
                   />
                   <div className="flex items-center gap-1.5">
                     <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100"><span className="font-light">my</span>Mbud<span className="font-light"> Portal</span></h3>
-                    <span className="text-xs font-normal text-slate-400 dark:text-zinc-500">v2.1</span>
+                    <span className="text-xs font-normal text-slate-400 dark:text-zinc-500">v2.5</span>
                   </div>
                 </div>
                 <button
