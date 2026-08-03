@@ -34,12 +34,6 @@ interface AttachmentData {
   fileUrl: string;
 }
 
-const CLOUDINARY_CLOUD_NAME =
-  import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-
-const CLOUDINARY_UPLOAD_PRESET =
-  import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
-
 export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
   tasks,
   isOfficer,
@@ -446,84 +440,54 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
   };
 
   /* =========================
-     CLOUDINARY UPLOAD
+     GOOGLE DRIVE UPLOAD VIA GAS
   ========================= */
 
-  const uploadFileToCloudinary =
-    async (
-      file: File
-    ): Promise<string> => {
-      if (!CLOUDINARY_CLOUD_NAME) {
-        throw new Error(
-          'VITE_CLOUDINARY_CLOUD_NAME belum tersedia.'
-        );
-      }
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const base64String = (reader.result as string).split(',')[1];
+        resolve(base64String);
+      };
+      reader.onerror = (error) => reject(error);
+    });
+  };
 
-      if (!CLOUDINARY_UPLOAD_PRESET) {
-        throw new Error(
-          'VITE_CLOUDINARY_UPLOAD_PRESET belum tersedia.'
-        );
-      }
+  const uploadTaskAttachmentToDrive = async (file: File): Promise<string> => {
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbyce8cTZ2F25PwyfISpmVJJDMiIunl8G8lCyzkPKQaiuUl-nxKNM5i9b72MMo4M_xis/exec";
 
-      const uploadUrl =
-        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`;
+    setUploadProgress(10);
+    const base64Data = await fileToBase64(file);
+    setUploadProgress(40);
 
-      const formData =
-        new FormData();
-
-      formData.append(
-        'file',
-        file
-      );
-
-      formData.append(
-        'upload_preset',
-        CLOUDINARY_UPLOAD_PRESET
-      );
-
-      formData.append(
-        'folder',
-        'mymbud/tasks'
-      );
-
-      setUploadProgress(10);
-
-      const response =
-        await fetch(uploadUrl, {
-          method: 'POST',
-          body: formData,
-        });
-
-      setUploadProgress(80);
-
-      if (!response.ok) {
-        const errorText =
-          await response.text();
-
-        console.error(
-          'Cloudinary upload failed:',
-          response.status,
-          errorText
-        );
-
-        throw new Error(
-          `Cloudinary upload gagal (${response.status}).`
-        );
-      }
-
-      const data =
-        await response.json();
-
-      setUploadProgress(100);
-
-      if (!data.secure_url) {
-        throw new Error(
-          'Cloudinary tidak mengembalikan URL file.'
-        );
-      }
-
-      return data.secure_url;
+    const payload = {
+      fileName: file.name,
+      mimeType: file.type,
+      base64: base64Data,
+      folderName: "myMbud Task Attachments",
     };
+
+    const response = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    setUploadProgress(80);
+
+    if (!response.ok) {
+      throw new Error(`Upload Lampiran Tugas gagal (${response.status}).`);
+    }
+
+    const data = await response.json();
+    setUploadProgress(100);
+
+    if (data.status !== 'success') {
+      throw new Error(data.message);
+    }
+
+    return data.url;
+  };
 
   /* =========================
      SAVE TASK
@@ -555,7 +519,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
       try {
         if (selectedFile) {
           const fileUrl =
-            await uploadFileToCloudinary(
+            await uploadTaskAttachmentToDrive(
               selectedFile
             );
 
@@ -1273,7 +1237,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
       )}
 
       {/* =====================================================
-          ATTACHMENT VIEWER MODAL (GOOGLE DOCS ENGINE FOR PDF)
+          ATTACHMENT VIEWER MODAL (NATIVE GOOGLE DRIVE ENGINE)
       ===================================================== */}
 
       {previewAttachment && (
@@ -1367,11 +1331,9 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
               ) : isPdfFile(
                   previewAttachment.fileName
                 ) ? (
-                /* GOOGLE DOCS VIEWER ENGINE - SOLUSI PDF MOBILE LAYAR HITAM */
+                /* MENGGUNAKAN NATIVE DRIVE PREVIEW URL */
                 <iframe
-                  src={`https://docs.google.com/viewer?url=${encodeURIComponent(
-                    previewAttachment.fileUrl
-                  )}&embedded=true`}
+                  src={previewAttachment.fileUrl}
                   title={
                     previewAttachment.fileName
                   }
@@ -1717,7 +1679,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                     <div className="mt-3 space-y-1.5">
                       <div className="flex items-center justify-between text-[10px] text-slate-500 dark:text-zinc-400">
                         <span>
-                          Mengunggah ke Cloudinary...
+                          Mengunggah ke Google Drive...
                         </span>
 
                         <span>

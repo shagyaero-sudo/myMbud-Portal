@@ -22,9 +22,6 @@ interface KnowledgeBaseViewProps {
   onPreviewPdf: (material: MaterialFile) => void;
 }
 
-const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
-
 export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
   materials,
   isOfficer,
@@ -52,7 +49,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
   const [formTitle, setFormTitle] = useState('');
   const [formUploader, setFormUploader] = useState('Pengurus Kelas A');
 
-  // Upload Cloudinary State
+  // Upload State
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -69,29 +66,52 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
     return matchSearch && matchCourse;
   });
 
-  /* Cloudinary Upload Function */
-  const uploadFileToCloudinary = async (file: File): Promise<string> => {
-    if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET) {
-      throw new Error('Konfigurasi Cloudinary belum lengkap di .env.');
-    }
+  /* Helper: Ubah File ke Teks Base64 */
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const base64String = (reader.result as string).split(',')[1];
+        resolve(base64String);
+      };
+      reader.onerror = (error) => reject(error);
+    });
+  };
 
-    const uploadUrl = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`;
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-    formData.append('folder', 'mymbud/materials');
+  /* Upload ke Google Drive via GAS */
+  const uploadFileToDrive = async (file: File): Promise<string> => {
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbyce8cTZ2F25PwyfISpmVJJDMiIunl8G8lCyzkPKQaiuUl-nxKNM5i9b72MMo4M_xis/exec";
 
-    setUploadProgress(20);
-    const response = await fetch(uploadUrl, { method: 'POST', body: formData });
+    setUploadProgress(10);
+    const base64Data = await fileToBase64(file);
+    setUploadProgress(40);
+
+    const payload = {
+      fileName: file.name,
+      mimeType: file.type,
+      base64: base64Data,
+      folderName: "myMbud Materials",
+    };
+
+    const response = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
     setUploadProgress(80);
 
     if (!response.ok) {
-      throw new Error(`Cloudinary upload gagal (${response.status}).`);
+      throw new Error(`Upload G-Drive gagal (${response.status}).`);
     }
 
     const data = await response.json();
     setUploadProgress(100);
-    return data.secure_url;
+
+    if (data.status !== 'success') {
+      throw new Error(data.message);
+    }
+
+    return data.url;
   };
 
   const handleOpenUploadModal = () => {
@@ -114,7 +134,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
       let fileSizeStr = '3.2 MB';
 
       if (selectedFile) {
-        finalFileUrl = await uploadFileToCloudinary(selectedFile);
+        finalFileUrl = await uploadFileToDrive(selectedFile);
         fileSizeStr = `${(selectedFile.size / (1024 * 1024)).toFixed(1)} MB`;
       }
 
@@ -291,7 +311,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                     </div>
                   </div>
 
-                  {/* Pertemuan Badge (Ukuran MB Dihapus) */}
+                  {/* Pertemuan Badge */}
                   <div className="hidden sm:flex items-center gap-2 shrink-0">
                     <span className="text-xs font-semibold text-slate-600 dark:text-zinc-300 bg-white dark:bg-zinc-800 px-3 py-1 rounded-full shadow-xs border border-slate-100 dark:border-zinc-700">
                       {mat.session}
@@ -413,10 +433,10 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                   />
                 </div>
 
-                {/* Cloudinary Drag & Drop Box */}
+                {/* Cloudinary Drag & Drop Box - Changed to G-Drive */}
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
-                    Berkas File PDF (Cloudinary)
+                    Berkas File PDF (Google Drive)
                   </label>
                   <div
                     onDragOver={(e) => {
@@ -483,7 +503,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                   {isUploading && (
                     <div className="mt-3 space-y-1.5">
                       <div className="flex items-center justify-between text-[10px] text-slate-500 dark:text-zinc-400">
-                        <span>Mengunggah ke Cloudinary...</span>
+                        <span>Mengunggah ke Google Drive...</span>
                         <span>{Math.round(uploadProgress)}%</span>
                       </div>
                       <div className="bg-slate-100 dark:bg-zinc-800 rounded-full h-2 w-full overflow-hidden">

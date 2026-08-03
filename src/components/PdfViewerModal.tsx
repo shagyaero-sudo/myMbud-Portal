@@ -54,15 +54,14 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
           </button>
         </div>
 
-        {/* Modal Body: Google Docs Engine PDF Viewer */}
+        {/* Modal Body: NATIVE Google Drive PDF Viewer */}
         <div className="flex-1 p-3 sm:p-5 bg-slate-50/50 dark:bg-zinc-950/50 flex flex-col min-h-0 overflow-hidden">
           <div className="flex-1 rounded-2xl bg-slate-900 dark:bg-black border border-slate-200/80 dark:border-zinc-800 overflow-hidden shadow-inner flex flex-col relative">
             <iframe
-              src={`https://docs.google.com/viewer?url=${encodeURIComponent(
-                material.fileUrl
-              )}&embedded=true`}
+              src={material.fileUrl}
               title={material.title}
               className="w-full h-full border-0 flex-1 bg-white"
+              allow="autoplay"
             />
           </div>
         </div>
