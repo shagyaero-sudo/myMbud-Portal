@@ -15,31 +15,40 @@ import { Announcement } from '../types';
 
 const ANNOUNCEMENTS_COLLECTION = 'announcements';
 
-// 1. Real-time Subscription ke Firestore
+// 1. Real-time Subscription ke Firestore (Query tunggal tanpa perlu Composite Index)
 export const subscribeAnnouncements = (
   callback: (announcements: Announcement[]) => void
 ) => {
   const q = query(
     collection(db, ANNOUNCEMENTS_COLLECTION),
-    orderBy('pinned', 'desc'),
     orderBy('date', 'desc')
   );
 
-  return onSnapshot(q, (snapshot) => {
-    const list: Announcement[] = snapshot.docs.map((docSnap) => {
-      const data = docSnap.data();
-      return {
-        id: docSnap.id,
-        title: data.title || '',
-        content: data.content || '',
-        date: data.date || new Date().toISOString().split('T')[0],
-        category: data.category || 'Penting',
-        author: data.author || 'Pengurus Kelas',
-        pinned: Boolean(data.pinned),
-      };
-    });
-    callback(list);
-  });
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      const list: Announcement[] = snapshot.docs.map((docSnap) => {
+        const data = docSnap.data();
+        return {
+          id: docSnap.id,
+          title: data.title || '',
+          content: data.content || '',
+          date: data.date || new Date().toISOString().split('T')[0],
+          category: data.category || 'Penting',
+          author: data.author || 'Pengurus Kelas',
+          pinned: Boolean(data.pinned),
+        };
+      });
+
+      // Sorting Pinned secara manual di JS biar gak butuh Composite Index Firebase
+      list.sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
+
+      callback(list);
+    },
+    (error) => {
+      console.error('Error subscribe announcements:', error);
+    }
+  );
 };
 
 // 2. Tambah Pengumuman Baru
