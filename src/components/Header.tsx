@@ -165,7 +165,7 @@ export const Header: React.FC<HeaderProps> = ({
                         }`}
                       >
                         <Sparkles className="w-4 h-4 text-pink-500" />
-                        <span>Pink Mode</span>
+                        <span>Pink</span>
                       </button>
                       <button
                         onClick={() => { setTheme('purple'); setIsThemeDropdownOpen(false); }}
@@ -174,7 +174,7 @@ export const Header: React.FC<HeaderProps> = ({
                         }`}
                       >
                         <Palette className="w-4 h-4 text-purple-500" />
-                        <span>Purple Mode</span>
+                        <span>Purple</span>
                       </button>
                       <button
                         onClick={() => { setTheme('green'); setIsThemeDropdownOpen(false); }}
@@ -183,7 +183,7 @@ export const Header: React.FC<HeaderProps> = ({
                         }`}
                       >
                         <Leaf className="w-4 h-4 text-emerald-600" />
-                        <span>Matcha Mode</span>
+                        <span>Green</span>
                       </button>
                     </div>
                   </>
