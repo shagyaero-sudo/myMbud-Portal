@@ -140,17 +140,20 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     return dateStr;
   };
 
-  // Helper to format date and time deadline string
+  // Helper to format deadline date details (e.g. "Senin, 10 Agustus 2026 pukul 23.59 WIB")
   const formatDeadlineDetails = (dateStr: string) => {
     const d = new Date(dateStr);
     if (isNaN(d.getTime())) return dateStr;
-    const day = d.getDate();
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-    const month = months[d.getMonth()];
-    const year = d.getFullYear();
-    const hours = String(d.getHours()).padStart(2, '0');
-    const minutes = String(d.getMinutes()).padStart(2, '0');
-    return `${day} ${month} ${year} • ${hours}:${minutes} WIB`;
+    return (
+      d.toLocaleString('id-ID', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      }) + ' WIB'
+    );
   };
 
   // Helper for task deadline pill badge
@@ -346,9 +349,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         )}
       </div>
 
-      {/* Main Grid: Weekly Schedule & Announcements */}
+      {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
+          {/* Jadwal Kuliah */}
           <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-4 transition-colors">
             <div>
               <h3 className="text-base font-bold text-slate-800 dark:text-zinc-100">Jadwal Perkuliahan</h3>
@@ -496,7 +500,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
 
-        {/* Right Column: Desktop Announcements */}
+        {/* Right Column: Announcements */}
         <div className="hidden lg:block space-y-6">
           <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-4 transition-colors">
             <div className="flex items-center justify-between">
@@ -642,7 +646,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
       )}
 
-      {/* Modal: Task Detail (Integrated with Google Docs Attachment Viewer) */}
+      {/* Modal: Task Detail (Sudah Dilengkapi Dosen, Prioritas, & Tanggal Tenggat Lengkap) */}
       {selectedTaskModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
@@ -660,7 +664,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   )}
                 </div>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-100 mt-2">{selectedTaskModal.title}</h3>
-                <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">Dosen: {selectedTaskModal.assigner}</p>
               </div>
               <button
                 onClick={() => setSelectedTaskModal(null)}
@@ -672,10 +675,34 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
             {/* Scrollable Content Body */}
             <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-4">
+              {/* Card Ringkasan Meta Info: Dosen, Prioritas, & Tenggat */}
+              <div className="grid grid-cols-2 gap-3 bg-slate-50 dark:bg-zinc-800/60 p-4 rounded-2xl text-xs border border-slate-100 dark:border-zinc-800">
+                <div>
+                  <span className="text-slate-400 dark:text-zinc-400 block mb-0.5">Dosen:</span>
+                  <span className="font-bold text-slate-800 dark:text-zinc-200">
+                    {selectedTaskModal.assigner || 'Dosen Pengampu'}
+                  </span>
+                </div>
+
+                <div>
+                  <span className="text-slate-400 dark:text-zinc-400 block mb-0.5">Prioritas:</span>
+                  <span className="font-bold text-slate-800 dark:text-zinc-200">
+                    {selectedTaskModal.priority || 'High'}
+                  </span>
+                </div>
+
+                <div className="col-span-2 pt-2 border-t border-slate-200/50 dark:border-zinc-700/50">
+                  <span className="text-slate-400 dark:text-zinc-400 block mb-0.5">Tenggat:</span>
+                  <span className="font-bold text-blue-600 dark:text-blue-400 text-sm">
+                    {formatDeadlineDetails(selectedTaskModal.deadline)}
+                  </span>
+                </div>
+              </div>
+
               <div>
-                <h4 className="text-[11px] font-bold text-slate-400 dark:text-zinc-400 uppercase tracking-wider mb-1">Deskripsi & Instruktur</h4>
+                <h4 className="text-[11px] font-bold text-slate-400 dark:text-zinc-400 uppercase tracking-wider mb-1">Rincian Tugas</h4>
                 <p className="text-xs text-slate-600 dark:text-zinc-300 bg-slate-50 dark:bg-zinc-800/80 p-4 rounded-2xl leading-relaxed whitespace-pre-line border border-slate-100 dark:border-zinc-700/60">
-                  {selectedTaskModal.description || 'Tidak ada deskripsi tambahan.'}
+                  {selectedTaskModal.description || 'Tidak ada instruksi.'}
                 </p>
               </div>
 
@@ -714,7 +741,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               )}
             </div>
 
-            {/* Modal Sticky Footer (Diperbaiki: Tombol Tutup dihapus, Tombol Link Pengumpulan Aktif) */}
+            {/* Modal Sticky Footer */}
             <div className="px-6 sm:px-8 py-4 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-end gap-3 shrink-0 bg-white dark:bg-zinc-900">
               {selectedTaskModal.classroomUrl && (
                 <a
