@@ -356,8 +356,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
                       {/* KOLOM KANAN: SKS, Ruangan DI TENGAH, Jam DI BAWAH */}
                       <div className="flex flex-col items-end shrink-0 text-right space-y-1">
-                        {/* BADGE SKS DI PALING ATAS (Tanpa Border) */}
-                        <span className="inline-block px-2 py-0.5 text-[10px] font-bold rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 mb-0.5">
+                        
+                        {/* TEKS SKS POLOS (Tanpa background/border sama sekali) */}
+                        <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 mb-0.5">
                           {item.sks} SKS
                         </span>
                         
