@@ -559,7 +559,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-[11px] sm:text-xs font-bold flex items-center justify-center gap-2 rounded-xl transition-all shadow-sm shadow-blue-500/20 cursor-pointer"
                       >
                         <UserCheck className="w-4 h-4" />
-                        <span>Presensi Kode</span>
+                        <span>Presensi di sini!</span>
                       </a>
 
                       <button
