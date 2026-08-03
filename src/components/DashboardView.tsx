@@ -842,7 +842,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
       )}
 
-      {/* Modal: Task Detail */}
+      {/* Modal: Task Detail (CLEANED UP PRIORITAS) */}
       {selectedTaskModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
@@ -869,7 +869,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
 
             <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-4">
-              <div className="grid grid-cols-2 gap-3 bg-slate-50 dark:bg-zinc-800/60 p-4 rounded-2xl text-xs border border-slate-100 dark:border-zinc-800">
+              <div className="bg-slate-50 dark:bg-zinc-800/60 p-4 rounded-2xl text-xs border border-slate-100 dark:border-zinc-800 space-y-2">
                 <div>
                   <span className="text-slate-400 dark:text-zinc-400 block mb-0.5">Dosen:</span>
                   <span className="font-bold text-slate-800 dark:text-zinc-200">
@@ -877,14 +877,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   </span>
                 </div>
 
-                <div>
-                  <span className="text-slate-400 dark:text-zinc-400 block mb-0.5">Prioritas:</span>
-                  <span className="font-bold text-slate-800 dark:text-zinc-200">
-                    {selectedTaskModal.priority || 'High'}
-                  </span>
-                </div>
-
-                <div className="col-span-2 pt-2 border-t border-slate-200/50 dark:border-zinc-700/50">
+                <div className="pt-2 border-t border-slate-200/50 dark:border-zinc-700/50">
                   <span className="text-slate-400 dark:text-zinc-400 block mb-0.5">Tenggat:</span>
                   <span className="font-bold text-blue-600 dark:text-blue-400 text-sm">
                     {formatDeadlineDetails(selectedTaskModal.deadline)}
@@ -951,7 +944,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
       )}
 
-      {/* ATTACHMENT VIEWER MODAL */}
+      {/* ATTACHMENT VIEWER MODAL (NATIVE GOOGLE DRIVE ENGINE) */}
       {previewAttachment && (
         <div
           className="fixed inset-0 z-[70] bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6"
@@ -1015,9 +1008,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 </div>
               ) : isPdfFile(previewAttachment.fileName) ? (
                 <iframe
-                  src={`https://docs.google.com/viewer?url=${encodeURIComponent(
-                    previewAttachment.fileUrl
-                  )}&embedded=true`}
+                  src={previewAttachment.fileUrl}
                   title={previewAttachment.fileName}
                   className="w-full h-full border-0 bg-white"
                 />
