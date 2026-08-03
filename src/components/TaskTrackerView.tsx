@@ -689,7 +689,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
           </h2>
 
           <a
-            href="https://classroom.its.ac.id/my/"
+            href="https://classroom.its.ac.id/auth/oidc"
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 hover:text-blue-600 dark:hover:text-blue-400 text-xs font-semibold border border-slate-200/80 dark:border-zinc-700 transition-all mt-2.5"

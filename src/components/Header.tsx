@@ -364,7 +364,7 @@ export const Header: React.FC<HeaderProps> = ({
                   <ChevronRight className="w-3 h-3 text-slate-400" />
                 </a>
                 <a
-                  href="https://classroom.its.ac.id/my/"
+                  href="https://classroom.its.ac.id/auth/oidc"
                   target="_blank"
                   rel="noreferrer"
                   className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 hover:text-blue-600 dark:hover:text-blue-400 text-xs font-medium transition-all"
