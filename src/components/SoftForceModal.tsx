@@ -3,9 +3,12 @@ import React, { useState, useEffect } from 'react';
 export const SoftForceModal: React.FC = () => {
   const [isIOS, setIsIOS] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
-  const [isMobileOrTablet, setIsMobileOrTablet] = useState(false);
+  const [isMobileDevice, setIsMobileDevice] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   
+  // State universal: Melacak apakah user (Android/iOS) terdeteksi sudah pernah install
+  const [hasInstalled, setHasInstalled] = useState(false);
+
   // Status instalasi: 'idle' | 'installing' | 'success'
   const [installStatus, setInstallStatus] = useState<'idle' | 'installing' | 'success'>('idle');
   
@@ -13,12 +16,21 @@ export const SoftForceModal: React.FC = () => {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    // 1. Cek ukuran layar (HP / Tablet)
-    const checkScreen = () => {
-      setIsMobileOrTablet(window.innerWidth < 1024);
+    const userAgent = window.navigator.userAgent.toLowerCase();
+
+    // 1. Deteksi apakah perangkat murni Mobile/Tablet (HP/iPad)
+    // Menangkal user yang mencentang "Situs Desktop" di HP
+    const checkIsMobile = () => {
+      const isTouch = navigator.maxTouchPoints > 0;
+      const isMobileUA = /android|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile/i.test(userAgent);
+      const isSmallScreen = window.innerWidth < 1024;
+      const isIPadOS = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
+
+      setIsMobileDevice(isSmallScreen || (isTouch && (isMobileUA || isIPadOS)));
     };
-    checkScreen();
-    window.addEventListener('resize', checkScreen);
+
+    checkIsMobile();
+    window.addEventListener('resize', checkIsMobile);
 
     // 2. Cek apakah sudah dibuka dari Home Screen (Standalone Mode)
     const isAppMode = 
@@ -28,12 +40,31 @@ export const SoftForceModal: React.FC = () => {
     setIsStandalone(isAppMode);
 
     // 3. Deteksi iOS / iPadOS
-    const userAgent = window.navigator.userAgent.toLowerCase();
     const isIOSDevice = /iphone|ipad|ipod/.test(userAgent) || 
-      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); // iPadOS
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     setIsIOS(isIOSDevice);
 
-    // 4. Tangkap event instalasi Android
+    // 4. Cek LocalStorage Universal (Android & iOS)
+    const savedPWA = localStorage.getItem('mymbud_pwa_installed');
+    if (savedPWA === 'true') {
+      setHasInstalled(true);
+    }
+
+    // 5. Khusus iOS: Simpan flag saat user berpindah/keluar dari Safari
+    if (isIOSDevice) {
+      const handleVisibilityChange = () => {
+        if (document.hidden) {
+          localStorage.setItem('mymbud_pwa_installed', 'true');
+        }
+      };
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+
+      return () => {
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+      };
+    }
+
+    // 6. Tangkap event instalasi Android
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);
@@ -42,7 +73,7 @@ export const SoftForceModal: React.FC = () => {
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
     return () => {
-      window.removeEventListener('resize', checkScreen);
+      window.removeEventListener('resize', checkIsMobile);
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     };
   }, []);
@@ -60,24 +91,26 @@ export const SoftForceModal: React.FC = () => {
           if (prevProgress >= 100) {
             clearInterval(interval);
             setInstallStatus('success');
+            // Simpan flag bahwa Android sudah sukses install
+            localStorage.setItem('mymbud_pwa_installed', 'true');
             return 100;
           }
 
           // Efek realistis: Cepat di awal (0-70%), melambat di akhir (70-99%)
           let increment = 1;
           if (prevProgress < 40) {
-            increment = Math.floor(Math.random() * 3) + 2; // +2 sampai +4
+            increment = Math.floor(Math.random() * 3) + 2; 
           } else if (prevProgress < 75) {
-            increment = Math.floor(Math.random() * 2) + 1; // +1 sampai +2
+            increment = Math.floor(Math.random() * 2) + 1; 
           } else if (prevProgress < 95) {
-            increment = Math.random() > 0.5 ? 1 : 0; // Kadang +1, kadang diam sebentar
+            increment = Math.random() > 0.5 ? 1 : 0; 
           } else {
             increment = 1;
           }
 
           return Math.min(prevProgress + increment, 100);
         });
-      }, 200); // 200ms * total increment = ~20-22 detik
+      }, 200); 
     }
 
     return () => clearInterval(interval);
@@ -95,8 +128,13 @@ export const SoftForceModal: React.FC = () => {
     }
   };
 
-  // Jika di Desktop ATAU Aplikasi sudah di-install, Sembunyikan Modal (Lolos Akses)
-  if (!isMobileOrTablet || isStandalone) {
+  const handleResetInstallation = () => {
+    localStorage.removeItem('mymbud_pwa_installed');
+    setHasInstalled(false);
+  };
+
+  // Jika di Desktop (PC Murni) ATAU Aplikasi sudah di-install & dibuka dari Home Screen, Lolos Akses
+  if (!isMobileDevice || isStandalone) {
     return null;
   }
 
@@ -119,9 +157,33 @@ export const SoftForceModal: React.FC = () => {
           </p>
         </div>
 
-        {/* Content Pembeda OS & Status */}
-        {isIOS ? (
-          /* ================= VISUAL GUIDE UNTUK IOS / IPADOS ================= */
+        {/* CONDITION 1: USER SUDAH PERNAH INSTALL TAPI DIBUKA VIA BROWSER */}
+        {hasInstalled ? (
+          <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 rounded-2xl p-5 text-center space-y-3 animate-fade-in">
+            <div className="w-14 h-14 bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center mx-auto mb-2">
+              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <div>
+              <h3 className="text-red-900 dark:text-red-300 font-bold text-sm uppercase tracking-wide">
+                Akses Browser Ditolak
+              </h3>
+              <p className="text-[13px] text-red-700/90 dark:text-red-400 mt-2 leading-relaxed">
+                Portal ini terdeteksi sudah terpasang di HP kamu. <strong className="font-bold underline">Tutup browser ini sekarang</strong> dan buka aplikasi <strong className="font-bold">myMbud</strong> langsung melalui ikon di <strong className="font-bold">Home Screen HP kamu</strong>.
+              </p>
+            </div>
+
+            {/* ESCAPE HATCH */}
+            <button
+              onClick={handleResetInstallation}
+              className="text-[11px] text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-200 underline pt-2 block mx-auto font-medium"
+            >
+              Belum terinstal / Ingin tampilkan opsi install lagi?
+            </button>
+          </div>
+        ) : isIOS ? (
+          /* ================= CONDITION 2: VISUAL GUIDE UNTUK IOS / IPADOS ================= */
           <div className="bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-2xl p-4 text-left space-y-3">
             <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider text-center">
               Cara Install di iPhone / iPad:
@@ -145,7 +207,7 @@ export const SoftForceModal: React.FC = () => {
             </div>
           </div>
         ) : installStatus === 'installing' ? (
-          /* ================= FAKE PROGRESS BAR STATE (20-22 DETIK) ================= */
+          /* ================= CONDITION 3: FAKE PROGRESS BAR STATE (20-22 DETIK) ================= */
           <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-5 text-center space-y-4 animate-fade-in">
              <div className="flex items-center justify-between text-xs font-semibold text-blue-800 dark:text-blue-400">
                <span>Mengunduh & Memasang...</span>
@@ -161,11 +223,11 @@ export const SoftForceModal: React.FC = () => {
              </div>
 
              <p className="text-[12px] text-blue-700/80 dark:text-blue-400 leading-relaxed">
-               Sedang Menginstall.. Mohon tunggu hingga loading selesai...
+               Mohon tunggu hingga loading selesai...
              </p>
           </div>
         ) : installStatus === 'success' ? (
-          /* ================= SUCCESS STATE ANDROID ================= */
+          /* ================= CONDITION 4: SUCCESS STATE ANDROID ================= */
           <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-2xl p-5 text-center space-y-3 animate-fade-in">
              <div className="w-14 h-14 bg-green-100 dark:bg-green-800/50 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center mx-auto mb-2">
                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -175,12 +237,12 @@ export const SoftForceModal: React.FC = () => {
              <div>
                <h3 className="text-green-800 dark:text-green-400 font-bold text-sm">Instalasi Berhasil!</h3>
                <p className="text-[13px] text-green-700/80 dark:text-green-500 mt-1.5 leading-relaxed">
-                 Silakan <strong className="font-bold">tutup browser ini</strong>, kembali ke layar Home Screen, dan buka aplikasi <strong className="font-bold">myMbud</strong> dari sana!
+                 Silakan <strong className="font-bold">tutup browser ini</strong> dan kembali ke layar Home Screen, lalu buka aplikasi <strong className="font-bold">myMbud</strong> dari sana!
                </p>
              </div>
           </div>
         ) : (
-          /* ================= ONE-CLICK INSTALL UNTUK ANDROID (IDLE) ================= */
+          /* ================= CONDITION 5: ONE-CLICK INSTALL UNTUK ANDROID (IDLE) ================= */
           <div className="space-y-3 pt-2">
             <button
               onClick={handleInstallAndroid}
