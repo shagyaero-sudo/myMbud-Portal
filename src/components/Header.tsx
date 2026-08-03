@@ -217,7 +217,7 @@ export const Header: React.FC<HeaderProps> = ({
                   />
                   <div className="flex items-center gap-1.5">
                     <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100"><span className="font-light">my</span>Mbud<span className="font-light"> Portal</span></h3>
-                    <span className="text-xs font-normal text-slate-400 dark:text-zinc-500">v1.0</span>
+                    <span className="text-xs font-normal text-slate-400 dark:text-zinc-500">v2.1</span>
                   </div>
                 </div>
                 <button
