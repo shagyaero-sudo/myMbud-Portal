@@ -128,7 +128,7 @@ export const SoftForceModal: React.FC = () => {
     }
   };
 
-  const handleResetInstallation = () => {
+  const handleResetIOS = () => {
     localStorage.removeItem('mymbud_pwa_installed');
     setHasInstalled(false);
   };
@@ -174,13 +174,15 @@ export const SoftForceModal: React.FC = () => {
               </p>
             </div>
 
-            {/* ESCAPE HATCH */}
-            <button
-              onClick={handleResetInstallation}
-              className="text-[11px] text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-200 underline pt-2 block mx-auto font-medium"
-            >
-              "Eh, Aplikasinya tidak ada di Homescreen ku"
-            </button>
+            {/* ESCAPE HATCH: KHUSUS IOS ONLY (ANDROID DIBLOKIR TOTAL TANPA ESCAPE HATCH) */}
+            {isIOS && (
+              <button
+                onClick={handleResetIOS}
+                className="text-[11px] text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-200 underline pt-2 block mx-auto font-medium"
+              >
+                Belum terinstal / Ingin tampilkan opsi install lagi?
+              </button>
+            )}
           </div>
         ) : isIOS ? (
           /* ================= CONDITION 2: VISUAL GUIDE UNTUK IOS / IPADOS ================= */
