@@ -17,6 +17,7 @@ import { SpinwheelView } from './components/SpinwheelView';
 import { GradeCalculatorView } from './components/GradeCalculatorView';
 import { LetterGeneratorView } from './components/LetterGeneratorView';
 import { PdfViewerModal } from './components/PdfViewerModal';
+import { InstallPrompt } from './components/InstallPrompt';
 
 import {
   AppState,
@@ -106,6 +107,15 @@ export default function App() {
     } else {
       document.documentElement.classList.remove('dark');
       localStorage.setItem('theme', 'light');
+    }
+
+    // PENYESUAIAN DINAMIS STATUS BAR ANDROID 
+    const metaThemeColor = document.querySelector("meta[name='theme-color']");
+    if (metaThemeColor) {
+      metaThemeColor.setAttribute(
+        'content',
+        darkMode ? '#09090b' : '#f8fafc' // #09090b = zinc-950, #f8fafc = slate-50
+      );
     }
   }, [darkMode]);
 
@@ -649,6 +659,12 @@ export default function App() {
         material={previewMaterial}
         onClose={() => setPreviewMaterial(null)}
       />
+
+      {/* ========================================================
+          PWA INSTALL PROMPT
+      ======================================================== */}
+      
+      <InstallPrompt />
 
     </div>
   );
