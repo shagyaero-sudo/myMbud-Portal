@@ -378,25 +378,27 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     {/* Presensi, QR, & Kontak Buttons at bottom of each card */}
                     <div className="flex items-center gap-2 pt-2 border-t border-slate-200/60 dark:border-zinc-700/60 w-full">
                       
-                      {/* GABUNGAN TOMBOL PRESENSI & SCAN QR (Lebih Panjang & Proporsional) */}
-                      <div className="flex-1 flex items-center bg-blue-600 hover:bg-blue-700 rounded-xl p-1 shadow-xs transition-all">
-                        {/* Sub-Tombol 1: Presensi Manual/Web */}
+                      {/* GABUNGAN TOMBOL PRESENSI & SCAN QR (Ilusi Menyatu, Klik Terpisah) */}
+                      {/* Dibuat sebagai container statis, interaksi click ada di <a> masing-masing */}
+                      <div className="flex-1 flex items-center bg-blue-600 rounded-xl p-1 shadow-xs">
+                        
+                        {/* Sub-Tombol 1: Presensi Manual/Web (Area Klik Sendiri) */}
                         <a
                           href="https://presensi.its.ac.id/dashboard"
                           target="_blank"
                           rel="noreferrer"
-                          className="flex-1 px-2 py-1.5 text-white text-[11px] sm:text-xs font-semibold flex items-center justify-center gap-1.5 rounded-lg active:bg-blue-800/40"
+                          className="flex-1 px-2 py-1.5 hover:bg-black/10 active:bg-black/20 text-white text-[11px] sm:text-xs font-semibold flex items-center justify-center gap-1.5 rounded-lg transition-colors cursor-pointer"
                         >
                           <UserCheck className="w-4 h-4" />
                           <span>Presensi Kode</span>
                         </a>
 
-                        {/* Sub-Tombol 2: Quick Scan QR (Lebih Lebar dan Teks "Scan QR") */}
+                        {/* Sub-Tombol 2: Quick Scan QR (Area Klik Sendiri) */}
                         <a
                           href="https://presensi.its.ac.id/kehadiran-mahasiswa/qr-scan"
                           target="_blank"
                           rel="noreferrer"
-                          className="shrink-0 px-4 sm:px-5 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-white text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all shadow-sm ml-1"
+                          className="shrink-0 px-4 sm:px-5 py-1.5 bg-white/20 hover:bg-white/30 text-white text-[11px] font-bold flex items-center justify-center gap-1.5 rounded-lg transition-colors shadow-sm ml-1 cursor-pointer"
                           title="Scan QR Presensi"
                         >
                           <QrCode className="w-4 h-4" />
