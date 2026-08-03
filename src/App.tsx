@@ -437,6 +437,7 @@ export default function App() {
               {activeTab === 'tasks' && (
                 <TaskTrackerView
                   tasks={appState.tasks}
+                  contacts={appState.contacts}
                   isOfficer={isOfficer}
                   onAddTask={handleAddTask}
                   onUpdateTask={handleUpdateTask}
