@@ -388,7 +388,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                           className="flex-1 px-2 py-1.5 text-white text-[11px] sm:text-xs font-semibold flex items-center justify-center gap-1.5 rounded-lg active:bg-blue-800/40"
                         >
                           <UserCheck className="w-4 h-4" />
-                          <span>Presensi</span>
+                          <span>Presensi Kode</span>
                         </a>
 
                         {/* Sub-Tombol 2: Quick Scan QR (Lebih Lebar dan Teks "Scan QR") */}
