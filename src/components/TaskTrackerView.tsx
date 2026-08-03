@@ -1284,7 +1284,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
       )}
 
       {/* =====================================================
-          ATTACHMENT VIEWER MODAL
+          ATTACHMENT VIEWER MODAL (GOOGLE DOCS ENGINE FOR PDF)
       ===================================================== */}
 
       {previewAttachment && (
@@ -1378,10 +1378,11 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
               ) : isPdfFile(
                   previewAttachment.fileName
                 ) ? (
+                /* GOOGLE DOCS VIEWER ENGINE - SOLUSI PDF MOBILE LAYAR HITAM */
                 <iframe
-                  src={
+                  src={`https://docs.google.com/viewer?url=${encodeURIComponent(
                     previewAttachment.fileUrl
-                  }
+                  )}&embedded=true`}
                   title={
                     previewAttachment.fileName
                   }
