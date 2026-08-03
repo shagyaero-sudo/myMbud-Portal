@@ -85,12 +85,7 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
           </button>
 
           <div className="flex items-center gap-2.5">
-            <button
-              onClick={onClose}
-              className="px-5 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 text-xs font-semibold hover:bg-slate-200 dark:hover:bg-zinc-700 transition-all"
-            >
-              Tutup
-            </button>
+            {/* Tombol Tutup dihapus dari sini */}
             <a
               href={material.fileUrl}
               download={material.title}
@@ -107,4 +102,3 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
     </div>
   );
 };
-
