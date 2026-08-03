@@ -14,14 +14,7 @@ import {
   File as FileIcon,
   Loader2,
 } from 'lucide-react';
-
 import { Task } from '../types';
-import { storage } from '../services/firebase';
-import {
-  ref,
-  uploadBytesResumable,
-  getDownloadURL,
-} from 'firebase/storage';
 
 interface TaskTrackerViewProps {
   tasks: Task[];
@@ -35,12 +28,19 @@ interface TaskTrackerViewProps {
   onDeleteTask: (id: string) => void;
 }
 
+interface AttachmentData {
+  fileName: string;
+  fileUrl: string;
+}
+
+const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+
 export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
   tasks,
   isOfficer,
   onAddTask,
   onUpdateTask,
-  onUpdateTaskStatus,
   onDeleteTask,
 }) => {
   const [search, setSearch] = useState('');
@@ -48,7 +48,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
   const [filterType, setFilterType] = useState<
     'ALL' | 'Individu' | 'Kelompok'
   >('ALL');
-
   const [activeTab, setActiveTab] = useState<'active' | 'history'>('active');
 
   const [selectedDetailTask, setSelectedDetailTask] =
@@ -65,19 +64,13 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
   const [deadlineDate, setDeadlineDate] = useState('');
   const [deadlineTime, setDeadlineTime] = useState('23:59');
   const [priority, setPriority] = useState<'High' | 'Medium' | 'Low'>('High');
-
-  // Classroom URL
   const [classroomUrl, setClassroomUrl] = useState('');
 
-  // Attachment
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-
-  const [existingAttachment, setExistingAttachment] = useState<{
-    fileName: string;
-    fileUrl: string;
-  } | null>(null);
+  const [existingAttachment, setExistingAttachment] =
+    useState<AttachmentData | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -116,13 +109,13 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
   });
 
   const getDeadlineBadge = (deadlineStr: string) => {
-    const current = new Date();
+    const nowDate = new Date();
     const deadline = new Date(deadlineStr);
 
     const todayStart = new Date(
-      current.getFullYear(),
-      current.getMonth(),
-      current.getDate()
+      nowDate.getFullYear(),
+      nowDate.getMonth(),
+      nowDate.getDate()
     ).getTime();
 
     const deadlineStart = new Date(
@@ -138,7 +131,8 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
     if (diffDays < 0) {
       return {
         label: 'Tenggat Lewat',
-        bg: 'bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 border-slate-200 dark:border-zinc-700',
+        bg:
+          'bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 border-slate-200 dark:border-zinc-700',
       };
     }
 
@@ -147,20 +141,23 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
 
       return {
         label: `URGENT ${dayText}`,
-        bg: 'bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-900/50 animate-pulse',
+        bg:
+          'bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-900/50 animate-pulse',
       };
     }
 
     if (diffDays <= 5) {
       return {
         label: `Mepet H-${diffDays}`,
-        bg: 'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-900/50',
+        bg:
+          'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-900/50',
       };
     }
 
     return {
       label: `Masih H-${diffDays}`,
-      bg: 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/50',
+      bg:
+        'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/50',
     };
   };
 
@@ -184,7 +181,13 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
   const handleOpenAddModal = () => {
     setEditingTaskId(null);
     setTitle('');
-    setCourse(uniqueCourses.length > 0 ? uniqueCourses[0] : '');
+
+    if (uniqueCourses.length > 0) {
+      setCourse(uniqueCourses[0]);
+    } else {
+      setCourse('');
+    }
+
     setDescription('');
     setType('Individu');
     setAssigner('');
@@ -200,7 +203,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
 
   const handleOpenEditModal = (t: Task) => {
     setEditingTaskId(t.id);
-
     setTitle(t.title);
     setCourse(t.course);
     setDescription(t.description || '');
@@ -229,7 +231,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
     setSelectedFile(null);
     setExistingAttachment(t.attachment || null);
     setUploadProgress(0);
-
     setShowModal(true);
   };
 
@@ -262,45 +263,70 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
     }
   };
 
-  const uploadFileToFirebase = async (
+  const uploadFileToCloudinary = async (
     file: File
   ): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const storageRef = ref(
-        storage,
-        `tasks/${Date.now()}_${file.name}`
+    if (!CLOUDINARY_CLOUD_NAME) {
+      throw new Error(
+        'VITE_CLOUDINARY_CLOUD_NAME belum tersedia.'
       );
+    }
 
-      const uploadTask = uploadBytesResumable(
-        storageRef,
-        file
+    if (!CLOUDINARY_UPLOAD_PRESET) {
+      throw new Error(
+        'VITE_CLOUDINARY_UPLOAD_PRESET belum tersedia.'
       );
+    }
 
-      uploadTask.on(
-        'state_changed',
-        (snapshot) => {
-          const progress =
-            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+    const uploadUrl = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`;
 
-          setUploadProgress(progress);
-        },
-        (error) => {
-          console.error('Upload error:', error);
-          reject(error);
-        },
-        async () => {
-          try {
-            const downloadURL = await getDownloadURL(
-              uploadTask.snapshot.ref
-            );
+    const formData = new FormData();
 
-            resolve(downloadURL);
-          } catch (error) {
-            reject(error);
-          }
-        }
-      );
+    formData.append('file', file);
+    formData.append(
+      'upload_preset',
+      CLOUDINARY_UPLOAD_PRESET
+    );
+
+    formData.append(
+      'folder',
+      'mymbud/tasks'
+    );
+
+    setUploadProgress(10);
+
+    const response = await fetch(uploadUrl, {
+      method: 'POST',
+      body: formData,
     });
+
+    setUploadProgress(80);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+
+      console.error(
+        'Cloudinary upload failed:',
+        response.status,
+        errorText
+      );
+
+      throw new Error(
+        `Cloudinary upload gagal (${response.status}).`
+      );
+    }
+
+    const data = await response.json();
+
+    setUploadProgress(100);
+
+    if (!data.secure_url) {
+      throw new Error(
+        'Cloudinary tidak mengembalikan URL file.'
+      );
+    }
+
+    return data.secure_url;
   };
 
   const handleTaskFormSubmit = async (
@@ -308,18 +334,24 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
   ) => {
     e.preventDefault();
 
-    if (!title.trim() || !course.trim() || !deadlineDate) {
+    if (
+      !title.trim() ||
+      !course.trim() ||
+      !deadlineDate
+    ) {
       return;
     }
 
     setIsUploading(true);
+    setUploadProgress(0);
 
-    let finalAttachment = existingAttachment;
+    let finalAttachment: AttachmentData | undefined =
+      existingAttachment || undefined;
 
     try {
-      // Upload attachment jika memang ada file
       if (selectedFile) {
-        const fileUrl = await uploadFileToFirebase(selectedFile);
+        const fileUrl =
+          await uploadFileToCloudinary(selectedFile);
 
         finalAttachment = {
           fileName: selectedFile.name,
@@ -338,18 +370,49 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
         type,
         assigner: assigner.trim() || 'Dosen Pengampu',
         deadline: fullIsoDeadline,
-        status: 'todo',
+        status: editingTaskId
+          ? 'todo'
+          : 'todo',
         priority,
-        classroomUrl: classroomUrl.trim(),
+        ...(classroomUrl.trim()
+          ? {
+              classroomUrl: classroomUrl.trim(),
+            }
+          : {}),
         ...(finalAttachment
-          ? { attachment: finalAttachment }
+          ? {
+              attachment: finalAttachment,
+            }
           : {}),
       };
 
       if (editingTaskId && onUpdateTask) {
-        await onUpdateTask(editingTaskId, taskData);
+        const updateData: Partial<Task> = {
+          title: taskData.title,
+          course: taskData.course,
+          description: taskData.description,
+          type: taskData.type,
+          assigner: taskData.assigner,
+          deadline: taskData.deadline,
+          priority: taskData.priority,
+          ...(taskData.classroomUrl
+            ? {
+                classroomUrl: taskData.classroomUrl,
+              }
+            : {}),
+          ...(taskData.attachment
+            ? {
+                attachment: taskData.attachment,
+              }
+            : {}),
+        };
+
+        onUpdateTask(
+          editingTaskId,
+          updateData
+        );
       } else {
-        await onAddTask(taskData);
+        onAddTask(taskData);
       }
 
       setEditingTaskId(null);
@@ -358,10 +421,18 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
       setExistingAttachment(null);
       setUploadProgress(0);
     } catch (error) {
-      console.error('Gagal menyimpan tugas:', error);
+      console.error(
+        'Gagal menyimpan tugas:',
+        error
+      );
+
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Terjadi kesalahan saat menyimpan tugas.';
 
       alert(
-        'Gagal menyimpan tugas ke Firebase. Cek Console untuk detail error.'
+        `Gagal menyimpan tugas.\n\n${message}`
       );
     } finally {
       setIsUploading(false);
@@ -370,12 +441,11 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
 
   return (
     <div className="space-y-6 pb-12">
-
-      {/* HEADER */}
+      {/* Header Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 p-6 sm:p-8 rounded-3xl shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none transition-colors">
         <div>
           <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
-            Daftar Tugas
+            Mading Informasi Tugas
           </h2>
 
           <a
@@ -400,7 +470,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
         )}
       </div>
 
-      {/* FILTER */}
+      {/* Filter Controls */}
       <div className="space-y-2.5">
         <div className="relative w-full">
           <Search className="w-4 h-4 absolute left-4 top-3 text-slate-400" />
@@ -408,7 +478,9 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
           <input
             type="text"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) =>
+              setSearch(e.target.value)
+            }
             placeholder="Cari nama tugas, mata kuliah, atau dosen..."
             className="w-full pl-11 pr-4 py-2.5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] dark:shadow-none"
           />
@@ -417,10 +489,14 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
         <div className="flex flex-row items-center gap-2 sm:gap-3 w-full">
           <select
             value={filterCourse}
-            onChange={(e) => setFilterCourse(e.target.value)}
+            onChange={(e) =>
+              setFilterCourse(e.target.value)
+            }
             className="flex-1 min-w-0 w-full px-3.5 py-2.5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] dark:shadow-none truncate"
           >
-            <option value="ALL">Semua Mata Kuliah</option>
+            <option value="ALL">
+              Semua Mata Kuliah
+            </option>
 
             {uniqueCourses.map((c) => (
               <option key={c} value={c}>
@@ -430,129 +506,126 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
           </select>
 
           <div className="flex items-center bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 p-1 rounded-2xl gap-1 shrink-0 overflow-x-auto shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] dark:shadow-none">
-
-            <button
-              onClick={() => setFilterType('ALL')}
-              className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-[11px] sm:text-xs whitespace-nowrap transition-all ${
-                filterType === 'ALL'
-                  ? 'bg-blue-600 text-white font-semibold shadow-xs'
-                  : 'text-slate-600 dark:text-zinc-400'
-              }`}
-            >
-              Semua
-            </button>
-
-            <button
-              onClick={() => setFilterType('Individu')}
-              className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-[11px] sm:text-xs whitespace-nowrap transition-all ${
-                filterType === 'Individu'
-                  ? 'bg-blue-600 text-white font-semibold shadow-xs'
-                  : 'text-slate-600 dark:text-zinc-400'
-              }`}
-            >
-              Individu
-            </button>
-
-            <button
-              onClick={() => setFilterType('Kelompok')}
-              className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-[11px] sm:text-xs whitespace-nowrap transition-all ${
-                filterType === 'Kelompok'
-                  ? 'bg-blue-600 text-white font-semibold shadow-xs'
-                  : 'text-slate-600 dark:text-zinc-400'
-              }`}
-            >
-              Kelompok
-            </button>
-
+            {(['ALL', 'Individu', 'Kelompok'] as const).map(
+              (option) => (
+                <button
+                  key={option}
+                  onClick={() =>
+                    setFilterType(option)
+                  }
+                  className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-[11px] sm:text-xs whitespace-nowrap transition-all ${
+                    filterType === option
+                      ? 'bg-blue-600 text-white font-semibold shadow-xs'
+                      : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100'
+                  }`}
+                >
+                  {option === 'ALL'
+                    ? 'Semua'
+                    : option}
+                </button>
+              )
+            )}
           </div>
         </div>
       </div>
 
-      {/* TASK LIST */}
+      {/* Task List */}
       <div className="space-y-4">
-
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 p-2.5 sm:px-4 sm:py-3 rounded-3xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] dark:shadow-none">
-
           <div className="inline-flex items-center p-1 bg-slate-100 dark:bg-zinc-800 rounded-full w-full sm:w-auto">
-
             <button
               type="button"
-              onClick={() => setActiveTab('active')}
+              onClick={() =>
+                setActiveTab('active')
+              }
               className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-5 py-2 rounded-full text-xs font-bold transition-all ${
                 activeTab === 'active'
                   ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
-                  : 'text-slate-600 dark:text-zinc-400'
+                  : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100'
               }`}
             >
               <span>Tugas Aktif</span>
 
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-white/25">
+              <span
+                className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
+                  activeTab === 'active'
+                    ? 'bg-white/25 text-white'
+                    : 'bg-slate-200 dark:bg-zinc-700 text-slate-700 dark:text-zinc-300'
+                }`}
+              >
                 {activeTaskCount}
               </span>
             </button>
 
             <button
               type="button"
-              onClick={() => setActiveTab('history')}
+              onClick={() =>
+                setActiveTab('history')
+              }
               className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-5 py-2 rounded-full text-xs font-bold transition-all ${
                 activeTab === 'history'
                   ? 'bg-slate-800 text-white dark:bg-zinc-100 dark:text-zinc-900 shadow-md'
-                  : 'text-slate-600 dark:text-zinc-400'
+                  : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100'
               }`}
             >
               <span>Riwayat</span>
 
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-slate-200 dark:bg-zinc-700">
+              <span
+                className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
+                  activeTab === 'history'
+                    ? 'bg-white/20 text-white dark:bg-zinc-800 dark:text-zinc-200'
+                    : 'bg-slate-200 dark:bg-zinc-700 text-slate-700 dark:text-zinc-300'
+                }`}
+              >
                 {historyTaskCount}
               </span>
             </button>
-
           </div>
         </div>
 
         {filteredTasks.length === 0 ? (
-
           <div className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl p-12 text-center text-slate-400 dark:text-zinc-500 text-xs shadow-sm">
             {activeTab === 'active'
               ? 'Tidak ada tugas aktif yang sesuai.'
               : 'Belum ada riwayat tugas yang telah berlalu.'}
           </div>
-
-        ) : (
-
+        ) : activeTab === 'active' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-
             {filteredTasks.map((t) => {
-              const badge = getDeadlineBadge(t.deadline);
+              const badge =
+                getDeadlineBadge(t.deadline);
 
-              const formattedDate = new Date(
-                t.deadline
-              ).toLocaleString('id-ID', {
-                day: 'numeric',
-                month: 'short',
-                hour: '2-digit',
-                minute: '2-digit',
-              });
+              const formattedDate =
+                new Date(
+                  t.deadline
+                ).toLocaleString('id-ID', {
+                  day: 'numeric',
+                  month: 'short',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                });
 
               return (
                 <div
                   key={t.id}
-                  onClick={() => setSelectedDetailTask(t)}
+                  onClick={() =>
+                    setSelectedDetailTask(t)
+                  }
                   className="bg-white dark:bg-zinc-900 rounded-3xl p-6 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.03)] dark:shadow-none space-y-4 border border-slate-100 dark:border-zinc-800 hover:shadow-xl hover:-translate-y-1 transition-all duration-200 cursor-pointer flex flex-col justify-between group"
                 >
-
                   <div className="space-y-3">
-
                     <div className="flex items-center justify-between gap-2 flex-wrap">
-
                       <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-3 py-1 rounded-full">
                         {t.course}
                       </span>
 
-                      <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${badge.bg}`}>
-                        {badge.label}
-                      </span>
-
+                      {badge && (
+                        <span
+                          className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${badge.bg}`}
+                        >
+                          {badge.label}
+                        </span>
+                      )}
                     </div>
 
                     <div>
@@ -570,19 +643,22 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                         'Klik untuk melihat rincian instruksi tugas lengkap.'}
                     </p>
 
-                    {/* BAGIAN YANG DIPERBARUI: HANYA 1 BARIS */}
-                    <div className="pt-2 text-xs border-t border-slate-50 dark:border-zinc-800">
-                      <div className="flex justify-between items-center">
-                        <span className="font-medium text-slate-500 dark:text-zinc-400">
+                    <div className="space-y-1 pt-1 text-xs text-slate-500 border-t border-slate-50 dark:border-zinc-800">
+                      <div className="flex items-center justify-between text-[11px] pt-1">
+                        <span className="font-semibold text-slate-700 dark:text-zinc-300">
                           Tugas {t.type}
                         </span>
-                        <div className="flex items-center gap-1.5 text-slate-600 dark:text-zinc-300 font-medium">
-                          <Clock className="w-3.5 h-3.5 text-slate-400" />
-                          <span>Deadline: {formattedDate} WIB</span>
-                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between gap-2 pt-1 font-medium">
+                        <span className="flex items-center gap-1.5">
+                          <Clock className="w-3.5 h-3.5" />
+                          <span>
+                            Deadline: {formattedDate} WIB
+                          </span>
+                        </span>
                       </div>
                     </div>
-
                   </div>
 
                   <div className="pt-3 flex items-center justify-between text-xs font-semibold text-blue-600 dark:text-blue-400 border-t border-slate-100/60 dark:border-zinc-800">
@@ -592,25 +668,74 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
 
                     <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </div>
-
                 </div>
               );
             })}
+          </div>
+        ) : (
+          /* PERBAIKAN: Layout Riwayat Kartu Tugas (History Tab) */
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredTasks.map((t) => {
+              const formattedDate =
+                new Date(
+                  t.deadline
+                ).toLocaleString('id-ID', {
+                  day: 'numeric',
+                  month: 'short',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                });
 
+              return (
+                <div
+                  key={t.id}
+                  onClick={() => setSelectedDetailTask(t)}
+                  className="p-4 rounded-2xl bg-slate-900/90 dark:bg-zinc-900/90 hover:bg-slate-800/80 dark:hover:bg-zinc-800/80 border border-slate-800 dark:border-zinc-800 transition-all cursor-pointer flex flex-col justify-between space-y-3 group shadow-sm"
+                >
+                  {/* TOP ROW: Badge Mata Kuliah & Badge Selesai */}
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[11px] font-semibold text-slate-400 dark:text-zinc-400 bg-slate-800/80 dark:bg-zinc-800/80 px-2.5 py-0.5 rounded-full border border-slate-700/50 dark:border-zinc-700/50">
+                      {t.course}
+                    </span>
+                    
+                    <span className="text-[10px] font-bold text-slate-400 dark:text-zinc-400 bg-slate-800 dark:bg-zinc-800/90 px-2 py-0.5 rounded-md border border-slate-700/60 dark:border-zinc-700/60">
+                      Selesai
+                    </span>
+                  </div>
+
+                  {/* MIDDLE ROW: Judul Tugas & Nama Dosen */}
+                  <div className="space-y-1">
+                    <h3 className="text-sm font-bold text-slate-100 dark:text-zinc-100 group-hover:text-blue-400 transition-colors line-clamp-1">
+                      {t.title}
+                    </h3>
+                    <p className="text-xs text-slate-400 dark:text-zinc-400 truncate">
+                      Dosen: {t.assigner || 'Dosen Pengampu'}
+                    </p>
+                  </div>
+
+                  {/* BOTTOM ROW: Tipe Tugas (Kiri) & Deadline Jam (Kanan) */}
+                  <div className="flex items-center justify-between text-[11px] text-slate-400 dark:text-zinc-400 pt-1.5 border-t border-slate-800/60 dark:border-zinc-800/60">
+                    <span className="font-medium text-slate-300 dark:text-zinc-300">
+                      Tugas {t.type || 'Individu'}
+                    </span>
+                    <div className="flex items-center gap-1.5 text-slate-400 dark:text-zinc-400">
+                      <Clock className="w-3.5 h-3.5" />
+                      <span>{formattedDate} WIB</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
 
       {/* DETAIL MODAL */}
       {selectedDetailTask && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4">
-
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-150">
           <div className="bg-white dark:bg-zinc-900 border dark:border-zinc-800 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
-
             <div className="px-6 py-5 border-b dark:border-zinc-800 flex justify-between items-start gap-4">
-
               <div className="space-y-1.5">
-
                 <span className="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
                   {selectedDetailTask.course}
                 </span>
@@ -618,31 +743,35 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                 <h2 className="text-lg font-bold pt-1">
                   {selectedDetailTask.title}
                 </h2>
-
               </div>
 
               <button
-                onClick={() => setSelectedDetailTask(null)}
+                onClick={() =>
+                  setSelectedDetailTask(null)
+                }
                 className="p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-zinc-800"
               >
                 <X className="w-5 h-5" />
               </button>
-
             </div>
 
             <div className="flex-1 overflow-y-auto p-6 space-y-5">
-
               <div className="grid grid-cols-2 gap-3 bg-slate-50 dark:bg-zinc-800/60 p-4 rounded-2xl text-xs border border-slate-100 dark:border-zinc-800">
-
                 <div>
-                  <span className="text-slate-400 block">Dosen:</span>
+                  <span className="text-slate-400 block">
+                    Dosen:
+                  </span>
+
                   <span className="font-bold">
                     {selectedDetailTask.assigner}
                   </span>
                 </div>
 
                 <div>
-                  <span className="text-slate-400 block">Prioritas:</span>
+                  <span className="text-slate-400 block">
+                    Prioritas:
+                  </span>
+
                   <span className="font-bold">
                     {selectedDetailTask.priority}
                   </span>
@@ -659,11 +788,34 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                     )}
                   </span>
                 </div>
-
               </div>
 
-              <div className="space-y-2">
+              {selectedDetailTask.classroomUrl && (
+                <div className="space-y-2">
+                  <h4 className="text-xs font-bold uppercase">
+                    Google Classroom
+                  </h4>
 
+                  <a
+                    href={
+                      selectedDetailTask.classroomUrl
+                    }
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-3 p-3.5 rounded-2xl bg-blue-50 hover:bg-blue-100 border border-blue-100 text-xs font-semibold text-blue-700"
+                  >
+                    <BookOpenCheck className="w-4 h-4" />
+
+                    <span className="flex-1 truncate">
+                      Buka Classroom
+                    </span>
+
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+              )}
+
+              <div className="space-y-2">
                 <h4 className="text-xs font-bold uppercase">
                   Rincian Tugas
                 </h4>
@@ -672,74 +824,47 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                   {selectedDetailTask.description ||
                     'Tidak ada instruksi.'}
                 </div>
-
               </div>
 
-              {/* CLASSROOM LINK */}
-              {selectedDetailTask.classroomUrl && (
-                <div className="space-y-2">
-
-                  <h4 className="text-xs font-bold uppercase">
-                    myITS Classroom
-                  </h4>
-
-                  <a
-                    href={selectedDetailTask.classroomUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center gap-3 p-3.5 rounded-2xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/30 dark:hover:bg-blue-950/50 border border-blue-100 dark:border-blue-900/50 text-xs font-semibold text-blue-700 dark:text-blue-400"
-                  >
-                    <BookOpenCheck className="w-4 h-4" />
-
-                    <span className="flex-1 truncate">
-                      Buka halaman Classroom
-                    </span>
-
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </a>
-
-                </div>
-              )}
-
-              {/* ATTACHMENT */}
+              {/* PERBAIKAN: Tombol Lampiran File di Modal */}
               {selectedDetailTask.attachment && (
-                <div className="space-y-2">
-
-                  <h4 className="text-xs font-bold uppercase">
-                    Lampiran File
+                <div className="space-y-2 pt-2">
+                  <h4 className="text-[11px] font-bold text-slate-400 dark:text-zinc-400 uppercase tracking-wider">
+                    Lampiran File / Dokumen
                   </h4>
 
                   <a
-                    href={selectedDetailTask.attachment.fileUrl}
+                    href={typeof selectedDetailTask.attachment === 'string' ? selectedDetailTask.attachment : (selectedDetailTask.attachment.fileUrl || (selectedDetailTask.attachment as any).url)}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center gap-3 p-3.5 rounded-2xl bg-slate-50 hover:bg-slate-100 border text-xs font-semibold"
+                    className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-800/80 hover:bg-slate-800 dark:bg-zinc-800/80 dark:hover:bg-zinc-800 border border-slate-700/60 dark:border-zinc-700/60 text-slate-200 dark:text-zinc-200 text-xs font-semibold transition-all group shadow-sm"
                   >
-                    <Paperclip className="w-4 h-4 text-blue-600" />
-
-                    <span className="flex-1 truncate">
-                      {selectedDetailTask.attachment.fileName}
-                    </span>
-
-                    <ExternalLink className="w-3.5 h-3.5" />
+                    <div className="flex items-center gap-3 min-w-0 pr-2">
+                      <Paperclip className="w-4 h-4 text-blue-400 shrink-0 group-hover:scale-110 transition-transform" />
+                      <span className="truncate">
+                        {typeof selectedDetailTask.attachment === 'object' && selectedDetailTask.attachment.fileName
+                          ? selectedDetailTask.attachment.fileName
+                          : typeof selectedDetailTask.attachment === 'string'
+                          ? selectedDetailTask.attachment.split('/').pop()?.split('?')[0] || 'Lihat Dokumen Lampiran'
+                          : 'Dokumen Lampiran.pdf'}
+                      </span>
+                    </div>
+                    <ExternalLink className="w-4 h-4 text-slate-400 dark:text-zinc-400 group-hover:text-white shrink-0 transition-colors" />
                   </a>
-
                 </div>
               )}
-
             </div>
 
             <div className="px-6 py-4 border-t dark:border-zinc-800 flex justify-between bg-white dark:bg-zinc-900">
-
               {isOfficer ? (
                 <div className="flex gap-2">
-
                   <button
                     onClick={() => {
-                      const task = selectedDetailTask;
+                      const t =
+                        selectedDetailTask;
 
                       setSelectedDetailTask(null);
-                      handleOpenEditModal(task);
+                      handleOpenEditModal(t);
                     }}
                     className="px-3.5 py-2 bg-slate-100 rounded-2xl text-xs font-semibold flex items-center gap-1.5"
                   >
@@ -749,7 +874,10 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
 
                   <button
                     onClick={() => {
-                      onDeleteTask(selectedDetailTask.id);
+                      onDeleteTask(
+                        selectedDetailTask.id
+                      );
+
                       setSelectedDetailTask(null);
                     }}
                     className="px-3.5 py-2 bg-red-50 text-red-600 rounded-2xl text-xs font-semibold flex items-center gap-1.5"
@@ -757,21 +885,20 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                     <Trash2 className="w-3.5 h-3.5" />
                     Hapus
                   </button>
-
                 </div>
               ) : (
                 <div />
               )}
 
               <button
-                onClick={() => setSelectedDetailTask(null)}
+                onClick={() =>
+                  setSelectedDetailTask(null)
+                }
                 className="px-6 py-2 bg-slate-100 rounded-2xl font-bold text-xs"
               >
                 Tutup
               </button>
-
             </div>
-
           </div>
         </div>
       )}
@@ -779,11 +906,8 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
       {/* ADD / EDIT MODAL */}
       {showModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-
-          <div className="bg-white dark:bg-zinc-900 border dark:border-zinc-800 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
-
+          <div className="bg-white dark:bg-zinc-900 border dark:border-zinc-800 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             <div className="px-6 sm:px-8 py-5 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between shrink-0">
-
               <h3 className="text-lg font-bold">
                 {editingTaskId
                   ? 'Edit Tugas'
@@ -792,24 +916,21 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
 
               <button
                 type="button"
-                onClick={() => setShowModal(false)}
+                onClick={() =>
+                  setShowModal(false)
+                }
                 className="p-2 rounded-2xl text-slate-400 hover:bg-slate-100"
               >
                 <X className="w-5 h-5" />
               </button>
-
             </div>
 
             <form
               onSubmit={handleTaskFormSubmit}
               className="flex flex-col flex-1 overflow-hidden"
             >
-
               <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-4">
-
-                {/* TITLE */}
                 <div>
-
                   <label className="block text-xs font-semibold mb-1.5">
                     Judul Tugas
                   </label>
@@ -818,17 +939,15 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                     type="text"
                     required
                     value={title}
-                    onChange={(e) => setTitle(e.target.value)}
+                    onChange={(e) =>
+                      setTitle(e.target.value)
+                    }
                     className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 border dark:border-zinc-700 text-xs focus:ring-2 focus:ring-blue-500 outline-none"
                   />
-
                 </div>
 
-                {/* COURSE / TYPE */}
                 <div className="grid grid-cols-2 gap-4">
-
                   <div>
-
                     <label className="block text-xs font-semibold mb-1.5">
                       Mata Kuliah
                     </label>
@@ -837,14 +956,14 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                       type="text"
                       required
                       value={course}
-                      onChange={(e) => setCourse(e.target.value)}
+                      onChange={(e) =>
+                        setCourse(e.target.value)
+                      }
                       className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 border dark:border-zinc-700 text-xs focus:ring-2 focus:ring-blue-500 outline-none"
                     />
-
                   </div>
 
                   <div>
-
                     <label className="block text-xs font-semibold mb-1.5">
                       Jenis Tugas
                     </label>
@@ -868,16 +987,11 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                         Kelompok
                       </option>
                     </select>
-
                   </div>
-
                 </div>
 
-                {/* DEADLINE */}
                 <div className="grid grid-cols-2 gap-4">
-
                   <div>
-
                     <label className="block text-xs font-semibold mb-1.5">
                       Tanggal Deadline
                     </label>
@@ -887,15 +1001,15 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                       required
                       value={deadlineDate}
                       onChange={(e) =>
-                        setDeadlineDate(e.target.value)
+                        setDeadlineDate(
+                          e.target.value
+                        )
                       }
                       className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 border dark:border-zinc-700 text-xs outline-none focus:ring-2 focus:ring-blue-500"
                     />
-
                   </div>
 
                   <div>
-
                     <label className="block text-xs font-semibold mb-1.5">
                       Jam Deadline
                     </label>
@@ -904,130 +1018,55 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                       type="time"
                       value={deadlineTime}
                       onChange={(e) =>
-                        setDeadlineTime(e.target.value)
+                        setDeadlineTime(
+                          e.target.value
+                        )
                       }
                       className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 border dark:border-zinc-700 text-xs outline-none focus:ring-2 focus:ring-blue-500"
                     />
-
                   </div>
-
                 </div>
 
-                {/* ASSIGNER */}
                 <div>
-
-                  <label className="block text-xs font-semibold mb-1.5">
-                    Dosen / Pemberi Tugas
-                  </label>
-
-                  <input
-                    type="text"
-                    value={assigner}
-                    onChange={(e) =>
-                      setAssigner(e.target.value)
-                    }
-                    placeholder="Contoh: Dr. Budi Santoso"
-                    className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 border dark:border-zinc-700 text-xs outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-
-                </div>
-
-                {/* PRIORITY */}
-                <div>
-
-                  <label className="block text-xs font-semibold mb-1.5">
-                    Prioritas
-                  </label>
-
-                  <select
-                    value={priority}
-                    onChange={(e) =>
-                      setPriority(
-                        e.target.value as
-                          | 'High'
-                          | 'Medium'
-                          | 'Low'
-                      )
-                    }
-                    className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 border dark:border-zinc-700 text-xs outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="High">
-                      High
-                    </option>
-
-                    <option value="Medium">
-                      Medium
-                    </option>
-
-                    <option value="Low">
-                      Low
-                    </option>
-                  </select>
-
-                </div>
-
-                {/* DESCRIPTION */}
-                <div>
-
                   <label className="block text-xs font-semibold mb-1.5">
                     Instruksi Tugas
                   </label>
 
                   <textarea
-                    rows={3}
+                    rows={2}
                     value={description}
                     onChange={(e) =>
-                      setDescription(e.target.value)
+                      setDescription(
+                        e.target.value
+                      )
                     }
-                    placeholder="Tulis instruksi atau rincian tugas..."
                     className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 border dark:border-zinc-700 text-xs outline-none focus:ring-2 focus:ring-blue-500"
                   />
-
                 </div>
 
-                {/* CLASSROOM */}
+                {/* CLASSROOM URL */}
                 <div>
-
                   <label className="block text-xs font-semibold mb-1.5">
-                    Link myITS Classroom
-                    <span className="text-slate-400 font-normal">
-                      {' '}
-                      (Opsional)
-                    </span>
+                    Link Google Classroom (Opsional)
                   </label>
 
-                  <div className="relative">
-
-                    <BookOpenCheck className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-
-                    <input
-                      type="url"
-                      value={classroomUrl}
-                      onChange={(e) =>
-                        setClassroomUrl(e.target.value)
-                      }
-                      placeholder="https://classroom.its.ac.id/..."
-                      className="w-full pl-11 pr-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 border dark:border-zinc-700 text-xs outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-
-                  </div>
-
-                  <p className="text-[10px] text-slate-400 mt-1.5 ml-1">
-                    Masukkan link Classroom jika tugas
-                    memiliki halaman pengumpulan.
-                  </p>
-
+                  <input
+                    type="url"
+                    value={classroomUrl}
+                    onChange={(e) =>
+                      setClassroomUrl(
+                        e.target.value
+                      )
+                    }
+                    placeholder="https://classroom.google.com/..."
+                    className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 border dark:border-zinc-700 text-xs outline-none focus:ring-2 focus:ring-blue-500"
+                  />
                 </div>
 
-                {/* FILE UPLOAD */}
+                {/* CLOUDINARY ATTACHMENT */}
                 <div>
-
                   <label className="block text-xs font-semibold mb-1.5">
-                    Lampiran File
-                    <span className="text-slate-400 font-normal">
-                      {' '}
-                      (Opsional)
-                    </span>
+                    Lampiran File (Opsional)
                   </label>
 
                   <div
@@ -1043,7 +1082,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                         : 'border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 hover:bg-slate-100 dark:hover:bg-zinc-700/50'
                     }`}
                   >
-
                     <input
                       type="file"
                       ref={fileInputRef}
@@ -1052,9 +1090,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                     />
 
                     {selectedFile ? (
-
                       <div className="flex flex-col items-center gap-2">
-
                         <div className="p-3 bg-blue-100 dark:bg-blue-900/40 rounded-full">
                           <FileIcon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                         </div>
@@ -1071,13 +1107,9 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                           ).toFixed(2)}{' '}
                           MB • Siap diunggah
                         </p>
-
                       </div>
-
                     ) : existingAttachment ? (
-
                       <div className="flex flex-col items-center gap-2">
-
                         <div className="p-3 bg-slate-200 dark:bg-zinc-700 rounded-full">
                           <Paperclip className="w-6 h-6 text-slate-600 dark:text-zinc-400" />
                         </div>
@@ -1087,16 +1119,12 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                         </p>
 
                         <p className="text-[10px] text-slate-500">
-                          File tersimpan. Klik untuk
-                          mengganti.
+                          File sudah tersimpan sebelumnya.
+                          Klik untuk mengganti.
                         </p>
-
                       </div>
-
                     ) : (
-
                       <div className="flex flex-col items-center gap-2">
-
                         <div className="p-3 bg-slate-200 dark:bg-zinc-700 rounded-full">
                           <UploadCloud className="w-6 h-6 text-slate-600 dark:text-zinc-400" />
                         </div>
@@ -1108,37 +1136,45 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                         <p className="text-[10px] text-slate-500">
                           PDF, Word, Excel, Gambar
                         </p>
-
                       </div>
-
                     )}
-
                   </div>
 
                   {isUploading && (
-                    <div className="mt-3 bg-slate-100 dark:bg-zinc-800 rounded-full h-2 w-full overflow-hidden">
+                    <div className="mt-3 space-y-1.5">
+                      <div className="flex items-center justify-between text-[10px] text-slate-500">
+                        <span>
+                          Mengunggah ke Cloudinary...
+                        </span>
 
-                      <div
-                        className="h-full bg-blue-600 transition-all duration-300"
-                        style={{
-                          width: `${uploadProgress}%`,
-                        }}
-                      />
+                        <span>
+                          {Math.round(
+                            uploadProgress
+                          )}
+                          %
+                        </span>
+                      </div>
 
+                      <div className="bg-slate-100 dark:bg-zinc-800 rounded-full h-2 w-full overflow-hidden">
+                        <div
+                          className="h-full bg-blue-600 transition-all duration-300"
+                          style={{
+                            width: `${uploadProgress}%`,
+                          }}
+                        />
+                      </div>
                     </div>
                   )}
-
                 </div>
-
               </div>
 
-              {/* FOOTER */}
               <div className="px-6 py-4 border-t dark:border-zinc-800 flex justify-end gap-3 bg-white dark:bg-zinc-900">
-
                 <button
                   type="button"
                   disabled={isUploading}
-                  onClick={() => setShowModal(false)}
+                  onClick={() =>
+                    setShowModal(false)
+                  }
                   className="px-5 py-2.5 rounded-2xl bg-slate-100 font-semibold text-xs disabled:opacity-50"
                 >
                   Batal
@@ -1149,26 +1185,20 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                   disabled={isUploading}
                   className="px-5 py-2.5 rounded-2xl bg-blue-600 text-white font-semibold text-xs flex items-center gap-2 disabled:opacity-70"
                 >
-
                   {isUploading ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      Menyimpan...
+                      Mengunggah...
                     </>
                   ) : (
                     'Simpan Tugas'
                   )}
-
                 </button>
-
               </div>
-
             </form>
-
           </div>
         </div>
       )}
-
     </div>
   );
 };

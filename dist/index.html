@@ -1,15 +1,57 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>myMbud Portal</title>
+    
+    <!-- Syarat PWA (Manifest KTP Aplikasi) -->
+    <link rel="manifest" href="/assets/manifest-u6WIt2P0.json" />
+
+    <!-- Favicon Standar -->
     <link rel="icon" type="image/png" href="/logombud.png" />
-    <script type="module" crossorigin src="/assets/index-CYEeVifA.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-QjWoNEKD.css">
+    
+    <!-- Icon Khusus Apple (iPhone & iPad) -->
+    <link rel="apple-touch-icon" href="/logombud.png" />
+    
+    <!-- Meta Tags Khusus iOS/iPadOS Web App -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="myMbud" />
+
+    <!-- Meta Tag Android Adaptif -->
+    <meta name="theme-color" content="#f8fafc" />
+
+    <!-- SCRIPT CEGAH FLICKER & MEMBACA 5 TEMA -->
+    <script>
+      (function() {
+        const savedTheme = localStorage.getItem('theme');
+        const root = document.documentElement;
+        
+        if (savedTheme === 'green') {
+          root.classList.add('green');
+          root.classList.remove('dark', 'pink', 'purple');
+        } else if (savedTheme === 'purple') {
+          root.classList.add('purple');
+          root.classList.remove('dark', 'pink', 'green');
+        } else if (savedTheme === 'pink') {
+          root.classList.add('pink');
+          root.classList.remove('dark', 'purple', 'green');
+        } else if (savedTheme === 'dark' || savedTheme === null) {
+          root.classList.add('dark');
+          root.classList.remove('pink', 'purple', 'green');
+          if (savedTheme === null) {
+            localStorage.setItem('theme', 'dark');
+          }
+        } else {
+          root.classList.remove('dark', 'pink', 'purple', 'green');
+        }
+      })();
+    </script>
+    <script type="module" crossorigin src="/assets/index-BC8qtkkT.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-D7dtzbYR.css">
   </head>
-  <body>
+  <body class="bg-slate-50 dark:bg-zinc-950 text-slate-800 dark:text-zinc-100 transition-colors duration-200">
     <div id="root"></div>
   </body>
 </html>
-
