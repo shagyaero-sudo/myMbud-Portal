@@ -22,6 +22,7 @@ import {
   Sparkles,
   Palette,
   Leaf,
+  Gamepad2,
 } from 'lucide-react';
 import { TabType } from './Sidebar';
 
@@ -318,6 +319,21 @@ export const Header: React.FC<HeaderProps> = ({
                     <div className="flex items-center gap-3">
                       <Dices className="w-4 h-4" />
                       <span>Spinwheel</span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 opacity-70" />
+                  </button>
+
+                  <button
+                    onClick={() => navigateTo('blockblast')}
+                    className={`w-full flex items-center justify-between p-3 rounded-2xl text-xs font-semibold transition-all ${
+                      activeTab === 'blockblast'
+                        ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                        : 'bg-blue-50/70 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 hover:bg-blue-100/80 dark:hover:bg-blue-900/40'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Gamepad2 className="w-4 h-4" />
+                      <span>Block Blast</span>
                     </div>
                     <ChevronRight className="w-4 h-4 opacity-70" />
                   </button>

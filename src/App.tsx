@@ -19,6 +19,7 @@ import { GradeCalculatorView } from './components/GradeCalculatorView';
 import { LetterGeneratorView } from './components/LetterGeneratorView';
 import { PdfViewerModal } from './components/PdfViewerModal';
 import { SoftForceModal } from './components/SoftForceModal';
+import { BlockBlastView } from './components/blockblast/BlockBlastView';
 
 import {
   AppState,
@@ -462,6 +463,10 @@ export default function App() {
 
               {activeTab === 'letter' && (
                 <LetterGeneratorView />
+              )}
+
+              {activeTab === 'blockblast' && (
+                <BlockBlastView />
               )}
             </>
           )}

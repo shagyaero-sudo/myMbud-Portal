@@ -11,7 +11,7 @@ import {
   FileEdit,
 } from 'lucide-react';
 
-export type TabType = 'dashboard' | 'contacts' | 'materials' | 'tasks' | 'spinwheel' | 'calculator' | 'letter';
+export type TabType = 'dashboard' | 'contacts' | 'materials' | 'tasks' | 'spinwheel' | 'calculator' | 'letter' | 'blockblast';
 
 interface SidebarProps {
   activeTab: TabType;
