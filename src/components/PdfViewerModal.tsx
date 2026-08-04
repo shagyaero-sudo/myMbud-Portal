@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Download, FileText, Share2, Check, ExternalLink, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
+import { X, Download, FileText, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { MaterialFile } from '../types';
 
 interface PdfViewerModalProps {
@@ -9,23 +9,7 @@ interface PdfViewerModalProps {
 }
 
 export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClose }) => {
-  const [copied, setCopied] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(1); // Default scale 100%
-
-  const handleShare = () => {
-    if (!material) return;
-    if (navigator.share) {
-      navigator.share({
-        title: material.title,
-        text: `Materi Perkuliahan Kelas A: ${material.title}`,
-        url: material.fileUrl,
-      }).catch(() => {});
-    } else {
-      navigator.clipboard.writeText(material.fileUrl);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
 
   const getEmbedUrl = (url: string) => {
     if (url.includes('drive.google.com') && url.includes('/view')) {
@@ -80,39 +64,8 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
               </button>
             </div>
 
-            {/* Container Iframe PDF + Floating Zoom Controller */}
+            {/* Container Iframe PDF */}
             <div className="flex-1 p-3 sm:p-5 bg-slate-50/50 dark:bg-zinc-950/50 flex flex-col min-h-0 overflow-hidden relative">
-              
-              {/* Floating Toolbar Controls (Zoom In, Zoom Out, Reset) */}
-              <div className="absolute top-6 right-6 z-10 flex items-center gap-1 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-md p-1.5 rounded-2xl shadow-lg border border-slate-200/80 dark:border-zinc-700/80">
-                <button
-                  onClick={handleZoomOut}
-                  className="p-2 rounded-xl text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-all"
-                  title="Perkecil"
-                >
-                  <ZoomOut className="w-4 h-4" />
-                </button>
-                <span className="text-xs font-bold text-slate-700 dark:text-zinc-200 px-2 min-w-[45px] text-center">
-                  {Math.round(zoomLevel * 100)}%
-                </span>
-                <button
-                  onClick={handleZoomIn}
-                  className="p-2 rounded-xl text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-all"
-                  title="Perbesar"
-                >
-                  <ZoomIn className="w-4 h-4" />
-                </button>
-                {zoomLevel !== 1 && (
-                  <button
-                    onClick={handleResetZoom}
-                    className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-all border-l border-slate-200 dark:border-zinc-700 ml-1"
-                    title="Reset Zoom"
-                  >
-                    <RotateCcw className="w-3.5 h-3.5" />
-                  </button>
-                )}
-              </div>
-
               {/* Area Viewport PDF dengan Scrollbar Otomatis saat di-zoom */}
               <div className="flex-1 rounded-2xl bg-slate-900 dark:bg-black border border-slate-200/80 dark:border-zinc-800 overflow-auto shadow-inner flex relative">
                 <div 
@@ -133,49 +86,53 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
               </div>
             </div>
 
-            {/* Footer Modal */}
+            {/* Footer Modal dengan Zoom Control di Kiri & Download Icon di Kanan */}
             <div className="px-6 sm:px-8 py-3.5 bg-white dark:bg-zinc-900 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-between shrink-0">
-              <button
-                onClick={handleShare}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 text-xs font-semibold transition-all"
-              >
-                {copied ? (
-                  <>
-                    <Check className="w-4 h-4 text-emerald-500" />
-                    <span className="text-emerald-600 dark:text-emerald-400">Tautan Disalin</span>
-                  </>
-                ) : (
-                  <>
-                    <Share2 className="w-4 h-4 text-slate-500 dark:text-zinc-400" />
-                    <span>Bagikan</span>
-                  </>
+              
+              {/* Zoom Controls (Pindah ke Kiri menggantikan Share) */}
+              <div className="flex items-center gap-1 bg-slate-100 dark:bg-zinc-800 p-1.5 rounded-2xl border border-slate-200/80 dark:border-zinc-700/80">
+                <button
+                  onClick={handleZoomOut}
+                  className="p-2 rounded-xl text-slate-600 dark:text-zinc-300 hover:bg-white dark:hover:bg-zinc-600 transition-all shadow-sm"
+                  title="Perkecil"
+                >
+                  <ZoomOut className="w-4 h-4" />
+                </button>
+                <span className="text-xs font-bold text-slate-700 dark:text-zinc-200 px-2 min-w-[45px] text-center">
+                  {Math.round(zoomLevel * 100)}%
+                </span>
+                <button
+                  onClick={handleZoomIn}
+                  className="p-2 rounded-xl text-slate-600 dark:text-zinc-300 hover:bg-white dark:hover:bg-zinc-600 transition-all shadow-sm"
+                  title="Perbesar"
+                >
+                  <ZoomIn className="w-4 h-4" />
+                </button>
+                {zoomLevel !== 1 && (
+                  <button
+                    onClick={handleResetZoom}
+                    className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-white dark:hover:bg-zinc-600 transition-all border-l border-slate-200 dark:border-zinc-600 ml-1"
+                    title="Reset Zoom"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                  </button>
                 )}
-              </button>
-
-              <div className="flex items-center gap-2.5">
-                <a
-                  href={material.fileUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 text-xs font-semibold hover:bg-slate-200 dark:hover:bg-zinc-700 transition-all"
-                >
-                  <ExternalLink className="w-4 h-4" />
-                  <span>Buka Penuh</span>
-                </a>
-
-                <motion.a
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  href={material.fileUrl}
-                  download={material.title}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition-all shadow-md shadow-blue-500/20"
-                >
-                  <Download className="w-4 h-4" />
-                  <span>Unduh PDF</span>
-                </motion.a>
               </div>
+
+              {/* Tombol Unduh (Hanya Icon & Dirampingkan) */}
+              <motion.a
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                href={material.fileUrl}
+                download={material.title}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center justify-center p-3 rounded-2xl bg-blue-600 text-white hover:bg-blue-700 transition-all shadow-md shadow-blue-500/20"
+                title="Unduh PDF"
+              >
+                <Download className="w-5 h-5" />
+              </motion.a>
+
             </div>
           </motion.div>
         </motion.div>
