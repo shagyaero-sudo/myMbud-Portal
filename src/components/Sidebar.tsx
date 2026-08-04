@@ -129,42 +129,44 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, urgen
         </div>
       </aside>
 
-      {/* Mobile Bottom Navigation */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/70 dark:bg-zinc-950/90 backdrop-blur-xl border-t border-slate-200/50 dark:border-zinc-800 px-3 py-2 flex items-center justify-around shadow-lg transition-colors">
-        {[
-          { id: 'dashboard' as TabType, label: 'Menu', icon: LayoutDashboard },
-          { id: 'tasks' as TabType, label: 'Tugas', icon: FolderKanban, badge: urgentTaskCount > 0 ? urgentTaskCount : null },
-          { id: 'contacts' as TabType, label: 'Kontak', icon: Users },
-          { id: 'materials' as TabType, label: 'Materi', icon: FileText },
-        ].map((item) => {
-          const Icon = item.icon;
-          const isActive = activeTab === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className={`relative flex flex-col items-center justify-center py-1 px-3 rounded-2xl transition-all ${
-                isActive ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-slate-500 dark:text-zinc-400'
-              }`}
-            >
-              {isActive && (
-                <motion.div
-                  layoutId="activeBottomTab"
-                  className="absolute inset-0 bg-blue-50/80 dark:bg-blue-950/60 rounded-2xl shadow-xs"
-                  transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-                />
-              )}
-              <Icon className={`relative z-10 w-4 h-4 mb-0.5 ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-zinc-500'}`} />
-              <span className="relative z-10 text-[10px] tracking-tight">{item.label}</span>
-              {item.badge ? (
-                <span className="absolute -top-1 -right-0.5 bg-blue-600 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-xs z-20">
-                  {item.badge}
-                </span>
-              ) : null}
-            </button>
-          );
-        })}
-      </nav>
+      {/* Mobile Floating Bottom Navigation */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 pb-[env(safe-area-inset-bottom)] pointer-events-none">
+        <nav className="pointer-events-auto mx-4 mb-5 bg-white/70 dark:bg-zinc-900/75 backdrop-blur-2xl border border-white/50 dark:border-white/10 px-2.5 py-2.5 flex items-center justify-around shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] rounded-[2rem] transition-colors">
+          {[
+            { id: 'dashboard' as TabType, label: 'Menu', icon: LayoutDashboard },
+            { id: 'tasks' as TabType, label: 'Tugas', icon: FolderKanban, badge: urgentTaskCount > 0 ? urgentTaskCount : null },
+            { id: 'contacts' as TabType, label: 'Kontak', icon: Users },
+            { id: 'materials' as TabType, label: 'Materi', icon: FileText },
+          ].map((item) => {
+            const Icon = item.icon;
+            const isActive = activeTab === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id)}
+                className={`relative flex flex-col items-center justify-center py-1.5 px-4 rounded-2xl transition-all ${
+                  isActive ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-slate-500 dark:text-zinc-400'
+                }`}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="activeBottomTab"
+                    className="absolute inset-0 bg-white/80 dark:bg-zinc-800/80 rounded-2xl shadow-sm border border-slate-200/50 dark:border-zinc-700/50"
+                    transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                  />
+                )}
+                <Icon className={`relative z-10 w-5 h-5 mb-0.5 ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-zinc-500'}`} />
+                <span className="relative z-10 text-[10px] tracking-tight">{item.label}</span>
+                {item.badge ? (
+                  <span className="absolute -top-1 -right-0.5 bg-rose-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-xs z-20">
+                    {item.badge}
+                  </span>
+                ) : null}
+              </button>
+            );
+          })}
+        </nav>
+      </div>
     </>
   );
 };
