@@ -15,6 +15,9 @@ import {
   File as FileIcon,
   Loader2,
   Download,
+  ZoomIn,
+  ZoomOut,
+  RotateCcw,
 } from 'lucide-react';
 import { Task, Contact } from '../types';
 
@@ -59,6 +62,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
 
   const [previewAttachment, setPreviewAttachment] =
     useState<AttachmentData | null>(null);
+  const [zoomLevel, setZoomLevel] = useState(1);
 
   const [showModal, setShowModal] = useState(false);
   const [editingTaskId, setEditingTaskId] =
@@ -841,7 +845,10 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                       return (
                         <button
                           type="button"
-                          onClick={() => setPreviewAttachment(attachment)}
+                          onClick={() => {
+                            setPreviewAttachment(attachment);
+                            setZoomLevel(1);
+                          }}
                           className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-slate-100 hover:bg-slate-200/80 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-200/80 dark:border-zinc-700 text-slate-800 dark:text-zinc-200 text-xs font-semibold transition-all group shadow-xs text-left"
                         >
                           <div className="flex items-center gap-3 min-w-0 pr-2">
@@ -925,7 +932,10 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[70] bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6"
-            onClick={() => setPreviewAttachment(null)}
+            onClick={() => {
+              setPreviewAttachment(null);
+              setZoomLevel(1);
+            }}
           >
             <motion.div
               initial={{ scale: 0.94, opacity: 0 }}
@@ -969,7 +979,10 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
 
                   <button
                     type="button"
-                    onClick={() => setPreviewAttachment(null)}
+                    onClick={() => {
+                      setPreviewAttachment(null);
+                      setZoomLevel(1);
+                    }}
                     className="p-2 rounded-xl text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
                     aria-label="Tutup viewer"
                   >
@@ -978,21 +991,70 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                 </div>
               </div>
 
-              <div className="flex-1 min-h-0 bg-slate-100 dark:bg-zinc-900 flex items-center justify-center overflow-hidden">
+              <div className="flex-1 min-h-0 bg-slate-100 dark:bg-zinc-900 flex items-center justify-center overflow-hidden relative">
+                
+                {/* Floating Zoom Control (Mobile & Tablet) */}
+                {(isImageFile(previewAttachment.fileName) || isPdfFile(previewAttachment.fileName)) && (
+                  <div className="absolute top-4 right-4 z-20 flex md:hidden items-center gap-1 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-md p-1.5 rounded-2xl shadow-xl border border-slate-200/80 dark:border-zinc-700/80">
+                    <button
+                      onClick={() => setZoomLevel((prev) => Math.max(prev - 0.25, 0.75))}
+                      className="p-2 rounded-xl text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-all active:scale-95"
+                      title="Perkecil"
+                    >
+                      <ZoomOut className="w-4 h-4" />
+                    </button>
+                    <span className="text-xs font-bold text-slate-700 dark:text-zinc-200 px-1.5 min-w-[42px] text-center select-none">
+                      {Math.round(zoomLevel * 100)}%
+                    </span>
+                    <button
+                      onClick={() => setZoomLevel((prev) => Math.min(prev + 0.25, 2.5))}
+                      className="p-2 rounded-xl text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-all active:scale-95"
+                      title="Perbesar"
+                    >
+                      <ZoomIn className="w-4 h-4" />
+                    </button>
+                    {zoomLevel !== 1 && (
+                      <button
+                        onClick={() => setZoomLevel(1)}
+                        className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-all border-l border-slate-200 dark:border-zinc-700 ml-0.5"
+                        title="Reset Zoom"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                )}
+
                 {isImageFile(previewAttachment.fileName) ? (
                   <div className="w-full h-full overflow-auto flex items-center justify-center p-4 sm:p-8">
-                    <img
-                      src={previewAttachment.fileUrl}
-                      alt={previewAttachment.fileName}
-                      className="max-w-full max-h-full object-contain rounded-xl shadow-lg"
-                    />
+                    <div
+                      className="transition-transform duration-200 ease-out origin-center flex items-center justify-center"
+                      style={{ transform: `scale(${zoomLevel})` }}
+                    >
+                      <img
+                        src={previewAttachment.fileUrl}
+                        alt={previewAttachment.fileName}
+                        className="max-w-full max-h-[80vh] object-contain rounded-xl shadow-lg"
+                      />
+                    </div>
                   </div>
                 ) : isPdfFile(previewAttachment.fileName) ? (
-                  <iframe
-                    src={previewAttachment.fileUrl}
-                    title={previewAttachment.fileName}
-                    className="w-full h-full border-0 bg-white"
-                  />
+                  <div className="w-full h-full overflow-auto flex relative">
+                    <div 
+                      className="w-full h-full min-w-full min-h-full transition-transform duration-200 ease-out origin-top-left"
+                      style={{
+                        transform: `scale(${zoomLevel})`,
+                        width: `${100 / zoomLevel}%`,
+                        height: `${100 / zoomLevel}%`,
+                      }}
+                    >
+                      <iframe
+                        src={previewAttachment.fileUrl.includes('drive.google.com') && previewAttachment.fileUrl.includes('/view') ? previewAttachment.fileUrl.replace('/view', '/preview') : previewAttachment.fileUrl}
+                        title={previewAttachment.fileName}
+                        className="w-full h-full border-0 bg-white"
+                      />
+                    </div>
+                  </div>
                 ) : (
                   <div className="text-center p-8">
                     <div className="mx-auto mb-4 w-14 h-14 rounded-2xl bg-white dark:bg-zinc-800 flex items-center justify-center shadow-sm">
@@ -1262,7 +1324,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                     {isUploading && (
                       <div className="mt-3 space-y-1.5">
                         <div className="flex items-center justify-between text-[10px] text-slate-500 dark:text-zinc-400">
-                          <span>Mengunggah ke Google Drive...</span>
+                          <span>Mengunggah ke Server...</span>
                           <span>{Math.round(uploadProgress)}%</span>
                         </div>
 

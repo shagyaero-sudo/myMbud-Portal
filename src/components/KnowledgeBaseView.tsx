@@ -398,7 +398,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
             >
               <div className="px-6 sm:px-8 py-5 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between shrink-0 bg-white dark:bg-zinc-900">
                 <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-100">
-                  Unggah Materi / Slide PDF Kuliah
+                  Unggah Materi / Slide PDF
                 </h3>
                 <button
                   type="button"
@@ -484,7 +484,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
 
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
-                      Berkas File PDF (Google Drive)
+                      Berkas File PDF
                     </label>
                     <div
                       onDragOver={(e) => {
@@ -551,7 +551,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                     {isUploading && (
                       <div className="mt-3 space-y-1.5">
                         <div className="flex items-center justify-between text-[10px] text-slate-500 dark:text-zinc-400">
-                          <span>Mengunggah ke Google Drive...</span>
+                          <span>Mengunggah ke Server...</span>
                           <span>{Math.round(uploadProgress)}%</span>
                         </div>
                         <div className="bg-slate-100 dark:bg-zinc-800 rounded-full h-2 w-full overflow-hidden">
