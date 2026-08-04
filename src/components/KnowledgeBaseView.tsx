@@ -551,7 +551,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                     {isUploading && (
                       <div className="mt-3 space-y-1.5">
                         <div className="flex items-center justify-between text-[10px] text-slate-500 dark:text-zinc-400">
-                          <span>Mengunggah ke Server...</span>
+                          <span>Mengunggah ke Server....</span>
                           <span>{Math.round(uploadProgress)}%</span>
                         </div>
                         <div className="bg-slate-100 dark:bg-zinc-800 rounded-full h-2 w-full overflow-hidden">
