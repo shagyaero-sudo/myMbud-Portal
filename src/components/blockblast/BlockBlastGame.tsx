@@ -23,7 +23,7 @@ import { soundFX } from './utils/audio';
 
 const HIGH_SCORE_KEY = 'block_blast_highscore';
 
-export const BlockBlastGame: React.FC = () {
+export const BlockBlastGame: React.FC = () => {
   const gridRef = useRef<HTMLDivElement | null>(null);
 
   const [grid, setGrid] = useState<Grid>(createEmptyGrid);
