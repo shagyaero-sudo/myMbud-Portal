@@ -103,7 +103,7 @@ export const Header: React.FC<HeaderProps> = ({
                 {isOfficer && (
                   <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800/60 animate-pulse ml-1">
                     <ShieldCheck className="w-3 h-3" />
-                    <span>Pengurus Active</span>
+                    <span>MODE PJ</span>
                   </span>
                 )}
               </div>
