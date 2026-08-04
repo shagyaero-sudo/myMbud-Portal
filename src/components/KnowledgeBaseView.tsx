@@ -539,7 +539,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                             <UploadCloud className="w-6 h-6 text-slate-600 dark:text-zinc-400" />
                           </div>
                           <p className="text-xs font-bold text-slate-700 dark:text-zinc-300">
-                            Klik atau seret file PDF ke sini
+                            Klik atau seret file PDF di sini
                           </p>
                           <p className="text-[10px] text-slate-500 dark:text-zinc-400">
                             File PDF maksimal 25 MB
@@ -551,7 +551,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                     {isUploading && (
                       <div className="mt-3 space-y-1.5">
                         <div className="flex items-center justify-between text-[10px] text-slate-500 dark:text-zinc-400">
-                          <span>Mengunggah ke Server....</span>
+                          <span>Mengunggah ke Server...</span>
                           <span>{Math.round(uploadProgress)}%</span>
                         </div>
                         <div className="bg-slate-100 dark:bg-zinc-800 rounded-full h-2 w-full overflow-hidden">
