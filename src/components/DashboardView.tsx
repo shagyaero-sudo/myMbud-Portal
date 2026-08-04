@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Clock,
   Calendar,
@@ -50,9 +51,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 }) => {
   const [selectedDay, setSelectedDay] = useState<DayOfWeek>('Senin');
 
-  /* =========================
-     ANNOUNCEMENT MODAL STATE
-  ========================= */
   const [showAnnModal, setShowAnnModal] = useState(false);
   const [editingAnnId, setEditingAnnId] = useState<string | null>(null);
   const [isSubmittingAnn, setIsSubmittingAnn] = useState(false);
@@ -64,14 +62,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   >('Penting');
   const [newAnnPinned, setNewAnnPinned] = useState(true);
 
-  /* =========================
-     DETAIL & PREVIEW MODALS
-  ========================= */
   const [selectedTaskModal, setSelectedTaskModal] = useState<Task | null>(null);
   const [selectedAnnModal, setSelectedAnnModal] = useState<Announcement | null>(null);
   const [previewAttachment, setPreviewAttachment] = useState<AttachmentData | null>(null);
 
-  // Carousel state for mobile announcements
   const [mobileAnnIndex, setMobileAnnIndex] = useState(0);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [isPaused, setIsPaused] = useState(false);
@@ -80,7 +74,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const activeAnnIndex = Math.min(mobileAnnIndex, Math.max(0, totalAnn - 1));
   const currentMobileAnn = state.announcements[activeAnnIndex];
 
-  // Auto-play timer for mobile carousel
   useEffect(() => {
     if (totalAnn <= 1 || isPaused || selectedAnnModal !== null) return;
 
@@ -121,7 +114,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     setTouchStartX(null);
   };
 
-  // Set default selected day based on current day
   useEffect(() => {
     const days: DayOfWeek[] = [
       'Minggu' as DayOfWeek,
@@ -224,9 +216,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }
   };
 
-  /* =========================
-     LINK PARSER HELPER
-  ========================= */
   const renderFormattedContent = (content: string) => {
     if (!content) return null;
     const urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -251,9 +240,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     });
   };
 
-  /* =========================
-     ATTACHMENT HELPERS
-  ========================= */
   const getAttachmentData = (attachment: any): AttachmentData | null => {
     if (!attachment) return null;
     if (typeof attachment === 'string') {
@@ -302,9 +288,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       return startA.localeCompare(startB);
     });
 
-  /* =========================
-     HANDLERS PENGUMUMAN FIREBASE
-  ========================= */
   const handleOpenAddAnn = () => {
     setEditingAnnId(null);
     setNewAnnTitle('');
@@ -371,7 +354,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   };
 
   return (
-    <div className="space-y-6 pb-12">
+    <motion.div 
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="space-y-6 pb-12"
+    >
       {/* Mobile & Tablet Announcements Carousel */}
       <div className="block lg:hidden bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-4 sm:p-5 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-2.5 transition-colors">
         {isOfficer && (
@@ -392,7 +380,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         ) : (
           <div className="space-y-2">
-            <div
+            <motion.div
+              layout
+              key={currentMobileAnn.id}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
               onClick={() => setSelectedAnnModal(currentMobileAnn)}
               onMouseEnter={() => setIsPaused(true)}
               onMouseLeave={() => setIsPaused(false)}
@@ -441,7 +434,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <p className="text-xs text-slate-600 dark:text-zinc-300 leading-relaxed line-clamp-2">
                 {renderFormattedContent(currentMobileAnn.content)}
               </p>
-            </div>
+            </motion.div>
 
             {totalAnn > 1 && (
               <div className="flex items-center justify-center gap-2.5 pt-0.5">
@@ -503,13 +496,20 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <button
                   key={day}
                   onClick={() => setSelectedDay(day)}
-                  className={`w-full py-2 px-1 text-[11px] sm:text-xs text-center font-medium rounded-xl transition-all ${
+                  className={`relative w-full py-2 px-1 text-[11px] sm:text-xs text-center font-medium rounded-xl transition-all ${
                     selectedDay === day
-                      ? 'bg-blue-600 text-white font-bold shadow-md shadow-blue-500/20'
+                      ? 'text-white font-bold'
                       : 'text-slate-600 dark:text-zinc-300 hover:bg-slate-200/60 dark:hover:bg-zinc-700/60'
                   }`}
                 >
-                  {day}
+                  {selectedDay === day && (
+                    <motion.div
+                      layoutId="activeDayBg"
+                      className="absolute inset-0 bg-blue-600 rounded-xl shadow-md shadow-blue-500/20"
+                      transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                    />
+                  )}
+                  <span className="relative z-10">{day}</span>
                 </button>
               ))}
             </div>
@@ -520,57 +520,69 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   Tidak ada jadwal perkuliahan untuk hari {selectedDay}.
                 </div>
               ) : (
-                filteredSchedule.map((item) => (
-                  <div
-                    key={item.id}
-                    className="p-4 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/60 hover:bg-slate-100/60 dark:hover:bg-zinc-800 transition-all flex flex-col space-y-3 border border-slate-100 dark:border-zinc-800/80"
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={selectedDay}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    className="space-y-3"
                   >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="space-y-1 min-w-0 flex-1">
-                        <h3 className="text-sm font-bold text-slate-800 dark:text-zinc-100 leading-snug pr-2">
-                          {item.course}
-                        </h3>
-                        <p className="text-xs text-slate-500 dark:text-zinc-400 truncate">
-                          Dosen: {item.lecturer}
-                        </p>
-                        <p className="text-xs text-slate-500 dark:text-zinc-400 truncate">
-                          PJ: {item.pjMatkul.replace(/\s*08\d+/g, '')}
-                        </p>
-                      </div>
-
-                      <div className="flex flex-col items-end shrink-0 text-right space-y-1">
-                        <span className="text-[11px] text-slate-500 dark:text-zinc-400 mb-0.5">
-                          {item.sks} SKS
-                        </span>
-                        <span className="text-xs font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap">
-                          {item.room}
-                        </span>
-                        <span className="text-xs font-bold text-slate-900 dark:text-zinc-100 font-sans whitespace-nowrap">
-                          {item.time}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 pt-2 border-t border-slate-200/60 dark:border-zinc-700/60 w-full">
-                      <a
-                        href="https://presensi.its.ac.id/dashboard"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-[11px] sm:text-xs font-bold flex items-center justify-center gap-2 rounded-xl transition-all shadow-sm shadow-blue-500/20 cursor-pointer"
+                    {filteredSchedule.map((item) => (
+                      <motion.div
+                        whileHover={{ scale: 1.005 }}
+                        key={item.id}
+                        className="p-4 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/60 hover:bg-slate-100/60 dark:hover:bg-zinc-800 transition-all flex flex-col space-y-3 border border-slate-100 dark:border-zinc-800/80"
                       >
-                        <UserCheck className="w-4 h-4" />
-                        <span>Presensi / Kehadiran</span>
-                      </a>
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="space-y-1 min-w-0 flex-1">
+                            <h3 className="text-sm font-bold text-slate-800 dark:text-zinc-100 leading-snug pr-2">
+                              {item.course}
+                            </h3>
+                            <p className="text-xs text-slate-500 dark:text-zinc-400 truncate">
+                              Dosen: {item.lecturer}
+                            </p>
+                            <p className="text-xs text-slate-500 dark:text-zinc-400 truncate">
+                              PJ: {item.pjMatkul.replace(/\s*08\d+/g, '')}
+                            </p>
+                          </div>
 
-                      <button
-                        onClick={() => onNavigateTab('contacts', item.course)}
-                        className="shrink-0 px-4 py-2 rounded-xl bg-slate-200/80 dark:bg-zinc-700 hover:bg-slate-200 dark:hover:bg-zinc-600 text-slate-700 dark:text-zinc-200 text-[11px] sm:text-xs font-semibold transition-all flex items-center justify-center gap-1"
-                      >
-                        <span>Kontak</span>
-                      </button>
-                    </div>
-                  </div>
-                ))
+                          <div className="flex flex-col items-end shrink-0 text-right space-y-1">
+                            <span className="text-[11px] text-slate-500 dark:text-zinc-400 mb-0.5">
+                              {item.sks} SKS
+                            </span>
+                            <span className="text-xs font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap">
+                              {item.room}
+                            </span>
+                            <span className="text-xs font-bold text-slate-900 dark:text-zinc-100 font-sans whitespace-nowrap">
+                              {item.time}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 pt-2 border-t border-slate-200/60 dark:border-zinc-700/60 w-full">
+                          <a
+                            href="https://presensi.its.ac.id/dashboard"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-[11px] sm:text-xs font-bold flex items-center justify-center gap-2 rounded-xl transition-all shadow-sm shadow-blue-500/20 cursor-pointer"
+                          >
+                            <UserCheck className="w-4 h-4" />
+                            <span>Presensi / Kehadiran</span>
+                          </a>
+
+                          <button
+                            onClick={() => onNavigateTab('contacts', item.course)}
+                            className="shrink-0 px-4 py-2 rounded-xl bg-slate-200/80 dark:bg-zinc-700 hover:bg-slate-200 dark:hover:bg-zinc-600 text-slate-700 dark:text-zinc-200 text-[11px] sm:text-xs font-semibold transition-all flex items-center justify-center gap-1"
+                          >
+                            <span>Kontak</span>
+                          </button>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                </AnimatePresence>
               )}
             </div>
           </div>
@@ -602,7 +614,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   const badge = getPillBadge(task.deadline);
                   const deadlineFormatted = formatDeadlineDetails(task.deadline);
                   return (
-                    <div
+                    <motion.div
+                      whileHover={{ scale: 1.005 }}
+                      whileTap={{ scale: 0.995 }}
                       key={task.id}
                       onClick={() => setSelectedTaskModal(task)}
                       className="p-4 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/60 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-transparent hover:border-blue-100 dark:hover:border-zinc-700 group"
@@ -633,7 +647,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                           </span>
                         </div>
                       )}
-                    </div>
+                    </motion.div>
                   );
                 })
               )}
@@ -669,7 +683,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 </div>
               ) : (
                 state.announcements.map((ann) => (
-                  <div
+                  <motion.div
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
                     key={ann.id}
                     onClick={() => setSelectedAnnModal(ann)}
                     className="p-4 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/60 space-y-1.5 border border-slate-100 dark:border-zinc-800 cursor-pointer hover:bg-slate-100/90 dark:hover:bg-zinc-800 transition-colors group"
@@ -712,7 +728,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     <div className="text-[11px] text-slate-400 dark:text-zinc-500 pt-1">
                       {formatAnnouncementDate(ann.date)}
                     </div>
-                  </div>
+                  </motion.div>
                 ))
               )}
             </div>
@@ -721,397 +737,447 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       </div>
 
       {/* Modal: Create / Edit Announcement */}
-      {showAnnModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            <div className="px-6 sm:px-8 py-5 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between shrink-0 bg-white dark:bg-zinc-900">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-100">
-                {editingAnnId ? 'Edit Pengumuman' : 'Buat Pengumuman Baru'}
-              </h3>
-              <button
-                type="button"
-                onClick={() => setShowAnnModal(false)}
-                className="p-2 rounded-2xl text-slate-400 hover:text-slate-800 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors shrink-0"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSaveAnnouncement} className="flex flex-col flex-1 overflow-hidden">
-              <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
-                    Judul Pengumuman
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={newAnnTitle}
-                    onChange={(e) => setNewAnnTitle(e.target.value)}
-                    placeholder="Misal: Perubahan Jadwal / Info Makrab"
-                    className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
-                    Kategori
-                  </label>
-                  <select
-                    value={newAnnCategory}
-                    onChange={(e) => setNewAnnCategory(e.target.value as any)}
-                    className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="Penting">Penting</option>
-                    <option value="Akademik">Akademik</option>
-                    <option value="Kegiatan">Kegiatan</option>
-                    <option value="Info">Info Umum</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
-                    Isi Pesan / Informasi
-                  </label>
-                  <textarea
-                    rows={4}
-                    required
-                    value={newAnnContent}
-                    onChange={(e) => setNewAnnContent(e.target.value)}
-                    placeholder="Tuliskan instruksi atau pengumuman lengkap untuk teman-teman..."
-                    className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-
-                <div className="flex items-center gap-2 pt-1">
-                  <input
-                    type="checkbox"
-                    id="pinCheck"
-                    checked={newAnnPinned}
-                    onChange={(e) => setNewAnnPinned(e.target.checked)}
-                    className="rounded-lg border-slate-300 dark:border-zinc-700 text-blue-600 focus:ring-blue-500"
-                  />
-                  <label htmlFor="pinCheck" className="text-xs text-slate-700 dark:text-zinc-300 cursor-pointer">
-                    Sematkan (Pin) di bagian teratas
-                  </label>
-                </div>
-              </div>
-
-              <div className="px-6 sm:px-8 py-4 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-end gap-3 shrink-0 bg-white dark:bg-zinc-900">
-                <button
-                  type="button"
-                  disabled={isSubmittingAnn}
-                  onClick={() => setShowAnnModal(false)}
-                  className="px-5 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 text-xs font-semibold hover:bg-slate-200 dark:hover:bg-zinc-700 transition-all disabled:opacity-50"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmittingAnn}
-                  className="px-5 py-2.5 rounded-2xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 shadow-md shadow-blue-500/20 transition-all flex items-center gap-2 disabled:opacity-70"
-                >
-                  {isSubmittingAnn ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Menyimpan...</span>
-                    </>
-                  ) : editingAnnId ? (
-                    'Simpan Perubahan'
-                  ) : (
-                    'Terbitkan Pengumuman'
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Modal: Task Detail (CLEANED UP PRIORITAS) */}
-      {selectedTaskModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            <div className="px-6 sm:px-8 py-5 border-b border-slate-100 dark:border-zinc-800 flex items-start justify-between gap-3 shrink-0 bg-white dark:bg-zinc-900">
-              <div className="pr-2">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-3 py-1 rounded-full">
-                    {selectedTaskModal.type} • {selectedTaskModal.course}
-                  </span>
-                  {getPillBadge(selectedTaskModal.deadline) && (
-                    <span className={`text-xs px-2.5 py-0.5 rounded-full ${getPillBadge(selectedTaskModal.deadline)?.badgeClass}`}>
-                      {getPillBadge(selectedTaskModal.deadline)?.label}
-                    </span>
-                  )}
-                </div>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-100 mt-2">{selectedTaskModal.title}</h3>
-              </div>
-              <button
-                onClick={() => setSelectedTaskModal(null)}
-                className="p-2 rounded-2xl text-slate-400 hover:text-slate-800 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all shrink-0"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-4">
-              <div className="bg-slate-50 dark:bg-zinc-800/60 p-4 rounded-2xl text-xs border border-slate-100 dark:border-zinc-800 space-y-2">
-                <div>
-                  <span className="text-slate-400 dark:text-zinc-400 block mb-0.5">Dosen:</span>
-                  <span className="font-bold text-slate-800 dark:text-zinc-200">
-                    {selectedTaskModal.assigner || 'Dosen Pengampu'}
-                  </span>
-                </div>
-
-                <div className="pt-2 border-t border-slate-200/50 dark:border-zinc-700/50">
-                  <span className="text-slate-400 dark:text-zinc-400 block mb-0.5">Tenggat:</span>
-                  <span className="font-bold text-blue-600 dark:text-blue-400 text-sm">
-                    {formatDeadlineDetails(selectedTaskModal.deadline)}
-                  </span>
-                </div>
-              </div>
-
-              <div>
-                <h4 className="text-[11px] font-bold text-slate-400 dark:text-zinc-400 uppercase tracking-wider mb-1">Rincian Tugas</h4>
-                <p className="text-xs text-slate-600 dark:text-zinc-300 bg-slate-50 dark:bg-zinc-800/80 p-4 rounded-2xl leading-relaxed whitespace-pre-line border border-slate-100 dark:border-zinc-700/60">
-                  {selectedTaskModal.description || 'Tidak ada instruksi.'}
-                </p>
-              </div>
-
-              {selectedTaskModal.attachment && (
-                <div className="space-y-1.5">
-                  <h4 className="text-[11px] font-bold text-slate-400 dark:text-zinc-400 uppercase tracking-wider">
-                    Lampiran File / Dokumen
-                  </h4>
-                  {(() => {
-                    const attachment = getAttachmentData(selectedTaskModal.attachment);
-                    if (!attachment) return null;
-                    return (
-                      <button
-                        type="button"
-                        onClick={() => setPreviewAttachment(attachment)}
-                        className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-slate-100 hover:bg-slate-200/80 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-200/80 dark:border-zinc-700 text-slate-800 dark:text-zinc-200 text-xs font-semibold transition-all group shadow-xs text-left"
-                      >
-                        <div className="flex items-center gap-3 min-w-0 pr-2">
-                          <Paperclip className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 group-hover:scale-110 transition-transform" />
-                          <div className="min-w-0">
-                            <span className="truncate block">{attachment.fileName}</span>
-                            <span className="text-[10px] font-medium text-slate-400 dark:text-zinc-500 block mt-0.5">
-                              {isImageFile(attachment.fileName)
-                                ? 'Klik untuk melihat gambar'
-                                : isPdfFile(attachment.fileName)
-                                ? 'Klik untuk membuka PDF'
-                                : 'Klik untuk melihat lampiran'}
-                            </span>
-                          </div>
-                        </div>
-                        <ExternalLink className="w-4 h-4 text-slate-400 dark:text-zinc-400 group-hover:text-slate-800 dark:group-hover:text-white shrink-0 transition-colors" />
-                      </button>
-                    );
-                  })()}
-                </div>
-              )}
-            </div>
-
-            <div className="px-6 sm:px-8 py-4 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-end gap-3 shrink-0 bg-white dark:bg-zinc-900">
-              {selectedTaskModal.classroomUrl && (
-                <a
-                  href={selectedTaskModal.classroomUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-xs font-bold transition-colors flex items-center gap-1.5 shadow-sm shadow-blue-500/20"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  <span>Link Pengumpulan</span>
-                </a>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ATTACHMENT VIEWER MODAL (NATIVE GOOGLE DRIVE ENGINE) */}
-      {previewAttachment && (
-        <div
-          className="fixed inset-0 z-[70] bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6"
-          onClick={() => setPreviewAttachment(null)}
-        >
-          <div
-            className="relative w-full max-w-6xl h-[92vh] bg-white dark:bg-zinc-950 rounded-3xl overflow-hidden shadow-2xl flex flex-col"
-            onClick={(e) => e.stopPropagation()}
+      <AnimatePresence>
+        {showAnnModal && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
           >
-            <div className="shrink-0 h-16 px-4 sm:px-6 flex items-center justify-between border-b border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/50 shrink-0">
-                  {isImageFile(previewAttachment.fileName) ? (
-                    <FileIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                  ) : (
-                    <Paperclip className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                  )}
-                </div>
-
-                <div className="min-w-0">
-                  <p className="text-xs sm:text-sm font-bold text-slate-800 dark:text-zinc-100 truncate max-w-[55vw] sm:max-w-[700px]">
-                    {previewAttachment.fileName}
-                  </p>
-                  <p className="text-[10px] text-slate-400 dark:text-zinc-500">
-                    Pratinjau lampiran
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 shrink-0">
-                <a
-                  href={previewAttachment.fileUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  download={previewAttachment.fileName}
-                  className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 text-xs font-semibold transition-colors"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  Unduh
-                </a>
-
+            <motion.div 
+              initial={{ scale: 0.92, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.92, opacity: 0, y: 15 }}
+              transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+              className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"
+            >
+              <div className="px-6 sm:px-8 py-5 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between shrink-0 bg-white dark:bg-zinc-900">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-100">
+                  {editingAnnId ? 'Edit Pengumuman' : 'Buat Pengumuman Baru'}
+                </h3>
                 <button
                   type="button"
-                  onClick={() => setPreviewAttachment(null)}
-                  className="p-2 rounded-xl text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
-                  aria-label="Tutup viewer"
+                  onClick={() => setShowAnnModal(false)}
+                  className="p-2 rounded-2xl text-slate-400 hover:text-slate-800 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors shrink-0"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
-            </div>
 
-            <div className="flex-1 min-h-0 bg-slate-100 dark:bg-zinc-900 flex items-center justify-center overflow-hidden">
-              {isImageFile(previewAttachment.fileName) ? (
-                <div className="w-full h-full overflow-auto flex items-center justify-center p-4 sm:p-8">
-                  <img
-                    src={previewAttachment.fileUrl}
-                    alt={previewAttachment.fileName}
-                    className="max-w-full max-h-full object-contain rounded-xl shadow-lg"
-                  />
-                </div>
-              ) : isPdfFile(previewAttachment.fileName) ? (
-                <iframe
-                  src={previewAttachment.fileUrl}
-                  title={previewAttachment.fileName}
-                  className="w-full h-full border-0 bg-white"
-                />
-              ) : (
-                <div className="text-center p-8">
-                  <div className="mx-auto mb-4 w-14 h-14 rounded-2xl bg-white dark:bg-zinc-800 flex items-center justify-center shadow-sm">
-                    <FileIcon className="w-7 h-7 text-slate-400 dark:text-zinc-500" />
+              <form onSubmit={handleSaveAnnouncement} className="flex flex-col flex-1 overflow-hidden">
+                <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
+                      Judul Pengumuman
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={newAnnTitle}
+                      onChange={(e) => setNewAnnTitle(e.target.value)}
+                      placeholder="Misal: Perubahan Jadwal / Info Makrab"
+                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
                   </div>
-                  <h3 className="text-sm font-bold text-slate-800 dark:text-zinc-100">
-                    Preview tidak tersedia
-                  </h3>
-                  <p className="mt-1 text-xs text-slate-500 dark:text-zinc-400 max-w-sm">
-                    Format file ini tidak dapat ditampilkan langsung di dalam myMbud.
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
+                      Kategori
+                    </label>
+                    <select
+                      value={newAnnCategory}
+                      onChange={(e) => setNewAnnCategory(e.target.value as any)}
+                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="Penting">Penting</option>
+                      <option value="Akademik">Akademik</option>
+                      <option value="Kegiatan">Kegiatan</option>
+                      <option value="Info">Info Umum</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
+                      Isi Pesan / Informasi
+                    </label>
+                    <textarea
+                      rows={4}
+                      required
+                      value={newAnnContent}
+                      onChange={(e) => setNewAnnContent(e.target.value)}
+                      placeholder="Tuliskan instruksi atau pengumuman lengkap untuk teman-teman..."
+                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-1">
+                    <input
+                      type="checkbox"
+                      id="pinCheck"
+                      checked={newAnnPinned}
+                      onChange={(e) => setNewAnnPinned(e.target.checked)}
+                      className="rounded-lg border-slate-300 dark:border-zinc-700 text-blue-600 focus:ring-blue-500"
+                    />
+                    <label htmlFor="pinCheck" className="text-xs text-slate-700 dark:text-zinc-300 cursor-pointer">
+                      Sematkan (Pin) di bagian teratas
+                    </label>
+                  </div>
+                </div>
+
+                <div className="px-6 sm:px-8 py-4 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-end gap-3 shrink-0 bg-white dark:bg-zinc-900">
+                  <button
+                    type="button"
+                    disabled={isSubmittingAnn}
+                    onClick={() => setShowAnnModal(false)}
+                    className="px-5 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 text-xs font-semibold hover:bg-slate-200 dark:hover:bg-zinc-700 transition-all disabled:opacity-50"
+                  >
+                    Batal
+                  </button>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    type="submit"
+                    disabled={isSubmittingAnn}
+                    className="px-5 py-2.5 rounded-2xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 shadow-md shadow-blue-500/20 transition-all flex items-center gap-2 disabled:opacity-70"
+                  >
+                    {isSubmittingAnn ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Menyimpan...</span>
+                      </>
+                    ) : editingAnnId ? (
+                      'Simpan Perubahan'
+                    ) : (
+                      'Terbitkan Pengumuman'
+                    )}
+                  </motion.button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Modal: Task Detail */}
+      <AnimatePresence>
+        {selectedTaskModal && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
+          >
+            <motion.div 
+              initial={{ scale: 0.92, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.92, opacity: 0, y: 15 }}
+              transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+              className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"
+            >
+              <div className="px-6 sm:px-8 py-5 border-b border-slate-100 dark:border-zinc-800 flex items-start justify-between gap-3 shrink-0 bg-white dark:bg-zinc-900">
+                <div className="pr-2">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-3 py-1 rounded-full">
+                      {selectedTaskModal.type} • {selectedTaskModal.course}
+                    </span>
+                    {getPillBadge(selectedTaskModal.deadline) && (
+                      <span className={`text-xs px-2.5 py-0.5 rounded-full ${getPillBadge(selectedTaskModal.deadline)?.badgeClass}`}>
+                        {getPillBadge(selectedTaskModal.deadline)?.label}
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-100 mt-2">{selectedTaskModal.title}</h3>
+                </div>
+                <button
+                  onClick={() => setSelectedTaskModal(null)}
+                  className="p-2 rounded-2xl text-slate-400 hover:text-slate-800 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all shrink-0"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-4">
+                <div className="bg-slate-50 dark:bg-zinc-800/60 p-4 rounded-2xl text-xs border border-slate-100 dark:border-zinc-800 space-y-2">
+                  <div>
+                    <span className="text-slate-400 dark:text-zinc-400 block mb-0.5">Dosen:</span>
+                    <span className="font-bold text-slate-800 dark:text-zinc-200">
+                      {selectedTaskModal.assigner || 'Dosen Pengampu'}
+                    </span>
+                  </div>
+
+                  <div className="pt-2 border-t border-slate-200/50 dark:border-zinc-700/50">
+                    <span className="text-slate-400 dark:text-zinc-400 block mb-0.5">Tenggat:</span>
+                    <span className="font-bold text-blue-600 dark:text-blue-400 text-sm">
+                      {formatDeadlineDetails(selectedTaskModal.deadline)}
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="text-[11px] font-bold text-slate-400 dark:text-zinc-400 uppercase tracking-wider mb-1">Rincian Tugas</h4>
+                  <p className="text-xs text-slate-600 dark:text-zinc-300 bg-slate-50 dark:bg-zinc-800/80 p-4 rounded-2xl leading-relaxed whitespace-pre-line border border-slate-100 dark:border-zinc-700/60">
+                    {selectedTaskModal.description || 'Tidak ada instruksi.'}
                   </p>
+                </div>
+
+                {selectedTaskModal.attachment && (
+                  <div className="space-y-1.5">
+                    <h4 className="text-[11px] font-bold text-slate-400 dark:text-zinc-400 uppercase tracking-wider">
+                      Lampiran File / Dokumen
+                    </h4>
+                    {(() => {
+                      const attachment = getAttachmentData(selectedTaskModal.attachment);
+                      if (!attachment) return null;
+                      return (
+                        <button
+                          type="button"
+                          onClick={() => setPreviewAttachment(attachment)}
+                          className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-slate-100 hover:bg-slate-200/80 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-200/80 dark:border-zinc-700 text-slate-800 dark:text-zinc-200 text-xs font-semibold transition-all group shadow-xs text-left"
+                        >
+                          <div className="flex items-center gap-3 min-w-0 pr-2">
+                            <Paperclip className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 group-hover:scale-110 transition-transform" />
+                            <div className="min-w-0">
+                              <span className="truncate block">{attachment.fileName}</span>
+                              <span className="text-[10px] font-medium text-slate-400 dark:text-zinc-500 block mt-0.5">
+                                {isImageFile(attachment.fileName)
+                                  ? 'Klik untuk melihat gambar'
+                                  : isPdfFile(attachment.fileName)
+                                  ? 'Klik untuk membuka PDF'
+                                  : 'Klik untuk melihat lampiran'}
+                              </span>
+                            </div>
+                          </div>
+                          <ExternalLink className="w-4 h-4 text-slate-400 dark:text-zinc-400 group-hover:text-slate-800 dark:group-hover:text-white shrink-0 transition-colors" />
+                        </button>
+                      );
+                    })()}
+                  </div>
+                )}
+              </div>
+
+              <div className="px-6 sm:px-8 py-4 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-end gap-3 shrink-0 bg-white dark:bg-zinc-900">
+                {selectedTaskModal.classroomUrl && (
+                  <a
+                    href={selectedTaskModal.classroomUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-xs font-bold transition-colors flex items-center gap-1.5 shadow-sm shadow-blue-500/20"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    <span>Link Pengumpulan</span>
+                  </a>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Attachment Viewer Modal */}
+      <AnimatePresence>
+        {previewAttachment && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[70] bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6"
+            onClick={() => setPreviewAttachment(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.94, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.94, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+              className="relative w-full max-w-6xl h-[92vh] bg-white dark:bg-zinc-950 rounded-3xl overflow-hidden shadow-2xl flex flex-col"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="shrink-0 h-16 px-4 sm:px-6 flex items-center justify-between border-b border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/50 shrink-0">
+                    {isImageFile(previewAttachment.fileName) ? (
+                      <FileIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                    ) : (
+                      <Paperclip className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                    )}
+                  </div>
+
+                  <div className="min-w-0">
+                    <p className="text-xs sm:text-sm font-bold text-slate-800 dark:text-zinc-100 truncate max-w-[55vw] sm:max-w-[700px]">
+                      {previewAttachment.fileName}
+                    </p>
+                    <p className="text-[10px] text-slate-400 dark:text-zinc-500">
+                      Pratinjau lampiran
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
                   <a
                     href={previewAttachment.fileUrl}
                     target="_blank"
                     rel="noreferrer"
                     download={previewAttachment.fileName}
-                    className="inline-flex items-center gap-2 mt-4 px-4 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-colors"
+                    className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 text-xs font-semibold transition-colors"
                   >
-                    <Download className="w-4 h-4" />
-                    Unduh File
+                    <Download className="w-3.5 h-3.5" />
+                    Unduh
                   </a>
-                </div>
-              )}
-            </div>
 
-            <div className="sm:hidden shrink-0 border-t border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-3">
-              <a
-                href={previewAttachment.fileUrl}
-                target="_blank"
-                rel="noreferrer"
-                download={previewAttachment.fileName}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 text-xs font-semibold transition-colors"
-              >
-                <Download className="w-4 h-4" />
-                Unduh Lampiran
-              </a>
-            </div>
-          </div>
-        </div>
-      )}
+                  <button
+                    type="button"
+                    onClick={() => setPreviewAttachment(null)}
+                    className="p-2 rounded-xl text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
+                    aria-label="Tutup viewer"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex-1 min-h-0 bg-slate-100 dark:bg-zinc-900 flex items-center justify-center overflow-hidden">
+                {isImageFile(previewAttachment.fileName) ? (
+                  <div className="w-full h-full overflow-auto flex items-center justify-center p-4 sm:p-8">
+                    <img
+                      src={previewAttachment.fileUrl}
+                      alt={previewAttachment.fileName}
+                      className="max-w-full max-h-full object-contain rounded-xl shadow-lg"
+                    />
+                  </div>
+                ) : isPdfFile(previewAttachment.fileName) ? (
+                  <iframe
+                    src={previewAttachment.fileUrl}
+                    title={previewAttachment.fileName}
+                    className="w-full h-full border-0 bg-white"
+                  />
+                ) : (
+                  <div className="text-center p-8">
+                    <div className="mx-auto mb-4 w-14 h-14 rounded-2xl bg-white dark:bg-zinc-800 flex items-center justify-center shadow-sm">
+                      <FileIcon className="w-7 h-7 text-slate-400 dark:text-zinc-500" />
+                    </div>
+                    <h3 className="text-sm font-bold text-slate-800 dark:text-zinc-100">
+                      Preview tidak tersedia
+                    </h3>
+                    <p className="mt-1 text-xs text-slate-500 dark:text-zinc-400 max-w-sm">
+                      Format file ini tidak dapat ditampilkan langsung di dalam myMbud.
+                    </p>
+                    <a
+                      href={previewAttachment.fileUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      download={previewAttachment.fileName}
+                      className="inline-flex items-center gap-2 mt-4 px-4 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-colors"
+                    >
+                      <Download className="w-4 h-4" />
+                      Unduh File
+                    </a>
+                  </div>
+                )}
+              </div>
+
+              <div className="sm:hidden shrink-0 border-t border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-3">
+                <a
+                  href={previewAttachment.fileUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  download={previewAttachment.fileName}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 text-xs font-semibold transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  Unduh Lampiran
+                </a>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Modal: Announcement Detail */}
-      {selectedAnnModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            <div className="px-6 sm:px-8 py-5 border-b border-slate-100 dark:border-zinc-800 flex items-start justify-between gap-3 shrink-0 bg-white dark:bg-zinc-900">
-              <div className="pr-2 space-y-1">
-                <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-3 py-1 rounded-full">
-                  {selectedAnnModal.category}
-                </span>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-100 pt-1">
-                  {selectedAnnModal.title}
-                </h3>
-                <p className="text-[11px] text-slate-400 dark:text-zinc-500">
-                  Diterbitkan: {formatAnnouncementDate(selectedAnnModal.date)} •{' '}
-                  {selectedAnnModal.author || 'Pengurus Kelas'}
-                </p>
-              </div>
-              <button
-                onClick={() => setSelectedAnnModal(null)}
-                className="p-2 rounded-2xl text-slate-400 hover:text-slate-800 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all shrink-0"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-6 sm:p-8">
-              <div className="text-xs text-slate-600 dark:text-zinc-300 bg-slate-50 dark:bg-zinc-800/80 p-4 rounded-2xl leading-relaxed whitespace-pre-line border border-slate-100 dark:border-zinc-700/60">
-                {renderFormattedContent(selectedAnnModal.content)}
-              </div>
-            </div>
-
-            <div className="px-6 sm:px-8 py-4 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-between shrink-0 bg-white dark:bg-zinc-900">
-              {isOfficer ? (
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => {
-                      const ann = selectedAnnModal;
-                      setSelectedAnnModal(null);
-                      handleOpenEditAnn(ann);
-                    }}
-                    className="px-3.5 py-2 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 rounded-2xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
-                  >
-                    <Edit2 className="w-3.5 h-3.5" />
-                    Edit
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      const annId = selectedAnnModal.id;
-                      setSelectedAnnModal(null);
-                      handleDeleteAnn(annId);
-                    }}
-                    className="px-3.5 py-2 bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/60 rounded-2xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    Hapus
-                  </button>
+      <AnimatePresence>
+        {selectedAnnModal && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
+          >
+            <motion.div 
+              initial={{ scale: 0.92, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.92, opacity: 0, y: 15 }}
+              transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+              className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"
+            >
+              <div className="px-6 sm:px-8 py-5 border-b border-slate-100 dark:border-zinc-800 flex items-start justify-between gap-3 shrink-0 bg-white dark:bg-zinc-900">
+                <div className="pr-2 space-y-1">
+                  <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-3 py-1 rounded-full">
+                    {selectedAnnModal.category}
+                  </span>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-100 pt-1">
+                    {selectedAnnModal.title}
+                  </h3>
+                  <p className="text-[11px] text-slate-400 dark:text-zinc-500">
+                    Diterbitkan: {formatAnnouncementDate(selectedAnnModal.date)} •{' '}
+                    {selectedAnnModal.author || 'Pengurus Kelas'}
+                  </p>
                 </div>
-              ) : (
-                <div />
-              )}
+                <button
+                  onClick={() => setSelectedAnnModal(null)}
+                  className="p-2 rounded-2xl text-slate-400 hover:text-slate-800 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all shrink-0"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
 
-              <button
-                type="button"
-                onClick={() => setSelectedAnnModal(null)}
-                className="px-5 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 text-xs font-semibold hover:bg-slate-200 dark:hover:bg-zinc-700 transition-all"
-              >
-                Tutup
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+              <div className="flex-1 overflow-y-auto p-6 sm:p-8">
+                <div className="text-xs text-slate-600 dark:text-zinc-300 bg-slate-50 dark:bg-zinc-800/80 p-4 rounded-2xl leading-relaxed whitespace-pre-line border border-slate-100 dark:border-zinc-700/60">
+                  {renderFormattedContent(selectedAnnModal.content)}
+                </div>
+              </div>
+
+              <div className="px-6 sm:px-8 py-4 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-between shrink-0 bg-white dark:bg-zinc-900">
+                {isOfficer ? (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        const ann = selectedAnnModal;
+                        setSelectedAnnModal(null);
+                        handleOpenEditAnn(ann);
+                      }}
+                      className="px-3.5 py-2 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 rounded-2xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                      Edit
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        const annId = selectedAnnModal.id;
+                        setSelectedAnnModal(null);
+                        handleDeleteAnn(annId);
+                      }}
+                      className="px-3.5 py-2 bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/60 rounded-2xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      Hapus
+                    </button>
+                  </div>
+                ) : (
+                  <div />
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedAnnModal(null)}
+                  className="px-5 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 text-xs font-semibold hover:bg-slate-200 dark:hover:bg-zinc-700 transition-all"
+                >
+                  Tutup
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 };

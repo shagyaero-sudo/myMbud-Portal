@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import {
   LayoutDashboard,
   Users,
@@ -74,9 +75,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, urgen
 
   return (
     <>
-      {/* Desktop Navigation Sidebar */}
       <aside className="hidden lg:flex flex-col w-64 bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-5 text-slate-700 dark:text-zinc-200 min-h-[calc(100vh-80px)] shadow-[0_4px_25px_-5px_rgba(0,0,0,0.03)] dark:shadow-none shrink-0 my-2 transition-colors">
-        {/* Personal Desktop Greeting */}
         <div className="hidden lg:block mb-5 px-2 py-1 transition-all">
           <h2 className="text-sm font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
             {getGreeting()}
@@ -91,27 +90,35 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, urgen
             const Icon = item.icon;
             const isActive = activeTab === item.id;
             return (
-              <button
+              <motion.button
+                whileTap={{ scale: 0.98 }}
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-medium transition-all ${
+                className={`relative w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-medium transition-all ${
                   isActive
-                    ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 font-semibold shadow-xs'
+                    ? 'text-blue-600 dark:text-blue-400 font-semibold'
                     : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100 hover:bg-slate-50 dark:hover:bg-zinc-800/60'
                 }`}
               >
-                <div className="flex items-center gap-3">
+                {isActive && (
+                  <motion.div
+                    layoutId="activeSidebarBg"
+                    className="absolute inset-0 bg-blue-50 dark:bg-blue-950/60 rounded-2xl shadow-xs"
+                    transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                  />
+                )}
+                <div className="relative z-10 flex items-center gap-3">
                   <Icon className={`w-4 h-4 ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-zinc-500'}`} />
                   <span>{item.label}</span>
                 </div>
                 {item.badge ? (
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${isActive ? 'bg-blue-600 text-white' : 'bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300'}`}>
+                  <span className={`relative z-10 text-[10px] font-bold px-2 py-0.5 rounded-full ${isActive ? 'bg-blue-600 text-white' : 'bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300'}`}>
                     {item.badge}
                   </span>
                 ) : (
-                  isActive && <ChevronRight className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  isActive && <ChevronRight className="relative z-10 w-4 h-4 text-blue-600 dark:text-blue-400" />
                 )}
-              </button>
+              </motion.button>
             );
           })}
         </nav>
@@ -122,7 +129,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, urgen
         </div>
       </aside>
 
-      {/* Mobile Sticky Bottom Glassmorphism Navigation */}
+      {/* Mobile Bottom Navigation */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/70 dark:bg-zinc-950/90 backdrop-blur-xl border-t border-slate-200/50 dark:border-zinc-800 px-3 py-2 flex items-center justify-around shadow-lg transition-colors">
         {[
           { id: 'dashboard' as TabType, label: 'Menu', icon: LayoutDashboard },
@@ -137,13 +144,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, urgen
               key={item.id}
               onClick={() => setActiveTab(item.id)}
               className={`relative flex flex-col items-center justify-center py-1 px-3 rounded-2xl transition-all ${
-                isActive ? 'text-blue-600 dark:text-blue-400 font-bold bg-blue-50/80 dark:bg-blue-950/60 shadow-xs' : 'text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-200'
+                isActive ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-slate-500 dark:text-zinc-400'
               }`}
             >
-              <Icon className={`w-4 h-4 mb-0.5 ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-zinc-500'}`} />
-              <span className="text-[10px] tracking-tight">{item.label}</span>
+              {isActive && (
+                <motion.div
+                  layoutId="activeBottomTab"
+                  className="absolute inset-0 bg-blue-50/80 dark:bg-blue-950/60 rounded-2xl shadow-xs"
+                  transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                />
+              )}
+              <Icon className={`relative z-10 w-4 h-4 mb-0.5 ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-zinc-500'}`} />
+              <span className="relative z-10 text-[10px] tracking-tight">{item.label}</span>
               {item.badge ? (
-                <span className="absolute -top-1 -right-0.5 bg-blue-600 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-xs">
+                <span className="absolute -top-1 -right-0.5 bg-blue-600 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-xs z-20">
                   {item.badge}
                 </span>
               ) : null}

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Calculator, Plus, Trash2, Award, Target, RefreshCw } from 'lucide-react';
 import { CourseGrade, GradeComponent } from '../types';
 
@@ -18,7 +19,6 @@ export const GradeCalculatorView: React.FC<GradeCalculatorViewProps> = () => {
 
   const [targetLetter, setTargetLetter] = useState<'A' | 'A-' | 'B+' | 'B'>('A');
 
-  // Grade conversion rules (4.0 scale)
   const getLetterGradeAndGpa = (finalScore: number) => {
     if (finalScore >= 85) return { letter: 'A', gpa: 4.0, bg: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
     if (finalScore >= 80) return { letter: 'A-', gpa: 3.7, bg: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
@@ -95,8 +95,12 @@ export const GradeCalculatorView: React.FC<GradeCalculatorViewProps> = () => {
   };
 
   return (
-    <div className="space-y-5 pb-12">
-      {/* Header Banner */}
+    <motion.div 
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="space-y-5 pb-12"
+    >
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 p-5 rounded-3xl shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none transition-colors">
         <div>
           <h2 className="text-lg font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
@@ -108,17 +112,18 @@ export const GradeCalculatorView: React.FC<GradeCalculatorViewProps> = () => {
           </p>
         </div>
 
-        <button
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
           onClick={handleReset}
           className="px-3.5 py-2 rounded-2xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 font-semibold text-xs transition-all flex items-center justify-center gap-1.5 shrink-0"
         >
           <RefreshCw className="w-3.5 h-3.5 text-slate-500 dark:text-zinc-400" />
           <span>Reset Kalkulator</span>
-        </button>
+        </motion.button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        {/* Left Column (7 Cols): Components Weight & Score Inputs */}
         <div className="lg:col-span-7 bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-5 sm:p-6 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-4 transition-colors">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-zinc-800 pb-3">
             <div>
@@ -126,12 +131,12 @@ export const GradeCalculatorView: React.FC<GradeCalculatorViewProps> = () => {
               <p className="text-xs text-slate-500 dark:text-zinc-400">Total Bobot Komponen Saat Ini: <span className="font-bold text-slate-700 dark:text-zinc-300">{totalWeight}%</span></p>
             </div>
 
-            {/* Input SKS Manual Dropdown / Selector */}
             <div className="flex items-center gap-2 bg-slate-50 dark:bg-zinc-800/80 p-2 rounded-2xl border border-slate-200/80 dark:border-zinc-700 shrink-0">
               <span className="text-xs font-bold text-slate-700 dark:text-zinc-300 pl-1">Beban SKS:</span>
               <div className="flex items-center gap-1">
                 {[1, 2, 3, 4].map((sksVal) => (
-                  <button
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
                     key={sksVal}
                     type="button"
                     onClick={() => setSks(sksVal)}
@@ -142,7 +147,7 @@ export const GradeCalculatorView: React.FC<GradeCalculatorViewProps> = () => {
                     }`}
                   >
                     {sksVal} SKS
-                  </button>
+                  </motion.button>
                 ))}
               </div>
             </div>
@@ -155,80 +160,87 @@ export const GradeCalculatorView: React.FC<GradeCalculatorViewProps> = () => {
             </div>
           )}
 
-          {/* Component Sliders & Numerical Inputs */}
           <div className="space-y-3.5">
-            {components.map((comp, idx) => (
-              <div key={comp.id || idx} className="p-4 rounded-2xl bg-slate-50/90 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 space-y-3">
-                <div className="flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
-                  <input
-                    type="text"
-                    value={comp.name}
-                    onChange={(e) => handleNameChange(idx, e.target.value)}
-                    placeholder="Nama Komponen"
-                    className="bg-transparent text-xs font-bold text-slate-900 dark:text-zinc-100 border-b border-slate-300 dark:border-zinc-700 focus:border-blue-600 dark:focus:border-blue-400 focus:outline-none py-0.5 flex-1 min-w-[140px]"
-                  />
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-[11px] text-slate-500 dark:text-zinc-400 font-medium">Bobot:</span>
+            <AnimatePresence>
+              {components.map((comp, idx) => (
+                <motion.div 
+                  layout
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  key={comp.id || idx} 
+                  className="p-4 rounded-2xl bg-slate-50/90 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 space-y-3"
+                >
+                  <div className="flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
                     <input
-                      type="number"
-                      min={0}
-                      max={100}
-                      value={comp.weight}
-                      onChange={(e) => handleWeightChange(idx, parseFloat(e.target.value) || 0)}
-                      className="w-14 px-2 py-1 rounded-xl bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs font-mono font-bold text-slate-900 dark:text-zinc-100 text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      type="text"
+                      value={comp.name}
+                      onChange={(e) => handleNameChange(idx, e.target.value)}
+                      placeholder="Nama Komponen"
+                      className="bg-transparent text-xs font-bold text-slate-900 dark:text-zinc-100 border-b border-slate-300 dark:border-zinc-700 focus:border-blue-600 dark:focus:border-blue-400 focus:outline-none py-0.5 flex-1 min-w-[140px]"
                     />
-                    <span className="text-xs text-slate-500 dark:text-zinc-400 font-bold">%</span>
 
-                    <button
-                      onClick={() => handleDeleteComponent(idx)}
-                      className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors ml-1 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40"
-                      title="Hapus Komponen"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-[11px] text-slate-500 dark:text-zinc-400 font-medium">Bobot:</span>
+                      <input
+                        type="number"
+                        min={0}
+                        max={100}
+                        value={comp.weight}
+                        onChange={(e) => handleWeightChange(idx, parseFloat(e.target.value) || 0)}
+                        className="w-14 px-2 py-1 rounded-xl bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs font-mono font-bold text-slate-900 dark:text-zinc-100 text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <span className="text-xs text-slate-500 dark:text-zinc-400 font-bold">%</span>
+
+                      <button
+                        onClick={() => handleDeleteComponent(idx)}
+                        className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors ml-1 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40"
+                        title="Hapus Komponen"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
-                </div>
 
-                {/* Score Slider & Value Box */}
-                <div className="flex items-center gap-4">
-                  <input
-                    type="range"
-                    min={0}
-                    max={100}
-                    value={comp.score}
-                    onChange={(e) => handleScoreChange(idx, parseFloat(e.target.value))}
-                    className="flex-1 accent-blue-600 cursor-pointer h-2 bg-slate-200 dark:bg-zinc-700 rounded-lg"
-                  />
-
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400">Nilai:</span>
+                  <div className="flex items-center gap-4">
                     <input
-                      type="number"
+                      type="range"
                       min={0}
                       max={100}
                       value={comp.score}
-                      onChange={(e) => handleScoreChange(idx, parseFloat(e.target.value) || 0)}
-                      className="w-16 px-2.5 py-1 rounded-xl bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs font-mono font-extrabold text-blue-600 dark:text-blue-400 text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      onChange={(e) => handleScoreChange(idx, parseFloat(e.target.value))}
+                      className="flex-1 accent-blue-600 cursor-pointer h-2 bg-slate-200 dark:bg-zinc-700 rounded-lg"
                     />
+
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400">Nilai:</span>
+                      <input
+                        type="number"
+                        min={0}
+                        max={100}
+                        value={comp.score}
+                        onChange={(e) => handleScoreChange(idx, parseFloat(e.target.value) || 0)}
+                        className="w-16 px-2.5 py-1 rounded-xl bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs font-mono font-extrabold text-blue-600 dark:text-blue-400 text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
                   </div>
-                </div>
-              </div>
-            ))}
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
 
-          <button
+          <motion.button
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
             onClick={handleAddComponent}
             className="w-full py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 hover:bg-slate-100 dark:hover:bg-zinc-800 border border-dashed border-slate-300 dark:border-zinc-700 text-slate-700 dark:text-zinc-300 text-xs font-semibold transition-all flex items-center justify-center gap-2"
           >
             <Plus className="w-4 h-4 text-blue-600 dark:text-blue-400" />
             <span>Tambah Komponen Penilaian</span>
-          </button>
+          </motion.button>
         </div>
 
-        {/* Right Column (5 Cols): Result Card & Target Solver */}
         <div className="lg:col-span-5 space-y-5">
-          {/* Projected Final Grade Summary Card */}
           <div className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl p-6 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-4 transition-colors">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 pb-3">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-zinc-100 flex items-center gap-1.5">
@@ -243,19 +255,23 @@ export const GradeCalculatorView: React.FC<GradeCalculatorViewProps> = () => {
                 <p className="text-3xl font-black text-slate-900 dark:text-zinc-100 font-mono mt-0.5">
                   {currentFinalScore.toFixed(1)} <span className="text-sm font-semibold text-slate-400 dark:text-zinc-500">/ 100</span>
                 </p>
-                {/* Dynamically synchronized SKS */}
                 <p className="text-xs font-bold text-blue-600 dark:text-blue-400 mt-1">Bobot SKS: {sks} SKS</p>
               </div>
 
-              <div className={`px-5 py-3 rounded-2xl border text-center ${gradeInfo.bg}`}>
+              <motion.div 
+                key={gradeInfo.letter}
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                className={`px-5 py-3 rounded-2xl border text-center ${gradeInfo.bg}`}
+              >
                 <div className="text-3xl font-black font-mono">{gradeInfo.letter}</div>
                 <div className="text-[10px] font-extrabold uppercase tracking-wider mt-0.5">
                   IP: {gradeInfo.gpa.toFixed(1)}
                 </div>
-              </div>
+              </motion.div>
             </div>
 
-            {/* Standard Conversion Legend */}
             <div className="p-3.5 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/40 border border-slate-100 dark:border-zinc-800 text-[11px] text-slate-600 dark:text-zinc-300 space-y-1">
               <p className="font-bold text-slate-800 dark:text-zinc-200">Standar Konversi Huruf Mutu ITS:</p>
               <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 font-mono text-[10px] text-slate-500 dark:text-zinc-400">
@@ -267,7 +283,6 @@ export const GradeCalculatorView: React.FC<GradeCalculatorViewProps> = () => {
             </div>
           </div>
 
-          {/* Target Grade Solver Card */}
           <div className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl p-6 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-4 transition-colors">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 pb-3">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-zinc-100 flex items-center gap-1.5">
@@ -286,7 +301,8 @@ export const GradeCalculatorView: React.FC<GradeCalculatorViewProps> = () => {
               <span className="text-xs font-semibold text-slate-600 dark:text-zinc-400">Target Huruf Mutu:</span>
               <div className="flex items-center gap-1 bg-slate-100 dark:bg-zinc-800 p-1 rounded-xl border border-slate-200/60 dark:border-zinc-700">
                 {(['A', 'A-', 'B+', 'B'] as const).map((lettr) => (
-                  <button
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
                     key={lettr}
                     type="button"
                     onClick={() => setTargetLetter(lettr)}
@@ -297,12 +313,11 @@ export const GradeCalculatorView: React.FC<GradeCalculatorViewProps> = () => {
                     }`}
                   >
                     {lettr}
-                  </button>
+                  </motion.button>
                 ))}
               </div>
             </div>
 
-            {/* Target Solution Result */}
             <div className="p-4 rounded-2xl bg-blue-50/60 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900 space-y-2">
               <div className="text-[11px] text-slate-600 dark:text-zinc-300">
                 Nilai <span className="font-bold text-slate-800 dark:text-zinc-100">{uasComponent ? uasComponent.name : 'UAS'}</span> Minimal yang Dibutuhkan:
@@ -329,6 +344,6 @@ export const GradeCalculatorView: React.FC<GradeCalculatorViewProps> = () => {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
