@@ -440,9 +440,9 @@ export const Header: React.FC<HeaderProps> = ({
                 <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 mx-auto flex items-center justify-center">
                   <KeyRound className="w-6 h-6" />
                 </div>
-                <h3 className="text-base font-bold text-slate-800 dark:text-zinc-100">Autentikasi Pengurus</h3>
+                <h3 className="text-base font-bold text-slate-800 dark:text-zinc-100">Apakah kamu PJ?! </h3>
                 <p className="text-xs text-slate-500 dark:text-zinc-400">
-                  Masukkan 6 digit PIN Pengurus untuk mengaktifkan mode kelola data.
+                  Jika iya, masukkan PIN untuk masuk mode kelola data.
                 </p>
               </div>
 
