@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MbudiaryPost, UserProfile, FeedSort } from '../types';
-import { getPosts } from '../lib/storage';
+import { getPosts } from './lib/storage';
 import { PostCard } from './PostCard';
 import { 
   Search, 
