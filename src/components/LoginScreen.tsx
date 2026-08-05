@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { STUDENTS_DATA } from '../data/studentsData';
 
 interface LoginScreenProps {
   onLoginSuccess: () => void;
@@ -13,11 +14,23 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // LOGIKA SEMENTARA (Sesuai NRP & PIN)
-    if (nrp === '5033251046' && pin === '2810') {
+    // 1. Validasi Prefix NRP (Harus diawali 5033251 dan total 10 digit)
+    if (!nrp.startsWith('5033251') || nrp.length !== 10) {
+      setError(true);
+      setPin('');
+      return;
+    }
+
+    // 2. Ambil 3 digit suffix NRP (misal '046')
+    const suffix = nrp.slice(-3);
+    const student = STUDENTS_DATA[suffix];
+
+    // 3. Cocokkan dengan data mahasiswa dan PIN
+    if (student && student.pin === pin) {
       setError(false);
       localStorage.setItem('mymbud_auth', 'true');
-      localStorage.setItem('mymbud_user_name', 'Aero'); // Simpan nama panggilan
+      localStorage.setItem('mymbud_user_name', student.name); // Simpan nama panggilan otomatis
+      localStorage.setItem('mymbud_user_nrp', nrp);
       onLoginSuccess();
     } else {
       setError(true);
@@ -29,22 +42,19 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
     <div className="min-h-screen bg-white dark:bg-[#09090b] flex flex-col lg:flex-row font-sans selection:bg-blue-500 selection:text-white">
       
       {/* BAGIAN KIRI / ATAS: GAMBAR SCRAPBOOK */}
-      {/* Container dibuat memakan porsi besar di HP dan bg-white agar blending dgn gambar */}
-      <div className="w-full lg:w-1/2 h-[58vh] lg:h-screen bg-white relative flex items-center justify-end overflow-hidden">
+      <div className="w-full lg:w-1/2 h-[45vh] lg:h-screen bg-white relative flex items-center justify-center p-2 lg:p-8 overflow-hidden">
         <motion.img 
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6 }}
           src="/collase.png" 
           alt="Kolase Kelas A" 
-          // object-cover & object-right memastikan gambar NABRAK ke tepi kanan tanpa celah
-          className="absolute inset-0 w-full h-full object-cover object-right"
+          className="w-full h-full object-contain object-bottom lg:object-center drop-shadow-sm"
         />
       </div>
 
       {/* BAGIAN KANAN / BAWAH: FORM LOGIN */}
-      {/* Padding dan margin dikurangi agar form lebih ramping/compact di HP */}
-      <div className="w-full lg:w-1/2 flex-1 flex flex-col justify-center bg-white dark:bg-[#09090b] rounded-t-[2.5rem] lg:rounded-none -mt-10 lg:mt-0 relative z-20 px-6 py-8 sm:px-12 lg:px-24 shadow-[0_-10px_40px_rgba(0,0,0,0.08)] lg:shadow-none">
+      <div className="w-full lg:w-1/2 flex-1 flex flex-col justify-center bg-white dark:bg-[#09090b] rounded-t-[2.5rem] lg:rounded-none -mt-6 lg:mt-0 relative z-20 px-6 py-8 sm:px-12 lg:px-24 shadow-[0_-10px_40px_rgba(0,0,0,0.08)] lg:shadow-none">
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -105,7 +115,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
 
             {error && (
               <p className="text-[10px] sm:text-xs font-bold text-rose-500 pt-0.5">
-                Kredensial tidak valid, periksa kembali!
+                NRP / PIN salah atau tidak terdaftar!
               </p>
             )}
 
@@ -118,8 +128,14 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
             </button>
           </form>
 
+          {/* Tautan Bantuan ke WhatsApp */}
           <div className="mt-5 text-right">
-            <a href="#" className="text-[10px] sm:text-xs font-medium text-slate-500 hover:text-slate-800 dark:hover:text-zinc-300 transition-colors">
+            <a 
+              href="https://wa.me/6285182284769?text=Halo%20Aero,%20aku%20butuh%20bantuan%20akses%20login%20myMbud%20Portal" 
+              target="_blank" 
+              rel="noreferrer"
+              className="text-[10px] sm:text-xs font-medium text-slate-500 hover:text-slate-800 dark:hover:text-zinc-300 transition-colors"
+            >
               Bantuan?
             </a>
           </div>
