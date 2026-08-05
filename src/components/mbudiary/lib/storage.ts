@@ -3,6 +3,7 @@ import {
   collection,
   deleteDoc,
   doc,
+  getDoc,
   getDocs,
   onSnapshot,
   orderBy,
@@ -23,6 +24,7 @@ export const USER_EMOJI_KEY = 'mymbud_user_emoji';
 const POSTS_COLLECTION = 'mbudiary_posts';
 const REPLIES_COLLECTION = 'mbudiary_replies';
 const FOLLOWS_COLLECTION = 'mbudiary_follows';
+const USERS_COLLECTION = 'mbudiary_users';
 
 let postsCache: MbudiaryPost[] = [];
 let repliesCache: MbudiaryReply[] = [];
@@ -68,10 +70,59 @@ function normalizeFollow(data: Record<string, any>) {
 }
 
 /**
+ * Sinkronkan profil user dengan Firestore berdasarkan NRP.
+ * Panggil fungsi ini saat user login atau Mbudiary dimuat.
+ */
+export async function syncUserProfileWithFirebase(): Promise<UserProfile> {
+  const currentProfile = getUserProfile();
+  if (!currentProfile.nrp || currentProfile.nrp === 'unknown') {
+    return currentProfile;
+  }
+
+  const userDocRef = doc(db, USERS_COLLECTION, currentProfile.nrp.toLowerCase());
+
+  try {
+    const docSnap = await getDoc(userDocRef);
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      const syncedProfile: UserProfile = {
+        nickname: data.nickname || currentProfile.nickname,
+        nrp: currentProfile.nrp,
+        isOfficer: data.isOfficer !== undefined ? Boolean(data.isOfficer) : currentProfile.isOfficer,
+        emoji: data.emoji || currentProfile.emoji || '😊',
+      };
+
+      // Perbarui LocalStorage agar tampilan lokal selalu up-to-date
+      localStorage.setItem(USER_NAME_KEY, syncedProfile.nickname);
+      localStorage.setItem(USER_OFFICER_KEY, String(syncedProfile.isOfficer));
+      localStorage.setItem(USER_EMOJI_KEY, syncedProfile.emoji);
+      emit('mbud_user_change');
+
+      return syncedProfile;
+    } else {
+      // Jika profil belum ada di Cloud Firestore, daftarkan profil awal
+      await setDoc(userDocRef, {
+        nickname: currentProfile.nickname,
+        nrp: currentProfile.nrp.toLowerCase(),
+        isOfficer: currentProfile.isOfficer,
+        emoji: currentProfile.emoji,
+        updatedAt: serverTimestamp(),
+      });
+    }
+  } catch (error) {
+    console.error('[mbudiary] Gagal mengamankan/sinkron profil ke Firestore:', error);
+  }
+
+  return currentProfile;
+}
+
+/**
  * Starts Firestore realtime listeners. Call this once when mbudiary mounts.
- * No fake seed account/data is created here: identity comes from myMbud localStorage.
  */
 export function initializeMbudiary(): () => void {
+  // Jalankan sinkronisasi profil saat Mbudiary di-mount
+  syncUserProfileWithFirebase();
+
   if (initialized && unsubscribeAll) return unsubscribeAll;
 
   initialized = true;
@@ -120,12 +171,28 @@ export function getUserProfile(): UserProfile {
   };
 }
 
-export function saveUserProfile(profile: UserProfile) {
+export async function saveUserProfile(profile: UserProfile) {
   localStorage.setItem(USER_NAME_KEY, profile.nickname);
   localStorage.setItem(USER_NRP_KEY, profile.nrp);
   localStorage.setItem(USER_OFFICER_KEY, String(profile.isOfficer));
   if (profile.emoji) localStorage.setItem(USER_EMOJI_KEY, profile.emoji);
   emit('mbud_user_change');
+
+  // Simpan/Perbarui juga secara permanen di Cloud Firestore
+  if (profile.nrp && profile.nrp !== 'unknown') {
+    try {
+      const userDocRef = doc(db, USERS_COLLECTION, profile.nrp.toLowerCase());
+      await setDoc(userDocRef, {
+        nickname: profile.nickname,
+        nrp: profile.nrp.toLowerCase(),
+        isOfficer: profile.isOfficer,
+        emoji: profile.emoji || '😊',
+        updatedAt: serverTimestamp(),
+      }, { merge: true });
+    } catch (error) {
+      console.error('[mbudiary] Gagal menyimpan perubahan profil ke Firestore:', error);
+    }
+  }
 }
 
 export function getPosts(): MbudiaryPost[] {
