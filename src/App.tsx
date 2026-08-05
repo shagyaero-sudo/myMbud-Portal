@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { collection, getDocs, addDoc, deleteDoc, doc, query, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, getDocs, addDoc, deleteDoc, doc, Timestamp } from 'firebase/firestore';
 import { db } from './services/firebase';
 import { subscribeAnnouncements } from './services/announcements';
 
@@ -20,13 +20,13 @@ import { LetterGeneratorView } from './components/LetterGeneratorView';
 import { PdfViewerModal } from './components/PdfViewerModal';
 import { SoftForceModal } from './components/SoftForceModal';
 import { BlockBlastView } from './components/blockblast/BlockBlastView';
+import { GpaCalculatorModal } from './components/GpaCalculatorModal';
 
 import {
   AppState,
   MaterialFile,
   Task,
   Contact,
-  Announcement,
   GroupResult,
 } from './types';
 
@@ -63,6 +63,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
   const [selectedContactCourse, setSelectedContactCourse] = useState<string>('ALL');
   const [isOfficer, setIsOfficer] = useState<boolean>(false);
+  const [isGpaModalOpen, setIsGpaModalOpen] = useState<boolean>(false);
 
   const handleNavigateTab = useCallback(
     (tab: TabType, courseFilter?: string) => {
@@ -387,12 +388,13 @@ export default function App() {
         setTheme={setTheme}
       />
 
-  <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 flex flex-col lg:flex-row gap-6">
+      <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 flex flex-col lg:flex-row gap-6">
 
         <Sidebar
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           urgentTaskCount={urgentTaskCount}
+          onOpenGpaModal={() => setIsGpaModalOpen(true)}
         />
 
         <main className="flex-1 py-6 lg:pt-2 lg:pb-8 overflow-y-auto space-y-6">
@@ -481,36 +483,11 @@ export default function App() {
       
       <SoftForceModal />
 
+      <GpaCalculatorModal
+        isOpen={isGpaModalOpen}
+        onClose={() => setIsGpaModalOpen(false)}
+      />
+
     </div>
   );
 }
-
-// 1. Tambahkan Import Komponen Modal Baru
-import { GpaCalculatorModal } from './components/GpaCalculatorModal';
-
-export const App = () => {
-  // 2. Buat State untuk Buka/Tutup Modal IPK
-  const [isGpaModalOpen, setIsGpaModalOpen] = useState(false);
-
-  // ... (state & logika lainnya yang sudah ada)
-
-  return (
-    <div className="...">
-      {/* 3. Oper handler 'onOpenGpaModal' ke Sidebar */}
-      <Sidebar 
-        activeTab={activeTab} 
-        setActiveTab={setActiveTab} 
-        urgentTaskCount={urgentTaskCount}
-        onOpenGpaModal={() => setIsGpaModalOpen(true)} // <-- Tambahkan baris ini
-      />
-
-      {/* Main Content Area ... */}
-
-      {/* 4. Render Modal IPK di Paling Bawah App */}
-      <GpaCalculatorModal 
-        isOpen={isGpaModalOpen} 
-        onClose={() => setIsGpaModalOpen(false)} 
-      />
-    </div>
-  );
-};
