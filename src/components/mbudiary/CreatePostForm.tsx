@@ -117,7 +117,7 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
                 }}
                 className="text-[10px] text-indigo-600 dark:text-indigo-400 hover:underline font-semibold"
               >
-                Ubah Emoji
+              
               </button>
             </div>
 
