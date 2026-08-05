@@ -150,7 +150,7 @@ export const GpaCalculatorModal: React.FC<GpaCalculatorModalProps> = ({
                     Simulasi IPK FRS
                   </h3>
                   <p className="text-[11px] text-slate-500 dark:text-zinc-400">
-                    Hitung prediksi IPS dengan indeks nilai khas ITS
+                    Hitung prediksi IPS dengan indeks nilai.
                   </p>
                 </div>
               </div>
@@ -256,7 +256,7 @@ export const GpaCalculatorModal: React.FC<GpaCalculatorModalProps> = ({
             <div className="px-4 py-2.5 bg-emerald-50/60 dark:bg-emerald-950/20 border-t border-emerald-100/80 dark:border-emerald-900/40 flex items-center gap-2.5 text-emerald-800 dark:text-emerald-300">
               <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <p className="text-[10px] font-medium leading-tight">
-                <span className="font-bold">100% Rahasia & Aman:</span> Indeks nilai yang kamu masukkan hanya tersimpan lokal di perangkatmu dan tidak pernah dikirim ke server mana pun.
+                <span className="font-bold">100% Rahasia & Aman,</span> Indeks nilai yang kamu masukkan hanya tersimpan di perangkatmu.  
               </p>
             </div>
 
