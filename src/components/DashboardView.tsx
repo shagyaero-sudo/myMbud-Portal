@@ -24,7 +24,7 @@ import {
   ZoomOut,
   RotateCcw,
   BookHeart,
-  Sparkles // <-- Jangan lupa import Sparkles
+  Pencil
 } from 'lucide-react';
 import { AppState, DayOfWeek, Task, Announcement, ScheduleItem } from '../types';
 import {
@@ -1262,25 +1262,23 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         )}
       </AnimatePresence>
 
-      {/* FLOATING BUTTON MBUDIARY KHUSUS DI DASHBOARD (Classy & Minimalist) */}
+      {/* FLOATING BUTTON MBUDIARY KHUSUS DI DASHBOARD (Monochrome Edition) */}
       <motion.button
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         whileHover={{ scale: 1.03, y: -2 }}
         whileTap={{ scale: 0.97 }}
         onClick={() => onNavigateTab('mbudiary' as any)}
-        className="fixed bottom-24 lg:bottom-10 right-4 lg:right-10 z-40 flex items-center gap-3 px-4 py-3 rounded-2xl bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100 shadow-xl shadow-slate-900/10 dark:shadow-black/60 border border-slate-200/80 dark:border-zinc-800 transition-all cursor-pointer group hover:border-indigo-500/50 dark:hover:border-indigo-500/50"
+        className="fixed bottom-28 lg:bottom-10 right-4 lg:right-10 z-40 flex items-center gap-3 px-4 py-3 rounded-2xl bg-zinc-900 dark:bg-zinc-100 text-zinc-100 dark:text-zinc-900 border border-zinc-800 dark:border-zinc-200 shadow-2xl transition-all cursor-pointer group"
       >
-        <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-colors shrink-0">
-          <BookHeart className="w-4 h-4" />
-        </div>
+        <Pencil className="w-4 h-4 text-zinc-100 dark:text-zinc-900 shrink-0" />
 
-        <div className="text-left flex flex-col justify-center pr-1">
-          <span className="text-[9px] font-bold text-indigo-600 dark:text-indigo-400 tracking-wider uppercase flex items-center gap-1">
-            <Sparkles className="w-2.5 h-2.5" /> Class Journal
-          </span>
-          <span className="text-sm font-black tracking-tight text-slate-900 dark:text-zinc-100 leading-tight">
+        <div className="text-left flex flex-col justify-center pr-0.5">
+          <span className="text-xs font-black tracking-tight text-zinc-100 dark:text-zinc-900 leading-none">
             mbudiary.
+          </span>
+          <span className="text-[10px] font-extralight text-zinc-400 dark:text-zinc-500 leading-tight mt-0.5">
+            #RuangAman
           </span>
         </div>
       </motion.button>
