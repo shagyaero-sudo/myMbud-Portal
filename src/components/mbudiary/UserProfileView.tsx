@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MbudiaryPost, UserProfile } from '../types';
+import { UserProfile } from '../types';
 import { getPosts, getAllReplies, isFollowing, toggleFollow, getFollowerCount } from './lib/storage';
 import { PostCard } from './PostCard';
 import { ArrowLeft, Heart, FileText, User, Users, UserPlus, UserCheck } from 'lucide-react';
@@ -99,10 +99,9 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
       >
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
           
-          {/* Top Row: Pure Emoji Avatar + Name + Username + Mobile Follow Button */}
+          {/* Top Row: Pure Emoji Avatar + Name + Mobile Follow Button */}
           <div className="flex items-center justify-between sm:justify-start gap-3 min-w-0">
             <div className="flex items-center gap-3 min-w-0">
-              {/* Pure Emoji Avatar with no background/border/padding */}
               <span className="text-3xl sm:text-4xl shrink-0 leading-none">
                 {authorEmoji}
               </span>
@@ -118,9 +117,6 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                     </span>
                   )}
                 </div>
-                <p className="text-xs font-mono text-slate-400 dark:text-zinc-500">
-                  @{authorUsername}
-                </p>
               </div>
             </div>
 
