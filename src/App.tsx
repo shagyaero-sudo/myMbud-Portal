@@ -387,7 +387,7 @@ export default function App() {
         setTheme={setTheme}
       />
 
-      <div className="flex-1 max-w-7xl w-full mx-auto flex flex-col lg:flex-row gap-6">
+  <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 flex flex-col lg:flex-row gap-6">
 
         <Sidebar
           activeTab={activeTab}
