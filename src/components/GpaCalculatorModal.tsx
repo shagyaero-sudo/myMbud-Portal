@@ -277,7 +277,7 @@ export const GpaCalculatorModal: React.FC<GpaCalculatorModalProps> = ({
                 onClick={onClose}
                 className="px-5 py-2 rounded-xl bg-slate-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-bold transition-all hover:opacity-90"
               >
-                Selesai
+                Simpan
               </button>
             </div>
           </motion.div>
