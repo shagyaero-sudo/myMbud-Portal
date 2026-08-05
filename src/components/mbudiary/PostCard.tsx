@@ -5,7 +5,7 @@ import {
   getReplies, 
   addReply, 
   deletePost 
-} from '../lib/storage';
+} from './lib/storage';
 import { formatDateFormatted, formatTimeAgo, formatPostTimestamp } from '../lib/utils';
 import { 
   Heart, 
