@@ -395,7 +395,7 @@ export default function App() {
           urgentTaskCount={urgentTaskCount}
         />
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto space-y-6">
+        <main className="flex-1 py-6 lg:pt-2 lg:pb-8 overflow-y-auto space-y-6">
 
           {isInitialLoad ? (
             <AppSkeleton />
