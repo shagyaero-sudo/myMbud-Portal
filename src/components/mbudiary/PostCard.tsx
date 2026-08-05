@@ -98,8 +98,12 @@ export const PostCard: React.FC<PostCardProps> = ({
     }
   };
 
-  const isAuthor = post.authorUsername === currentUser.nrp;
-  const canDelete = isAuthor;
+  // Cek validasi hak hapus (Pemilik postingan ATAU Officer/Admin)
+  const isAuthor = 
+    post.authorUsername.toLowerCase() === currentUser.nickname.toLowerCase() ||
+    post.authorUsername.toLowerCase() === currentUser.nrp.toLowerCase();
+    
+  const canDelete = isAuthor || currentUser.isOfficer;
 
   return (
     <motion.article
@@ -156,7 +160,6 @@ export const PostCard: React.FC<PostCardProps> = ({
 
       <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-zinc-800 text-xs">
         <div className="flex items-center gap-2 sm:gap-3">
-          
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={handleLikeToggle}

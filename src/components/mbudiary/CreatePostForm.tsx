@@ -136,7 +136,7 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="Apa yang sedang terjadi di kelasmu hari ini? Ceritakan..."
+              placeholder="Apa yang terjadi hari ini? Ceritakan..."
               rows={3}
               maxLength={MAX_CHARS}
               className="w-full text-xs bg-transparent text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none resize-none leading-relaxed"
