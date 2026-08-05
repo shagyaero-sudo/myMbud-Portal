@@ -118,11 +118,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* Desktop Sidebar: External Links */}
           <div className="pt-4 mt-4 border-t border-slate-100 dark:border-zinc-800 space-y-1.5">
             <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-2 mb-2">Portal Akademik ITS</p>
-            <a href="https://presensi.its.ac.id/dashboard" target="_blank" rel="noreferrer" className="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-all">
-              <Globe className="w-4 h-4" /> <span>MyITS Presensi</span>
+            <a href="https://akademik.its.ac.id/home.php" target="_blank" rel="noreferrer" className="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-all">
+              <Globe className="w-4 h-4" /> <span>MyITS SIAKAD</span>
             </a>
             <a href="https://kemahasiswaan.its.ac.id/beranda" target="_blank" rel="noreferrer" className="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-all">
-              <Handshake className="w-4 h-4" /> <span>StudentConnect</span>
+              <Handshake className="w-4 h-4" /> <span>myITS StudentConnect</span>
             </a>
             <a href="https://classroom.its.ac.id/auth/oidc" target="_blank" rel="noreferrer" className="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-all">
               <BookOpenCheck className="w-4 h-4" /> <span>myITS Classroom</span>
@@ -219,19 +219,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-1">PORTAL AKADEMIK ITS</p>
                   <div className="grid grid-cols-2 gap-2">
                     <a href="https://presensi.its.ac.id/dashboard" target="_blank" rel="noreferrer" className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold">
-                      <span className="flex items-center gap-2 truncate"><Globe className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" /> <span className="truncate">Presensi</span></span>
+                      <span className="flex items-center gap-2 truncate"><Globe className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" /> <span className="truncate">myITS Presensi</span></span>
                       <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                     </a>
                     <a href="https://classroom.its.ac.id/auth/oidc" target="_blank" rel="noreferrer" className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold">
-                      <span className="flex items-center gap-2 truncate"><BookOpenCheck className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" /> <span className="truncate">Classroom</span></span>
+                      <span className="flex items-center gap-2 truncate"><BookOpenCheck className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" /> <span className="truncate">myITS Classroom</span></span>
                       <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                     </a>
                     <a href="https://akademik.its.ac.id/home.php" target="_blank" rel="noreferrer" className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold">
-                      <span className="flex items-center gap-2 truncate"><Globe className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" /> <span className="truncate">SIAKAD</span></span>
+                      <span className="flex items-center gap-2 truncate"><Globe className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" /> <span className="truncate">myITS SIAKAD</span></span>
                       <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                     </a>
                     <a href="https://kemahasiswaan.its.ac.id/beranda" target="_blank" rel="noreferrer" className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold">
-                      <span className="flex items-center gap-2 truncate"><Handshake className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" /> <span className="truncate">StudentConnect</span></span>
+                      <span className="flex items-center gap-2 truncate"><Handshake className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" /> <span className="truncate">myITS StudentConnect</span></span>
                       <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                     </a>
                   </div>
@@ -260,7 +260,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       }}
                       className="flex items-center justify-between p-3 rounded-2xl text-xs font-semibold transition-all bg-amber-50/70 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 active:bg-amber-100"
                     >
-                      <div className="flex items-center gap-2 truncate"><Award className="w-4 h-4 shrink-0" /><span className="truncate">Hitung IPK</span></div>
+                      <div className="flex items-center gap-2 truncate"><Award className="w-4 h-4 shrink-0" /><span className="truncate">Hitung IP Semester</span></div>
                       <ChevronRight className="w-3.5 h-3.5 opacity-70 shrink-0" />
                     </button>
                   </div>
