@@ -51,7 +51,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'spinwheel' as TabType, label: 'Spinwheel', icon: Dices, badge: null, isModal: false },
     { id: 'calculator' as TabType, label: 'Kalkulator Nilai', icon: Calculator, badge: null, isModal: false },
     { id: 'letter' as TabType, label: 'Ajukan Surat Turlap', icon: FileEdit, badge: null, isModal: false },
-    { id: 'gpacalculator' as any, label: 'Hitung IPK FRS', icon: Award, badge: null, isModal: true },
+    { id: 'gpacalculator' as any, label: 'Hitung IP Semester', icon: Award, badge: null, isModal: true },
   ];
 
   const navigateFromSheet = (tab: TabType) => {
@@ -250,7 +250,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       <ChevronRight className="w-3.5 h-3.5 opacity-70 shrink-0" />
                     </button>
                     <button onClick={() => navigateFromSheet('letter')} className="flex items-center justify-between p-3 rounded-2xl text-xs font-semibold transition-all bg-emerald-50/70 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 active:bg-emerald-100">
-                      <div className="flex items-center gap-2 truncate"><FileEdit className="w-4 h-4 shrink-0" /><span className="truncate">Surat Turlap</span></div>
+                      <div className="flex items-center gap-2 truncate"><FileEdit className="w-4 h-4 shrink-0" /><span className="truncate">Ajukan Surat Turlap</span></div>
                       <ChevronRight className="w-3.5 h-3.5 opacity-70 shrink-0" />
                     </button>
                     <button

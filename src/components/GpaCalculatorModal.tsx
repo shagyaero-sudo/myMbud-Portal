@@ -141,10 +141,10 @@ export const GpaCalculatorModal: React.FC<GpaCalculatorModalProps> = ({
                 </div>
                 <div className="min-w-0">
                   <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-zinc-100 truncate">
-                    Simulasi IPK FRS
+                    Simulasi IP Semester
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-zinc-400 truncate">
-                    Hitung prediksi IPS dengan indeks nilai resmi ITS
+                    Hitung prediksi IPS dengan acuan indeks ITS.
                   </p>
                 </div>
               </div>
@@ -176,7 +176,7 @@ export const GpaCalculatorModal: React.FC<GpaCalculatorModalProps> = ({
                 className="px-3.5 py-2 rounded-2xl bg-white/20 hover:bg-white/30 backdrop-blur-md text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 shadow-xs active:scale-95"
               >
                 {isEditing ? <Check className="w-4 h-4" /> : <Edit3 className="w-4 h-4" />}
-                <span>{isEditing ? 'Selesai Edit' : 'Adjust FRS'}</span>
+                <span>{isEditing ? 'Selesai Edit' : 'Edit FRS'}</span>
               </button>
             </div>
 
@@ -249,7 +249,7 @@ export const GpaCalculatorModal: React.FC<GpaCalculatorModalProps> = ({
             <div className="px-4 py-2.5 bg-emerald-50/60 dark:bg-emerald-950/20 border-t border-emerald-100/80 dark:border-emerald-900/40 flex items-center gap-2.5 text-emerald-800 dark:text-emerald-300 shrink-0">
               <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <p className="text-[10px] sm:text-xs font-medium leading-tight">
-                <span className="font-bold">100% Rahasia & Aman:</span> Indeks nilai yang kamu masukkan hanya tersimpan di perangkatmu.
+                <span className="font-bold">100% Rahasia,</span> Nilai yang diinput hanya tersimpan di perangkatmu.
               </p>
             </div>
 
