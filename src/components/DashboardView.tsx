@@ -23,11 +23,8 @@ import {
   ZoomIn,
   ZoomOut,
   RotateCcw,
-  BookHeart,
 } from 'lucide-react';
 import { AppState, DayOfWeek, Task, Announcement, ScheduleItem } from '../types';
-import { MbudiaryView } from './MbudiaryView';
-import { MbudiaryFloatingButton } from './MbudiaryFloatingButton';
 import {
   addAnnouncement,
   updateAnnouncement,
@@ -56,8 +53,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onNavigateTab,
 }) => {
   const [selectedDay, setSelectedDay] = useState<DayOfWeek>('Senin');
-  const [isMbudiaryOpen, setIsMbudiaryOpen] = useState(false);
-
   const [showAnnModal, setShowAnnModal] = useState(false);
   const [editingAnnId, setEditingAnnId] = useState<string | null>(null);
   const [isSubmittingAnn, setIsSubmittingAnn] = useState(false);
@@ -378,35 +373,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       transition={{ duration: 0.3 }}
       className="space-y-6 pb-12"
     >
-      {/* Floating mbudiary — sengaja tidak masuk navigation */}
-      <MbudiaryFloatingButton onClick={() => setIsMbudiaryOpen(true)} />
-
-      <AnimatePresence>
-        {isMbudiaryOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[80] bg-slate-50 dark:bg-zinc-950 overflow-y-auto"
-          >
-            <div className="sticky top-0 z-[90] flex justify-end px-4 pt-4 pointer-events-none">
-              <motion.button
-                type="button"
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.94 }}
-                onClick={() => setIsMbudiaryOpen(false)}
-                className="pointer-events-auto inline-flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-white/95 dark:bg-zinc-900/95 border border-slate-200 dark:border-zinc-800 shadow-lg text-xs font-bold text-slate-700 dark:text-zinc-200 hover:text-indigo-600 dark:hover:text-indigo-400 backdrop-blur-md transition-colors"
-                aria-label="Tutup mbudiary"
-              >
-                <BookHeart className="w-4 h-4" />
-                <span>Kembali ke Dashboard</span>
-              </motion.button>
-            </div>
-            <MbudiaryView />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* --- GREETING KHUSUS MOBILE/TABLET (Menyatu dgn BG) --- */}
       <div className="block lg:hidden px-2 pt-2 pb-0">
         <h2 className="text-xl font-bold text-slate-900 dark:text-zinc-100 tracking-tight">

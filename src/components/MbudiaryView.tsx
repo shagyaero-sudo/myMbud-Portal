@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowLeft, Moon, Sun } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UserProfile, MbudiaryPost } from './mbudiary/types';
 import { getUserProfile, getPosts, initializeMbudiary } from './mbudiary/lib/storage';
@@ -8,13 +8,7 @@ import { PostList } from './mbudiary/PostList';
 import { PostCard } from './mbudiary/PostCard';
 import { UserProfileView } from './mbudiary/UserProfileView';
 
-interface MbudiaryViewProps {
-  onBackToDashboard?: () => void;
-}
-
-export const MbudiaryView: React.FC<MbudiaryViewProps> = ({
-  onBackToDashboard,
-}) => {
+export const MbudiaryView: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<UserProfile>(getUserProfile());
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [selectedAuthorUsername, setSelectedAuthorUsername] = useState<string | null>(null);
@@ -45,64 +39,9 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({
     (post) => post.id === selectedPostId
   );
 
-  const isDark = document.documentElement.classList.contains('dark');
-
-  const toggleTheme = () => {
-    const root = document.documentElement;
-    root.classList.toggle('dark');
-    const newTheme = root.classList.contains('dark') ? 'dark' : 'light';
-    localStorage.setItem('theme', newTheme);
-  };
-
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 font-sans transition-colors duration-300 flex flex-col antialiased relative overflow-x-hidden">
+    <div className="w-full bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 font-sans transition-colors duration-300 antialiased relative overflow-x-hidden">
 
-      {/* =====================================================
-          MYMBUD SUBPAGE HEADER
-          ===================================================== */}
-      <header className="h-16 shrink-0 border-b border-slate-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl flex items-center justify-between px-4 sm:px-8 sticky top-0 z-50">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl flex items-center justify-center">
-            <span className="text-xl">〽️</span>
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="font-bold text-lg tracking-tight text-slate-900 dark:text-zinc-100">
-              myMbud Portal
-            </span>
-            <span className="text-xs text-slate-400 dark:text-zinc-500 font-medium">
-              v2.5
-            </span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            onClick={toggleTheme}
-            className="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-zinc-900 hover:bg-slate-200 dark:hover:bg-zinc-800 border border-slate-200 dark:border-zinc-800 flex items-center justify-center transition-all shadow-sm active:scale-95"
-            title="Ganti tema"
-          >
-            {isDark ? (
-              <Sun className="w-4 h-4 text-zinc-300" />
-            ) : (
-              <Moon className="w-4 h-4 text-slate-600" />
-            )}
-          </button>
-
-          {onBackToDashboard && (
-            <button
-              onClick={onBackToDashboard}
-              className="hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-xs font-bold text-slate-700 dark:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all shadow-sm active:scale-95"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Kembali ke Dashboard
-            </button>
-          )}
-        </div>
-      </header>
-
-      {/* =====================================================
-          MBUDIARY CONTENT
-          ===================================================== */}
       <main className="flex-1 max-w-2xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 relative z-10 space-y-6">
 
         {selectedAuthorUsername ? (
