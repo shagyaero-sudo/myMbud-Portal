@@ -53,7 +53,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'spinwheel' as TabType, label: 'Spinwheel', icon: Dices, badge: null, isModal: false },
     { id: 'calculator' as TabType, label: 'Kalkulator Nilai', icon: Calculator, badge: null, isModal: false },
     { id: 'letter' as TabType, label: 'Ajukan Surat Turlap', icon: FileEdit, badge: null, isModal: false },
-    { id: 'mbudiary' as TabType, label: 'mbudiary', icon: BookHeart, badge: null, isModal: false },
     { id: 'gpacalculator' as any, label: 'Hitung IP Semester', icon: Award, badge: null, isModal: true },
   ];
 
@@ -172,16 +171,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <BottomTabItem id="dashboard" label="Jadwal" icon={CalendarDays} activeTab={activeTab} onClick={setActiveTab} />
           <BottomTabItem id="tasks" label="Tugas" icon={FolderKanban} activeTab={activeTab} onClick={setActiveTab} badge={urgentTaskCount > 0 ? urgentTaskCount : null} />
 
-          {/* TOMBOL SAKTI / APP DRAWER TRIGGER */}
-          <div className="relative flex flex-col items-center justify-center -top-6 z-50">
+          {/* TOMBOL SAKTI / APP DRAWER TRIGGER (Diperbarui) */}
+          <div className="relative flex flex-col items-center justify-center -top-2.5 z-50">
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={() => setIsBottomSheetOpen(true)}
-              className="w-14 h-14 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-lg shadow-blue-500/40 border-[4px] border-slate-50 dark:border-zinc-950 transition-colors focus:outline-none"
+              className="w-[3.25rem] h-[3.25rem] bg-gradient-to-tr from-blue-600 to-indigo-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-indigo-500/30 border-[4px] border-white/80 dark:border-zinc-900 transition-colors focus:outline-none"
             >
-              <LayoutGrid className="w-6 h-6" />
+              <LayoutGrid className="w-5 h-5" />
             </motion.button>
-            <span className="absolute -bottom-5 text-[10px] font-bold text-slate-500 dark:text-zinc-400 tracking-tight">Menu</span>
+            <span className="absolute -bottom-4 text-[10px] font-bold text-slate-500 dark:text-zinc-400 tracking-tight">Menu</span>
           </div>
 
           <BottomTabItem id="contacts" label="Kontak" icon={Users} activeTab={activeTab} onClick={setActiveTab} />
@@ -254,10 +253,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     </button>
                     <button onClick={() => navigateFromSheet('letter')} className="flex items-center justify-between p-3 rounded-2xl text-xs font-semibold transition-all bg-emerald-50/70 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 active:bg-emerald-100">
                       <div className="flex items-center gap-2 truncate"><FileEdit className="w-4 h-4 shrink-0" /><span className="truncate">Ajukan Surat Turlap</span></div>
-                      <ChevronRight className="w-3.5 h-3.5 opacity-70 shrink-0" />
-                    </button>
-                    <button onClick={() => navigateFromSheet('mbudiary')} className="flex items-center justify-between p-3 rounded-2xl text-xs font-semibold transition-all bg-rose-50/70 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 active:bg-rose-100">
-                      <div className="flex items-center gap-2 truncate"><BookHeart className="w-4 h-4 shrink-0" /><span className="truncate">mbudiary</span></div>
                       <ChevronRight className="w-3.5 h-3.5 opacity-70 shrink-0" />
                     </button>
                     <button

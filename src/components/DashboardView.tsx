@@ -23,6 +23,7 @@ import {
   ZoomIn,
   ZoomOut,
   RotateCcw,
+  BookHeart
 } from 'lucide-react';
 import { AppState, DayOfWeek, Task, Announcement, ScheduleItem } from '../types';
 import {
@@ -37,7 +38,7 @@ interface DashboardViewProps {
   onAddAnnouncement: (announcement: Omit<Announcement, 'id' | 'date'>) => void;
   onDeleteAnnouncement: (id: string) => void;
   onNavigateTab: (
-    tab: 'tasks' | 'contacts' | 'materials' | 'spinwheel' | 'calculator',
+    tab: 'tasks' | 'contacts' | 'materials' | 'spinwheel' | 'calculator' | 'mbudiary' | any,
     courseFilter?: string
   ) => void;
 }
@@ -1259,6 +1260,31 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* FLOATING BUTTON MBUDIARY KHUSUS DI DASHBOARD */}
+      <motion.button
+        initial={{ scale: 0, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={() => onNavigateTab('mbudiary' as any)}
+        className="fixed bottom-24 lg:bottom-10 right-4 lg:right-10 z-[60] flex items-center gap-3 p-1.5 rounded-[1.75rem] bg-slate-900 dark:bg-zinc-100 shadow-2xl shadow-indigo-500/20 group cursor-pointer"
+      >
+        <div className="absolute inset-0 rounded-[1.75rem] bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-40 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="relative flex items-center gap-3 px-5 py-3.5 bg-white dark:bg-zinc-900 rounded-3xl transition-all">
+          <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+            <BookHeart className="w-4 h-4" />
+          </div>
+          <div className="text-left flex flex-col justify-center">
+            <span className="text-[9px] font-bold text-indigo-600 dark:text-indigo-400 tracking-wider uppercase flex items-center gap-1">
+              <Flame className="w-2.5 h-2.5" /> Ruang Aman
+            </span>
+            <span className="text-sm font-black tracking-tight text-slate-900 dark:text-zinc-100 leading-tight">
+              mbudiary.
+            </span>
+          </div>
+        </div>
+      </motion.button>
     </motion.div>
   );
 };
