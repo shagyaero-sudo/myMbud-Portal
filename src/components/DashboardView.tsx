@@ -1262,22 +1262,22 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         )}
       </AnimatePresence>
 
-      {/* FLOATING BUTTON MBUDIARY KHUSUS DI DASHBOARD (Monochrome Edition) */}
+      {/* FLOATING BUTTON MBUDIARY KHUSUS DI DASHBOARD (Slightly Larger & Refined Typography) */}
       <motion.button
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        whileHover={{ scale: 1.03, y: -2 }}
-        whileTap={{ scale: 0.97 }}
+        whileHover={{ scale: 1.04, y: -2 }}
+        whileTap={{ scale: 0.96 }}
         onClick={() => onNavigateTab('mbudiary' as any)}
-        className="fixed bottom-28 lg:bottom-10 right-4 lg:right-10 z-40 flex items-center gap-3 px-4 py-3 rounded-2xl bg-zinc-900 dark:bg-zinc-100 text-zinc-100 dark:text-zinc-900 border border-zinc-800 dark:border-zinc-200 shadow-2xl transition-all cursor-pointer group"
+        className="fixed bottom-28 lg:bottom-10 right-4 lg:right-10 z-40 flex items-center gap-3.5 px-5 py-3.5 rounded-2xl bg-zinc-900 dark:bg-zinc-100 text-zinc-100 dark:text-zinc-900 border border-zinc-800 dark:border-zinc-200 shadow-2xl transition-all cursor-pointer group"
       >
-        <Pencil className="w-4 h-4 text-zinc-100 dark:text-zinc-900 shrink-0" />
+        <Pencil className="w-5 h-5 text-zinc-100 dark:text-zinc-900 shrink-0" />
 
-        <div className="text-left flex flex-col justify-center pr-0.5">
-          <span className="text-xs font-black tracking-tight text-zinc-100 dark:text-zinc-900 leading-none">
+        <div className="text-left flex flex-col justify-center pr-1">
+          <span className="text-base font-black tracking-tight text-zinc-100 dark:text-zinc-900 leading-none">
             mbudiary.
           </span>
-          <span className="text-[10px] font-extralight text-zinc-400 dark:text-zinc-500 leading-tight mt-0.5">
+          <span className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500 leading-tight mt-1">
             #RuangAman
           </span>
         </div>
