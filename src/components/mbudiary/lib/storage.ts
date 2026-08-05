@@ -69,9 +69,17 @@ function normalizeFollow(data: Record<string, any>) {
   };
 }
 
+export function getUserProfile(): UserProfile {
+  return {
+    nickname: localStorage.getItem(USER_NAME_KEY) || 'Mbuders',
+    nrp: localStorage.getItem(USER_NRP_KEY) || 'unknown',
+    isOfficer: localStorage.getItem(USER_OFFICER_KEY) === 'true',
+    emoji: localStorage.getItem(USER_EMOJI_KEY) || '😊',
+  };
+}
+
 /**
- * Sinkronkan profil user dengan Firestore berdasarkan NRP.
- * Panggil fungsi ini saat user login atau Mbudiary dimuat.
+ * Sinkronkan profil user secara realtime dengan Firestore berdasarkan NRP.
  */
 export async function syncUserProfileWithFirebase(): Promise<UserProfile> {
   const currentProfile = getUserProfile();
@@ -92,7 +100,7 @@ export async function syncUserProfileWithFirebase(): Promise<UserProfile> {
         emoji: data.emoji || currentProfile.emoji || '😊',
       };
 
-      // Perbarui LocalStorage agar tampilan lokal selalu up-to-date
+      // Timpa LocalStorage dengan data sahih dari Cloud
       localStorage.setItem(USER_NAME_KEY, syncedProfile.nickname);
       localStorage.setItem(USER_OFFICER_KEY, String(syncedProfile.isOfficer));
       localStorage.setItem(USER_EMOJI_KEY, syncedProfile.emoji);
@@ -100,7 +108,7 @@ export async function syncUserProfileWithFirebase(): Promise<UserProfile> {
 
       return syncedProfile;
     } else {
-      // Jika profil belum ada di Cloud Firestore, daftarkan profil awal
+      // Jika user baru pertama kali ada di Firestore
       await setDoc(userDocRef, {
         nickname: currentProfile.nickname,
         nrp: currentProfile.nrp.toLowerCase(),
@@ -110,23 +118,41 @@ export async function syncUserProfileWithFirebase(): Promise<UserProfile> {
       });
     }
   } catch (error) {
-    console.error('[mbudiary] Gagal mengamankan/sinkron profil ke Firestore:', error);
+    console.error('[mbudiary] Gagal sync profil dari Firestore:', error);
   }
 
   return currentProfile;
 }
 
 /**
- * Starts Firestore realtime listeners. Call this once when mbudiary mounts.
+ * Starts Firestore realtime listeners.
  */
 export function initializeMbudiary(): () => void {
-  // Jalankan sinkronisasi profil saat Mbudiary di-mount
+  // Jalankan sync async profil pas dimuat
   syncUserProfileWithFirebase();
 
   if (initialized && unsubscribeAll) return unsubscribeAll;
 
   initialized = true;
+
+  // Realtime listener untuk data profil user yang sedang aktif
+  const currentNrp = getUserProfile().nrp;
+  let userUnsub = () => {};
+  if (currentNrp && currentNrp !== 'unknown') {
+    const userDocRef = doc(db, USERS_COLLECTION, currentNrp.toLowerCase());
+    userUnsub = onSnapshot(userDocRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        if (data.nickname) localStorage.setItem(USER_NAME_KEY, data.nickname);
+        if (data.emoji) localStorage.setItem(USER_EMOJI_KEY, data.emoji);
+        if (data.isOfficer !== undefined) localStorage.setItem(USER_OFFICER_KEY, String(data.isOfficer));
+        emit('mbud_user_change');
+      }
+    });
+  }
+
   const unsubs = [
+    userUnsub,
     onSnapshot(
       query(collection(db, POSTS_COLLECTION), orderBy('createdAt', 'desc')),
       (snapshot) => {
@@ -162,23 +188,15 @@ export function initializeMbudiary(): () => void {
   return unsubscribeAll;
 }
 
-export function getUserProfile(): UserProfile {
-  return {
-    nickname: localStorage.getItem(USER_NAME_KEY) || 'Mbuders',
-    nrp: localStorage.getItem(USER_NRP_KEY) || 'unknown',
-    isOfficer: localStorage.getItem(USER_OFFICER_KEY) === 'true',
-    emoji: localStorage.getItem(USER_EMOJI_KEY) || '😊',
-  };
-}
-
 export async function saveUserProfile(profile: UserProfile) {
+  // Simpan lokal
   localStorage.setItem(USER_NAME_KEY, profile.nickname);
   localStorage.setItem(USER_NRP_KEY, profile.nrp);
   localStorage.setItem(USER_OFFICER_KEY, String(profile.isOfficer));
   if (profile.emoji) localStorage.setItem(USER_EMOJI_KEY, profile.emoji);
   emit('mbud_user_change');
 
-  // Simpan/Perbarui juga secara permanen di Cloud Firestore
+  // Paksa simpan ke Firestore
   if (profile.nrp && profile.nrp !== 'unknown') {
     try {
       const userDocRef = doc(db, USERS_COLLECTION, profile.nrp.toLowerCase());
@@ -190,7 +208,7 @@ export async function saveUserProfile(profile: UserProfile) {
         updatedAt: serverTimestamp(),
       }, { merge: true });
     } catch (error) {
-      console.error('[mbudiary] Gagal menyimpan perubahan profil ke Firestore:', error);
+      console.error('[mbudiary] Gagal update profil ke Firestore:', error);
     }
   }
 }
