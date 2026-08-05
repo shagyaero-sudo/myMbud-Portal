@@ -44,13 +44,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const menuItems = [
-    { id: 'dashboard' as TabType, label: 'Jadwal Perkuliahan', icon: CalendarDays, badge: null },
-    { id: 'tasks' as TabType, label: 'Manajemen Tugas', icon: FolderKanban, badge: urgentTaskCount > 0 ? urgentTaskCount : null },
-    { id: 'contacts' as TabType, label: 'Direktori Kontak', icon: Users, badge: null },
-    { id: 'materials' as TabType, label: 'Bank Materi PDF', icon: FileText, badge: null },
-    { id: 'spinwheel' as TabType, label: 'Spinwheel', icon: Dices, badge: null },
-    { id: 'calculator' as TabType, label: 'Kalkulator Nilai', icon: Calculator, badge: null },
-    { id: 'letter' as TabType, label: 'Ajukan Surat Turlap', icon: FileEdit, badge: null },
+    { id: 'dashboard' as TabType, label: 'Jadwal Perkuliahan', icon: CalendarDays, badge: null, isModal: false },
+    { id: 'tasks' as TabType, label: 'Manajemen Tugas', icon: FolderKanban, badge: urgentTaskCount > 0 ? urgentTaskCount : null, isModal: false },
+    { id: 'contacts' as TabType, label: 'Direktori Kontak', icon: Users, badge: null, isModal: false },
+    { id: 'materials' as TabType, label: 'Bank Materi PDF', icon: FileText, badge: null, isModal: false },
+    { id: 'spinwheel' as TabType, label: 'Spinwheel', icon: Dices, badge: null, isModal: false },
+    { id: 'calculator' as TabType, label: 'Kalkulator Nilai', icon: Calculator, badge: null, isModal: false },
+    { id: 'letter' as TabType, label: 'Ajukan Surat Turlap', icon: FileEdit, badge: null, isModal: false },
+    { id: 'gpacalculator' as any, label: 'Hitung IPK FRS', icon: Award, badge: null, isModal: true },
   ];
 
   const navigateFromSheet = (tab: TabType) => {
@@ -79,7 +80,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <motion.button
                 whileTap={{ scale: 0.98 }}
                 key={item.id}
-                onClick={() => setActiveTab(item.id)}
+                onClick={() => {
+                  if (item.isModal) {
+                    onOpenGpaModal();
+                  } else {
+                    setActiveTab(item.id);
+                  }
+                }}
                 className={`relative w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-medium transition-all ${
                   isActive
                     ? 'text-blue-600 dark:text-blue-400 font-semibold'
