@@ -6,7 +6,7 @@ import {
   addReply, 
   deletePost 
 } from './lib/storage';
-import { formatDateFormatted, formatTimeAgo, formatPostTimestamp } from '../lib/utils';
+import { formatDateFormatted, formatTimeAgo, formatPostTimestamp } from './lib/utils';
 import { 
   Heart, 
   MessageSquare, 
