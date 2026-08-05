@@ -110,14 +110,12 @@ export const PostCard: React.FC<PostCardProps> = ({
       transition={{ duration: 0.25 }}
       className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl p-4 sm:p-5 transition-all duration-200 shadow-sm"
     >
-      {/* Header: Author & Metadata */}
       <div className="flex items-start justify-between gap-3 mb-3">
         <div 
           onClick={() => onSelectAuthor?.(post.authorUsername)}
           className="flex items-center gap-3 cursor-pointer group/author"
           title={`Lihat profil ${post.authorName}`}
         >
-          {/* Author Emoji Avatar */}
           <span className="text-2xl shrink-0 group-hover/author:scale-110 transition-transform leading-none">
             {post.authorEmoji || '😊'}
           </span>
@@ -132,7 +130,6 @@ export const PostCard: React.FC<PostCardProps> = ({
               </span>
             </div>
 
-            {/* Formatted Date & Time */}
             <div className="flex items-center gap-1.5 text-slate-400 dark:text-zinc-500 text-[10px] mt-0.5">
               <span title={formatDateFormatted(post.createdAt)}>
                 {formatPostTimestamp(post.createdAt)}
@@ -141,7 +138,6 @@ export const PostCard: React.FC<PostCardProps> = ({
           </div>
         </div>
 
-        {/* Delete button if authorized */}
         {canDelete && (
           <button
             onClick={handleDeletePost}
@@ -154,16 +150,13 @@ export const PostCard: React.FC<PostCardProps> = ({
         )}
       </div>
 
-      {/* Post Content */}
       <div className="text-sm text-slate-800 dark:text-zinc-200 leading-relaxed whitespace-pre-line mb-4 font-normal">
         {post.content}
       </div>
 
-      {/* Actions Bar (Likes & Comment button only; share removed) */}
       <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-zinc-800 text-xs">
         <div className="flex items-center gap-2 sm:gap-3">
           
-          {/* Like Button */}
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={handleLikeToggle}
@@ -181,7 +174,6 @@ export const PostCard: React.FC<PostCardProps> = ({
             <span>{likeCount}</span>
           </motion.button>
 
-          {/* Comment / Reply Button */}
           <button
             onClick={handleCommentClick}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all text-xs ${
@@ -197,7 +189,6 @@ export const PostCard: React.FC<PostCardProps> = ({
         </div>
       </div>
 
-      {/* Replies Drawer / Section (Shown on Detail Page or when expanded) */}
       <AnimatePresence>
         {isRepliesExpanded && (
           <motion.div
@@ -214,7 +205,6 @@ export const PostCard: React.FC<PostCardProps> = ({
               </h4>
             </div>
 
-            {/* List of Replies */}
             <div className="space-y-2.5">
               {replies.length === 0 ? (
                 <div className="p-3 text-center rounded-2xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-100 dark:border-zinc-800 text-xs text-slate-400 dark:text-zinc-500 italic">
@@ -254,7 +244,6 @@ export const PostCard: React.FC<PostCardProps> = ({
               )}
             </div>
 
-            {/* New Reply Input Form */}
             <form onSubmit={handleAddReply} className="flex items-center gap-2 pt-1">
               <input
                 type="text"

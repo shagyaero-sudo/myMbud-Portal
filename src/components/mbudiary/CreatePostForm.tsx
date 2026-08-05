@@ -32,7 +32,6 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({ userProfile, onP
   const [isPosting, setIsPosting] = useState(false);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
 
-  // Identity Edit Modal / Inline Drawer
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editName, setEditName] = useState(userProfile.nickname);
   const [editNrp, setEditNrp] = useState(userProfile.nrp);
@@ -94,7 +93,6 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({ userProfile, onP
   return (
     <div className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl p-4 sm:p-5 shadow-sm relative overflow-hidden transition-all duration-200">
       
-      {/* Top Header: User Profile Badge, Emoji Avatar, and Compact Edit Button */}
       <div className="flex items-center justify-between gap-2 pb-3 mb-3 border-b border-slate-100 dark:border-zinc-800">
         <div className="flex items-center gap-2.5 min-w-0">
           <button 
@@ -122,7 +120,6 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({ userProfile, onP
           </div>
         </div>
 
-        {/* Compact Edit Profile & NRP Button (Requirement 13) */}
         <button
           type="button"
           onClick={handleOpenEdit}
@@ -134,7 +131,6 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({ userProfile, onP
         </button>
       </div>
 
-      {/* Main Textarea Form */}
       <form onSubmit={handleSubmit} className="space-y-3">
         <div className="relative">
           <textarea
@@ -145,7 +141,6 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({ userProfile, onP
             className="w-full px-3.5 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all resize-none"
           />
 
-          {/* Toast feedback */}
           <AnimatePresence>
             {showSuccessToast && (
               <motion.div
@@ -161,7 +156,6 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({ userProfile, onP
           </AnimatePresence>
         </div>
 
-        {/* Action Controls & Character Counter */}
         <div className="pt-2 flex items-center justify-end gap-3 border-t border-slate-100 dark:border-zinc-800">
           <span className={`text-[10px] font-mono font-medium ${
             isOverLimit 
@@ -194,7 +188,6 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({ userProfile, onP
         </div>
       </form>
 
-      {/* Edit Profile Modal */}
       <AnimatePresence>
         {isEditModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
