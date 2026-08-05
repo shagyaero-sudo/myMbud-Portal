@@ -361,9 +361,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     const hour = new Date().getHours();
     const userName = localStorage.getItem('mymbud_user_name') || 'Mbuders'; 
   
-    if (hour >= 4 && hour < 11) return `Selamat Pagi, ${userName}! 🌅`;
+    if (hour >= 4 && hour < 11) return `Selamat Pagi, ${userName}! 🌤️`;
     if (hour >= 11 && hour < 15) return `Selamat Siang, ${userName}! ☀️`;
-    if (hour >= 15 && hour < 18) return `Selamat Sore, ${userName}! 🌆`;
+    if (hour >= 15 && hour < 18) return `Selamat Sore, ${userName}! ☕`;
     return `Selamat Malam, ${userName}! 🌙`;
   };
 

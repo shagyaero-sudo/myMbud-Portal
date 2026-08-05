@@ -53,7 +53,7 @@ export const Header: React.FC<HeaderProps> = ({
   const handlePinSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (pinInput === '123456') {
+    if (pinInput === '2025') {
       setIsOfficer(true);
       setShowPinModal(false);
       setPinInput('');
@@ -234,7 +234,7 @@ export const Header: React.FC<HeaderProps> = ({
                               className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 active:bg-rose-100 transition-all cursor-pointer"
                             >
                               <LogOut className="w-4 h-4" />
-                              <span>Keluar</span>
+                              <span>Log Out Akun</span>
                             </button>
                           </>
                         )}
