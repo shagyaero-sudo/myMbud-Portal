@@ -484,3 +484,33 @@ export default function App() {
     </div>
   );
 }
+
+// 1. Tambahkan Import Komponen Modal Baru
+import { GpaCalculatorModal } from './components/GpaCalculatorModal';
+
+export const App = () => {
+  // 2. Buat State untuk Buka/Tutup Modal IPK
+  const [isGpaModalOpen, setIsGpaModalOpen] = useState(false);
+
+  // ... (state & logika lainnya yang sudah ada)
+
+  return (
+    <div className="...">
+      {/* 3. Oper handler 'onOpenGpaModal' ke Sidebar */}
+      <Sidebar 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
+        urgentTaskCount={urgentTaskCount}
+        onOpenGpaModal={() => setIsGpaModalOpen(true)} // <-- Tambahkan baris ini
+      />
+
+      {/* Main Content Area ... */}
+
+      {/* 4. Render Modal IPK di Paling Bawah App */}
+      <GpaCalculatorModal 
+        isOpen={isGpaModalOpen} 
+        onClose={() => setIsGpaModalOpen(false)} 
+      />
+    </div>
+  );
+};

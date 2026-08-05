@@ -14,7 +14,8 @@ import {
   BookOpenCheck,
   Gamepad2,
   LayoutGrid,
-  X
+  X,
+  Award
 } from 'lucide-react';
 
 export type TabType = 'dashboard' | 'contacts' | 'materials' | 'tasks' | 'spinwheel' | 'calculator' | 'letter' | 'blockblast';
@@ -23,9 +24,15 @@ interface SidebarProps {
   activeTab: TabType;
   setActiveTab: (tab: TabType) => void;
   urgentTaskCount: number;
+  onOpenGpaModal: () => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, urgentTaskCount }) => {
+export const Sidebar: React.FC<SidebarProps> = ({
+  activeTab,
+  setActiveTab,
+  urgentTaskCount,
+  onOpenGpaModal
+}) => {
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
 
   const getGreeting = () => {
@@ -60,7 +67,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, urgen
             {getGreeting()}
           </h2>
           <p className="text-xs font-medium text-slate-500 dark:text-zinc-400 mt-1 leading-relaxed">
-            Siap untuk produktif hari ini?
+            Siap untuk produktif dan mengecek perkuliahan hari ini?
           </p>
         </div>
 
@@ -104,11 +111,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, urgen
           {/* Desktop Sidebar: External Links */}
           <div className="pt-4 mt-4 border-t border-slate-100 dark:border-zinc-800 space-y-1.5">
             <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-2 mb-2">Portal Akademik ITS</p>
-            <a href="https://akademik.its.ac.id/home.php" target="_blank" rel="noreferrer" className="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-all">
-              <Globe className="w-4 h-4" /> <span>MyITS SIAKAD</span>
+            <a href="https://presensi.its.ac.id/dashboard" target="_blank" rel="noreferrer" className="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-all">
+              <Globe className="w-4 h-4" /> <span>MyITS Presensi</span>
             </a>
             <a href="https://kemahasiswaan.its.ac.id/beranda" target="_blank" rel="noreferrer" className="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-all">
-              <Handshake className="w-4 h-4" /> <span>myITS StudentConnect</span>
+              <Handshake className="w-4 h-4" /> <span>StudentConnect</span>
             </a>
             <a href="https://classroom.its.ac.id/auth/oidc" target="_blank" rel="noreferrer" className="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-all">
               <BookOpenCheck className="w-4 h-4" /> <span>myITS Classroom</span>
@@ -200,45 +207,59 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, urgen
 
               <div className="flex-1 overflow-y-auto p-5 space-y-6 pb-20 custom-scrollbar">
                 
-                {/* PORTAL AKADEMIK ITS */}
+                {/* 1. PORTAL AKADEMIK ITS (GRID 2x2) */}
                 <div className="space-y-2">
                   <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-1">PORTAL AKADEMIK ITS</p>
-                  <a href="https://presensi.its.ac.id/dashboard" target="_blank" rel="noreferrer" className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold">
-                    <span className="flex items-center gap-3"><Globe className="w-4 h-4 text-blue-600 dark:text-blue-400" /> MyITS Presensi</span>
-                    <ChevronRight className="w-4 h-4 text-slate-400" />
-                  </a>
-                  <a href="https://kemahasiswaan.its.ac.id/beranda" target="_blank" rel="noreferrer" className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold">
-                    <span className="flex items-center gap-3"><Handshake className="w-4 h-4 text-blue-600 dark:text-blue-400" /> myITS StudentConnect</span>
-                    <ChevronRight className="w-4 h-4 text-slate-400" />
-                  </a>
-                  <a href="https://classroom.its.ac.id/auth/oidc" target="_blank" rel="noreferrer" className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold">
-                    <span className="flex items-center gap-3"><BookOpenCheck className="w-4 h-4 text-blue-600 dark:text-blue-400" /> myITS Classroom</span>
-                    <ChevronRight className="w-4 h-4 text-slate-400" />
-                  </a>
-                  <a href="https://akademik.its.ac.id/home.php" target="_blank" rel="noreferrer" className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold">
-                    <span className="flex items-center gap-3"><Globe className="w-4 h-4 text-blue-600 dark:text-blue-400" /> myITS SIAKAD</span>
-                    <ChevronRight className="w-4 h-4 text-slate-400" />
-                  </a>
+                  <div className="grid grid-cols-2 gap-2">
+                    <a href="https://presensi.its.ac.id/dashboard" target="_blank" rel="noreferrer" className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold">
+                      <span className="flex items-center gap-2 truncate"><Globe className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" /> <span className="truncate">Presensi</span></span>
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    </a>
+                    <a href="https://classroom.its.ac.id/auth/oidc" target="_blank" rel="noreferrer" className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold">
+                      <span className="flex items-center gap-2 truncate"><BookOpenCheck className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" /> <span className="truncate">Classroom</span></span>
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    </a>
+                    <a href="https://akademik.its.ac.id/home.php" target="_blank" rel="noreferrer" className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold">
+                      <span className="flex items-center gap-2 truncate"><Globe className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" /> <span className="truncate">SIAKAD</span></span>
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    </a>
+                    <a href="https://kemahasiswaan.its.ac.id/beranda" target="_blank" rel="noreferrer" className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold">
+                      <span className="flex items-center gap-2 truncate"><Handshake className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" /> <span className="truncate">StudentConnect</span></span>
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    </a>
+                  </div>
                 </div>
 
-                {/* TOOLS */}
+                {/* 2. TOOLS LAINNYA (GRID 2x2) */}
                 <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-zinc-800">
                   <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-1">TOOLS LAINNYA</p>
-                  <button onClick={() => navigateFromSheet('spinwheel')} className="w-full flex items-center justify-between p-3 rounded-2xl text-xs font-semibold transition-all bg-blue-50/70 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 active:bg-blue-100">
-                    <div className="flex items-center gap-3"><Dices className="w-4 h-4" /><span>Spinwheel</span></div>
-                    <ChevronRight className="w-4 h-4 opacity-70" />
-                  </button>
-                  <button onClick={() => navigateFromSheet('calculator')} className="w-full flex items-center justify-between p-3 rounded-2xl text-xs font-semibold transition-all bg-indigo-50/70 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 active:bg-indigo-100">
-                    <div className="flex items-center gap-3"><Calculator className="w-4 h-4" /><span>Kalkulator Nilai</span></div>
-                    <ChevronRight className="w-4 h-4 opacity-70" />
-                  </button>
-                  <button onClick={() => navigateFromSheet('letter')} className="w-full flex items-center justify-between p-3 rounded-2xl text-xs font-semibold transition-all bg-emerald-50/70 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 active:bg-emerald-100">
-                    <div className="flex items-center gap-3"><FileEdit className="w-4 h-4" /><span>Ajukan Surat Turlap</span></div>
-                    <ChevronRight className="w-4 h-4 opacity-70" />
-                  </button>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button onClick={() => navigateFromSheet('spinwheel')} className="flex items-center justify-between p-3 rounded-2xl text-xs font-semibold transition-all bg-blue-50/70 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 active:bg-blue-100">
+                      <div className="flex items-center gap-2 truncate"><Dices className="w-4 h-4 shrink-0" /><span className="truncate">Spinwheel</span></div>
+                      <ChevronRight className="w-3.5 h-3.5 opacity-70 shrink-0" />
+                    </button>
+                    <button onClick={() => navigateFromSheet('calculator')} className="flex items-center justify-between p-3 rounded-2xl text-xs font-semibold transition-all bg-indigo-50/70 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 active:bg-indigo-100">
+                      <div className="flex items-center gap-2 truncate"><Calculator className="w-4 h-4 shrink-0" /><span className="truncate">Kalkulator Nilai</span></div>
+                      <ChevronRight className="w-3.5 h-3.5 opacity-70 shrink-0" />
+                    </button>
+                    <button onClick={() => navigateFromSheet('letter')} className="flex items-center justify-between p-3 rounded-2xl text-xs font-semibold transition-all bg-emerald-50/70 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 active:bg-emerald-100">
+                      <div className="flex items-center gap-2 truncate"><FileEdit className="w-4 h-4 shrink-0" /><span className="truncate">Surat Turlap</span></div>
+                      <ChevronRight className="w-3.5 h-3.5 opacity-70 shrink-0" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsBottomSheetOpen(false);
+                        onOpenGpaModal();
+                      }}
+                      className="flex items-center justify-between p-3 rounded-2xl text-xs font-semibold transition-all bg-amber-50/70 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 active:bg-amber-100"
+                    >
+                      <div className="flex items-center gap-2 truncate"><Award className="w-4 h-4 shrink-0" /><span className="truncate">Hitung IPK</span></div>
+                      <ChevronRight className="w-3.5 h-3.5 opacity-70 shrink-0" />
+                    </button>
+                  </div>
                 </div>
 
-                {/* MINIGAME */}
+                {/* 3. MINIGAME */}
                 <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-zinc-800">
                   <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-1">MINIGAME</p>
                   <button onClick={() => navigateFromSheet('blockblast')} className="group relative w-full overflow-hidden rounded-2xl p-3 text-xs font-bold transition-all border bg-gradient-to-r from-purple-50 via-fuchsia-50 to-pink-50 dark:from-purple-950/40 dark:via-fuchsia-950/30 dark:to-pink-950/30 text-purple-700 dark:text-purple-300 border-purple-200/70 dark:border-purple-800/50 active:scale-95">
@@ -255,6 +276,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, urgen
                     </div>
                   </button>
                 </div>
+
               </div>
             </motion.div>
           </>
