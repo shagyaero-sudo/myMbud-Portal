@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { STUDENTS_DATA } from '../data/studentsData';
+import { STUDENTS_DATA } from '../data/studentData';
 
 interface LoginScreenProps {
   onLoginSuccess: () => void;
@@ -29,7 +29,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
     if (student && student.pin === pin) {
       setError(false);
       localStorage.setItem('mymbud_auth', 'true');
-      localStorage.setItem('mymbud_user_name', student.name); // Simpan nama panggilan otomatis
+      localStorage.setItem('mymbud_user_name', student.name); // Simpan nama panggilan
       localStorage.setItem('mymbud_user_nrp', nrp);
       onLoginSuccess();
     } else {
@@ -42,19 +42,22 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
     <div className="min-h-screen bg-white dark:bg-[#09090b] flex flex-col lg:flex-row font-sans selection:bg-blue-500 selection:text-white">
       
       {/* BAGIAN KIRI / ATAS: GAMBAR SCRAPBOOK */}
-      <div className="w-full lg:w-1/2 h-[45vh] lg:h-screen bg-white relative flex items-center justify-center p-2 lg:p-8 overflow-hidden">
+      {/* Container dibuat memakan porsi besar di HP dan bg-white agar blending dgn gambar */}
+      <div className="w-full lg:w-1/2 h-[58vh] lg:h-screen bg-white relative flex items-center justify-end overflow-hidden">
         <motion.img 
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6 }}
           src="/collase.png" 
           alt="Kolase Kelas A" 
-          className="w-full h-full object-contain object-bottom lg:object-center drop-shadow-sm"
+          // object-cover & object-right memastikan gambar NABRAK ke tepi kanan tanpa celah
+          className="absolute inset-0 w-full h-full object-cover object-right"
         />
       </div>
 
       {/* BAGIAN KANAN / BAWAH: FORM LOGIN */}
-      <div className="w-full lg:w-1/2 flex-1 flex flex-col justify-center bg-white dark:bg-[#09090b] rounded-t-[2.5rem] lg:rounded-none -mt-6 lg:mt-0 relative z-20 px-6 py-8 sm:px-12 lg:px-24 shadow-[0_-10px_40px_rgba(0,0,0,0.08)] lg:shadow-none">
+      {/* Padding dan margin dikurangi agar form lebih ramping/compact di HP */}
+      <div className="w-full lg:w-1/2 flex-1 flex flex-col justify-center bg-white dark:bg-[#09090b] rounded-t-[2.5rem] lg:rounded-none -mt-10 lg:mt-0 relative z-20 px-6 py-8 sm:px-12 lg:px-24 shadow-[0_-10px_40px_rgba(0,0,0,0.08)] lg:shadow-none">
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -128,7 +131,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
             </button>
           </form>
 
-          {/* Tautan Bantuan ke WhatsApp */}
           <div className="mt-5 text-right">
             <a 
               href="https://wa.me/6285182284769?text=Halo%20Aero,%20aku%20butuh%20bantuan%20akses%20login%20myMbud%20Portal" 
