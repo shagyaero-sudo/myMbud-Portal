@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { UserProfile } from '../types';
-import { savePost, saveUserProfile } from '../lib/storage';
+import { savePost, saveUserProfile } from './lib/storage';
 import { 
   Send, 
   Sparkles, 
