@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { AnimatePresence } from 'motion/react';
+import { Trophy } from 'lucide-react';
 import { GameBoard } from './components/GameBoard';
 import { PieceDeck } from './components/PieceDeck';
 import { GameOverModal } from './components/GameOverModal';
@@ -239,56 +240,48 @@ export const BlockBlastGame: React.FC = () => {
     score, highScore, linesClearedTotal, combosCount: 0, highestStreak,
   };
 
-  // Komponen Skor yang bisa dipakai ulang untuk HP dan PC
+  // Komponen Skor Ramping & Compact
   const ScoreCardUI = () => (
-    <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border border-slate-200/60 dark:border-zinc-800/60 rounded-3xl p-4 sm:p-5 shadow-sm">
-      <div className="flex items-center justify-between gap-4">
+    <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border border-slate-200/60 dark:border-zinc-800/60 rounded-2xl px-4 py-2.5 shadow-sm">
+      <div className="flex items-center justify-between gap-3">
+        {/* Skor Saat Ini */}
         <div>
-          <span className="text-[10px] font-bold tracking-wider text-slate-400 dark:text-zinc-500 uppercase block">
+          <span className="text-[9px] font-bold tracking-wider text-slate-400 dark:text-zinc-500 uppercase block">
             Skor Saat Ini
           </span>
-          <div className="flex items-center gap-2 mt-0.5">
-            <span className="text-3xl font-black text-slate-800 dark:text-zinc-100 tracking-tight">
+          <div className="flex items-center gap-1.5 mt-0.5">
+            <span className="text-xl sm:text-2xl font-black text-slate-800 dark:text-zinc-100 tracking-tight leading-none">
               {score.toLocaleString()}
             </span>
             {streak > 1 && (
-              <span className="text-[10px] font-extrabold px-2 py-1 rounded-full bg-amber-500 text-white animate-pulse">
-                x{streak} STREAK
+              <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-full bg-amber-500 text-white animate-pulse">
+                x{streak}
               </span>
             )}
           </div>
         </div>
 
-        <div className="flex flex-col items-end gap-2 sm:gap-3">
+        {/* Rekor & Tombol Restart */}
+        <div className="flex items-center gap-3">
           <div className="text-right">
-            <span className="text-[10px] font-bold tracking-wider text-slate-400 dark:text-zinc-500 uppercase block">
+            <span className="text-[9px] font-bold tracking-wider text-slate-400 dark:text-zinc-500 uppercase block">
               Rekor
             </span>
-            <span className="text-sm font-black text-amber-500">
-              {highScore.toLocaleString()}
-            </span>
+            <div className="flex items-center gap-1 justify-end mt-0.5">
+              <Trophy className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+              <span className="text-xs sm:text-sm font-black text-amber-500 leading-none">
+                {highScore.toLocaleString()}
+              </span>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => {
-                const next = !soundEnabled;
-                setSoundEnabled(next);
-                soundFX.enabled = next;
-                if (next) soundFX.playSelect();
-              }}
-              className="p-2 sm:p-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-600 dark:text-zinc-300 transition-all active:scale-95 text-xs sm:text-base"
-              title={soundEnabled ? 'Matikan Suara' : 'Aktifkan Suara'}
-            >
-              {soundEnabled ? '🔊' : '🔇'}
-            </button>
-            <button
-              onClick={startNewGame}
-              className="p-2 sm:p-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-600 dark:text-zinc-300 transition-all active:scale-95 text-xs sm:text-base"
-              title="Mulai Ulang Game"
-            >
-              ↻
-            </button>
-          </div>
+
+          <button
+            onClick={startNewGame}
+            className="p-2 rounded-xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-600 dark:text-zinc-300 transition-all active:scale-95 text-xs sm:text-sm"
+            title="Mulai Ulang Game"
+          >
+            ↻
+          </button>
         </div>
       </div>
     </div>
