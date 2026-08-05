@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MbudiaryPost, UserProfile } from '../types';
-import { getPosts, getAllReplies, isFollowing, toggleFollow, getFollowerCount } from '../lib/storage';
+import { getPosts, getAllReplies, isFollowing, toggleFollow, getFollowerCount } from './lib/storage';
 import { PostCard } from './PostCard';
 import { ArrowLeft, Heart, FileText, User, Users, UserPlus, UserCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
