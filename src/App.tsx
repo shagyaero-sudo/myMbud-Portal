@@ -20,7 +20,7 @@ import { LetterGeneratorView } from './components/LetterGeneratorView';
 import { PdfViewerModal } from './components/PdfViewerModal';
 import { SoftForceModal } from './components/SoftForceModal';
 import { BlockBlastView } from './components/blockblast/BlockBlastView';
-import { MbudiaryView } from './components/mbudiary/MbudiaryView';
+import { MbudiaryView } from './components/MbudiaryView';
 import { GpaCalculatorModal } from './components/GpaCalculatorModal';
 import { LoginScreen } from './components/LoginScreen';
 
