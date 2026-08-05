@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { STUDENTS_DATA } from '../data/studentData';
+import { STUDENTS_DATA } from '../data/studentsData';
 
 interface LoginScreenProps {
   onLoginSuccess: () => void;
