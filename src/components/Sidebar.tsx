@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  LayoutDashboard,
+  CalendarDays,
   Users,
   FolderKanban,
   FileText,
@@ -13,7 +13,6 @@ import {
   Handshake,
   BookOpenCheck,
   Gamepad2,
-  Sparkles,
   LayoutGrid,
   X
 } from 'lucide-react';
@@ -38,7 +37,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, urgen
   };
 
   const menuItems = [
-    { id: 'dashboard' as TabType, label: 'Dashboard Utama', icon: LayoutDashboard, badge: null },
+    { id: 'dashboard' as TabType, label: 'Jadwal Perkuliahan', icon: CalendarDays, badge: null },
     { id: 'tasks' as TabType, label: 'Manajemen Tugas', icon: FolderKanban, badge: urgentTaskCount > 0 ? urgentTaskCount : null },
     { id: 'contacts' as TabType, label: 'Direktori Kontak', icon: Users, badge: null },
     { id: 'materials' as TabType, label: 'Bank Materi PDF', icon: FileText, badge: null },
@@ -134,10 +133,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, urgen
                     <Gamepad2 className={`w-4 h-4 ${activeTab === 'blockblast' ? 'text-white' : 'text-purple-500'}`} />
                   </div>
                   <div className="text-left">
-                    <div className="flex items-center gap-1">
-                      <span>myMbudblox</span>
-                      <Sparkles className="w-2.5 h-2.5 text-pink-400" />
-                    </div>
+                    <span>myMbudblox</span>
                   </div>
                 </div>
                 <ChevronRight className="w-4 h-4 opacity-70 group-hover:translate-x-0.5 transition-transform" />
@@ -156,7 +152,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, urgen
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 pb-[env(safe-area-inset-bottom)] pointer-events-none">
         <nav className="pointer-events-auto mx-4 mb-5 bg-white/80 dark:bg-zinc-900/85 backdrop-blur-2xl border border-white/50 dark:border-white/10 px-2.5 py-2.5 flex items-center justify-between shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] rounded-[2rem] transition-colors relative">
           
-          <BottomTabItem id="dashboard" label="Jadwal" icon={LayoutDashboard} activeTab={activeTab} onClick={setActiveTab} />
+          <BottomTabItem id="dashboard" label="Jadwal" icon={CalendarDays} activeTab={activeTab} onClick={setActiveTab} />
           <BottomTabItem id="tasks" label="Tugas" icon={FolderKanban} activeTab={activeTab} onClick={setActiveTab} badge={urgentTaskCount > 0 ? urgentTaskCount : null} />
 
           {/* TOMBOL SAKTI / APP DRAWER TRIGGER */}
@@ -244,10 +240,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, urgen
 
                 {/* MINIGAME */}
                 <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-zinc-800">
-                  <div className="flex items-center justify-between px-1">
-                    <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">MINIGAME</p>
-                    <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-                  </div>
+                  <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-1">MINIGAME</p>
                   <button onClick={() => navigateFromSheet('blockblast')} className="group relative w-full overflow-hidden rounded-2xl p-3 text-xs font-bold transition-all border bg-gradient-to-r from-purple-50 via-fuchsia-50 to-pink-50 dark:from-purple-950/40 dark:via-fuchsia-950/30 dark:to-pink-950/30 text-purple-700 dark:text-purple-300 border-purple-200/70 dark:border-purple-800/50 active:scale-95">
                     <div className="relative flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -255,11 +248,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, urgen
                           <Gamepad2 className="w-5 h-5 text-purple-500" />
                         </div>
                         <div className="text-left">
-                          <div className="flex items-center gap-1.5">
-                            <span>myMbudblox</span>
-                            <Sparkles className="w-3 h-3 text-pink-400" />
-                          </div>
-                          <span className="text-[9px] font-medium text-purple-400 dark:text-purple-400">Play a little. Study later.</span>
+                          <span>myMbudblox</span>
                         </div>
                       </div>
                       <ChevronRight className="w-4 h-4 opacity-70" />
