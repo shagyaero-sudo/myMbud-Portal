@@ -8,7 +8,6 @@ import {
   RotateCcw,
   Edit3,
   Check,
-  Lock,
   ShieldCheck,
 } from 'lucide-react';
 
@@ -16,10 +15,9 @@ export interface CourseItem {
   id: string;
   name: string;
   sks: number;
-  grade: string; // 'A' | 'AB' | 'B' | 'BC' | 'C' | 'D' | 'E' | ''
+  grade: string;
 }
 
-// Konversi Nilai Indeks ITS
 const GRADE_POINTS: Record<string, number> = {
   A: 4.0,
   AB: 3.5,
@@ -30,7 +28,6 @@ const GRADE_POINTS: Record<string, number> = {
   E: 0.0,
 };
 
-// Preset FRS Default Semester 3 (Total 21 SKS)
 const DEFAULT_COURSES: CourseItem[] = [
   { id: '1', name: 'Dasar-dasar Manajemen', sks: 2, grade: '' },
   { id: '2', name: 'Ekonomi Makro', sks: 2, grade: '' },
@@ -72,14 +69,12 @@ export const GpaCalculatorModal: React.FC<GpaCalculatorModalProps> = ({
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(courses));
   }, [courses]);
 
-  // Handler Nilai Indeks
   const handleGradeChange = (id: string, grade: string) => {
     setCourses((prev) =>
       prev.map((c) => (c.id === id ? { ...c, grade } : c))
     );
   };
 
-  // Handler Edit Matkul
   const handleCourseChange = (id: string, field: 'name' | 'sks', value: any) => {
     setCourses((prev) =>
       prev.map((c) => (c.id === id ? { ...c, [field]: value } : c))
@@ -106,7 +101,6 @@ export const GpaCalculatorModal: React.FC<GpaCalculatorModalProps> = ({
     }
   };
 
-  // Kalkulasi IPS
   const totalSks = courses.reduce((acc, c) => acc + (Number(c.sks) || 0), 0);
   const totalPoints = courses.reduce((acc, c) => {
     const point = GRADE_POINTS[c.grade] ?? 0;
@@ -122,34 +116,34 @@ export const GpaCalculatorModal: React.FC<GpaCalculatorModalProps> = ({
   return (
     <AnimatePresence>
       {isOpen && (
-        <>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm"
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm"
           />
 
-          {/* Modal Container */}
+          {/* Modal Card */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed inset-x-4 top-[5%] bottom-[5%] sm:inset-auto sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 z-50 w-full max-w-lg bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl shadow-2xl flex flex-col overflow-hidden"
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            className="relative w-full max-w-lg max-h-[85vh] bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl shadow-2xl flex flex-col overflow-hidden z-10"
           >
-            {/* Modal Header */}
-            <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
-                  <Calculator className="w-5 h-5" />
+            {/* Header */}
+            <div className="p-3.5 sm:p-4 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                  <Calculator className="w-4 h-4" />
                 </div>
-                <div>
-                  <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-zinc-100">
+                <div className="min-w-0">
+                  <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-zinc-100 truncate">
                     Simulasi IPK FRS
                   </h3>
-                  <p className="text-[11px] text-slate-500 dark:text-zinc-400">
+                  <p className="text-[10px] text-slate-500 dark:text-zinc-400 truncate">
                     Hitung prediksi IPS dengan indeks nilai.
                   </p>
                 </div>
@@ -157,21 +151,21 @@ export const GpaCalculatorModal: React.FC<GpaCalculatorModalProps> = ({
 
               <button
                 onClick={onClose}
-                className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all"
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all shrink-0"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Score Banner / Result */}
-            <div className="p-4 bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 text-white flex items-center justify-between shrink-0 shadow-inner">
-              <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-100 block">
-                  Prediksi IPS Semester Ini
+            {/* Banner Skor */}
+            <div className="p-3.5 sm:p-4 bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 text-white flex items-center justify-between shrink-0">
+              <div className="min-w-0">
+                <span className="text-[9px] font-bold uppercase tracking-wider text-amber-100 block">
+                  PREDIKSI IPS SEMESTER INI
                 </span>
-                <div className="flex items-baseline gap-2 mt-0.5">
-                  <span className="text-3xl font-black tracking-tight">{gpa}</span>
-                  <span className="text-xs text-amber-100">
+                <div className="flex items-baseline gap-1 mt-0.5">
+                  <span className="text-2xl sm:text-3xl font-black tracking-tight">{gpa}</span>
+                  <span className="text-[10px] sm:text-xs text-amber-100 font-medium truncate">
                     / 4.00 ({filledSks} dari {totalSks} SKS)
                   </span>
                 </div>
@@ -179,29 +173,29 @@ export const GpaCalculatorModal: React.FC<GpaCalculatorModalProps> = ({
 
               <button
                 onClick={() => setIsEditing(!isEditing)}
-                className="px-3 py-2 rounded-2xl bg-white/20 hover:bg-white/30 backdrop-blur-md text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm"
+                className="px-3 py-1.5 rounded-xl bg-white/20 hover:bg-white/30 backdrop-blur-md text-xs font-bold transition-all flex items-center gap-1 shrink-0 shadow-xs"
               >
-                {isEditing ? <Check className="w-4 h-4" /> : <Edit3 className="w-4 h-4" />}
+                {isEditing ? <Check className="w-3.5 h-3.5" /> : <Edit3 className="w-3.5 h-3.5" />}
                 <span>{isEditing ? 'Selesai Edit' : 'Adjust FRS'}</span>
               </button>
             </div>
 
-            {/* Course List / Input */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-2.5 custom-scrollbar">
+            {/* List Matkul (Scrollable) */}
+            <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-2 custom-scrollbar">
               {courses.map((course) => (
                 <div
                   key={course.id}
-                  className="p-3 rounded-2xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-100 dark:border-zinc-800 flex items-center justify-between gap-3"
+                  className="p-2.5 rounded-xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-100 dark:border-zinc-800/80 flex items-center justify-between gap-2"
                 >
                   {isEditing ? (
-                    <div className="flex-1 flex items-center gap-2">
+                    <div className="flex-1 flex items-center gap-2 min-w-0">
                       <input
                         type="text"
                         value={course.name}
                         onChange={(e) =>
                           handleCourseChange(course.id, 'name', e.target.value)
                         }
-                        className="flex-1 text-xs font-semibold px-2.5 py-1.5 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 focus:outline-none"
+                        className="flex-1 min-w-0 text-xs font-semibold px-2 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 focus:outline-none"
                       />
                       <input
                         type="number"
@@ -211,13 +205,13 @@ export const GpaCalculatorModal: React.FC<GpaCalculatorModalProps> = ({
                         onChange={(e) =>
                           handleCourseChange(course.id, 'sks', Number(e.target.value))
                         }
-                        className="w-12 text-xs text-center font-bold px-1 py-1.5 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 focus:outline-none"
+                        className="w-10 text-xs text-center font-bold px-1 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 focus:outline-none shrink-0"
                       />
                       <button
                         onClick={() => handleDeleteCourse(course.id)}
-                        className="p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors"
+                        className="p-1 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors shrink-0"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   ) : (
@@ -231,13 +225,12 @@ export const GpaCalculatorModal: React.FC<GpaCalculatorModalProps> = ({
                         </span>
                       </div>
 
-                      {/* Dropdown Indeks Nilai ITS */}
                       <select
                         value={course.grade}
                         onChange={(e) => handleGradeChange(course.id, e.target.value)}
-                        className="px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs font-bold text-slate-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer"
+                        className="px-2 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs font-bold text-slate-800 dark:text-zinc-200 focus:outline-none cursor-pointer shrink-0"
                       >
-                        <option value="">Pilih--</option>
+                        <option value="">Nilai--</option>
                         <option value="A">A (4.0)</option>
                         <option value="AB">AB (3.5)</option>
                         <option value="B">B (3.0)</option>
@@ -252,43 +245,43 @@ export const GpaCalculatorModal: React.FC<GpaCalculatorModalProps> = ({
               ))}
             </div>
 
-            {/* Disclaimer Privasi Appealing */}
-            <div className="px-4 py-2.5 bg-emerald-50/60 dark:bg-emerald-950/20 border-t border-emerald-100/80 dark:border-emerald-900/40 flex items-center gap-2.5 text-emerald-800 dark:text-emerald-300">
-              <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-              <p className="text-[10px] font-medium leading-tight">
-                <span className="font-bold">100% Rahasia & Aman,</span> Indeks nilai yang kamu masukkan hanya tersimpan di perangkatmu.  
+            {/* Disclaimer */}
+            <div className="px-3 py-2 bg-emerald-50/60 dark:bg-emerald-950/20 border-t border-emerald-100/80 dark:border-emerald-900/40 flex items-center gap-2 text-emerald-800 dark:text-emerald-300 shrink-0">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <p className="text-[9px] font-medium leading-tight">
+                <span className="font-bold">100% Rahasia & Aman:</span> Indeks nilai yang kamu masukkan hanya tersimpan di perangkatmu.
               </p>
             </div>
 
-            {/* Modal Footer */}
-            <div className="p-4 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-between shrink-0 bg-slate-50/50 dark:bg-zinc-900/50">
+            {/* Footer */}
+            <div className="p-3 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-between shrink-0 bg-slate-50/50 dark:bg-zinc-900/50">
               {isEditing ? (
                 <button
                   onClick={handleAddCourse}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 text-xs font-bold hover:bg-amber-100 transition-all"
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 text-xs font-bold hover:bg-amber-100 transition-all"
                 >
-                  <Plus className="w-4 h-4" />
+                  <Plus className="w-3.5 h-3.5" />
                   <span>Tambah Matkul</span>
                 </button>
               ) : (
                 <button
                   onClick={handleReset}
-                  className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-slate-600 dark:hover:text-zinc-300 transition-colors"
+                  className="flex items-center gap-1 text-xs font-semibold text-slate-400 hover:text-slate-600 dark:hover:text-zinc-300 transition-colors"
                 >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  <span>Reset Default FRS</span>
+                  <RotateCcw className="w-3 h-3" />
+                  <span>Reset</span>
                 </button>
               )}
 
               <button
                 onClick={onClose}
-                className="px-5 py-2 rounded-xl bg-slate-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-bold transition-all hover:opacity-90"
+                className="px-4 py-1.5 rounded-xl bg-slate-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-bold transition-all hover:opacity-90"
               >
                 Selesai
               </button>
             </div>
           </motion.div>
-        </>
+        </div>
       )}
     </AnimatePresence>
   );
