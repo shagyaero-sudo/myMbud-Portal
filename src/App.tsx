@@ -21,7 +21,7 @@ import { PdfViewerModal } from './components/PdfViewerModal';
 import { SoftForceModal } from './components/SoftForceModal';
 import { BlockBlastView } from './components/blockblast/BlockBlastView';
 import { GpaCalculatorModal } from './components/GpaCalculatorModal';
-import { LoginScreen } from './components/LoginScreen'; // <-- IMPORT LOGIN SCREEN
+import { LoginScreen } from './components/LoginScreen';
 
 import {
   AppState,
@@ -67,6 +67,13 @@ export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     return localStorage.getItem('mymbud_auth') === 'true';
   });
+
+  const handleLogout = () => {
+    localStorage.removeItem('mymbud_auth');
+    localStorage.removeItem('mymbud_user_name');
+    localStorage.removeItem('mymbud_user_nrp');
+    setIsAuthenticated(false);
+  };
 
   // Cek apakah dibuka di layar besar (PC) atau PWA (Homescreen)
   const isDesktop = window.innerWidth >= 1024;
@@ -414,6 +421,7 @@ export default function App() {
         urgentTaskCount={urgentTaskCount}
         theme={theme}
         setTheme={setTheme}
+        onLogout={handleLogout} // <-- PASANG FUNGSI LOGOUT KE HEADER
       />
 
       <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 flex flex-col lg:flex-row gap-6">

@@ -10,6 +10,7 @@ import {
   Sparkles,
   Palette,
   Leaf,
+  LogOut, // <-- Import ikon LogOut
 } from 'lucide-react';
 import { TabType } from './Sidebar';
 
@@ -24,6 +25,7 @@ interface HeaderProps {
   urgentTaskCount?: number;
   theme?: 'light' | 'dark' | 'pink' | 'purple' | 'green';
   setTheme?: (val: 'light' | 'dark' | 'pink' | 'purple' | 'green') => void;
+  onLogout?: () => void; // <-- Prop Logout Tambahan
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -31,6 +33,7 @@ export const Header: React.FC<HeaderProps> = ({
   setIsOfficer,
   theme = 'light',
   setTheme,
+  onLogout,
 }) => {
   const [showPinModal, setShowPinModal] = useState(false);
   const [pinInput, setPinInput] = useState('');
@@ -110,7 +113,7 @@ export const Header: React.FC<HeaderProps> = ({
                     setIsThemeDropdownOpen(!isThemeDropdownOpen)
                   }
                   className="p-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 transition-all flex items-center justify-center text-xs font-bold cursor-pointer"
-                  title="Pilih Tema"
+                  title="Pilih Tema & Pengaturan"
                 >
                   {theme === 'green' ? (
                     <Leaf className="w-5 h-5 text-emerald-600" />
@@ -218,6 +221,23 @@ export const Header: React.FC<HeaderProps> = ({
                           <Leaf className="w-4 h-4 text-emerald-600" />
                           <span>Green</span>
                         </button>
+
+                        {/* Pembatas (Divider) & Tombol Keluar / Logout */}
+                        {onLogout && (
+                          <>
+                            <div className="my-1 border-t border-slate-100 dark:border-zinc-800" />
+                            <button
+                              onClick={() => {
+                                setIsThemeDropdownOpen(false);
+                                onLogout();
+                              }}
+                              className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 active:bg-rose-100 transition-all cursor-pointer"
+                            >
+                              <LogOut className="w-4 h-4" />
+                              <span>Keluar</span>
+                            </button>
+                          </>
+                        )}
                       </motion.div>
                     </>
                   )}
