@@ -161,7 +161,7 @@ export const GpaCalculatorModal: React.FC<GpaCalculatorModalProps> = ({
             <div className="p-4 sm:p-5 bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 text-white flex items-center justify-between shrink-0 shadow-inner">
               <div className="min-w-0">
                 <span className="text-[10px] sm:text-xs font-extrabold uppercase tracking-wider text-amber-100 block">
-                  PREDIKSI IPS SEMESTER INI
+                  NILAI IP: 
                 </span>
                 <div className="flex items-baseline gap-2 mt-0.5">
                   <span className="text-2xl sm:text-4xl font-black tracking-tight">{gpa}</span>
