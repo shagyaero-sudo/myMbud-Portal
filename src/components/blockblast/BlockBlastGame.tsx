@@ -239,12 +239,71 @@ export const BlockBlastGame: React.FC = () => {
     score, highScore, linesClearedTotal, combosCount: 0, highestStreak,
   };
 
+  // Komponen Skor yang bisa dipakai ulang untuk HP dan PC
+  const ScoreCardUI = () => (
+    <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border border-slate-200/60 dark:border-zinc-800/60 rounded-3xl p-4 sm:p-5 shadow-sm">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <span className="text-[10px] font-bold tracking-wider text-slate-400 dark:text-zinc-500 uppercase block">
+            Skor Saat Ini
+          </span>
+          <div className="flex items-center gap-2 mt-0.5">
+            <span className="text-3xl font-black text-slate-800 dark:text-zinc-100 tracking-tight">
+              {score.toLocaleString()}
+            </span>
+            {streak > 1 && (
+              <span className="text-[10px] font-extrabold px-2 py-1 rounded-full bg-amber-500 text-white animate-pulse">
+                x{streak} STREAK
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="flex flex-col items-end gap-2 sm:gap-3">
+          <div className="text-right">
+            <span className="text-[10px] font-bold tracking-wider text-slate-400 dark:text-zinc-500 uppercase block">
+              Rekor
+            </span>
+            <span className="text-sm font-black text-amber-500">
+              {highScore.toLocaleString()}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                const next = !soundEnabled;
+                setSoundEnabled(next);
+                soundFX.enabled = next;
+                if (next) soundFX.playSelect();
+              }}
+              className="p-2 sm:p-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-600 dark:text-zinc-300 transition-all active:scale-95 text-xs sm:text-base"
+              title={soundEnabled ? 'Matikan Suara' : 'Aktifkan Suara'}
+            >
+              {soundEnabled ? '🔊' : '🔇'}
+            </button>
+            <button
+              onClick={startNewGame}
+              className="p-2 sm:p-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-600 dark:text-zinc-300 transition-all active:scale-95 text-xs sm:text-base"
+              title="Mulai Ulang Game"
+            >
+              ↻
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
-    // PERUBAHAN UTAMA: Layout menjadi lg:flex-row untuk PC, membatasi max-height layar
-    <section className="w-full h-full max-w-5xl mx-auto select-none flex flex-col lg:flex-row gap-6 items-center lg:items-start lg:justify-center">
+    <section className="w-full h-full max-w-5xl mx-auto select-none flex flex-col lg:flex-row gap-4 lg:gap-6 items-center lg:items-start lg:justify-center">
       
-      {/* Kolom Kiri: Papan Game */}
-      <div className="w-full max-w-md lg:max-w-[480px] shrink-0">
+      {/* KHUSUS MOBILE: Munculkan Skor di ATAS papan game biar hemat ruang vertical */}
+      <div className="w-full max-w-md lg:hidden shrink-0">
+        <ScoreCardUI />
+      </div>
+
+      {/* Kolom Kiri / Tengah: Papan Game */}
+      <div className="w-full max-w-md lg:max-w-[480px] shrink-0 z-10">
         <GameBoard
           gridRef={gridRef}
           grid={grid}
@@ -258,69 +317,25 @@ export const BlockBlastGame: React.FC = () => {
         />
       </div>
 
-      {/* Kolom Kanan: Skor & Balok (Deck) */}
-      <div className="w-full max-w-md lg:max-w-[360px] flex flex-col gap-5 shrink-0">
-        <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border border-slate-200/60 dark:border-zinc-800/60 rounded-3xl p-5 shadow-sm">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <span className="text-[10px] font-bold tracking-wider text-slate-400 dark:text-zinc-500 uppercase block">
-                Skor Saat Ini
-              </span>
-              <div className="flex items-center gap-2 mt-0.5">
-                <span className="text-3xl font-black text-slate-800 dark:text-zinc-100 tracking-tight">
-                  {score.toLocaleString()}
-                </span>
-                {streak > 1 && (
-                  <span className="text-[10px] font-extrabold px-2 py-1 rounded-full bg-amber-500 text-white animate-pulse">
-                    x{streak} STREAK
-                  </span>
-                )}
-              </div>
-            </div>
-
-            <div className="flex flex-col items-end gap-3">
-              <div className="text-right">
-                <span className="text-[10px] font-bold tracking-wider text-slate-400 dark:text-zinc-500 uppercase block">
-                  Rekor
-                </span>
-                <span className="text-sm font-black text-amber-500">
-                  {highScore.toLocaleString()}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => {
-                    const next = !soundEnabled;
-                    setSoundEnabled(next);
-                    soundFX.enabled = next;
-                    if (next) soundFX.playSelect();
-                  }}
-                  className="p-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-600 dark:text-zinc-300 transition-all active:scale-95"
-                  title={soundEnabled ? 'Matikan Suara' : 'Aktifkan Suara'}
-                >
-                  {soundEnabled ? '🔊' : '🔇'}
-                </button>
-                <button
-                  onClick={startNewGame}
-                  className="p-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-600 dark:text-zinc-300 transition-all active:scale-95"
-                  title="Mulai Ulang Game"
-                >
-                  ↻
-                </button>
-              </div>
-            </div>
-          </div>
+      {/* Kolom Kanan / Bawah: Skor (Khusus PC) & Balok (Deck) */}
+      <div className="w-full max-w-md lg:max-w-[360px] flex flex-col gap-4 lg:gap-5 shrink-0">
+        
+        {/* KHUSUS PC: Skor ditaruh di kolom kanan */}
+        <div className="hidden lg:block">
+          <ScoreCardUI />
         </div>
 
-        {/* Deck Balok dipindah ke kolom kanan di PC */}
-        <PieceDeck
-          hand={hand}
-          selectedShapeId={selectedShapeId}
-          draggedShapeId={dragState?.shape.id}
-          grid={grid}
-          onSelectShape={handleSelectShape}
-          onStartDrag={handleStartDrag}
-        />
+        {/* Deck Balok (Selalu di bawah kalau di HP) */}
+        <div className="z-10">
+          <PieceDeck
+            hand={hand}
+            selectedShapeId={selectedShapeId}
+            draggedShapeId={dragState?.shape.id}
+            grid={grid}
+            onSelectShape={handleSelectShape}
+            onStartDrag={handleStartDrag}
+          />
+        </div>
       </div>
 
       <AnimatePresence>
