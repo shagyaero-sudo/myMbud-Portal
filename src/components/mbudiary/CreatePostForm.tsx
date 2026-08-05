@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { UserProfile } from './types';
 import { savePost, saveUserProfile } from './lib/storage';
-import { Send, Smile, X, Edit3, Lock, CheckCircle2 } from 'lucide-react';
+import { Send, Smile, X, Edit3, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface CreatePostFormProps {
@@ -29,19 +29,7 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
   const [showSuccessToast, setShowSuccessToast] = useState(false);
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editName, setEditName] = useState(userProfile.nickname);
-  const [editUsername, setEditUsername] = useState(userProfile.nrp);
   const [editEmoji, setEditEmoji] = useState(userProfile.emoji || '😊');
-
-  // Status apakah user sudah pernah mengganti username (Username != NRP)
-  const isUsernameChanged = userProfile.nrp.toLowerCase() !== userProfile.nickname.toLowerCase() && 
-                            !userProfile.nickname.match(/^\d+$/);
-
-  useEffect(() => {
-    setEditName(userProfile.nickname);
-    setEditUsername(userProfile.nickname);
-    setEditEmoji(userProfile.emoji || '😊');
-  }, [userProfile]);
 
   const handleSubmitPost = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,7 +39,7 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
     try {
       await savePost({
         authorName: userProfile.nickname,
-        authorUsername: userProfile.nickname,
+        authorUsername: userProfile.nrp,
         authorEmoji: userProfile.emoji || '😊',
         content: content.trim(),
         isOfficerPost: userProfile.isOfficer,
@@ -69,18 +57,12 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
     }
   };
 
-  const handleSaveProfile = async (e: React.FormEvent) => {
+  const handleSaveEmoji = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Format username hanya huruf, angka, underscore
-    const formattedUsername = editUsername.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
-
     await saveUserProfile({
       ...userProfile,
-      nickname: formattedUsername || userProfile.nickname,
       emoji: editEmoji,
     });
-
     setIsEditModalOpen(false);
   };
 
@@ -106,9 +88,12 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
           {/* Avatar Emoji Button to Edit Profile */}
           <button
             type="button"
-            onClick={() => setIsEditModalOpen(true)}
+            onClick={() => {
+              setEditEmoji(userProfile.emoji || '😊');
+              setIsEditModalOpen(true);
+            }}
             className="text-2xl p-2 rounded-2xl bg-slate-50 dark:bg-zinc-800 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-all shrink-0 active:scale-95 group relative"
-            title="Ubah emoji & username"
+            title="Ubah Emoji Profil"
           >
             <span>{userProfile.emoji || '😊'}</span>
             <div className="absolute -bottom-1 -right-1 bg-indigo-600 text-white p-1 rounded-full shadow-xs">
@@ -119,17 +104,20 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <span 
-                onClick={() => onSelectAuthor && onSelectAuthor(userProfile.nickname)}
+                onClick={() => onSelectAuthor && onSelectAuthor(userProfile.nrp)}
                 className="text-xs font-bold text-slate-800 dark:text-zinc-100 hover:text-indigo-600 cursor-pointer"
               >
-                @{userProfile.nickname}
+                {userProfile.nickname}
               </span>
               <button
                 type="button"
-                onClick={() => setIsEditModalOpen(true)}
+                onClick={() => {
+                  setEditEmoji(userProfile.emoji || '😊');
+                  setIsEditModalOpen(true);
+                }}
                 className="text-[10px] text-indigo-600 dark:text-indigo-400 hover:underline font-semibold"
               >
-                Ubah
+                Ubah Emoji
               </button>
             </div>
 
@@ -160,7 +148,7 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
         </div>
       </form>
 
-      {/* Modal Edit Identitas & Emoji */}
+      {/* Modal Edit Emoji Profil Saja */}
       <AnimatePresence>
         {isEditModalOpen && (
           <motion.div
@@ -178,9 +166,10 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
                   <Smile className="w-5 h-5 text-indigo-500" />
-                  <span>Ubah Identitas & Emoji</span>
+                  <span>Ubah Emoji Profil</span>
                 </h3>
                 <button
+                  type="button"
                   onClick={() => setIsEditModalOpen(false)}
                   className="p-2 rounded-2xl text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
                 >
@@ -188,13 +177,12 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
                 </button>
               </div>
 
-              <form onSubmit={handleSaveProfile} className="space-y-4">
-                {/* Pilih Emoji */}
+              <form onSubmit={handleSaveEmoji} className="space-y-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-2">
-                    Pilih Emoji Profil
+                    Pilih Emoji Baru
                   </label>
-                  <div className="grid grid-cols-9 gap-1.5 p-2 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 max-h-36 overflow-y-auto">
+                  <div className="grid grid-cols-9 gap-1.5 p-2 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 max-h-48 overflow-y-auto">
                     {EMOJI_OPTIONS.map((emoji) => (
                       <button
                         key={emoji}
@@ -212,58 +200,6 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
                   </div>
                 </div>
 
-                {/* Nama (Locked) */}
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">
-                      Nama
-                    </label>
-                    <span className="text-[10px] text-slate-400 dark:text-zinc-500">
-                      (Tidak dapat diubah)
-                    </span>
-                  </div>
-                  <input
-                    type="text"
-                    disabled
-                    value={userProfile.nrp}
-                    className="w-full px-4 py-3 rounded-2xl bg-slate-100 dark:bg-zinc-800/50 text-slate-500 dark:text-zinc-400 text-xs border border-slate-200 dark:border-zinc-700/60 cursor-not-allowed font-medium"
-                  />
-                </div>
-
-                {/* Username Unik (1x Kesempatan Ubah) */}
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300 flex items-center gap-1">
-                      <span>Username unik</span>
-                      {isUsernameChanged && <Lock className="w-3 h-3 text-amber-500" />}
-                    </label>
-                    <span className="text-[10px] text-slate-400 dark:text-zinc-500">
-                      {isUsernameChanged ? '(Kesempatan ganti sudah habis)' : 'Bisa diganti 1x'}
-                    </span>
-                  </div>
-
-                  <div className="relative">
-                    <input
-                      type="text"
-                      disabled={isUsernameChanged}
-                      value={editUsername}
-                      onChange={(e) => setEditUsername(e.target.value)}
-                      placeholder="Username_unik"
-                      maxLength={15}
-                      className={`w-full px-4 py-3 rounded-2xl text-xs border transition-all ${
-                        isUsernameChanged
-                          ? 'bg-slate-100 dark:bg-zinc-800/50 text-slate-500 dark:text-zinc-400 border-slate-200 dark:border-zinc-700/60 cursor-not-allowed font-mono'
-                          : 'bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border-slate-200 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono'
-                      }`}
-                    />
-                  </div>
-                  {!isUsernameChanged && (
-                    <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-1.5 font-medium">
-                      ⚠️ Catatan: Username hanya bisa diubah 1 kali. Setelah disimpan tidak bisa diubah kembali.
-                    </p>
-                  )}
-                </div>
-
                 <div className="flex items-center justify-end gap-2 pt-2">
                   <button
                     type="button"
@@ -276,7 +212,7 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
                     type="submit"
                     className="px-5 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all shadow-md shadow-indigo-500/20 active:scale-95"
                   >
-                    Simpan
+                    Simpan Emoji
                   </button>
                 </div>
               </form>

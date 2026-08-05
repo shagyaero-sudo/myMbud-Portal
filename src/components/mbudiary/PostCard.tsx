@@ -101,7 +101,8 @@ export const PostCard: React.FC<PostCardProps> = ({
   // Cek validasi hak hapus (Pemilik postingan ATAU Officer/Admin)
   const isAuthor = 
     post.authorUsername.toLowerCase() === currentUser.nickname.toLowerCase() ||
-    post.authorUsername.toLowerCase() === currentUser.nrp.toLowerCase();
+    post.authorUsername.toLowerCase() === currentUser.nrp.toLowerCase() ||
+    post.authorName.toLowerCase() === currentUser.nickname.toLowerCase();
     
   const canDelete = isAuthor || currentUser.isOfficer;
 
@@ -128,9 +129,6 @@ export const PostCard: React.FC<PostCardProps> = ({
             <div className="flex items-center flex-wrap gap-1.5">
               <span className="text-slate-900 dark:text-zinc-100 font-bold text-sm group-hover/author:text-indigo-600 dark:group-hover/author:text-indigo-400 transition-colors">
                 {post.authorName}
-              </span>
-              <span className="text-slate-400 dark:text-zinc-500 text-[10px] font-mono">
-                @{post.authorUsername}
               </span>
             </div>
 
@@ -230,9 +228,6 @@ export const PostCard: React.FC<PostCardProps> = ({
                         </span>
                         <span className="text-slate-900 dark:text-zinc-100 font-bold group-hover/replyAuthor:text-indigo-600 dark:group-hover/replyAuthor:text-indigo-400 transition-colors">
                           {reply.authorName}
-                        </span>
-                        <span className="text-slate-400 dark:text-zinc-500 text-[10px] font-mono">
-                          @{reply.authorUsername}
                         </span>
                       </div>
                       <span className="text-slate-400 dark:text-zinc-500 text-[10px]">
