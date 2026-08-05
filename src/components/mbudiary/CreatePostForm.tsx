@@ -93,7 +93,7 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
               setIsEditModalOpen(true);
             }}
             className="text-2xl p-2 rounded-2xl bg-slate-50 dark:bg-zinc-800 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-all shrink-0 active:scale-95 group relative"
-            title="Ubah Emoji Profil"
+            title="Ubah Emoji"
           >
             <span>{userProfile.emoji || '😊'}</span>
             <div className="absolute -bottom-1 -right-1 bg-indigo-600 text-white p-1 rounded-full shadow-xs">
@@ -180,7 +180,7 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
               <form onSubmit={handleSaveEmoji} className="space-y-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-2">
-                    Pilih Emoji Baru
+                    Pilih emoji yang menggambarkan perasaanmu sekarang...
                   </label>
                   <div className="grid grid-cols-9 gap-1.5 p-2 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 max-h-48 overflow-y-auto">
                     {EMOJI_OPTIONS.map((emoji) => (
