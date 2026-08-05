@@ -357,6 +357,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }
   };
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    const userName = localStorage.getItem('mymbud_user_name') || 'Mbuders'; 
+  
+    if (hour >= 4 && hour < 11) return `Selamat Pagi, ${userName}! 🌅`;
+    if (hour >= 11 && hour < 15) return `Selamat Siang, ${userName}! ☀️`;
+    if (hour >= 15 && hour < 18) return `Selamat Sore, ${userName}! 🌆`;
+    return `Selamat Malam, ${userName}! 🌙`;
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 15 }}
@@ -364,6 +374,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       transition={{ duration: 0.3 }}
       className="space-y-6 pb-12"
     >
+      {/* --- GREETING KHUSUS MOBILE/TABLET (Menyatu dgn BG) --- */}
+      <div className="block lg:hidden px-2 pt-2 pb-0">
+        <h2 className="text-xl font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
+          {getGreeting()}
+        </h2>
+        <p className="text-xs font-medium text-slate-500 dark:text-zinc-400 mt-1 leading-relaxed">
+          Siap untuk produktif dan mengecek perkuliahan hari ini?
+        </p>
+      </div>
+
       {/* Mobile & Tablet Announcements Carousel */}
       <div className="block lg:hidden bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-4 sm:p-5 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-2.5 transition-colors">
         {isOfficer && (

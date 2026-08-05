@@ -21,6 +21,7 @@ import { PdfViewerModal } from './components/PdfViewerModal';
 import { SoftForceModal } from './components/SoftForceModal';
 import { BlockBlastView } from './components/blockblast/BlockBlastView';
 import { GpaCalculatorModal } from './components/GpaCalculatorModal';
+import { LoginScreen } from './components/LoginScreen'; // <-- IMPORT LOGIN SCREEN
 
 import {
   AppState,
@@ -60,6 +61,23 @@ const AppSkeleton = () => (
 );
 
 export default function App() {
+  // ============================================================
+  // LOGIKA AUTENTIKASI (PENJAGA GERBANG)
+  // ============================================================
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    return localStorage.getItem('mymbud_auth') === 'true';
+  });
+
+  // Cek apakah dibuka di layar besar (PC) atau PWA (Homescreen)
+  const isDesktop = window.innerWidth >= 1024;
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || ('standalone' in navigator && (navigator as any).standalone);
+  
+  // Perlu login jika belum auth DAN (dibuka di PC atau via PWA Homescreen)
+  const requiresLogin = !isAuthenticated && (isDesktop || isStandalone);
+
+  // ============================================================
+  // STATE APLIKASI
+  // ============================================================
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
   const [selectedContactCourse, setSelectedContactCourse] = useState<string>('ALL');
   const [isOfficer, setIsOfficer] = useState<boolean>(false);
@@ -372,6 +390,16 @@ export default function App() {
     }
   };
 
+  // ============================================================
+  // CEGAT RENDER JIKA BUTUH LOGIN
+  // ============================================================
+  if (requiresLogin) {
+    return <LoginScreen onLoginSuccess={() => setIsAuthenticated(true)} />;
+  }
+
+  // ============================================================
+  // RENDER UTAMA APLIKASI
+  // ============================================================
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-200">
 
