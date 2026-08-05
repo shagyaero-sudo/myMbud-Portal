@@ -116,7 +116,6 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({ userProfile, onP
                 @{userProfile.nrp}
               </span>
             </div>
-
           </div>
         </div>
 
