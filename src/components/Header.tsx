@@ -1,24 +1,15 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  BookOpenCheck,
   KeyRound,
   X,
   ShieldAlert,
   ShieldCheck,
-  Menu,
-  Dices,
-  Calculator,
-  ChevronRight,
-  Globe,
   Sun,
   Moon,
-  FileEdit,
-  Handshake,
   Sparkles,
   Palette,
   Leaf,
-  Gamepad2,
 } from 'lucide-react';
 import { TabType } from './Sidebar';
 
@@ -38,15 +29,12 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({
   isOfficer,
   setIsOfficer,
-  activeTab,
-  setActiveTab,
   theme = 'light',
   setTheme,
 }) => {
   const [showPinModal, setShowPinModal] = useState(false);
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState(false);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isThemeDropdownOpen, setIsThemeDropdownOpen] = useState(false);
 
   const handleLogoClick = () => {
@@ -70,11 +58,6 @@ export const Header: React.FC<HeaderProps> = ({
     } else {
       setPinError(true);
     }
-  };
-
-  const navigateTo = (tab: TabType) => {
-    if (setActiveTab) setActiveTab(tab);
-    setIsDrawerOpen(false);
   };
 
   return (
@@ -241,256 +224,9 @@ export const Header: React.FC<HeaderProps> = ({
                 </AnimatePresence>
               </div>
             )}
-
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={() => setIsDrawerOpen(true)}
-              className="p-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 transition-all flex items-center gap-1 text-xs font-bold"
-              title="Menu Navigasi Secondary & Tools"
-            >
-              <Menu className="w-5 h-5 text-slate-700 dark:text-zinc-200" />
-            </motion.button>
           </div>
         </div>
       </header>
-
-      {/* Side Drawer */}
-      <AnimatePresence>
-        {isDrawerOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex justify-end"
-          >
-            <motion.div
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="w-80 max-w-[85vw] bg-white dark:bg-zinc-950 text-slate-800 dark:text-zinc-100 h-full p-6 shadow-2xl flex flex-col justify-between overflow-y-auto space-y-6 border-l dark:border-zinc-800"
-            >
-              <div className="space-y-6">
-
-                {/* Drawer Header */}
-                <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-zinc-800">
-                  <div className="flex items-center gap-2.5">
-                    <img
-                      src="/logombud.png"
-                      alt="Logo myMbud"
-                      className="h-8 w-auto object-contain"
-                    />
-
-                    <div className="flex items-center gap-1.5">
-                      <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100">
-                        <span className="font-light">my</span>Mbud
-                        <span className="font-light"> Portal</span>
-                      </h3>
-
-                      <span className="text-xs font-normal text-slate-400 dark:text-zinc-500">
-                        v2.5
-                      </span>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => setIsDrawerOpen(false)}
-                    className="p-2 rounded-xl text-slate-400 hover:text-slate-800 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-
-                {/* ================================================== */}
-                {/* PORTAL AKADEMIK ITS */}
-                {/* ================================================== */}
-
-                <div className="space-y-2">
-                  <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-1">
-                    PORTAL AKADEMIK ITS
-                  </p>
-
-                  <a
-                    href="https://presensi.its.ac.id/dashboard"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 hover:text-blue-600 dark:hover:text-blue-400 text-xs font-medium transition-all"
-                  >
-                    <span className="flex items-center gap-2">
-                      <Globe className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-                      <span>MyITS Presensi</span>
-                    </span>
-                    <ChevronRight className="w-3 h-3 text-slate-400" />
-                  </a>
-
-                  <a
-                    href="https://kemahasiswaan.its.ac.id/beranda"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 hover:text-blue-600 dark:hover:text-blue-400 text-xs font-medium transition-all"
-                  >
-                    <span className="flex items-center gap-2">
-                      <Handshake className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-                      <span>myITS StudentConnect</span>
-                    </span>
-                    <ChevronRight className="w-3 h-3 text-slate-400" />
-                  </a>
-
-                  <a
-                    href="https://classroom.its.ac.id/auth/oidc"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 hover:text-blue-600 dark:hover:text-blue-400 text-xs font-medium transition-all"
-                  >
-                    <span className="flex items-center gap-2">
-                      <BookOpenCheck className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-                      <span>myITS Classroom</span>
-                    </span>
-                    <ChevronRight className="w-3 h-3 text-slate-400" />
-                  </a>
-
-                  <a
-                    href="https://akademik.its.ac.id/home.php"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 hover:text-blue-600 dark:hover:text-blue-400 text-xs font-medium transition-all"
-                  >
-                    <span className="flex items-center gap-2">
-                      <Globe className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-                      <span>myITS SIAKAD</span>
-                    </span>
-                    <ChevronRight className="w-3 h-3 text-slate-400" />
-                  </a>
-                </div>
-
-                {/* ================================================== */}
-                {/* TOOLS */}
-                {/* ================================================== */}
-
-                <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-zinc-800">
-                  <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-1">
-                    TOOLS
-                  </p>
-
-                  <button
-                    onClick={() => navigateTo('spinwheel')}
-                    className={`w-full flex items-center justify-between p-3 rounded-2xl text-xs font-semibold transition-all ${
-                      activeTab === 'spinwheel'
-                        ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
-                        : 'bg-blue-50/70 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 hover:bg-blue-100/80 dark:hover:bg-blue-900/40'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <Dices className="w-4 h-4" />
-                      <span>Spinwheel</span>
-                    </div>
-
-                    <ChevronRight className="w-4 h-4 opacity-70" />
-                  </button>
-
-                  <button
-                    onClick={() => navigateTo('calculator')}
-                    className={`w-full flex items-center justify-between p-3 rounded-2xl text-xs font-semibold transition-all ${
-                      activeTab === 'calculator'
-                        ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
-                        : 'bg-indigo-50/70 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100/80 dark:hover:bg-indigo-900/40'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <Calculator className="w-4 h-4" />
-                      <span>Kalkulator Nilai</span>
-                    </div>
-
-                    <ChevronRight className="w-4 h-4 opacity-70" />
-                  </button>
-
-                  <button
-                    onClick={() => navigateTo('letter')}
-                    className={`w-full flex items-center justify-between p-3 rounded-2xl text-xs font-semibold transition-all ${
-                      activeTab === 'letter'
-                        ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
-                        : 'bg-emerald-50/70 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100/80 dark:hover:bg-emerald-900/40'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <FileEdit className="w-4 h-4" />
-                      <span>Ajukan Surat Turlap</span>
-                    </div>
-
-                    <ChevronRight className="w-4 h-4 opacity-70" />
-                  </button>
-                </div>
-
-                {/* ================================================== */}
-                {/* MINIGAME */}
-                {/* ================================================== */}
-
-                <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-zinc-800">
-                  <div className="flex items-center justify-between px-1">
-                    <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">
-                      MINIGAME
-                    </p>
-
-                    <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-                  </div>
-
-                  <motion.button
-                    whileHover={{ scale: 1.015 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => navigateTo('blockblast')}
-                    className={`group relative w-full overflow-hidden rounded-2xl p-3 text-xs font-bold transition-all border ${
-                      activeTab === 'blockblast'
-                        ? 'bg-gradient-to-r from-purple-600 via-fuchsia-500 to-pink-500 text-white border-transparent shadow-lg shadow-purple-500/30'
-                        : 'bg-gradient-to-r from-purple-50 via-fuchsia-50 to-pink-50 dark:from-purple-950/40 dark:via-fuchsia-950/30 dark:to-pink-950/30 text-purple-700 dark:text-purple-300 border-purple-200/70 dark:border-purple-800/50 hover:shadow-md hover:shadow-purple-500/10'
-                    }`}
-                  >
-                    <div className="absolute -right-5 -top-5 w-16 h-16 rounded-full bg-purple-400/10 group-hover:bg-purple-400/20 transition-all" />
-
-                    <div className="relative flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`w-9 h-9 rounded-xl flex items-center justify-center ${
-                            activeTab === 'blockblast'
-                              ? 'bg-white/20'
-                              : 'bg-white dark:bg-zinc-900 shadow-sm'
-                          }`}
-                        >
-                          <Gamepad2
-                            className={`w-5 h-5 ${
-                              activeTab === 'blockblast'
-                                ? 'text-white'
-                                : 'text-purple-500'
-                            }`}
-                          />
-                        </div>
-
-                        <div className="text-left">
-                          <div className="flex items-center gap-1.5">
-                            <span>myMbudblox</span>
-                            <Sparkles className="w-3 h-3 text-pink-400" />
-                          </div>
-
-                          <span
-                            className={`text-[9px] font-medium ${
-                              activeTab === 'blockblast'
-                                ? 'text-white/75'
-                                : 'text-purple-400 dark:text-purple-400'
-                            }`}
-                          >
-                            Play a little. Study later.
-                          </span>
-                        </div>
-                      </div>
-
-                      <ChevronRight className="w-4 h-4 opacity-70 group-hover:translate-x-0.5 transition-transform" />
-                    </div>
-                  </motion.button>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Secret PIN Modal */}
       <AnimatePresence>
@@ -523,11 +259,9 @@ export const Header: React.FC<HeaderProps> = ({
                 <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 mx-auto flex items-center justify-center">
                   <KeyRound className="w-6 h-6" />
                 </div>
-
                 <h3 className="text-base font-bold text-slate-800 dark:text-zinc-100">
                   Apakah kamu PJ?!
                 </h3>
-
                 <p className="text-xs text-slate-500 dark:text-zinc-400">
                   Jika iya, masukkan PIN untuk masuk mode kelola data.
                 </p>
@@ -552,7 +286,6 @@ export const Header: React.FC<HeaderProps> = ({
                         : 'focus:ring-blue-500'
                     }`}
                   />
-
                   {pinError && (
                     <p className="text-[11px] font-semibold text-red-600 dark:text-red-400 text-center mt-2 flex items-center justify-center gap-1">
                       <ShieldAlert className="w-3.5 h-3.5" />
@@ -560,7 +293,6 @@ export const Header: React.FC<HeaderProps> = ({
                     </p>
                   )}
                 </div>
-
                 <div className="flex items-center gap-2 pt-1">
                   <button
                     type="button"
@@ -569,7 +301,6 @@ export const Header: React.FC<HeaderProps> = ({
                   >
                     Batal
                   </button>
-
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
