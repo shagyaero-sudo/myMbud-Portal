@@ -271,14 +271,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     </button>
                   </div>
 
-                  {/* Grid 3x1 Ekstra (GDocs, GSheets, Canva) - Tergabung di section yang sama, khusus mobile */}
+                  {/* Grid 3x1 Ekstra (GDocs, GSheets, Canva) - Dengan Panah Chevron Presisi */}
                   <div className="grid grid-cols-3 gap-2 pt-1 lg:hidden">
                     <a href="https://docs.google.com" target="_blank" rel="noreferrer" className="flex items-center justify-between p-2 sm:p-2.5 rounded-2xl text-[10px] font-semibold transition-all bg-blue-50/70 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 active:bg-blue-100">
                       <div className="flex items-center gap-1.5 truncate">
                         <FileText className="w-3.5 h-3.5 shrink-0" />
                         <span className="truncate">GDocs</span>
                       </div>
-                      <ChevronRight className="w-3 h-3 opacity-70 shrink-0 hidden sm:block" />
+                      <ChevronRight className="w-3 h-3 opacity-70 shrink-0" />
                     </a>
                     
                     <a href="https://docs.google.com/spreadsheets" target="_blank" rel="noreferrer" className="flex items-center justify-between p-2 sm:p-2.5 rounded-2xl text-[10px] font-semibold transition-all bg-emerald-50/70 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 active:bg-emerald-100">
@@ -286,7 +286,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         <FileSpreadsheet className="w-3.5 h-3.5 shrink-0" />
                         <span className="truncate">GSheets</span>
                       </div>
-                      <ChevronRight className="w-3 h-3 opacity-70 shrink-0 hidden sm:block" />
+                      <ChevronRight className="w-3 h-3 opacity-70 shrink-0" />
                     </a>
 
                     <a href="https://canva.com" target="_blank" rel="noreferrer" className="flex items-center justify-between p-2 sm:p-2.5 rounded-2xl text-[10px] font-semibold transition-all bg-violet-50/70 dark:bg-violet-950/40 text-violet-700 dark:text-violet-300 active:bg-violet-100">
@@ -294,7 +294,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         <Palette className="w-3.5 h-3.5 shrink-0" />
                         <span className="truncate">Canva</span>
                       </div>
-                      <ChevronRight className="w-3 h-3 opacity-70 shrink-0 hidden sm:block" />
+                      <ChevronRight className="w-3 h-3 opacity-70 shrink-0" />
                     </a>
                   </div>
                 </div>
