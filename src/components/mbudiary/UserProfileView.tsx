@@ -13,6 +13,7 @@ import {
   toggleFollow,
   getFollowerCount,
   getCachedUserByNrp,
+  setUserVerified,
 } from './lib/storage';
 
 import {
@@ -27,6 +28,8 @@ import {
   Users,
   UserPlus,
   UserCheck,
+  BadgeCheck,
+  Loader2,
 } from 'lucide-react';
 
 import {
@@ -80,6 +83,8 @@ export const UserProfileView: React.FC<
   ] = useState<number>(
     getFollowerCount(authorNrp)
   );
+
+  const [isTogglingVerified, setIsTogglingVerified] = useState(false);
 
   /**
    * Profile visual user diambil
@@ -160,6 +165,20 @@ export const UserProfileView: React.FC<
         );
       }
     };
+
+  const handleVerifyToggle = async () => {
+    if (isTogglingVerified) return;
+    setIsTogglingVerified(true);
+    try {
+      const nextState = !authorProfile?.isVerified;
+      await setUserVerified(authorNrp, nextState);
+    } catch (error) {
+      console.error('[mbudiary] Gagal toggle verified:', error);
+      alert('Gagal mengubah status verifikasi user.');
+    } finally {
+      setIsTogglingVerified(false);
+    }
+  };
 
   /**
    * Semua postingan dicari menggunakan
@@ -299,6 +318,32 @@ export const UserProfileView: React.FC<
                     <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/50">
                       Saya
                     </span>
+                  )}
+
+                  {/* =========================================================
+                      ADMIN EXCLUSIVE: QUICK TOGGLE VERIFIED BUTTON
+                      ========================================================= */}
+                  {currentUser.isOfficer && !isSelf && (
+                    <button
+                      type="button"
+                      disabled={isTogglingVerified}
+                      onClick={handleVerifyToggle}
+                      className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold transition-all flex items-center gap-1 shrink-0 active:scale-95 disabled:opacity-50 ${
+                        authorProfile?.isVerified
+                          ? 'bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400 border border-rose-200 dark:border-rose-900/50 hover:bg-rose-100'
+                          : 'bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400 border border-blue-200 dark:border-blue-900/50 hover:bg-blue-100'
+                      }`}
+                      title="Akses Admin: Quick Toggle Centang Biru"
+                    >
+                      {isTogglingVerified ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : (
+                        <BadgeCheck className="w-3 h-3 text-blue-500" />
+                      )}
+                      <span>
+                        {authorProfile?.isVerified ? 'Cabut Cenblu' : '+ Kasih Cenblu'}
+                      </span>
+                    </button>
                   )}
                 </div>
 
