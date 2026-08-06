@@ -68,7 +68,7 @@ export const PostCard: React.FC<PostCardProps> = ({
   const [isQuoteOpen, setIsQuoteOpen] = useState(false);
   const [quoteContent, setQuoteContent] = useState('');
   const [isReposting, setIsReposting] = useState(false);
-  const [isQuoteFocused, setIsQuoteFocused] = useState(false); // <-- STATE BARU BUAT KEYBOARD
+  const [isQuoteFocused, setIsQuoteFocused] = useState(false);
 
   /* =========================================================
      CLOSE MENUS ON OUTSIDE CLICK
@@ -165,14 +165,12 @@ export const PostCard: React.FC<PostCardProps> = ({
   const isQuoteRepost = post.isRepost && !!post.quoteContent;
   const isPlainRepost = post.isRepost && !post.quoteContent;
 
-  // Jika ini repost biasa (bukan quote) dan postingan asli masih ada, kita "bajak" header dengan profil pembuat aslinya
   const displayAuthorName = isPlainRepost && originalPost ? originalAuthorName : authorName;
   const displayAuthorEmoji = isPlainRepost && originalPost ? originalAuthorEmoji : authorEmoji;
   const displayAuthorUsername = isPlainRepost && originalPost ? originalAuthorProfile?.username : authorProfile?.username;
   const displayAuthorNrp = isPlainRepost && originalPost ? originalPost.authorNrp : post.authorNrp;
   const displayCreatedAt = isPlainRepost && originalPost ? originalPost.createdAt : post.createdAt;
   
-  // Konten utama yang di-render tanpa kotak abu-abu (untuk postingan asli & plain repost)
   const displayContent = isPlainRepost && originalPost ? originalPost.content : post.content;
   const displayImages = isPlainRepost && originalPost ? originalPost.imageUrls : post.imageUrls;
 
@@ -664,8 +662,8 @@ export const PostCard: React.FC<PostCardProps> = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className={`fixed inset-0 z-[999998] bg-black/60 backdrop-blur-sm flex justify-center p-4 sm:p-6 transition-all duration-300 ${
-              isQuoteFocused ? 'items-start pt-6 sm:items-center sm:pt-6' : 'items-center'
+            className={`fixed inset-0 z-[999998] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 transition-all duration-300 ${
+              isQuoteFocused ? 'pb-[26dvh] sm:pb-0' : 'pb-0'
             }`}
             onMouseDown={(e) => {
               if (e.target === e.currentTarget) {
