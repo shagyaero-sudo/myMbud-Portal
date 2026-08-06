@@ -3,7 +3,9 @@ import React, {
   useEffect,
 } from 'react';
 
-import { UserProfile } from '../types';
+import {
+  UserProfile,
+} from '../types';
 
 import {
   getPosts,
@@ -13,7 +15,9 @@ import {
   getCachedUserByNrp,
 } from './lib/storage';
 
-import { PostCard } from './PostCard';
+import {
+  PostCard,
+} from './PostCard';
 
 import {
   ArrowLeft,
@@ -25,14 +29,14 @@ import {
   UserCheck,
 } from 'lucide-react';
 
-import { motion } from 'framer-motion';
+import {
+  motion,
+} from 'framer-motion';
 
 interface UserProfileViewProps {
   /**
-   * Identity utama user sekarang adalah NRP.
-   *
-   * Username hanya atribut profile,
-   * bukan identifier.
+   * Identity permanen user.
+   * Semua navigasi profile menggunakan NRP.
    */
   authorNrp: string;
 
@@ -61,179 +65,83 @@ export const UserProfileView: React.FC<
   onPostUpdate,
   onSelectAuthor,
 }) => {
-  const normalizedAuthorNrp =
-    authorNrp
-      .trim()
-      .toLowerCase();
-
-  const [
-    refreshKey,
-    setRefreshKey,
-  ] = useState(0);
+  const allPosts = getPosts();
 
   const [
     following,
     setFollowing,
   ] = useState<boolean>(
-    isFollowing(
-      normalizedAuthorNrp
-    )
+    isFollowing(authorNrp)
   );
 
   const [
     followerCount,
     setFollowerCount,
   ] = useState<number>(
-    getFollowerCount(
-      normalizedAuthorNrp
-    )
+    getFollowerCount(authorNrp)
   );
 
-  /* =========================================================
-     REALTIME SYNC
-     ========================================================= */
+  /**
+   * Profile visual user diambil
+   * berdasarkan NRP permanen.
+   */
+  const authorProfile =
+    getCachedUserByNrp(
+      authorNrp
+    );
 
   useEffect(() => {
-    const syncData = () => {
-      /**
-       * Paksa UserProfileView membaca
-       * cache terbaru.
-       */
-      setRefreshKey(
-        (prev) => prev + 1
-      );
-
+    const syncProfileState = () => {
       setFollowing(
-        isFollowing(
-          normalizedAuthorNrp
-        )
+        isFollowing(authorNrp)
       );
 
       setFollowerCount(
-        getFollowerCount(
-          normalizedAuthorNrp
-        )
+        getFollowerCount(authorNrp)
       );
     };
 
-    syncData();
+    syncProfileState();
+
+    window.addEventListener(
+      'mbud_follows_change',
+      syncProfileState
+    );
 
     window.addEventListener(
       'mbud_users_change',
-      syncData
+      syncProfileState
     );
 
     window.addEventListener(
       'mbud_posts_change',
-      syncData
-    );
-
-    window.addEventListener(
-      'mbud_follows_change',
-      syncData
+      syncProfileState
     );
 
     return () => {
       window.removeEventListener(
+        'mbud_follows_change',
+        syncProfileState
+      );
+
+      window.removeEventListener(
         'mbud_users_change',
-        syncData
+        syncProfileState
       );
 
       window.removeEventListener(
         'mbud_posts_change',
-        syncData
-      );
-
-      window.removeEventListener(
-        'mbud_follows_change',
-        syncData
+        syncProfileState
       );
     };
-  }, [
-    normalizedAuthorNrp,
-  ]);
-
-  /* =========================================================
-     DATA
-     ========================================================= */
-
-  /**
-   * Read latest cache on every render.
-   */
-  const allPosts = getPosts();
-
-  /**
-   * Cloud identity.
-   *
-   * mbudiary_users/{NRP}
-   *
-   * menjadi source of truth untuk:
-   * - nickname
-   * - username
-   * - emoji
-   */
-  const authorProfile =
-    getCachedUserByNrp(
-      normalizedAuthorNrp
-    );
-
-  /**
-   * Semua post user dicari berdasarkan NRP.
-   */
-  const userPosts =
-    allPosts.filter(
-      (post) =>
-        post.authorNrp
-          .toLowerCase() ===
-        normalizedAuthorNrp
-    );
-
-  /**
-   * Profile display.
-   */
-  const authorName =
-    authorProfile?.nickname ||
-    authorProfile?.username ||
-    'Mbuders';
-
-  const authorUsername =
-    authorProfile?.username ||
-    normalizedAuthorNrp;
-
-  const authorEmoji =
-    authorProfile?.emoji ||
-    '😊';
-
-  /**
-   * Total likes dari seluruh post user.
-   */
-  const totalLikesReceived =
-    userPosts.reduce(
-      (acc, post) =>
-        acc +
-        (post.likes?.length || 0),
-      0
-    );
-
-  /**
-   * Apakah profile yang sedang dibuka
-   * adalah profile user sendiri?
-   */
-  const isSelf =
-    currentUser.nrp
-      .toLowerCase() ===
-    normalizedAuthorNrp;
-
-  /* =========================================================
-     FOLLOW
-     ========================================================= */
+  }, [authorNrp]);
 
   const handleFollowToggle =
     async () => {
       try {
         const isNowFollowing =
           await toggleFollow(
-            normalizedAuthorNrp
+            authorNrp
           );
 
         setFollowing(
@@ -242,7 +150,7 @@ export const UserProfileView: React.FC<
 
         setFollowerCount(
           getFollowerCount(
-            normalizedAuthorNrp
+            authorNrp
           )
         );
       } catch (error) {
@@ -254,15 +162,58 @@ export const UserProfileView: React.FC<
     };
 
   /**
-   * Prevent TypeScript/compiler from
-   * treating refreshKey as unused while
-   * still forcing a render when cache changes.
+   * Semua postingan dicari menggunakan
+   * authorNrp sebagai identity.
    */
-  void refreshKey;
+  const userPosts =
+    allPosts.filter(
+      (post) =>
+        post.authorNrp
+          .toLowerCase() ===
+        authorNrp.toLowerCase()
+    );
 
-  /* =========================================================
-     RENDER
-     ========================================================= */
+  /**
+   * Profile information.
+   *
+   * Prioritas:
+   * 1. usersCache berdasarkan NRP
+   * 2. currentUser jika profile sendiri
+   * 3. fallback aman
+   */
+  const isSelf =
+    currentUser.nrp.toLowerCase() ===
+    authorNrp.toLowerCase();
+
+  const authorName =
+    authorProfile?.nickname ||
+    (isSelf
+      ? currentUser.nickname
+      : 'Mbuders');
+
+  const authorUsername =
+    authorProfile?.username ||
+    (isSelf
+      ? currentUser.username
+      : '');
+
+  const authorEmoji =
+    authorProfile?.emoji ||
+    (isSelf
+      ? currentUser.emoji
+      : '😊');
+
+  /**
+   * Total likes yang diterima
+   * dari seluruh posting user.
+   */
+  const totalLikesReceived =
+    userPosts.reduce(
+      (acc, post) =>
+        acc +
+        (post.likes?.length || 0),
+      0
+    );
 
   return (
     <div className="space-y-4">
@@ -279,10 +230,7 @@ export const UserProfileView: React.FC<
         </span>
       </button>
 
-      {/* =====================================================
-          PROFILE HEADER
-          ===================================================== */}
-
+      {/* PROFILE HEADER */}
       <motion.div
         initial={{
           opacity: 0,
@@ -296,9 +244,8 @@ export const UserProfileView: React.FC<
       >
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
 
-          {/* USER IDENTITY */}
+          {/* PROFILE IDENTITY */}
           <div className="flex items-center justify-between sm:justify-start gap-3 min-w-0">
-
             <div className="flex items-center gap-3 min-w-0">
 
               {/* EMOJI */}
@@ -306,11 +253,10 @@ export const UserProfileView: React.FC<
                 {authorEmoji}
               </span>
 
+              {/* NAME + USERNAME */}
               <div className="min-w-0">
 
-                {/* NAME + SELF BADGE */}
                 <div className="flex items-center gap-2 flex-wrap">
-
                   <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-zinc-100 truncate">
                     {authorName}
                   </h2>
@@ -320,13 +266,14 @@ export const UserProfileView: React.FC<
                       Saya
                     </span>
                   )}
-
                 </div>
 
                 {/* USERNAME */}
-                <p className="text-[11px] text-slate-400 dark:text-zinc-500 mt-0.5">
-                  @{authorUsername}
-                </p>
+                {authorUsername && (
+                  <div className="text-[11px] text-slate-400 dark:text-zinc-500 font-medium mt-0.5">
+                    @{authorUsername}
+                  </div>
+                )}
 
               </div>
             </div>
@@ -362,21 +309,15 @@ export const UserProfileView: React.FC<
                 )}
               </button>
             )}
-
           </div>
 
-          {/* =================================================
-              STATS + DESKTOP FOLLOW
-              ================================================= */}
-
+          {/* STATS */}
           <div className="flex items-center gap-2 pt-2.5 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-zinc-800">
 
-            {/* STATS */}
             <div className="grid grid-cols-3 gap-1.5 sm:gap-2 flex-1 sm:flex sm:flex-initial">
 
               {/* POST */}
               <div className="px-2.5 py-1.5 sm:px-3 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 flex items-center justify-center gap-1.5 text-xs">
-
                 <FileText className="w-3 h-3 text-indigo-600 dark:text-indigo-400 shrink-0" />
 
                 <span className="font-extrabold text-slate-900 dark:text-zinc-100">
@@ -386,12 +327,10 @@ export const UserProfileView: React.FC<
                 <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-medium">
                   Post
                 </span>
-
               </div>
 
               {/* SUKA */}
               <div className="px-2.5 py-1.5 sm:px-3 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 flex items-center justify-center gap-1.5 text-xs">
-
                 <Heart className="w-3 h-3 text-rose-500 shrink-0" />
 
                 <span className="font-extrabold text-slate-900 dark:text-zinc-100">
@@ -401,12 +340,10 @@ export const UserProfileView: React.FC<
                 <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-medium">
                   Suka
                 </span>
-
               </div>
 
               {/* PENGIKUT */}
               <div className="px-2.5 py-1.5 sm:px-3 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 flex items-center justify-center gap-1.5 text-xs">
-
                 <Users className="w-3 h-3 text-amber-500 shrink-0" />
 
                 <span className="font-extrabold text-slate-900 dark:text-zinc-100">
@@ -416,7 +353,6 @@ export const UserProfileView: React.FC<
                 <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-medium">
                   Pengikut
                 </span>
-
               </div>
 
             </div>
@@ -454,56 +390,43 @@ export const UserProfileView: React.FC<
             )}
 
           </div>
-
         </div>
       </motion.div>
 
-      {/* =====================================================
-          USER POSTS
-          ===================================================== */}
-
+      {/* USER POSTS */}
       <div className="space-y-3">
 
         <div className="flex items-center justify-between px-1">
-
           <h3 className="text-xs font-bold text-slate-700 dark:text-zinc-300 flex items-center gap-1.5">
-
             <User className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
 
             Riwayat Postingan (
             {userPosts.length}
             )
-
           </h3>
-
         </div>
 
         {userPosts.length === 0 ? (
           <div className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl p-8 text-center text-xs text-slate-400 dark:text-zinc-500 shadow-sm">
-            User ini belum membuat
-            postingan di mbudiary.
+            User ini belum membuat postingan di mbudiary.
           </div>
         ) : (
-          userPosts.map(
-            (post) => (
-              <PostCard
-                key={post.id}
-                post={post}
-                currentUser={
-                  currentUser
-                }
-                onPostUpdate={
-                  onPostUpdate
-                }
-                onSelectPost={
-                  onSelectPost
-                }
-                onSelectAuthor={
-                  onSelectAuthor
-                }
-              />
-            )
-          )
+          userPosts.map((post) => (
+            <PostCard
+              key={post.id}
+              post={post}
+              currentUser={currentUser}
+              onPostUpdate={
+                onPostUpdate
+              }
+              onSelectPost={
+                onSelectPost
+              }
+              onSelectAuthor={
+                onSelectAuthor
+              }
+            />
+          ))
         )}
 
       </div>
