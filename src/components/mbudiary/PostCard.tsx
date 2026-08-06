@@ -1,5 +1,6 @@
 import React, {
   useEffect,
+  useRef,
   useState,
 } from 'react';
 
@@ -26,13 +27,10 @@ import {
 import {
   Heart,
   MessageSquare,
-  Trash2,
   Send,
   CornerDownRight,
-  X,
-  ChevronLeft,
-  ChevronRight,
-  Maximize2,
+  MoreVertical,
+  Trash2,
 } from 'lucide-react';
 
 import {
@@ -85,13 +83,49 @@ export const PostCard: React.FC<
     useState(false);
 
   /* =========================================================
-     IMAGE LIGHTBOX
+     DELETE MENU
      ========================================================= */
 
   const [
-    selectedImageIndex,
-    setSelectedImageIndex,
-  ] = useState<number | null>(null);
+    isMenuOpen,
+    setIsMenuOpen,
+  ] = useState(false);
+
+  const menuRef =
+    useRef<HTMLDivElement>(null);
+
+  /**
+   * Close the three-dot menu
+   * when clicking outside.
+   */
+  useEffect(() => {
+    const handleClickOutside = (
+      event: MouseEvent
+    ) => {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(
+          event.target as Node
+        )
+      ) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    if (isMenuOpen) {
+      document.addEventListener(
+        'mousedown',
+        handleClickOutside
+      );
+    }
+
+    return () => {
+      document.removeEventListener(
+        'mousedown',
+        handleClickOutside
+      );
+    };
+  }, [isMenuOpen]);
 
   /**
    * IMPORTANT:
@@ -185,59 +219,6 @@ export const PostCard: React.FC<
     '😊';
 
   /* =========================================================
-     IMAGE DATA
-     ========================================================= */
-
-  const imageUrls =
-    Array.isArray(post.imageUrls)
-      ? post.imageUrls.filter(
-          (url) =>
-            typeof url === 'string' &&
-            url.trim().length > 0
-        )
-      : [];
-
-  const openImage = (
-    index: number
-  ) => {
-    setSelectedImageIndex(index);
-  };
-
-  const closeImage = () => {
-    setSelectedImageIndex(null);
-  };
-
-  const showPreviousImage = () => {
-    if (
-      selectedImageIndex === null ||
-      imageUrls.length <= 1
-    ) {
-      return;
-    }
-
-    setSelectedImageIndex(
-      (selectedImageIndex -
-        1 +
-        imageUrls.length) %
-        imageUrls.length
-    );
-  };
-
-  const showNextImage = () => {
-    if (
-      selectedImageIndex === null ||
-      imageUrls.length <= 1
-    ) {
-      return;
-    }
-
-    setSelectedImageIndex(
-      (selectedImageIndex + 1) %
-        imageUrls.length
-    );
-  };
-
-  /* =========================================================
      LIKE
      ========================================================= */
 
@@ -320,11 +301,13 @@ export const PostCard: React.FC<
     };
 
   /* =========================================================
-     DELETE
+     DELETE POST
      ========================================================= */
 
   const handleDeletePost =
     async () => {
+      setIsMenuOpen(false);
+
       if (
         !window.confirm(
           'Apakah Anda yakin ingin menghapus postingan ini?'
@@ -352,7 +335,8 @@ export const PostCard: React.FC<
     };
 
   /**
-   * Hak hapus berdasarkan NRP.
+   * Hak hapus berdasarkan NRP,
+   * bukan username/nickname.
    */
   const isAuthor =
     post.authorNrp.toLowerCase() ===
@@ -363,484 +347,422 @@ export const PostCard: React.FC<
     currentUser.isOfficer;
 
   return (
-    <>
-      <motion.article
-        layout
-        initial={{
-          opacity: 0,
-          y: 12,
-        }}
-        animate={{
-          opacity: 1,
-          y: 0,
-        }}
-        exit={{
-          opacity: 0,
-          scale: 0.95,
-        }}
-        transition={{
-          duration: 0.25,
-        }}
-        className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl p-4 sm:p-5 transition-all duration-200 shadow-sm"
-      >
-        {/* =====================================================
-            AUTHOR HEADER
-            ===================================================== */}
+    <motion.article
+      layout
+      initial={{
+        opacity: 0,
+        y: 12,
+      }}
+      animate={{
+        opacity: 1,
+        y: 0,
+      }}
+      exit={{
+        opacity: 0,
+        scale: 0.95,
+      }}
+      transition={{
+        duration: 0.25,
+      }}
+      className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl p-4 sm:p-5 transition-all duration-200 shadow-sm"
+    >
+      {/* =====================================================
+          AUTHOR HEADER
+          ===================================================== */}
 
-        <div className="flex items-start justify-between gap-3 mb-3">
-          <div
-            onClick={() =>
-              onSelectAuthor?.(
-                post.authorNrp
-              )
-            }
-            className="flex items-center gap-3 cursor-pointer group/author"
-            title={`Lihat profil ${authorName}`}
-          >
-            <span className="text-2xl shrink-0 group-hover/author:scale-110 transition-transform leading-none">
-              {authorEmoji}
-            </span>
+      <div className="flex items-start justify-between gap-3 mb-3">
 
-            <div>
-              {/* NAME */}
-              <div className="flex items-center flex-wrap gap-1.5">
-                <span className="text-slate-900 dark:text-zinc-100 font-bold text-sm group-hover/author:text-indigo-600 dark:group-hover/author:text-indigo-400 transition-colors">
-                  {authorName}
-                </span>
-              </div>
+        {/* AUTHOR INFO */}
 
-              {/* USERNAME */}
-              <div className="text-slate-400 dark:text-zinc-500 text-[10px] mt-0.5">
-                @{authorProfile?.username || 'unknown'}
-              </div>
+        <div
+          onClick={() =>
+            onSelectAuthor?.(
+              post.authorNrp
+            )
+          }
+          className="flex items-center gap-3 cursor-pointer group/author"
+          title={`Lihat profil ${authorName}`}
+        >
+          <span className="text-2xl shrink-0 group-hover/author:scale-110 transition-transform leading-none">
+            {authorEmoji}
+          </span>
 
-              {/* TIMESTAMP */}
-              <div className="flex items-center gap-1.5 text-slate-400 dark:text-zinc-500 text-[10px] mt-0.5">
-                <span
-                  title={formatDateFormatted(
-                    post.createdAt
-                  )}
-                >
-                  {formatPostTimestamp(
-                    post.createdAt
-                  )}
-                </span>
-              </div>
+          <div>
+            {/* NAME */}
+
+            <div className="flex items-center flex-wrap gap-1.5">
+              <span className="text-slate-900 dark:text-zinc-100 font-bold text-sm group-hover/author:text-indigo-600 dark:group-hover/author:text-indigo-400 transition-colors">
+                {authorName}
+              </span>
+            </div>
+
+            {/* USERNAME */}
+
+            <div className="text-slate-400 dark:text-zinc-500 text-[10px] mt-0.5">
+              @{authorProfile?.username || 'unknown'}
+            </div>
+
+            {/* TIMESTAMP */}
+
+            <div className="flex items-center gap-1.5 text-slate-400 dark:text-zinc-500 text-[10px] mt-0.5">
+              <span
+                title={formatDateFormatted(
+                  post.createdAt
+                )}
+              >
+                {formatPostTimestamp(
+                  post.createdAt
+                )}
+              </span>
             </div>
           </div>
+        </div>
 
-          {canDelete && (
+        {/* ===================================================
+            THREE DOT MENU
+            =================================================== */}
+
+        {canDelete && (
+          <div
+            ref={menuRef}
+            className="relative shrink-0"
+          >
+            {/* THREE DOT BUTTON */}
+
             <button
-              onClick={
-                handleDeletePost
+              type="button"
+              onClick={() =>
+                setIsMenuOpen(
+                  (prev) => !prev
+                )
               }
               disabled={isDeleting}
-              className="p-1.5 rounded-xl text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-zinc-800 transition-colors"
-              title="Hapus Postingan"
+              className="p-1.5 rounded-xl text-slate-400 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
+              title="Opsi postingan"
+              aria-label="Opsi postingan"
+              aria-expanded={
+                isMenuOpen
+              }
             >
-              <Trash2 className="w-4 h-4" />
+              <MoreVertical className="w-4 h-4" />
             </button>
-          )}
-        </div>
 
-        {/* =====================================================
-            CONTENT
-            ===================================================== */}
+            {/* DROPDOWN MENU */}
 
-        <div className="text-sm text-slate-800 dark:text-zinc-200 leading-relaxed whitespace-pre-line mb-4 font-normal">
-          {post.content}
-        </div>
+            <AnimatePresence>
+              {isMenuOpen && (
+                <motion.div
+                  initial={{
+                    opacity: 0,
+                    y: -4,
+                    scale: 0.97,
+                  }}
+                  animate={{
+                    opacity: 1,
+                    y: 0,
+                    scale: 1,
+                  }}
+                  exit={{
+                    opacity: 0,
+                    y: -4,
+                    scale: 0.97,
+                  }}
+                  transition={{
+                    duration: 0.12,
+                  }}
+                  className="absolute right-0 top-full mt-1.5 z-30 w-44 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-2xl p-1.5 shadow-xl"
+                >
+                  <button
+                    type="button"
+                    onClick={
+                      handleDeletePost
+                    }
+                    disabled={
+                      isDeleting
+                    }
+                    className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors disabled:opacity-50"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
 
-        {/* =====================================================
-            IMAGE GALLERY
-            ===================================================== */}
+                    <span>
+                      Hapus Postingan
+                    </span>
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
+      </div>
 
-        {imageUrls.length > 0 && (
+      {/* =====================================================
+          CONTENT
+          ===================================================== */}
+
+      <div className="text-sm text-slate-800 dark:text-zinc-200 leading-relaxed whitespace-pre-line mb-4 font-normal">
+        {post.content}
+      </div>
+
+      {/* =====================================================
+          IMAGES
+          ===================================================== */}
+
+      {post.imageUrls &&
+        post.imageUrls.length >
+          0 && (
           <div
-            className={`mb-4 grid gap-2 overflow-hidden rounded-2xl ${
-              imageUrls.length === 1
+            className={`mb-4 grid gap-2 ${
+              post.imageUrls.length === 1
                 ? 'grid-cols-1'
-                : imageUrls.length === 2
-                ? 'grid-cols-2'
-                : imageUrls.length === 3
+                : post.imageUrls.length === 2
                 ? 'grid-cols-2'
                 : 'grid-cols-2'
             }`}
           >
-            {imageUrls.map(
-              (url, index) => {
-                const isThreeImages =
-                  imageUrls.length === 3;
-
-                const isFirstOfThree =
-                  isThreeImages &&
-                  index === 0;
-
-                return (
-                  <motion.button
-                    key={`${url}-${index}`}
-                    type="button"
-                    whileHover={{
-                      scale: 1.01,
-                    }}
-                    whileTap={{
-                      scale: 0.99,
-                    }}
-                    onClick={() =>
-                      openImage(index)
-                    }
-                    className={`relative group overflow-hidden bg-slate-100 dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                      imageUrls.length === 1
-                        ? 'aspect-[16/10]'
-                        : isFirstOfThree
-                        ? 'row-span-2 aspect-square'
-                        : 'aspect-square'
+            {post.imageUrls.map(
+              (
+                imageUrl,
+                index
+              ) => (
+                <div
+                  key={`${imageUrl}-${index}`}
+                  className={`relative overflow-hidden rounded-2xl bg-slate-100 dark:bg-zinc-800 border border-slate-100 dark:border-zinc-800 ${
+                    post.imageUrls
+                      ?.length === 1
+                      ? 'max-h-[520px]'
+                      : 'aspect-square'
+                  }`}
+                >
+                  <img
+                    src={imageUrl}
+                    alt={`Gambar postingan ${
+                      index + 1
                     }`}
-                  >
-                    <img
-                      src={url}
-                      alt={`Gambar postingan ${
-                        index + 1
-                      }`}
-                      loading="lazy"
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-                    />
+                    loading="lazy"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      console.error(
+                        '[mbudiary] Gagal memuat gambar:',
+                        imageUrl
+                      );
 
-                    {/* HOVER OVERLAY */}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-200 flex items-center justify-center">
-                      <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm text-white flex items-center justify-center">
-                        <Maximize2 className="w-4 h-4" />
-                      </span>
-                    </div>
-
-                    {/* IMAGE NUMBER */}
-                    {imageUrls.length > 1 && (
-                      <span className="absolute bottom-2 left-2 px-2 py-1 rounded-lg bg-black/60 backdrop-blur-sm text-white text-[9px] font-bold">
-                        {index + 1}
-                      </span>
-                    )}
-                  </motion.button>
-                );
-              }
+                      e.currentTarget.style.display =
+                        'none';
+                    }}
+                  />
+                </div>
+              )
             )}
           </div>
         )}
 
-        {/* =====================================================
-            ACTIONS
-            ===================================================== */}
+      {/* =====================================================
+          ACTIONS
+          ===================================================== */}
 
-        <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-zinc-800 text-xs">
-          <div className="flex items-center gap-2 sm:gap-3">
-            {/* LIKE */}
-            <motion.button
-              whileTap={{
-                scale: 0.9,
-              }}
-              onClick={
-                handleLikeToggle
-              }
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all text-xs ${
+      <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-zinc-800 text-xs">
+        <div className="flex items-center gap-2 sm:gap-3">
+
+          {/* LIKE */}
+
+          <motion.button
+            whileTap={{
+              scale: 0.9,
+            }}
+            onClick={
+              handleLikeToggle
+            }
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all text-xs ${
+              isLiked
+                ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-500 font-bold border border-rose-200/80 dark:border-rose-900/50'
+                : 'text-slate-400 dark:text-zinc-500 hover:text-rose-500 hover:bg-rose-50/60 dark:hover:bg-zinc-800/80'
+            }`}
+          >
+            <Heart
+              className={`w-4 h-4 transition-transform ${
                 isLiked
-                  ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-500 font-bold border border-rose-200/80 dark:border-rose-900/50'
-                  : 'text-slate-400 dark:text-zinc-500 hover:text-rose-500 hover:bg-rose-50/60 dark:hover:bg-zinc-800/80'
+                  ? 'fill-rose-500 text-rose-500 scale-110'
+                  : ''
               }`}
-            >
-              <Heart
-                className={`w-4 h-4 transition-transform ${
-                  isLiked
-                    ? 'fill-rose-500 text-rose-500 scale-110'
-                    : ''
-                }`}
-              />
+            />
 
-              <span>
-                {likeCount}
-              </span>
-            </motion.button>
+            <span>
+              {likeCount}
+            </span>
+          </motion.button>
 
-            {/* COMMENTS */}
-            <button
-              onClick={
-                handleCommentClick
-              }
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all text-xs ${
-                isRepliesExpanded &&
-                isDetailPage
-                  ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-bold border border-indigo-200/80 dark:border-indigo-900/50'
-                  : 'text-slate-400 dark:text-zinc-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50/60 dark:hover:bg-zinc-800/80'
-              }`}
-            >
-              <MessageSquare className="w-4 h-4" />
+          {/* COMMENT */}
 
-              <span>
-                {post.replyCount ||
-                  replies.length}
-              </span>
+          <button
+            onClick={
+              handleCommentClick
+            }
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all text-xs ${
+              isRepliesExpanded &&
+              isDetailPage
+                ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-bold border border-indigo-200/80 dark:border-indigo-900/50'
+                : 'text-slate-400 dark:text-zinc-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50/60 dark:hover:bg-zinc-800/80'
+            }`}
+          >
+            <MessageSquare className="w-4 h-4" />
 
-              <span className="hidden xs:inline">
-                Komen
-              </span>
-            </button>
-          </div>
+            <span>
+              {post.replyCount ||
+                replies.length}
+            </span>
+
+            <span className="hidden xs:inline">
+              Komen
+            </span>
+          </button>
         </div>
+      </div>
 
-        {/* =====================================================
-            REPLIES
-            ===================================================== */}
+      {/* =====================================================
+          REPLIES
+          ===================================================== */}
 
-        <AnimatePresence>
-          {isRepliesExpanded && (
-            <motion.div
-              initial={{
-                opacity: 0,
-                height: 0,
-              }}
-              animate={{
-                opacity: 1,
-                height: 'auto',
-              }}
-              exit={{
-                opacity: 0,
-                height: 0,
-              }}
-              transition={{
-                duration: 0.2,
-              }}
-              className="mt-3 pt-3 border-t border-slate-100 dark:border-zinc-800 space-y-3 overflow-hidden"
-            >
-              <div className="flex items-center justify-between">
-                <h4 className="text-xs font-bold text-slate-700 dark:text-zinc-300 flex items-center gap-1.5">
-                  <CornerDownRight className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
+      <AnimatePresence>
+        {isRepliesExpanded && (
+          <motion.div
+            initial={{
+              opacity: 0,
+              height: 0,
+            }}
+            animate={{
+              opacity: 1,
+              height: 'auto',
+            }}
+            exit={{
+              opacity: 0,
+              height: 0,
+            }}
+            transition={{
+              duration: 0.2,
+            }}
+            className="mt-3 pt-3 border-t border-slate-100 dark:border-zinc-800 space-y-3 overflow-hidden"
+          >
+            {/* REPLY HEADER */}
 
-                  Komen & Balasan (
-                  {replies.length}
-                  )
-                </h4>
-              </div>
+            <div className="flex items-center justify-between">
+              <h4 className="text-xs font-bold text-slate-700 dark:text-zinc-300 flex items-center gap-1.5">
+                <CornerDownRight className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
 
-              <div className="space-y-2.5">
-                {replies.length === 0 ? (
-                  <div className="p-3 text-center rounded-2xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-100 dark:border-zinc-800 text-xs text-slate-400 dark:text-zinc-500 italic">
-                    Belum ada komen. Berikan tanggapan pertamamu!
-                  </div>
-                ) : (
-                  replies.map(
-                    (reply) => {
-                      const replyAuthor =
-                        getCachedUserByNrp(
-                          reply.authorNrp
-                        );
+                Komen & Balasan (
+                {replies.length}
+                )
+              </h4>
+            </div>
 
-                      const replyName =
-                        replyAuthor?.nickname ||
-                        replyAuthor?.username ||
-                        'Mbuders';
+            {/* REPLY LIST */}
 
-                      const replyEmoji =
-                        replyAuthor?.emoji ||
-                        '😊';
+            <div className="space-y-2.5">
+              {replies.length === 0 ? (
+                <div className="p-3 text-center rounded-2xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-100 dark:border-zinc-800 text-xs text-slate-400 dark:text-zinc-500 italic">
+                  Belum ada komen. Berikan tanggapan pertamamu!
+                </div>
+              ) : (
+                replies.map(
+                  (reply) => {
+                    const replyAuthor =
+                      getCachedUserByNrp(
+                        reply.authorNrp
+                      );
 
-                      return (
-                        <div
-                          key={reply.id}
-                          className="p-3 rounded-2xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-100 dark:border-zinc-800 space-y-1"
-                        >
-                          <div className="flex items-center justify-between text-xs">
-                            <div
-                              onClick={() =>
-                                onSelectAuthor?.(
-                                  reply.authorNrp
-                                )
-                              }
-                              className="flex items-center gap-2 cursor-pointer group/replyAuthor"
-                              title={`Lihat profil ${replyName}`}
-                            >
-                              <span className="text-base shrink-0 group-hover/replyAuthor:scale-110 transition-transform leading-none">
-                                {replyEmoji}
-                              </span>
+                    const replyName =
+                      replyAuthor?.nickname ||
+                      replyAuthor?.username ||
+                      'Mbuders';
 
-                              <span className="text-slate-900 dark:text-zinc-100 font-bold group-hover/replyAuthor:text-indigo-600 dark:group-hover/replyAuthor:text-indigo-400 transition-colors">
-                                {replyName}
-                              </span>
-                            </div>
+                    const replyEmoji =
+                      replyAuthor?.emoji ||
+                      '😊';
 
-                            <span className="text-slate-400 dark:text-zinc-500 text-[10px]">
-                              {formatTimeAgo(
-                                reply.createdAt
-                              )}
+                    return (
+                      <div
+                        key={reply.id}
+                        className="p-3 rounded-2xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-100 dark:border-zinc-800 space-y-1"
+                      >
+                        {/* REPLY AUTHOR */}
+
+                        <div className="flex items-center justify-between text-xs">
+                          <div
+                            onClick={() =>
+                              onSelectAuthor?.(
+                                reply.authorNrp
+                              )
+                            }
+                            className="flex items-center gap-2 cursor-pointer group/replyAuthor"
+                            title={`Lihat profil ${replyName}`}
+                          >
+                            <span className="text-base shrink-0 group-hover/replyAuthor:scale-110 transition-transform leading-none">
+                              {replyEmoji}
+                            </span>
+
+                            <span className="text-slate-900 dark:text-zinc-100 font-bold group-hover/replyAuthor:text-indigo-600 dark:group-hover/replyAuthor:text-indigo-400 transition-colors">
+                              {replyName}
                             </span>
                           </div>
 
-                          <p className="text-xs text-slate-700 dark:text-zinc-300 leading-relaxed pl-7">
-                            {reply.content}
-                          </p>
+                          <span className="text-slate-400 dark:text-zinc-500 text-[10px]">
+                            {formatTimeAgo(
+                              reply.createdAt
+                            )}
+                          </span>
                         </div>
-                      );
-                    }
-                  )
-                )}
-              </div>
 
-              {/* REPLY INPUT */}
-              <form
-                onSubmit={
-                  handleAddReply
-                }
-                className="flex items-center gap-2 pt-1"
-              >
-                <input
-                  type="text"
-                  value={
-                    replyContent
+                        {/* REPLY CONTENT */}
+
+                        <p className="text-xs text-slate-700 dark:text-zinc-300 leading-relaxed pl-7">
+                          {reply.content}
+                        </p>
+                      </div>
+                    );
                   }
-                  onChange={(e) =>
-                    setReplyContent(
-                      e.target.value
-                    )
-                  }
-                  placeholder={`Tulis komen sebagai ${currentUser.nickname}...`}
-                  className="flex-1 px-3.5 py-2 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-xs border border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
+                )
+              )}
+            </div>
 
-                <button
-                  type="submit"
-                  disabled={
-                    !replyContent.trim() ||
-                    isSubmittingReply
-                  }
-                  className="px-4 py-2 rounded-2xl bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-100 dark:disabled:bg-zinc-800 text-white disabled:text-slate-400 text-xs font-semibold transition-all flex items-center gap-1 shadow-sm"
-                >
-                  <Send className="w-3.5 h-3.5" />
+            {/* ADD REPLY */}
 
-                  <span className="hidden xs:inline">
-                    Kirim
-                  </span>
-                </button>
-              </form>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.article>
-
-      {/* =======================================================
-          IMAGE LIGHTBOX
-          ======================================================= */}
-
-      <AnimatePresence>
-        {selectedImageIndex !== null &&
-          imageUrls[
-            selectedImageIndex
-          ] && (
-            <motion.div
-              initial={{
-                opacity: 0,
-              }}
-              animate={{
-                opacity: 1,
-              }}
-              exit={{
-                opacity: 0,
-              }}
-              className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
-              onClick={
-                closeImage
+            <form
+              onSubmit={
+                handleAddReply
               }
+              className="flex items-center gap-2 pt-1"
             >
-              {/* CLOSE BUTTON */}
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  closeImage();
-                }}
-                className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
-                title="Tutup"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              {/* IMAGE COUNTER */}
-              {imageUrls.length >
-                1 && (
-                <div className="absolute top-5 left-1/2 -translate-x-1/2 z-20 px-3 py-1.5 rounded-full bg-black/50 backdrop-blur-sm text-white text-xs font-semibold">
-                  {selectedImageIndex +
-                    1}{' '}
-                  /{' '}
-                  {imageUrls.length}
-                </div>
-              )}
-
-              {/* PREVIOUS */}
-              {imageUrls.length >
-                1 && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    showPreviousImage();
-                  }}
-                  className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
-                  title="Gambar sebelumnya"
-                >
-                  <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
-                </button>
-              )}
-
-              {/* NEXT */}
-              {imageUrls.length >
-                1 && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    showNextImage();
-                  }}
-                  className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
-                  title="Gambar berikutnya"
-                >
-                  <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
-                </button>
-              )}
-
-              {/* MAIN IMAGE */}
-              <motion.img
-                key={
-                  imageUrls[
-                    selectedImageIndex
-                  ]
+              <input
+                type="text"
+                value={
+                  replyContent
                 }
-                initial={{
-                  opacity: 0,
-                  scale: 0.97,
-                }}
-                animate={{
-                  opacity: 1,
-                  scale: 1,
-                }}
-                exit={{
-                  opacity: 0,
-                  scale: 0.97,
-                }}
-                transition={{
-                  duration: 0.2,
-                }}
-                src={
-                  imageUrls[
-                    selectedImageIndex
-                  ]
+                onChange={(e) =>
+                  setReplyContent(
+                    e.target.value
+                  )
                 }
-                alt={`Gambar postingan ${
-                  selectedImageIndex + 1
-                }`}
-                className="max-w-[92vw] max-h-[88vh] object-contain rounded-xl shadow-2xl select-none"
-                onClick={(e) =>
-                  e.stopPropagation()
-                }
+                placeholder={`Tulis komen sebagai ${currentUser.nickname}...`}
+                className="flex-1 px-3.5 py-2 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-xs border border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
-            </motion.div>
-          )}
+
+              <button
+                type="submit"
+                disabled={
+                  !replyContent.trim() ||
+                  isSubmittingReply
+                }
+                className="px-4 py-2 rounded-2xl bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-100 dark:disabled:bg-zinc-800 text-white disabled:text-slate-400 text-xs font-semibold transition-all flex items-center gap-1 shadow-sm"
+              >
+                <Send className="w-3.5 h-3.5" />
+
+                <span className="hidden xs:inline">
+                  Kirim
+                </span>
+              </button>
+            </form>
+          </motion.div>
+        )}
       </AnimatePresence>
-    </>
+    </motion.article>
   );
 };
