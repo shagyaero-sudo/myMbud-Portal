@@ -5,6 +5,7 @@ import React, {
 
 import {
   ArrowLeft,
+  User,
 } from 'lucide-react';
 
 import {
@@ -257,13 +258,38 @@ export const MbudiaryView: React.FC =
                   y: 0,
                 }}
               >
-                <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-zinc-100">
-                  mbudiary.
-                </h1>
+                {/* HEADER */}
+                <div className="flex items-start justify-between gap-3">
 
-                <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 mt-0.5 font-medium">
-                  #Ruangamanbersama
-                </p>
+                  {/* TITLE */}
+                  <div>
+                    <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-zinc-100">
+                      mbudiary.
+                    </h1>
+
+                    <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 mt-0.5 font-medium">
+                      #Ruangamanbersama
+                    </p>
+                  </div>
+
+                  {/* PROFIL SAYA */}
+                  <button
+                    onClick={() =>
+                      setSelectedAuthorNrp(
+                        currentUser.nrp
+                      )
+                    }
+                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-xs font-bold text-slate-700 dark:text-zinc-200 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-200 dark:hover:border-indigo-900 hover:bg-indigo-50/50 dark:hover:bg-zinc-800 transition-all shadow-sm active:scale-95 shrink-0"
+                    title="Lihat Profil Saya"
+                  >
+                    <User className="w-3.5 h-3.5" />
+
+                    <span>
+                      Profil Saya
+                    </span>
+                  </button>
+
+                </div>
               </motion.div>
 
               <CreatePostForm
