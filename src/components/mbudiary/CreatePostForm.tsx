@@ -414,7 +414,7 @@ export const CreatePostForm: React.FC<
      ========================================================= */
 
   return (
-    <div className="relative bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl p-4 sm:p-5 shadow-sm space-y-3">
+    <div className="relative bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl p-4 pb-2 sm:p-5 sm:pb-3 shadow-sm space-y-3">
       
       {/* CHARACTER COUNT MOVED HERE */}
       <span
