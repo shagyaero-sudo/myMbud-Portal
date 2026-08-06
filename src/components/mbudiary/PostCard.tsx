@@ -68,6 +68,7 @@ export const PostCard: React.FC<PostCardProps> = ({
   const [isQuoteOpen, setIsQuoteOpen] = useState(false);
   const [quoteContent, setQuoteContent] = useState('');
   const [isReposting, setIsReposting] = useState(false);
+  const [isQuoteFocused, setIsQuoteFocused] = useState(false); // <-- STATE BARU BUAT KEYBOARD
 
   /* =========================================================
      CLOSE MENUS ON OUTSIDE CLICK
@@ -99,6 +100,7 @@ export const PostCard: React.FC<PostCardProps> = ({
       if (event.key === 'Escape' && isQuoteOpen) {
         setIsQuoteOpen(false);
         setQuoteContent('');
+        setIsQuoteFocused(false);
       }
     };
 
@@ -156,6 +158,23 @@ export const PostCard: React.FC<PostCardProps> = ({
   const originalAuthorName =
     originalAuthorProfile?.nickname || originalAuthorProfile?.username || 'Mbuders';
   const originalAuthorEmoji = originalAuthorProfile?.emoji || '😊';
+
+  /* =========================================================
+     LOGIKA TAMPILAN DINAMIS (PLAIN REPOST VS QUOTE REPOST)
+     ========================================================= */
+  const isQuoteRepost = post.isRepost && !!post.quoteContent;
+  const isPlainRepost = post.isRepost && !post.quoteContent;
+
+  // Jika ini repost biasa (bukan quote) dan postingan asli masih ada, kita "bajak" header dengan profil pembuat aslinya
+  const displayAuthorName = isPlainRepost && originalPost ? originalAuthorName : authorName;
+  const displayAuthorEmoji = isPlainRepost && originalPost ? originalAuthorEmoji : authorEmoji;
+  const displayAuthorUsername = isPlainRepost && originalPost ? originalAuthorProfile?.username : authorProfile?.username;
+  const displayAuthorNrp = isPlainRepost && originalPost ? originalPost.authorNrp : post.authorNrp;
+  const displayCreatedAt = isPlainRepost && originalPost ? originalPost.createdAt : post.createdAt;
+  
+  // Konten utama yang di-render tanpa kotak abu-abu (untuk postingan asli & plain repost)
+  const displayContent = isPlainRepost && originalPost ? originalPost.content : post.content;
+  const displayImages = isPlainRepost && originalPost ? originalPost.imageUrls : post.imageUrls;
 
   /* =========================================================
      LIKE
@@ -241,6 +260,7 @@ export const PostCard: React.FC<PostCardProps> = ({
       });
       setQuoteContent('');
       setIsQuoteOpen(false);
+      setIsQuoteFocused(false);
       onPostUpdate?.();
     } catch (error) {
       console.error('[mbudiary] Gagal melakukan quote repost:', error);
@@ -270,9 +290,6 @@ export const PostCard: React.FC<PostCardProps> = ({
   const isAuthor = post.authorNrp.toLowerCase() === currentUser.nrp.toLowerCase();
   const canDelete = isAuthor || currentUser.isOfficer;
 
-  // Logika untuk menyembunyikan label repost jika itu quote repost
-  const isPlainRepost = post.isRepost && !post.quoteContent;
-
   return (
     <>
       <motion.article
@@ -294,35 +311,35 @@ export const PostCard: React.FC<PostCardProps> = ({
         )}
 
         {/* =====================================================
-            AUTHOR HEADER
+            AUTHOR HEADER (Dinamis tergantung jenis repost)
             ===================================================== */}
         <div className="flex items-start justify-between gap-3 mb-3">
           <div
-            onClick={() => onSelectAuthor?.(post.authorNrp)}
+            onClick={() => onSelectAuthor?.(displayAuthorNrp)}
             className="flex items-center gap-3 cursor-pointer group/author"
-            title={`Lihat profil ${authorName}`}
+            title={`Lihat profil ${displayAuthorName}`}
           >
             <span className="text-2xl shrink-0 group-hover/author:scale-110 transition-transform leading-none">
-              {authorEmoji}
+              {displayAuthorEmoji}
             </span>
             <div>
               <div className="flex items-center flex-wrap gap-1.5">
                 <span className="text-slate-900 dark:text-zinc-100 font-bold text-sm group-hover/author:text-indigo-600 dark:group-hover/author:text-indigo-400 transition-colors">
-                  {authorName}
+                  {displayAuthorName}
                 </span>
               </div>
               <div className="text-slate-400 dark:text-zinc-500 text-[10px] mt-0.5">
-                @{authorProfile?.username || 'unknown'}
+                @{displayAuthorUsername || 'unknown'}
               </div>
               <div className="flex items-center gap-1.5 text-slate-400 dark:text-zinc-500 text-[10px] mt-0.5">
-                <span title={formatDateFormatted(post.createdAt)}>
-                  {formatPostTimestamp(post.createdAt)}
+                <span title={formatDateFormatted(displayCreatedAt)}>
+                  {formatPostTimestamp(displayCreatedAt)}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* THREE DOT MENU */}
+          {/* THREE DOT MENU (Hak hapus tetap berdasarkan author postingan/repost) */}
           {canDelete && (
             <div ref={menuRef} className="relative shrink-0">
               <button
@@ -362,27 +379,27 @@ export const PostCard: React.FC<PostCardProps> = ({
         </div>
 
         {/* =====================================================
-            QUOTE TEXT (Isi pendapat dari yg merepost)
+            QUOTE TEXT (Hanya muncul jika Quote Repost)
             ===================================================== */}
-        {post.quoteContent && (
+        {isQuoteRepost && (
           <div className="text-sm text-slate-800 dark:text-zinc-200 leading-relaxed whitespace-pre-line mb-4 font-normal">
             {post.quoteContent}
           </div>
         )}
 
         {/* =====================================================
-            CONTENT (Jika bukan repost)
+            MAIN CONTENT (Post Biasa & Plain Repost tanpa kotak abu-abu)
             ===================================================== */}
-        {!post.isRepost && post.content && (
+        {(!isQuoteRepost) && displayContent && (
           <div className="text-sm text-slate-800 dark:text-zinc-200 leading-relaxed whitespace-pre-line mb-4 font-normal">
-            {post.content}
+            {displayContent}
           </div>
         )}
 
         {/* =====================================================
-            ORIGINAL POST CARD INSIDE REPOST (Clickable Bubble)
+            NESTED ORIGINAL POST CARD (Hanya muncul di Quote Repost)
             ===================================================== */}
-        {post.isRepost && originalPost && (
+        {isQuoteRepost && originalPost && (
           <div 
             onClick={() => onSelectPost?.(originalPost.id)}
             className="mb-4 rounded-2xl border border-slate-200 dark:border-zinc-700 overflow-hidden bg-slate-50/50 dark:bg-zinc-800/40 cursor-pointer hover:bg-slate-100/50 dark:hover:bg-zinc-800 transition-colors"
@@ -414,7 +431,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                   <div
                     key={`${imageUrl}-${index}`}
                     onClick={(e) => {
-                      e.stopPropagation(); // Biar lightbox gak ke-trigger onSelectPost
+                      e.stopPropagation();
                       setSelectedImage(imageUrl);
                     }}
                     className={`relative overflow-hidden rounded-xl bg-slate-100 dark:bg-zinc-800 ${
@@ -435,7 +452,7 @@ export const PostCard: React.FC<PostCardProps> = ({
         )}
 
         {/* =====================================================
-            ORIGINAL POST NOT FOUND
+            ORIGINAL POST DELETED NOTICE
             ===================================================== */}
         {post.isRepost && !originalPost && (
           <div className="mb-4 p-3 rounded-2xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-100 dark:border-zinc-800 text-xs text-slate-400 dark:text-zinc-500 italic">
@@ -444,17 +461,17 @@ export const PostCard: React.FC<PostCardProps> = ({
         )}
 
         {/* =====================================================
-            IMAGES (Untuk post biasa)
+            IMAGES (Untuk Post Biasa & Plain Repost)
             ===================================================== */}
-        {!post.isRepost && post.imageUrls && post.imageUrls.length > 0 && (
-          <div className={`mb-4 grid gap-2 ${post.imageUrls.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
-            {post.imageUrls.map((imageUrl, index) => (
+        {(!isQuoteRepost) && displayImages && displayImages.length > 0 && (
+          <div className={`mb-4 grid gap-2 ${displayImages.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+            {displayImages.map((imageUrl, index) => (
               <button
                 key={`${imageUrl}-${index}`}
                 type="button"
                 onClick={() => setSelectedImage(imageUrl)}
                 className={`relative overflow-hidden rounded-2xl bg-slate-100 dark:bg-zinc-800 border border-slate-100 dark:border-zinc-800 cursor-zoom-in focus:outline-none focus:ring-2 focus:ring-indigo-500 group ${
-                  post.imageUrls?.length === 1 ? 'max-h-[520px]' : 'aspect-square'
+                  displayImages.length === 1 ? 'max-h-[520px]' : 'aspect-square'
                 }`}
                 title="Klik untuk melihat gambar"
               >
@@ -647,11 +664,14 @@ export const PostCard: React.FC<PostCardProps> = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[999998] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+            className={`fixed inset-0 z-[999998] bg-black/60 backdrop-blur-sm flex justify-center p-4 sm:p-6 transition-all duration-300 ${
+              isQuoteFocused ? 'items-start pt-6 sm:items-center sm:pt-6' : 'items-center'
+            }`}
             onMouseDown={(e) => {
               if (e.target === e.currentTarget) {
                 setIsQuoteOpen(false);
                 setQuoteContent('');
+                setIsQuoteFocused(false);
               }
             }}
           >
@@ -660,10 +680,10 @@ export const PostCard: React.FC<PostCardProps> = ({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
               transition={{ duration: 0.18 }}
-              className="w-full max-w-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-3xl p-4 sm:p-5 shadow-2xl"
+              className="w-full max-w-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-3xl p-4 sm:p-5 shadow-2xl flex flex-col max-h-[85dvh]"
               onMouseDown={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-4 shrink-0">
                 <div>
                   <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100">Quote Repost</h3>
                   <p className="text-[10px] text-slate-400 dark:text-zinc-500 mt-0.5">
@@ -675,6 +695,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                   onClick={() => {
                     setIsQuoteOpen(false);
                     setQuoteContent('');
+                    setIsQuoteFocused(false);
                   }}
                   className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
                 >
@@ -682,17 +703,19 @@ export const PostCard: React.FC<PostCardProps> = ({
                 </button>
               </div>
 
-              <form onSubmit={handleQuoteRepost} className="space-y-3">
+              <form onSubmit={handleQuoteRepost} className="flex flex-col flex-1 min-h-0">
                 <textarea
                   autoFocus
                   value={quoteContent}
                   onChange={(e) => setQuoteContent(e.target.value)}
+                  onFocus={() => setIsQuoteFocused(true)}
+                  onBlur={() => setIsQuoteFocused(false)}
                   placeholder="Apa pendapatmu tentang postingan ini?"
-                  rows={4}
-                  className="w-full resize-none px-3.5 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-sm text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  rows={3}
+                  className="w-full resize-none px-3.5 py-3 mb-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-sm text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 shrink-0"
                 />
                 
-                <div className="rounded-2xl border border-slate-200 dark:border-zinc-700 overflow-hidden bg-slate-50/50 dark:bg-zinc-800/40">
+                <div className="rounded-2xl border border-slate-200 dark:border-zinc-700 overflow-y-auto bg-slate-50/50 dark:bg-zinc-800/40 flex-1 min-h-0 mb-3 custom-scrollbar">
                   <div className="px-3 py-2.5 flex items-center gap-2">
                     <span className="text-lg leading-none">
                       {post.isRepost && originalPost ? originalAuthorEmoji : authorEmoji}
@@ -711,12 +734,13 @@ export const PostCard: React.FC<PostCardProps> = ({
                   </div>
                 </div>
 
-                <div className="flex items-center justify-end gap-2 pt-1">
+                <div className="flex items-center justify-end gap-2 shrink-0">
                   <button
                     type="button"
                     onClick={() => {
                       setIsQuoteOpen(false);
                       setQuoteContent('');
+                      setIsQuoteFocused(false);
                     }}
                     className="px-4 py-2 rounded-2xl text-xs font-semibold text-slate-500 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
                   >
