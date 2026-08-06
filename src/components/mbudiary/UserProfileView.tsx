@@ -173,14 +173,6 @@ export const UserProfileView: React.FC<
         authorNrp.toLowerCase()
     );
 
-  /**
-   * Profile information.
-   *
-   * Prioritas:
-   * 1. usersCache berdasarkan NRP
-   * 2. currentUser jika profile sendiri
-   * 3. fallback aman
-   */
   const isSelf =
     currentUser.nrp.toLowerCase() ===
     authorNrp.toLowerCase();
@@ -202,6 +194,12 @@ export const UserProfileView: React.FC<
     (isSelf
       ? currentUser.emoji
       : '😊');
+
+  const authorPhotoUrl =
+    authorProfile?.photoUrl ||
+    (isSelf
+      ? currentUser.photoUrl
+      : undefined);
 
   /**
    * Total likes yang diterima
@@ -226,7 +224,7 @@ export const UserProfileView: React.FC<
         <ArrowLeft className="w-4 h-4 text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" />
 
         <span>
-        
+          Kembali
         </span>
       </button>
 
@@ -248,10 +246,20 @@ export const UserProfileView: React.FC<
           <div className="flex items-center justify-between sm:justify-start gap-3 min-w-0">
             <div className="flex items-center gap-3 min-w-0">
 
-              {/* EMOJI */}
-              <span className="text-3xl sm:text-4xl shrink-0 leading-none">
-                {authorEmoji}
-              </span>
+              {/* AVATAR / PHOTO / EMOJI */}
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-slate-50 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden border border-slate-200/60 dark:border-zinc-700/60">
+                {authorPhotoUrl ? (
+                  <img
+                    src={authorPhotoUrl}
+                    alt={authorName}
+                    className="w-full h-full object-cover rounded-2xl"
+                  />
+                ) : (
+                  <span className="text-3xl sm:text-4xl leading-none">
+                    {authorEmoji}
+                  </span>
+                )}
+              </div>
 
               {/* NAME + USERNAME */}
               <div className="min-w-0">
