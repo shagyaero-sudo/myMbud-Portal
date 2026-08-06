@@ -50,8 +50,8 @@ interface AttachmentData {
   fileUrl: string;
 }
 
-// --- LOGIKA KALKULASI MINGGU AKADEMIK ---
-const getCurrentAcademicWeek = (): string => {
+// --- LOGIKA KALKULASI MINGGU AKADEMIK + STYLE DINAMIS ---
+const getCurrentAcademicWeek = () => {
   // Tanggal acuan: Senin, 31 Agustus 2026, 00:00:00 WIB (GMT+7)
   const startDate = new Date('2026-08-31T00:00:00+07:00');
   const now = new Date();
@@ -62,15 +62,20 @@ const getCurrentAcademicWeek = (): string => {
   // Konversi ke selisih hari (dibulatkan ke bawah)
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
-  // Jika sebelum tanggal 31 Agustus 2026 (seperti saat ini)
+  // Jika sebelum tanggal 31 Agustus 2026 (Warna Merah/Rose)
   if (diffDays < 0) {
-    return 'Diluar perkuliahan';
+    return {
+      label: 'di luar masa perkuliahan',
+      badgeClass: 'bg-rose-50 dark:bg-rose-950/40 border-rose-100 dark:border-rose-900/50 text-rose-600 dark:text-rose-400'
+    };
   }
 
-  // Hitung minggu ke-x (1 minggu = 7 hari, berpindah tiap Senin 00.00 WIB)
+  // Hitung minggu ke-x (Warna Biru Pas Kuliah Aktif)
   const weekNumber = Math.floor(diffDays / 7) + 1;
-  
-  return `Minggu ke-${weekNumber}`;
+  return {
+    label: `Minggu ke-${weekNumber}`,
+    badgeClass: 'bg-blue-50 dark:bg-blue-950/60 border-blue-100 dark:border-blue-900/50 text-blue-600 dark:text-blue-400'
+  };
 };
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
@@ -535,18 +540,23 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           {/* Jadwal Kuliah */}
           <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-4 transition-colors">
             
-            {/* Header Jadwal dengan Badge Minggu Akademik */}
+            {/* Header Jadwal dengan Badge Minggu Akademik Dinamis */}
             <div className="flex items-center justify-between">
               <h3 className="text-base font-bold text-slate-800 dark:text-zinc-100">
                 Jadwal Perkuliahan
               </h3>
 
-              {/* Badge Status Minggu */}
-              <div className="px-3 py-1 bg-rose-50 dark:bg-rose-950/40 border border-rose-100 dark:border-rose-900/50 rounded-full flex items-center justify-center shadow-xs">
-                <span className="text-xs font-bold text-rose-600 dark:text-rose-400">
-                  {getCurrentAcademicWeek()}
-                </span>
-              </div>
+              {/* Badge Dynamic Week */}
+              {(() => {
+                const weekInfo = getCurrentAcademicWeek();
+                return (
+                  <div className={`px-3 py-1 border rounded-full flex items-center justify-center shadow-xs transition-colors ${weekInfo.badgeClass}`}>
+                    <span className="text-xs font-bold">
+                      {weekInfo.label}
+                    </span>
+                  </div>
+                );
+              })()}
             </div>
 
             <div className="grid grid-cols-5 gap-1 p-1 bg-slate-100/80 dark:bg-zinc-800/80 rounded-2xl w-full">
