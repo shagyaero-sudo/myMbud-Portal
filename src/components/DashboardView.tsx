@@ -24,7 +24,8 @@ import {
   ZoomOut,
   RotateCcw,
   BookHeart,
-  Pencil
+  Pencil,
+  CalendarDays
 } from 'lucide-react';
 import { AppState, DayOfWeek, Task, Announcement, ScheduleItem } from '../types';
 import {
@@ -48,6 +49,29 @@ interface AttachmentData {
   fileName: string;
   fileUrl: string;
 }
+
+// --- LOGIKA KALKULASI MINGGU AKADEMIK ---
+const getCurrentAcademicWeek = (): string => {
+  // Tanggal acuan: Senin, 31 Agustus 2026, 00:00:00 WIB (GMT+7)
+  const startDate = new Date('2026-08-31T00:00:00+07:00');
+  const now = new Date();
+
+  // Hitung selisih waktu dalam milidetik
+  const diffTime = now.getTime() - startDate.getTime();
+  
+  // Konversi ke selisih hari (dibulatkan ke bawah)
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+  // Jika sebelum tanggal 31 Agustus 2026 (seperti saat ini)
+  if (diffDays < 0) {
+    return 'Diluar perkuliahan';
+  }
+
+  // Hitung minggu ke-x (1 minggu = 7 hari, berpindah tiap Senin 00.00 WIB)
+  const weekNumber = Math.floor(diffDays / 7) + 1;
+  
+  return `Minggu ke-${weekNumber}`;
+};
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
   state,
@@ -362,7 +386,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     const hour = new Date().getHours();
     const userName = localStorage.getItem('mymbud_user_name') || 'Mbuders'; 
   
-    if (hour >= 4 && hour < 11) return `Selamat Pagi, ${userName}! 🌤️`;
+    if (hour >= 4 && hour < 11) return `Selamat Pagi, ${userName}! 🌅`;
     if (hour >= 11 && hour < 15) return `Selamat Siang, ${userName}! ☀️`;
     if (hour >= 15 && hour < 18) return `Selamat Sore, ${userName}! ☕`;
     return `Selamat Malam, ${userName}! 🌙`;
@@ -375,7 +399,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       transition={{ duration: 0.3 }}
       className="space-y-6 pb-12"
     >
-      {/* --- GREETING KHUSUS MOBILE/TABLET (Menyatu dgn BG) --- */}
+      {/* --- GREETING KHUSUS MOBILE/TABLET --- */}
       <div className="block lg:hidden px-2 pt-2 pb-0">
         <h2 className="text-xl font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
           {getGreeting()}
@@ -510,10 +534,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         <div className="lg:col-span-2 space-y-6">
           {/* Jadwal Kuliah */}
           <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-4 transition-colors">
-            <div>
+            
+            {/* Header Jadwal dengan Badge Minggu Akademik */}
+            <div className="flex items-center justify-between">
               <h3 className="text-base font-bold text-slate-800 dark:text-zinc-100">
                 Jadwal Perkuliahan
               </h3>
+
+              {/* Badge Status Minggu */}
+              <div className="px-3 py-1 bg-rose-50 dark:bg-rose-950/40 border border-rose-100 dark:border-rose-900/50 rounded-full flex items-center justify-center shadow-xs">
+                <span className="text-xs font-bold text-rose-600 dark:text-rose-400">
+                  {getCurrentAcademicWeek()}
+                </span>
+              </div>
             </div>
 
             <div className="grid grid-cols-5 gap-1 p-1 bg-slate-100/80 dark:bg-zinc-800/80 rounded-2xl w-full">
@@ -1262,7 +1295,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         )}
       </AnimatePresence>
 
-      {/* FLOATING BUTTON MBUDIARY KHUSUS DI DASHBOARD (Slightly Larger & Refined Typography) */}
+      {/* FLOATING BUTTON MBUDIARY KHUSUS DI DASHBOARD */}
       <motion.button
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
