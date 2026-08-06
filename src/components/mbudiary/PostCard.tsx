@@ -105,7 +105,7 @@ export const PostCard: React.FC<
     useRef<HTMLDivElement>(null);
 
   /**
-   * Close the three-dot menu
+   * Close three-dot menu
    * when clicking outside.
    */
   useEffect(() => {
@@ -138,52 +138,33 @@ export const PostCard: React.FC<
   }, [isMenuOpen]);
 
   /**
-   * Close image lightbox with Escape.
+   * Close image lightbox
+   * with Escape key.
    */
   useEffect(() => {
-    if (!selectedImage) {
-      return;
-    }
-
-    const handleEscape = (
+    const handleKeyDown = (
       event: KeyboardEvent
     ) => {
-      if (event.key === 'Escape') {
+      if (
+        event.key === 'Escape' &&
+        selectedImage
+      ) {
         setSelectedImage(null);
       }
     };
 
-    document.addEventListener(
-      'keydown',
-      handleEscape
-    );
+    if (selectedImage) {
+      document.addEventListener(
+        'keydown',
+        handleKeyDown
+      );
+    }
 
     return () => {
       document.removeEventListener(
         'keydown',
-        handleEscape
+        handleKeyDown
       );
-    };
-  }, [selectedImage]);
-
-  /**
-   * Prevent background page from scrolling
-   * while image lightbox is open.
-   */
-  useEffect(() => {
-    if (!selectedImage) {
-      return;
-    }
-
-    const originalOverflow =
-      document.body.style.overflow;
-
-    document.body.style.overflow =
-      'hidden';
-
-    return () => {
-      document.body.style.overflow =
-        originalOverflow;
     };
   }, [selectedImage]);
 
@@ -857,7 +838,7 @@ export const PostCard: React.FC<
             transition={{
               duration: 0.2,
             }}
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 sm:p-6"
+            className="fixed inset-0 z-[999999] w-screen h-[100dvh] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6"
             onMouseDown={(e) => {
               if (
                 e.target ===
@@ -870,12 +851,14 @@ export const PostCard: React.FC<
             aria-modal="true"
             aria-label="Pratinjau gambar"
           >
-            {/* CLOSE BUTTON */}
+            {/* =================================================
+                FLOATING CLOSE BUTTON
+                ================================================= */}
 
             <motion.button
               initial={{
                 opacity: 0,
-                scale: 0.9,
+                scale: 0.8,
               }}
               animate={{
                 opacity: 1,
@@ -883,20 +866,25 @@ export const PostCard: React.FC<
               }}
               exit={{
                 opacity: 0,
-                scale: 0.9,
+                scale: 0.8,
+              }}
+              transition={{
+                duration: 0.2,
               }}
               type="button"
               onClick={() =>
                 setSelectedImage(null)
               }
-              className="absolute top-4 right-4 sm:top-6 sm:right-6 z-[110] flex items-center justify-center w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white transition-colors backdrop-blur-md"
+              className="fixed top-5 right-5 sm:top-6 sm:right-6 z-[1000000] w-11 h-11 sm:w-12 sm:h-12 flex items-center justify-center rounded-full bg-black/60 hover:bg-black/80 active:bg-black/90 border border-white/20 text-white shadow-2xl backdrop-blur-md transition-all"
               title="Tutup"
               aria-label="Tutup gambar"
             >
-              <X className="w-5 h-5" />
+              <X className="w-5 h-5 sm:w-6 sm:h-6" />
             </motion.button>
 
-            {/* IMAGE */}
+            {/* =================================================
+                IMAGE CONTAINER
+                ================================================= */}
 
             <motion.div
               initial={{
@@ -918,7 +906,7 @@ export const PostCard: React.FC<
                 duration: 0.2,
                 ease: 'easeOut',
               }}
-              className="relative max-w-[95vw] max-h-[90vh] flex items-center justify-center"
+              className="relative z-[999999] max-w-[95vw] max-h-[90dvh] flex items-center justify-center"
               onMouseDown={(e) =>
                 e.stopPropagation()
               }
@@ -926,7 +914,7 @@ export const PostCard: React.FC<
               <img
                 src={selectedImage}
                 alt="Pratinjau gambar postingan"
-                className="max-w-[95vw] max-h-[90vh] w-auto h-auto object-contain rounded-2xl shadow-2xl select-none"
+                className="max-w-[95vw] max-h-[90dvh] w-auto h-auto object-contain rounded-2xl shadow-2xl select-none"
                 draggable={false}
               />
             </motion.div>
