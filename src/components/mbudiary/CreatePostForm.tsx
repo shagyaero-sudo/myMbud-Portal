@@ -414,7 +414,20 @@ export const CreatePostForm: React.FC<
      ========================================================= */
 
   return (
-    <div className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl p-4 sm:p-5 shadow-sm space-y-3">
+    <div className="relative bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl p-4 sm:p-5 shadow-sm space-y-3">
+      
+      {/* CHARACTER COUNT MOVED HERE */}
+      <span
+        className={`absolute top-4 right-4 sm:top-5 sm:right-5 text-[10px] font-mono ${
+          content.length >
+          MAX_CHARS - 20
+            ? 'text-rose-500 font-bold'
+            : 'text-slate-400 dark:text-zinc-500'
+        }`}
+      >
+        {content.length}/
+        {MAX_CHARS}
+      </span>
 
       {/* SUCCESS TOAST */}
       <AnimatePresence>
@@ -700,19 +713,7 @@ export const CreatePostForm: React.FC<
                 )}
               </AnimatePresence>
             </div>
-
-            {/* CHARACTER COUNT */}
-            <span
-              className={`text-[10px] font-mono ${
-                content.length >
-                MAX_CHARS - 20
-                  ? 'text-rose-500 font-bold'
-                  : 'text-slate-400 dark:text-zinc-500'
-              }`}
-            >
-              {content.length}/
-              {MAX_CHARS}
-            </span>
+            
           </div>
 
           {/* SEND */}
