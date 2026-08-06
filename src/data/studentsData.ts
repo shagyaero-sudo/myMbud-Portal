@@ -40,7 +40,7 @@ export const STUDENTS_DATA: Record<string, Student> = {
   "097": { nrpSuffix: "097", pin: "3012", name: "Qory" },
   "100": { nrpSuffix: "100", pin: "2105", name: "Yemi" },
   "103": { nrpSuffix: "103", pin: "0512", name: "Nazwa" },
-  "106": { nrpSuffix: "106", pin: "2406", name: "Ghayna" },
+  "106": { nrpSuffix: "106", pin: "2406", name: "Ghina" },
   "109": { nrpSuffix: "109", pin: "1408", name: "Satria" },
   "112": { nrpSuffix: "112", pin: "0110", name: "Fauzi" },
   "115": { nrpSuffix: "115", pin: "2906", name: "Rachel" },

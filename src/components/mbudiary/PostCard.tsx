@@ -186,6 +186,7 @@ export const PostCard: React.FC<
           );
 
         setIsLiked(hasLiked);
+
         setLikeCount(
           updated.likes.length
         );
@@ -320,12 +321,19 @@ export const PostCard: React.FC<
           </span>
 
           <div>
+            {/* NAME */}
             <div className="flex items-center flex-wrap gap-1.5">
               <span className="text-slate-900 dark:text-zinc-100 font-bold text-sm group-hover/author:text-indigo-600 dark:group-hover/author:text-indigo-400 transition-colors">
                 {authorName}
               </span>
             </div>
 
+            {/* USERNAME */}
+            <div className="text-slate-400 dark:text-zinc-500 text-[10px] mt-0.5">
+              @{authorProfile?.username || 'unknown'}
+            </div>
+
+            {/* TIMESTAMP */}
             <div className="flex items-center gap-1.5 text-slate-400 dark:text-zinc-500 text-[10px] mt-0.5">
               <span
                 title={formatDateFormatted(
@@ -437,6 +445,7 @@ export const PostCard: React.FC<
             <div className="flex items-center justify-between">
               <h4 className="text-xs font-bold text-slate-700 dark:text-zinc-300 flex items-center gap-1.5">
                 <CornerDownRight className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
+
                 Komen & Balasan (
                 {replies.length}
                 )
