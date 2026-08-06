@@ -147,7 +147,7 @@ export const MbudiaryView: React.FC =
     return (
       <div className="w-full bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 font-sans transition-colors duration-300 antialiased relative overflow-x-hidden">
 
-        <main className="flex-1 max-w-2xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 relative z-10 space-y-6">
+       <main className="flex-1 max-w-2xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 pb-24 sm:pb-8 relative z-10 space-y-6">
 
           {/* USER PROFILE */}
           {selectedAuthorNrp ? (
