@@ -110,6 +110,17 @@ export const CreatePostForm: React.FC<
     userProfile.emoji || '😊'
   );
 
+  const [
+    editUsername,
+    setEditUsername,
+  ] = useState(
+    userProfile.username || ''
+  );
+
+  /* =========================================================
+     CREATE POST
+     ========================================================= */
+
   const handleSubmitPost =
     async (
       e: React.FormEvent
@@ -128,15 +139,10 @@ export const CreatePostForm: React.FC<
 
       try {
         /**
-         * IMPORTANT:
+         * Identity utama tetap NRP.
          *
-         * Tidak lagi mengirim:
-         * authorName
-         * authorUsername
-         * authorEmoji
-         *
-         * storage.ts otomatis mengambil NRP
-         * dari current cloud identity.
+         * savePost() akan mengambil NRP
+         * dari current cloud/local identity.
          */
         await savePost({
           authorNrp:
@@ -184,22 +190,46 @@ export const CreatePostForm: React.FC<
       }
     };
 
-  const handleSaveEmoji =
+  /* =========================================================
+     EDIT PROFILE
+     ========================================================= */
+
+  const handleSaveProfile =
     async (
       e: React.FormEvent
     ) => {
       e.preventDefault();
 
+      const normalizedUsername =
+        editUsername
+          .trim()
+          .toLowerCase();
+
+      if (!normalizedUsername) {
+        alert(
+          'Username tidak boleh kosong.'
+        );
+
+        return;
+      }
+
       try {
         await saveUserProfile({
           ...userProfile,
-          emoji: editEmoji,
+
+          username:
+            normalizedUsername,
+
+          emoji:
+            editEmoji,
         });
 
-        setIsEditModalOpen(false);
+        setIsEditModalOpen(
+          false
+        );
       } catch (error) {
         console.error(
-          '[mbudiary] Gagal menyimpan emoji:',
+          '[mbudiary] Gagal menyimpan profil:',
           error
         );
 
@@ -211,8 +241,14 @@ export const CreatePostForm: React.FC<
       }
     };
 
+  /* =========================================================
+     RENDER
+     ========================================================= */
+
   return (
     <div className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl p-4 sm:p-5 shadow-sm space-y-3">
+
+      {/* SUCCESS TOAST */}
       <AnimatePresence>
         {showSuccessToast && (
           <motion.div
@@ -239,6 +275,7 @@ export const CreatePostForm: React.FC<
         )}
       </AnimatePresence>
 
+      {/* CREATE POST FORM */}
       <form
         onSubmit={
           handleSubmitPost
@@ -246,6 +283,8 @@ export const CreatePostForm: React.FC<
         className="space-y-3"
       >
         <div className="flex items-start gap-3">
+
+          {/* EMOJI / EDIT PROFILE BUTTON */}
           <button
             type="button"
             onClick={() => {
@@ -254,12 +293,17 @@ export const CreatePostForm: React.FC<
                   '😊'
               );
 
+              setEditUsername(
+                userProfile.username ||
+                  ''
+              );
+
               setIsEditModalOpen(
                 true
               );
             }}
             className="text-2xl p-2 rounded-2xl bg-slate-50 dark:bg-zinc-800 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-all shrink-0 active:scale-95 group relative"
-            title="Ubah Emoji"
+            title="Edit Profil"
           >
             <span>
               {userProfile.emoji ||
@@ -272,19 +316,28 @@ export const CreatePostForm: React.FC<
           </button>
 
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
+
+            {/* CURRENT USER IDENTITY */}
+            <div className="flex flex-col mb-1">
+
               <span
                 onClick={() =>
                   onSelectAuthor?.(
                     userProfile.nrp
                   )
                 }
-                className="text-xs font-bold text-slate-800 dark:text-zinc-100 hover:text-indigo-600 cursor-pointer"
+                className="text-xs font-bold text-slate-800 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer transition-colors"
               >
                 {userProfile.nickname}
               </span>
+
+              <span className="text-[10px] text-slate-400 dark:text-zinc-500">
+                @{userProfile.username}
+              </span>
+
             </div>
 
+            {/* POST CONTENT */}
             <textarea
               value={content}
               onChange={(e) =>
@@ -302,7 +355,9 @@ export const CreatePostForm: React.FC<
           </div>
         </div>
 
+        {/* POST ACTIONS */}
         <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-zinc-800/80">
+
           <span
             className={`text-[10px] font-mono ${
               content.length >
@@ -334,7 +389,10 @@ export const CreatePostForm: React.FC<
         </div>
       </form>
 
-      {/* EDIT EMOJI */}
+      {/* =====================================================
+          EDIT PROFILE MODAL
+          ===================================================== */}
+
       <AnimatePresence>
         {isEditModalOpen && (
           <motion.div
@@ -367,12 +425,15 @@ export const CreatePostForm: React.FC<
               }}
               className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-5"
             >
+
+              {/* MODAL HEADER */}
               <div className="flex items-center justify-between">
+
                 <h3 className="text-base font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
                   <Smile className="w-5 h-5 text-indigo-500" />
 
                   <span>
-                    Ubah Emoji Profil
+                    Edit Profil
                   </span>
                 </h3>
 
@@ -387,14 +448,55 @@ export const CreatePostForm: React.FC<
                 >
                   <X className="w-4 h-4" />
                 </button>
+
               </div>
 
+              {/* PROFILE FORM */}
               <form
                 onSubmit={
-                  handleSaveEmoji
+                  handleSaveProfile
                 }
                 className="space-y-4"
               >
+
+                {/* USERNAME */}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-2">
+                    Username
+                  </label>
+
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400 dark:text-zinc-500">
+                      @
+                    </span>
+
+                    <input
+                      type="text"
+                      value={
+                        editUsername
+                      }
+                      onChange={(e) =>
+                        setEditUsername(
+                          e.target.value
+                            .replace(
+                              /\s+/g,
+                              ''
+                            )
+                            .toLowerCase()
+                        )
+                      }
+                      placeholder="usernamekamu"
+                      maxLength={30}
+                      className="w-full pl-7 pr-3.5 py-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-xs border border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+
+                  <p className="text-[10px] text-slate-400 dark:text-zinc-500 mt-1.5">
+                    Username digunakan sebagai identitas publik dan harus unik.
+                  </p>
+                </div>
+
+                {/* EMOJI */}
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-2">
                     Pilih emoji yang menggambarkan perasaanmu sekarang...
@@ -425,7 +527,9 @@ export const CreatePostForm: React.FC<
                   </div>
                 </div>
 
+                {/* MODAL ACTIONS */}
                 <div className="flex items-center justify-end gap-2 pt-2">
+
                   <button
                     type="button"
                     onClick={() =>
@@ -440,11 +544,16 @@ export const CreatePostForm: React.FC<
 
                   <button
                     type="submit"
-                    className="px-5 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all shadow-md shadow-indigo-500/20 active:scale-95"
+                    disabled={
+                      !editUsername.trim()
+                    }
+                    className="px-5 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-bold transition-all shadow-md shadow-indigo-500/20 active:scale-95"
                   >
-                    Simpan Emoji
+                    Simpan Profil
                   </button>
+
                 </div>
+
               </form>
             </motion.div>
           </motion.div>
