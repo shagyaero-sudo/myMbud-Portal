@@ -226,7 +226,7 @@ export const UserProfileView: React.FC<
         <ArrowLeft className="w-4 h-4 text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" />
 
         <span>
-          Kembali ke Feed
+        
         </span>
       </button>
 
