@@ -609,7 +609,7 @@ export const CreatePostForm: React.FC<
                 <ImagePlus className="w-3.5 h-3.5" />
 
                 <span>
-                  + Upload Gambar
+                 Upload Gambar
                 </span>
 
                 {selectedImages.length >
