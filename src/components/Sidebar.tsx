@@ -16,7 +16,9 @@ import {
   LayoutGrid,
   X,
   Award,
-  BookHeart
+  BookHeart,
+  FileSpreadsheet, // <-- Ikon baru untuk GSheets
+  Palette // <-- Ikon baru untuk Canva
 } from 'lucide-react';
 
 export type TabType = 'dashboard' | 'contacts' | 'materials' | 'tasks' | 'spinwheel' | 'calculator' | 'letter' | 'mbudiary' | 'blockblast';
@@ -171,7 +173,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <BottomTabItem id="dashboard" label="Jadwal" icon={CalendarDays} activeTab={activeTab} onClick={setActiveTab} />
           <BottomTabItem id="tasks" label="Tugas" icon={FolderKanban} activeTab={activeTab} onClick={setActiveTab} badge={urgentTaskCount > 0 ? urgentTaskCount : null} />
 
-          {/* TOMBOL SAKTI / APP DRAWER TRIGGER (Diperbarui) */}
+          {/* TOMBOL SAKTI / APP DRAWER TRIGGER */}
           <div className="relative flex flex-col items-center justify-center -top-2.5 z-50">
             <motion.button
               whileTap={{ scale: 0.9 }}
@@ -268,7 +270,31 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   </div>
                 </div>
 
-                {/* 3. MINIGAME */}
+                {/* 3. APLIKASI PRODUKTIVITAS (KHUSUS MOBILE - GRID 3 KOLOM) */}
+                <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-zinc-800 lg:hidden">
+                  <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-1">APLIKASI PRODUKTIVITAS</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {/* Google Docs */}
+                    <a href="https://docs.google.com" target="_blank" rel="noreferrer" className="flex flex-col items-center justify-center p-3 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 text-white active:scale-95 transition-all shadow-md shadow-blue-500/20">
+                      <FileText className="w-5 h-5 mb-1.5" />
+                      <span className="text-[10px] font-bold truncate w-full text-center">GDocs</span>
+                    </a>
+                    
+                    {/* Google Sheets */}
+                    <a href="https://docs.google.com/spreadsheets" target="_blank" rel="noreferrer" className="flex flex-col items-center justify-center p-3 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white active:scale-95 transition-all shadow-md shadow-emerald-500/20">
+                      <FileSpreadsheet className="w-5 h-5 mb-1.5" />
+                      <span className="text-[10px] font-bold truncate w-full text-center">GSheets</span>
+                    </a>
+                    
+                    {/* Canva */}
+                    <a href="https://canva.com" target="_blank" rel="noreferrer" className="flex flex-col items-center justify-center p-3 rounded-2xl bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 text-white active:scale-95 transition-all shadow-md shadow-purple-500/20">
+                      <Palette className="w-5 h-5 mb-1.5" />
+                      <span className="text-[10px] font-bold truncate w-full text-center">Canva</span>
+                    </a>
+                  </div>
+                </div>
+
+                {/* 4. MINIGAME */}
                 <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-zinc-800">
                   <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-1">MINIGAME</p>
                   <button onClick={() => navigateFromSheet('blockblast')} className="group relative w-full overflow-hidden rounded-2xl p-3 text-xs font-bold transition-all border bg-gradient-to-r from-purple-50 via-fuchsia-50 to-pink-50 dark:from-purple-950/40 dark:via-fuchsia-950/30 dark:to-pink-950/30 text-purple-700 dark:text-purple-300 border-purple-200/70 dark:border-purple-800/50 active:scale-95">
