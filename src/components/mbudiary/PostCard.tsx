@@ -16,6 +16,8 @@ import {
   addReply,
   deletePost,
   getCachedUserByNrp,
+  getPosts,
+  savePost,
 } from './lib/storage';
 
 import {
@@ -32,6 +34,8 @@ import {
   MoreVertical,
   Trash2,
   X,
+  Repeat2,
+  Quote,
 } from 'lucide-react';
 
 import {
@@ -104,10 +108,29 @@ export const PostCard: React.FC<
   const menuRef =
     useRef<HTMLDivElement>(null);
 
-  /**
-   * Close three-dot menu
-   * when clicking outside.
-   */
+  /* =========================================================
+     REPOST / QUOTE REPOST
+     ========================================================= */
+
+  const [
+    isQuoteOpen,
+    setIsQuoteOpen,
+  ] = useState(false);
+
+  const [
+    quoteContent,
+    setQuoteContent,
+  ] = useState('');
+
+  const [
+    isReposting,
+    setIsReposting,
+  ] = useState(false);
+
+  /* =========================================================
+     CLOSE DELETE MENU
+     ========================================================= */
+
   useEffect(() => {
     const handleClickOutside = (
       event: MouseEvent
@@ -137,10 +160,10 @@ export const PostCard: React.FC<
     };
   }, [isMenuOpen]);
 
-  /**
-   * Close image lightbox
-   * with Escape key.
-   */
+  /* =========================================================
+     CLOSE IMAGE LIGHTBOX WITH ESC
+     ========================================================= */
+
   useEffect(() => {
     const handleKeyDown = (
       event: KeyboardEvent
@@ -151,9 +174,20 @@ export const PostCard: React.FC<
       ) {
         setSelectedImage(null);
       }
+
+      if (
+        event.key === 'Escape' &&
+        isQuoteOpen
+      ) {
+        setIsQuoteOpen(false);
+        setQuoteContent('');
+      }
     };
 
-    if (selectedImage) {
+    if (
+      selectedImage ||
+      isQuoteOpen
+    ) {
       document.addEventListener(
         'keydown',
         handleKeyDown
@@ -166,11 +200,12 @@ export const PostCard: React.FC<
         handleKeyDown
       );
     };
-  }, [selectedImage]);
+  }, [
+    selectedImage,
+    isQuoteOpen,
+  ]);
 
   /**
-   * IMPORTANT:
-   *
    * Identity post sekarang hanya authorNrp.
    *
    * Profile visual diambil dari usersCache.
@@ -260,6 +295,36 @@ export const PostCard: React.FC<
     '😊';
 
   /* =========================================================
+     ORIGINAL POST FOR REPOST
+     ========================================================= */
+
+  const originalPost =
+    post.isRepost &&
+    post.originalPostId
+      ? getPosts().find(
+          (item) =>
+            item.id ===
+            post.originalPostId
+        )
+      : null;
+
+  const originalAuthorProfile =
+    originalPost
+      ? getCachedUserByNrp(
+          originalPost.authorNrp
+        )
+      : null;
+
+  const originalAuthorName =
+    originalAuthorProfile?.nickname ||
+    originalAuthorProfile?.username ||
+    'Mbuders';
+
+  const originalAuthorEmoji =
+    originalAuthorProfile?.emoji ||
+    '😊';
+
+  /* =========================================================
      LIKE
      ========================================================= */
 
@@ -342,6 +407,93 @@ export const PostCard: React.FC<
     };
 
   /* =========================================================
+     REPOST
+     ========================================================= */
+
+  const handleRepost =
+    async () => {
+      if (isReposting) {
+        return;
+      }
+
+      setIsReposting(true);
+
+      try {
+        await savePost({
+          content: '',
+          isOfficerPost:
+            currentUser.isOfficer,
+          imageUrls: [],
+          isRepost: true,
+          originalPostId:
+            post.isRepost &&
+            post.originalPostId
+              ? post.originalPostId
+              : post.id,
+          quoteContent: undefined,
+        });
+
+        onPostUpdate?.();
+      } catch (error) {
+        console.error(
+          '[mbudiary] Gagal melakukan repost:',
+          error
+        );
+      } finally {
+        setIsReposting(false);
+      }
+    };
+
+  /* =========================================================
+     QUOTE REPOST
+     ========================================================= */
+
+  const handleQuoteRepost =
+    async (
+      e: React.FormEvent
+    ) => {
+      e.preventDefault();
+
+      if (
+        !quoteContent.trim() ||
+        isReposting
+      ) {
+        return;
+      }
+
+      setIsReposting(true);
+
+      try {
+        await savePost({
+          content: '',
+          isOfficerPost:
+            currentUser.isOfficer,
+          imageUrls: [],
+          isRepost: true,
+          originalPostId:
+            post.isRepost &&
+            post.originalPostId
+              ? post.originalPostId
+              : post.id,
+          quoteContent:
+            quoteContent.trim(),
+        });
+
+        setQuoteContent('');
+        setIsQuoteOpen(false);
+
+        onPostUpdate?.();
+      } catch (error) {
+        console.error(
+          '[mbudiary] Gagal melakukan quote repost:',
+          error
+        );
+      } finally {
+        setIsReposting(false);
+      }
+    };
+
+  /* =========================================================
      DELETE POST
      ========================================================= */
 
@@ -408,6 +560,23 @@ export const PostCard: React.FC<
         }}
         className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl p-4 sm:p-5 transition-all duration-200 shadow-sm"
       >
+
+        {/* =====================================================
+            REPOST LABEL
+            ===================================================== */}
+
+        {post.isRepost && (
+          <div className="flex items-center gap-2 mb-3 text-[10px] font-semibold text-slate-400 dark:text-zinc-500">
+            <Repeat2 className="w-3.5 h-3.5 text-emerald-500" />
+
+            <span>
+              {isAuthor
+                ? 'Anda me-repost'
+                : `${authorName} me-repost`}
+            </span>
+          </div>
+        )}
+
         {/* =====================================================
             AUTHOR HEADER
             ===================================================== */}
@@ -430,21 +599,15 @@ export const PostCard: React.FC<
             </span>
 
             <div>
-              {/* NAME */}
-
               <div className="flex items-center flex-wrap gap-1.5">
                 <span className="text-slate-900 dark:text-zinc-100 font-bold text-sm group-hover/author:text-indigo-600 dark:group-hover/author:text-indigo-400 transition-colors">
                   {authorName}
                 </span>
               </div>
 
-              {/* USERNAME */}
-
               <div className="text-slate-400 dark:text-zinc-500 text-[10px] mt-0.5">
                 @{authorProfile?.username || 'unknown'}
               </div>
-
-              {/* TIMESTAMP */}
 
               <div className="flex items-center gap-1.5 text-slate-400 dark:text-zinc-500 text-[10px] mt-0.5">
                 <span
@@ -460,17 +623,13 @@ export const PostCard: React.FC<
             </div>
           </div>
 
-          {/* ===================================================
-              THREE DOT MENU
-              =================================================== */}
+          {/* THREE DOT MENU */}
 
           {canDelete && (
             <div
               ref={menuRef}
               className="relative shrink-0"
             >
-              {/* THREE DOT BUTTON */}
-
               <button
                 type="button"
                 onClick={() =>
@@ -488,8 +647,6 @@ export const PostCard: React.FC<
               >
                 <MoreVertical className="w-4 h-4" />
               </button>
-
-              {/* DROPDOWN MENU */}
 
               <AnimatePresence>
                 {isMenuOpen && (
@@ -538,18 +695,143 @@ export const PostCard: React.FC<
         </div>
 
         {/* =====================================================
+            QUOTE TEXT
+            ===================================================== */}
+
+        {post.quoteContent && (
+          <div className="mb-3 p-3 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/40">
+            <div className="flex items-center gap-1.5 mb-1.5 text-[10px] font-bold text-indigo-500 dark:text-indigo-400">
+              <Quote className="w-3 h-3" />
+
+              <span>
+                Quote Repost
+              </span>
+            </div>
+
+            <p className="text-sm text-slate-800 dark:text-zinc-200 leading-relaxed whitespace-pre-line">
+              {post.quoteContent}
+            </p>
+          </div>
+        )}
+
+        {/* =====================================================
             CONTENT
             ===================================================== */}
 
-        <div className="text-sm text-slate-800 dark:text-zinc-200 leading-relaxed whitespace-pre-line mb-4 font-normal">
-          {post.content}
-        </div>
+        {!post.isRepost &&
+          post.content && (
+            <div className="text-sm text-slate-800 dark:text-zinc-200 leading-relaxed whitespace-pre-line mb-4 font-normal">
+              {post.content}
+            </div>
+          )}
+
+        {/* =====================================================
+            ORIGINAL POST CARD INSIDE REPOST
+            ===================================================== */}
+
+        {post.isRepost &&
+          originalPost && (
+            <div className="mb-4 rounded-2xl border border-slate-200 dark:border-zinc-700 overflow-hidden bg-slate-50/50 dark:bg-zinc-800/40">
+
+              <div className="px-3.5 pt-3 pb-2 flex items-center gap-2">
+                <span className="text-lg leading-none">
+                  {originalAuthorEmoji}
+                </span>
+
+                <div className="min-w-0">
+                  <div className="text-xs font-bold text-slate-900 dark:text-zinc-100 truncate">
+                    {originalAuthorName}
+                  </div>
+
+                  <div className="text-[9px] text-slate-400 dark:text-zinc-500">
+                    @{originalAuthorProfile?.username || 'unknown'}
+                  </div>
+                </div>
+              </div>
+
+              {originalPost.content && (
+                <div className="px-3.5 pb-3 text-xs text-slate-700 dark:text-zinc-300 leading-relaxed whitespace-pre-line">
+                  {originalPost.content}
+                </div>
+              )}
+
+              {originalPost.imageUrls &&
+                originalPost.imageUrls.length >
+                  0 && (
+                  <div
+                    className={`grid gap-1.5 px-2 pb-2 ${
+                      originalPost.imageUrls.length ===
+                      1
+                        ? 'grid-cols-1'
+                        : 'grid-cols-2'
+                    }`}
+                  >
+                    {originalPost.imageUrls.map(
+                      (
+                        imageUrl,
+                        index
+                      ) => (
+                        <button
+                          key={`${imageUrl}-${index}`}
+                          type="button"
+                          onClick={() =>
+                            setSelectedImage(
+                              imageUrl
+                            )
+                          }
+                          className={`relative overflow-hidden rounded-xl bg-slate-100 dark:bg-zinc-800 ${
+                            originalPost.imageUrls
+                              ?.length ===
+                            1
+                              ? 'max-h-[400px]'
+                              : 'aspect-square'
+                          }`}
+                        >
+                          <img
+                            src={imageUrl}
+                            alt={`Gambar repost ${
+                              index + 1
+                            }`}
+                            loading="lazy"
+                            className="w-full h-full object-cover"
+                          />
+                        </button>
+                      )
+                    )}
+                  </div>
+                )}
+
+              <button
+                type="button"
+                onClick={() =>
+                  onSelectPost?.(
+                    originalPost.id
+                  )
+                }
+                className="w-full px-3.5 py-2 text-left text-[10px] font-semibold text-indigo-500 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 transition-colors border-t border-slate-200 dark:border-zinc-700"
+              >
+                Lihat postingan asli
+              </button>
+            </div>
+          )}
+
+        {/* =====================================================
+            ORIGINAL POST NOT FOUND
+            ===================================================== */}
+
+        {post.isRepost &&
+          !originalPost && (
+            <div className="mb-4 p-3 rounded-2xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-100 dark:border-zinc-800 text-xs text-slate-400 dark:text-zinc-500 italic">
+              Postingan asli sudah tidak tersedia.
+            </div>
+          )}
 
         {/* =====================================================
             IMAGES
             ===================================================== */}
 
-        {post.imageUrls &&
+        {!post.isRepost &&
+          post.imageUrls &&
           post.imageUrls.length >
             0 && (
             <div
@@ -601,8 +883,6 @@ export const PostCard: React.FC<
                       }}
                     />
 
-                    {/* SUBTLE HOVER OVERLAY */}
-
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors pointer-events-none" />
                   </button>
                 )
@@ -615,7 +895,8 @@ export const PostCard: React.FC<
             ===================================================== */}
 
         <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-zinc-800 text-xs">
-          <div className="flex items-center gap-2 sm:gap-3">
+
+          <div className="flex items-center gap-1.5 sm:gap-2">
 
             {/* LIKE */}
 
@@ -669,6 +950,56 @@ export const PostCard: React.FC<
                 Komen
               </span>
             </button>
+
+            {/* REPOST */}
+
+            <button
+              type="button"
+              onClick={
+                handleRepost
+              }
+              disabled={
+                isReposting
+              }
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all text-xs text-slate-400 dark:text-zinc-500 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50/60 dark:hover:bg-zinc-800/80 disabled:opacity-50"
+              title="Repost"
+              aria-label="Repost"
+            >
+              <Repeat2
+                className={`w-4 h-4 ${
+                  isReposting
+                    ? 'animate-pulse'
+                    : ''
+                }`}
+              />
+
+              <span className="hidden xs:inline">
+                Repost
+              </span>
+            </button>
+
+            {/* QUOTE REPOST */}
+
+            <button
+              type="button"
+              onClick={() =>
+                setIsQuoteOpen(
+                  true
+                )
+              }
+              disabled={
+                isReposting
+              }
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all text-xs text-slate-400 dark:text-zinc-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50/60 dark:hover:bg-zinc-800/80 disabled:opacity-50"
+              title="Quote Repost"
+              aria-label="Quote Repost"
+            >
+              <Quote className="w-4 h-4" />
+
+              <span className="hidden xs:inline">
+                Quote
+              </span>
+            </button>
           </div>
         </div>
 
@@ -696,6 +1027,7 @@ export const PostCard: React.FC<
               }}
               className="mt-3 pt-3 border-t border-slate-100 dark:border-zinc-800 space-y-3 overflow-hidden"
             >
+
               {/* REPLY HEADER */}
 
               <div className="flex items-center justify-between">
@@ -737,6 +1069,7 @@ export const PostCard: React.FC<
                           key={reply.id}
                           className="p-3 rounded-2xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-100 dark:border-zinc-800 space-y-1"
                         >
+
                           {/* REPLY AUTHOR */}
 
                           <div className="flex items-center justify-between text-xs">
@@ -820,6 +1153,190 @@ export const PostCard: React.FC<
       </motion.article>
 
       {/* =======================================================
+          QUOTE REPOST MODAL
+          ======================================================= */}
+
+      <AnimatePresence>
+        {isQuoteOpen && (
+          <motion.div
+            initial={{
+              opacity: 0,
+            }}
+            animate={{
+              opacity: 1,
+            }}
+            exit={{
+              opacity: 0,
+            }}
+            className="fixed inset-0 z-[999998] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+            onMouseDown={(e) => {
+              if (
+                e.target ===
+                e.currentTarget
+              ) {
+                setIsQuoteOpen(false);
+                setQuoteContent('');
+              }
+            }}
+          >
+            <motion.div
+              initial={{
+                opacity: 0,
+                scale: 0.95,
+                y: 10,
+              }}
+              animate={{
+                opacity: 1,
+                scale: 1,
+                y: 0,
+              }}
+              exit={{
+                opacity: 0,
+                scale: 0.95,
+                y: 10,
+              }}
+              transition={{
+                duration: 0.18,
+              }}
+              className="w-full max-w-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-3xl p-4 sm:p-5 shadow-2xl"
+              onMouseDown={(e) =>
+                e.stopPropagation()
+              }
+            >
+
+              {/* MODAL HEADER */}
+
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100">
+                    Quote Repost
+                  </h3>
+
+                  <p className="text-[10px] text-slate-400 dark:text-zinc-500 mt-0.5">
+                    Tambahkan komentar sebelum me-repost.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsQuoteOpen(
+                      false
+                    );
+                    setQuoteContent('');
+                  }}
+                  className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
+                  aria-label="Tutup"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* QUOTE INPUT */}
+
+              <form
+                onSubmit={
+                  handleQuoteRepost
+                }
+                className="space-y-3"
+              >
+                <textarea
+                  autoFocus
+                  value={
+                    quoteContent
+                  }
+                  onChange={(e) =>
+                    setQuoteContent(
+                      e.target.value
+                    )
+                  }
+                  placeholder="Apa pendapatmu tentang postingan ini?"
+                  rows={4}
+                  className="w-full resize-none px-3.5 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-sm text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+
+                {/* ORIGINAL PREVIEW */}
+
+                <div className="rounded-2xl border border-slate-200 dark:border-zinc-700 overflow-hidden bg-slate-50/50 dark:bg-zinc-800/40">
+
+                  <div className="px-3 py-2.5 flex items-center gap-2">
+                    <span className="text-lg leading-none">
+                      {post.isRepost &&
+                      originalPost
+                        ? originalAuthorEmoji
+                        : authorEmoji}
+                    </span>
+
+                    <div className="min-w-0">
+                      <div className="text-xs font-bold text-slate-900 dark:text-zinc-100 truncate">
+                        {post.isRepost &&
+                        originalPost
+                          ? originalAuthorName
+                          : authorName}
+                      </div>
+
+                      <div className="text-[9px] text-slate-400 dark:text-zinc-500">
+                        @{post.isRepost &&
+                        originalPost
+                          ? originalAuthorProfile?.username ||
+                            'unknown'
+                          : authorProfile?.username ||
+                            'unknown'}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="px-3 pb-3 text-xs text-slate-700 dark:text-zinc-300 leading-relaxed whitespace-pre-line">
+                    {post.isRepost &&
+                    originalPost
+                      ? originalPost.content ||
+                        'Postingan dengan gambar'
+                      : post.content ||
+                        'Postingan dengan gambar'}
+                  </div>
+                </div>
+
+                {/* ACTIONS */}
+
+                <div className="flex items-center justify-end gap-2 pt-1">
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsQuoteOpen(
+                        false
+                      );
+                      setQuoteContent('');
+                    }}
+                    className="px-4 py-2 rounded-2xl text-xs font-semibold text-slate-500 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
+                  >
+                    Batal
+                  </button>
+
+                  <button
+                    type="submit"
+                    disabled={
+                      !quoteContent.trim() ||
+                      isReposting
+                    }
+                    className="px-4 py-2 rounded-2xl bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-100 dark:disabled:bg-zinc-800 text-white disabled:text-slate-400 text-xs font-semibold transition-all flex items-center gap-1.5 shadow-sm"
+                  >
+                    <Quote className="w-3.5 h-3.5" />
+
+                    <span>
+                      {isReposting
+                        ? 'Memproses...'
+                        : 'Quote Repost'}
+                    </span>
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* =======================================================
           IMAGE LIGHTBOX / POPUP
           ======================================================= */}
 
@@ -851,9 +1368,8 @@ export const PostCard: React.FC<
             aria-modal="true"
             aria-label="Pratinjau gambar"
           >
-            {/* =================================================
-                FLOATING CLOSE BUTTON
-                ================================================= */}
+
+            {/* CLOSE BUTTON */}
 
             <motion.button
               initial={{
@@ -882,9 +1398,7 @@ export const PostCard: React.FC<
               <X className="w-5 h-5 sm:w-6 sm:h-6" />
             </motion.button>
 
-            {/* =================================================
-                IMAGE CONTAINER
-                ================================================= */}
+            {/* IMAGE */}
 
             <motion.div
               initial={{
