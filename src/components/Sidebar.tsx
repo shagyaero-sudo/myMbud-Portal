@@ -17,8 +17,8 @@ import {
   X,
   Award,
   BookHeart,
-  FileSpreadsheet, // <-- Ikon baru untuk GSheets
-  Palette // <-- Ikon baru untuk Canva
+  FileSpreadsheet,
+  Palette
 } from 'lucide-react';
 
 export type TabType = 'dashboard' | 'contacts' | 'materials' | 'tasks' | 'spinwheel' | 'calculator' | 'letter' | 'mbudiary' | 'blockblast';
@@ -241,9 +241,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   </div>
                 </div>
 
-                {/* 2. TOOLS LAINNYA (GRID 2x2) */}
+                {/* 2. TOOLS LAINNYA */}
                 <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-zinc-800">
                   <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-1">TOOLS LAINNYA</p>
+                  
+                  {/* Grid 2x2 (Tools Utama) */}
                   <div className="grid grid-cols-2 gap-2">
                     <button onClick={() => navigateFromSheet('spinwheel')} className="flex items-center justify-between p-3 rounded-2xl text-xs font-semibold transition-all bg-blue-50/70 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 active:bg-blue-100">
                       <div className="flex items-center gap-2 truncate"><Dices className="w-4 h-4 shrink-0" /><span className="truncate">Spinwheel</span></div>
@@ -268,33 +270,36 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       <ChevronRight className="w-3.5 h-3.5 opacity-70 shrink-0" />
                     </button>
                   </div>
-                </div>
 
-                {/* 3. APLIKASI PRODUKTIVITAS (KHUSUS MOBILE - GRID 3 KOLOM) */}
-                <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-zinc-800 lg:hidden">
-                  <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-1">APLIKASI PRODUKTIVITAS</p>
-                  <div className="grid grid-cols-3 gap-2">
-                    {/* Google Docs */}
-                    <a href="https://docs.google.com" target="_blank" rel="noreferrer" className="flex flex-col items-center justify-center p-3 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 text-white active:scale-95 transition-all shadow-md shadow-blue-500/20">
-                      <FileText className="w-5 h-5 mb-1.5" />
-                      <span className="text-[10px] font-bold truncate w-full text-center">GDocs</span>
+                  {/* Grid 3x1 Ekstra (GDocs, GSheets, Canva) - Tergabung di section yang sama, khusus mobile */}
+                  <div className="grid grid-cols-3 gap-2 pt-1 lg:hidden">
+                    <a href="https://docs.google.com" target="_blank" rel="noreferrer" className="flex items-center justify-between p-2 sm:p-2.5 rounded-2xl text-[10px] font-semibold transition-all bg-blue-50/70 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 active:bg-blue-100">
+                      <div className="flex items-center gap-1.5 truncate">
+                        <FileText className="w-3.5 h-3.5 shrink-0" />
+                        <span className="truncate">GDocs</span>
+                      </div>
+                      <ChevronRight className="w-3 h-3 opacity-70 shrink-0 hidden sm:block" />
                     </a>
                     
-                    {/* Google Sheets */}
-                    <a href="https://docs.google.com/spreadsheets" target="_blank" rel="noreferrer" className="flex flex-col items-center justify-center p-3 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white active:scale-95 transition-all shadow-md shadow-emerald-500/20">
-                      <FileSpreadsheet className="w-5 h-5 mb-1.5" />
-                      <span className="text-[10px] font-bold truncate w-full text-center">GSheets</span>
+                    <a href="https://docs.google.com/spreadsheets" target="_blank" rel="noreferrer" className="flex items-center justify-between p-2 sm:p-2.5 rounded-2xl text-[10px] font-semibold transition-all bg-emerald-50/70 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 active:bg-emerald-100">
+                      <div className="flex items-center gap-1.5 truncate">
+                        <FileSpreadsheet className="w-3.5 h-3.5 shrink-0" />
+                        <span className="truncate">GSheets</span>
+                      </div>
+                      <ChevronRight className="w-3 h-3 opacity-70 shrink-0 hidden sm:block" />
                     </a>
-                    
-                    {/* Canva */}
-                    <a href="https://canva.com" target="_blank" rel="noreferrer" className="flex flex-col items-center justify-center p-3 rounded-2xl bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 text-white active:scale-95 transition-all shadow-md shadow-purple-500/20">
-                      <Palette className="w-5 h-5 mb-1.5" />
-                      <span className="text-[10px] font-bold truncate w-full text-center">Canva</span>
+
+                    <a href="https://canva.com" target="_blank" rel="noreferrer" className="flex items-center justify-between p-2 sm:p-2.5 rounded-2xl text-[10px] font-semibold transition-all bg-violet-50/70 dark:bg-violet-950/40 text-violet-700 dark:text-violet-300 active:bg-violet-100">
+                      <div className="flex items-center gap-1.5 truncate">
+                        <Palette className="w-3.5 h-3.5 shrink-0" />
+                        <span className="truncate">Canva</span>
+                      </div>
+                      <ChevronRight className="w-3 h-3 opacity-70 shrink-0 hidden sm:block" />
                     </a>
                   </div>
                 </div>
 
-                {/* 4. MINIGAME */}
+                {/* 3. MINIGAME */}
                 <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-zinc-800">
                   <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-1">MINIGAME</p>
                   <button onClick={() => navigateFromSheet('blockblast')} className="group relative w-full overflow-hidden rounded-2xl p-3 text-xs font-bold transition-all border bg-gradient-to-r from-purple-50 via-fuchsia-50 to-pink-50 dark:from-purple-950/40 dark:via-fuchsia-950/30 dark:to-pink-950/30 text-purple-700 dark:text-purple-300 border-purple-200/70 dark:border-purple-800/50 active:scale-95">
