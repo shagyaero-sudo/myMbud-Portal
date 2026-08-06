@@ -257,10 +257,36 @@ export const UserProfileView: React.FC<
               <div className="min-w-0">
 
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-zinc-100 truncate">
-                    {authorName}
-                  </h2>
 
+                  {/* NAME + VERIFIED */}
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-zinc-100 truncate">
+                      {authorName}
+                    </h2>
+
+                    {/* VERIFIED BADGE */}
+                    {authorProfile?.isVerified && (
+                      <span
+                        className="inline-flex items-center justify-center shrink-0 w-4 h-4 rounded-full bg-blue-500 text-white"
+                        title="Akun terverifikasi"
+                        aria-label="Akun terverifikasi"
+                      >
+                        <svg
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                          className="w-2.5 h-2.5"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M16.704 5.29a1 1 0 0 1 .006 1.414l-7.25 7.25a1 1 0 0 1-1.414 0l-3.25-3.25A1 1 0 0 1 6.21 9.29l2.543 2.543 6.543-6.543a1 1 0 0 1 1.408 0Z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </span>
+                    )}
+                  </div>
+
+                  {/* SAYA */}
                   {isSelf && (
                     <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/50">
                       Saya

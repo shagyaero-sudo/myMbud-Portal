@@ -70,6 +70,11 @@ export interface UserProfile {
   isOfficer: boolean;
 
   emoji: string;
+
+  /**
+   * Status centang biru akun.
+   */
+  isVerified?: boolean;
 }
 
 export interface MbudiaryUser {
@@ -78,6 +83,13 @@ export interface MbudiaryUser {
   nickname: string;
   isOfficer: boolean;
   emoji: string;
+
+  /**
+   * Status centang biru akun.
+   * Disimpan langsung di Firestore.
+   */
+  isVerified?: boolean;
+
   updatedAt?: string;
 }
 

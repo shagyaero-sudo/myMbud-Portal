@@ -72,6 +72,10 @@ function normalizeUser(
 
     emoji: String(data.emoji || '😊'),
 
+    isVerified: Boolean(
+      data.isVerified
+    ),
+
     updatedAt:
       data.updatedAt?.toDate?.()?.toISOString?.() ||
       data.updatedAt ||
@@ -397,14 +401,21 @@ export async function syncUserProfileWithFirebase(): Promise<UserProfile> {
 
       const syncedProfile: UserProfile = {
         nrp: normalizedNrp,
+
         username:
           cloudUser.username,
+
         nickname:
           cloudUser.nickname,
+
         isOfficer:
           cloudUser.isOfficer,
+
         emoji:
           cloudUser.emoji,
+
+        isVerified:
+          cloudUser.isVerified,
       };
 
       localStorage.setItem(
@@ -459,12 +470,17 @@ export async function syncUserProfileWithFirebase(): Promise<UserProfile> {
       emoji:
         currentProfile.emoji ||
         '😊',
+
+      isVerified:
+        currentProfile.isVerified ||
+        false,
     };
 
     await setDoc(
       userDocRef,
       {
         ...initialUser,
+
         updatedAt:
           serverTimestamp(),
       }
@@ -569,12 +585,17 @@ export async function saveUserProfile(
 
     emoji:
       profile.emoji || '😊',
+
+    isVerified:
+      profile.isVerified ||
+      false,
   };
 
   await setDoc(
     userDocRef,
     {
       ...cloudUser,
+
       updatedAt:
         serverTimestamp(),
     },
@@ -613,6 +634,73 @@ export async function saveUserProfile(
     cloudUser.emoji
   );
 
+  emit('mbud_user_change');
+}
+
+/* =========================================================
+   VERIFIED USER
+   ========================================================= */
+
+/**
+ * Memberikan atau mencabut centang biru
+ * berdasarkan NRP permanen user.
+ *
+ * Status disimpan di:
+ * mbudiary_users/{nrp}
+ */
+export async function setUserVerified(
+  userNrp: string,
+  verified: boolean
+): Promise<void> {
+  const normalizedNrp =
+    userNrp
+      .trim()
+      .toLowerCase();
+
+  if (
+    !normalizedNrp ||
+    normalizedNrp === 'unknown'
+  ) {
+    throw new Error(
+      'NRP user tidak valid.'
+    );
+  }
+
+  const userRef = doc(
+    db,
+    USERS_COLLECTION,
+    normalizedNrp
+  );
+
+  await setDoc(
+    userRef,
+    {
+      isVerified: verified,
+
+      updatedAt:
+        serverTimestamp(),
+    },
+    {
+      merge: true,
+    }
+  );
+
+  /**
+   * Update cache langsung supaya UI
+   * bisa berubah tanpa menunggu reload.
+   */
+  const cachedUser =
+    usersCache[normalizedNrp];
+
+  if (cachedUser) {
+    usersCache[normalizedNrp] = {
+      ...cachedUser,
+
+      isVerified: verified,
+    };
+  }
+
+  emit('mbud_users_change');
   emit('mbud_user_change');
 }
 
