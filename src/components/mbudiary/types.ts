@@ -75,6 +75,11 @@ export interface UserProfile {
    * Status centang biru akun.
    */
   isVerified?: boolean;
+
+  /**
+   * Custom foto profil (URL Cloudinary).
+   */
+  photoUrl?: string;
 }
 
 export interface MbudiaryUser {
@@ -89,6 +94,11 @@ export interface MbudiaryUser {
    * Disimpan langsung di Firestore.
    */
   isVerified?: boolean;
+
+  /**
+   * Custom foto profil (URL Cloudinary).
+   */
+  photoUrl?: string;
 
   updatedAt?: string;
 }

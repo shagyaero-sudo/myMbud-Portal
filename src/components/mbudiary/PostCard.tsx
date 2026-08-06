@@ -199,6 +199,9 @@ export const PostCard: React.FC<PostCardProps> = ({
     authorProfile?.emoji ||
     '😊';
 
+  const authorPhotoUrl =
+    authorProfile?.photoUrl;
+
   /* =========================================================
      ORIGINAL POST FOR REPOST
      ========================================================= */
@@ -226,6 +229,9 @@ export const PostCard: React.FC<PostCardProps> = ({
     originalAuthorProfile?.emoji ||
     '😊';
 
+  const originalAuthorPhotoUrl =
+    originalAuthorProfile?.photoUrl;
+
   /* =========================================================
      LOGIKA TAMPILAN DINAMIS
      ========================================================= */
@@ -246,6 +252,11 @@ export const PostCard: React.FC<PostCardProps> = ({
     isPlainRepost && originalPost
       ? originalAuthorEmoji
       : authorEmoji;
+
+  const displayAuthorPhotoUrl =
+    isPlainRepost && originalPost
+      ? originalAuthorPhotoUrl
+      : authorPhotoUrl;
 
   const displayAuthorUsername =
     isPlainRepost && originalPost
@@ -486,15 +497,6 @@ export const PostCard: React.FC<PostCardProps> = ({
     isAuthor ||
     currentUser.isOfficer;
 
-  /**
-   * VERIFIED STATUS
-   *
-   * Untuk plain repost, author yang ditampilkan
-   * adalah author asli dari original post.
-   *
-   * Untuk post biasa / quote repost,
-   * author yang ditampilkan adalah author post tersebut.
-   */
   const displayAuthorIsVerified =
     isPlainRepost &&
     originalPost
@@ -553,9 +555,20 @@ export const PostCard: React.FC<PostCardProps> = ({
             title={`Lihat profil ${displayAuthorName}`}
           >
 
-            <span className="text-2xl shrink-0 group-hover/author:scale-110 transition-transform leading-none">
-              {displayAuthorEmoji}
-            </span>
+            {/* AVATAR / PHOTO / EMOJI */}
+            <div className="w-10 h-10 rounded-2xl bg-slate-50 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden border border-slate-100 dark:border-zinc-800 group-hover/author:scale-105 transition-transform">
+              {displayAuthorPhotoUrl ? (
+                <img
+                  src={displayAuthorPhotoUrl}
+                  alt={displayAuthorName}
+                  className="w-full h-full object-cover rounded-2xl"
+                />
+              ) : (
+                <span className="text-2xl leading-none">
+                  {displayAuthorEmoji}
+                </span>
+              )}
+            </div>
 
             <div>
 
@@ -710,9 +723,20 @@ export const PostCard: React.FC<PostCardProps> = ({
             >
               <div className="px-3.5 pt-3 pb-2 flex items-center gap-2">
 
-                <span className="text-lg leading-none">
-                  {originalAuthorEmoji}
-                </span>
+                {/* ORIGINAL AUTHOR AVATAR */}
+                <div className="w-6 h-6 rounded-xl bg-slate-200 dark:bg-zinc-700 flex items-center justify-center shrink-0 overflow-hidden">
+                  {originalAuthorPhotoUrl ? (
+                    <img
+                      src={originalAuthorPhotoUrl}
+                      alt={originalAuthorName}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-sm leading-none">
+                      {originalAuthorEmoji}
+                    </span>
+                  )}
+                </div>
 
                 <div className="min-w-0">
 
@@ -1077,6 +1101,9 @@ export const PostCard: React.FC<PostCardProps> = ({
                         replyAuthor?.emoji ||
                         '😊';
 
+                      const replyPhotoUrl =
+                        replyAuthor?.photoUrl;
+
                       return (
                         <div
                           key={
@@ -1096,9 +1123,20 @@ export const PostCard: React.FC<PostCardProps> = ({
                               className="flex items-center gap-2 cursor-pointer group/replyAuthor"
                             >
 
-                              <span className="text-base shrink-0 group-hover/replyAuthor:scale-110 transition-transform leading-none">
-                                {replyEmoji}
-                              </span>
+                              {/* REPLY AUTHOR AVATAR */}
+                              <div className="w-5 h-5 rounded-lg bg-slate-200 dark:bg-zinc-700 flex items-center justify-center shrink-0 overflow-hidden">
+                                {replyPhotoUrl ? (
+                                  <img
+                                    src={replyPhotoUrl}
+                                    alt={replyName}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <span className="text-xs leading-none">
+                                    {replyEmoji}
+                                  </span>
+                                )}
+                              </div>
 
                               {/* REPLY NAME + VERIFIED */}
                               <div className="flex items-center gap-1.5 min-w-0">
@@ -1244,7 +1282,7 @@ export const PostCard: React.FC<PostCardProps> = ({
               transition={{
                 duration: 0.18,
               }}
-              className="w-full max-w-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-3xl p-4 sm:p-5 shadow-2xl flex flex-col max-h-[85dvh]"
+              className="w-full max-w-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-3xl p-4 sm:p-5 shadow-2xl flex flex-col max-h-[85dvh]"
               onMouseDown={(e) =>
                 e.stopPropagation()
               }
@@ -1318,12 +1356,20 @@ export const PostCard: React.FC<PostCardProps> = ({
 
                   <div className="px-3 py-2.5 flex items-center gap-2">
 
-                    <span className="text-lg leading-none">
-                      {post.isRepost &&
-                      originalPost
-                        ? originalAuthorEmoji
-                        : authorEmoji}
-                    </span>
+                    {/* PREVIEW AVATAR */}
+                    <div className="w-6 h-6 rounded-xl bg-slate-200 dark:bg-zinc-700 flex items-center justify-center shrink-0 overflow-hidden">
+                      {(post.isRepost && originalPost ? originalAuthorPhotoUrl : authorPhotoUrl) ? (
+                        <img
+                          src={post.isRepost && originalPost ? originalAuthorPhotoUrl : authorPhotoUrl}
+                          alt="Avatar"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-sm leading-none">
+                          {post.isRepost && originalPost ? originalAuthorEmoji : authorEmoji}
+                        </span>
+                      )}
+                    </div>
 
                     <div className="min-w-0">
 

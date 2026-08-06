@@ -29,6 +29,7 @@ export const USER_NRP_KEY = 'mymbud_user_nrp';
 export const USER_OFFICER_KEY = 'mymbud_is_officer';
 export const USER_EMOJI_KEY = 'mymbud_user_emoji';
 export const USER_USERNAME_KEY = 'mymbud_user_username';
+export const USER_PHOTO_URL_KEY = 'mymbud_user_photo_url';
 
 const POSTS_COLLECTION = 'mbudiary_posts';
 const REPLIES_COLLECTION = 'mbudiary_replies';
@@ -75,6 +76,8 @@ function normalizeUser(
     isVerified: Boolean(
       data.isVerified
     ),
+
+    photoUrl: data.photoUrl || undefined,
 
     updatedAt:
       data.updatedAt?.toDate?.()?.toISOString?.() ||
@@ -200,12 +203,18 @@ export function getUserProfile(): UserProfile {
       USER_EMOJI_KEY
     ) || '😊';
 
+  const photoUrl =
+    localStorage.getItem(
+      USER_PHOTO_URL_KEY
+    ) || undefined;
+
   return {
     nrp,
     username,
     nickname,
     isOfficer,
     emoji,
+    photoUrl,
   };
 }
 
@@ -416,6 +425,9 @@ export async function syncUserProfileWithFirebase(): Promise<UserProfile> {
 
         isVerified:
           cloudUser.isVerified,
+
+        photoUrl:
+          cloudUser.photoUrl,
       };
 
       localStorage.setItem(
@@ -444,6 +456,17 @@ export async function syncUserProfileWithFirebase(): Promise<UserProfile> {
         USER_EMOJI_KEY,
         syncedProfile.emoji
       );
+
+      if (syncedProfile.photoUrl) {
+        localStorage.setItem(
+          USER_PHOTO_URL_KEY,
+          syncedProfile.photoUrl
+        );
+      } else {
+        localStorage.removeItem(
+          USER_PHOTO_URL_KEY
+        );
+      }
 
       emit('mbud_user_change');
 
@@ -474,6 +497,10 @@ export async function syncUserProfileWithFirebase(): Promise<UserProfile> {
       isVerified:
         currentProfile.isVerified ||
         false,
+
+      photoUrl:
+        currentProfile.photoUrl ||
+        undefined,
     };
 
     await setDoc(
@@ -510,6 +537,13 @@ export async function syncUserProfileWithFirebase(): Promise<UserProfile> {
       USER_EMOJI_KEY,
       initialUser.emoji
     );
+
+    if (initialUser.photoUrl) {
+      localStorage.setItem(
+        USER_PHOTO_URL_KEY,
+        initialUser.photoUrl
+      );
+    }
 
     emit('mbud_user_change');
 
@@ -589,6 +623,10 @@ export async function saveUserProfile(
     isVerified:
       profile.isVerified ||
       false,
+
+    photoUrl:
+      profile.photoUrl ||
+      undefined,
   };
 
   await setDoc(
@@ -634,6 +672,17 @@ export async function saveUserProfile(
     cloudUser.emoji
   );
 
+  if (cloudUser.photoUrl) {
+    localStorage.setItem(
+      USER_PHOTO_URL_KEY,
+      cloudUser.photoUrl
+    );
+  } else {
+    localStorage.removeItem(
+      USER_PHOTO_URL_KEY
+    );
+  }
+
   emit('mbud_user_change');
 }
 
@@ -641,13 +690,6 @@ export async function saveUserProfile(
    VERIFIED USER
    ========================================================= */
 
-/**
- * Memberikan atau mencabut centang biru
- * berdasarkan NRP permanen user.
- *
- * Status disimpan di:
- * mbudiary_users/{nrp}
- */
 export async function setUserVerified(
   userNrp: string,
   verified: boolean
@@ -685,10 +727,6 @@ export async function setUserVerified(
     }
   );
 
-  /**
-   * Update cache langsung supaya UI
-   * bisa berubah tanpa menunggu reload.
-   */
   const cachedUser =
     usersCache[normalizedNrp];
 
@@ -836,6 +874,17 @@ export function initializeMbudiary(): () => void {
             USER_OFFICER_KEY,
             String(user.isOfficer)
           );
+
+          if (user.photoUrl) {
+            localStorage.setItem(
+              USER_PHOTO_URL_KEY,
+              user.photoUrl
+            );
+          } else {
+            localStorage.removeItem(
+              USER_PHOTO_URL_KEY
+            );
+          }
 
           emit(
             'mbud_user_change'

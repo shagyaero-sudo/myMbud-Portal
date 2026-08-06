@@ -24,6 +24,8 @@ import {
   Camera,
   Images,
   Loader2,
+  Trash2,
+  UserCheck,
 } from 'lucide-react';
 
 import {
@@ -45,51 +47,11 @@ const MAX_IMAGE_SIZE =
   10 * 1024 * 1024;
 
 const EMOJI_OPTIONS = [
-  '😊',
-  '😎',
-  '🎓',
-  '🚀',
-  '🐱',
-  '☕',
-  '🌟',
-  '📚',
-  '💬',
-  '⚡',
-  '🔥',
-  '🌈',
-  '🐶',
-  '🍕',
-  '💡',
-  '🥑',
-  '🦊',
-  '☘️',
-  '🎧',
-  '🎨',
-  '📌',
-  '✨',
-  '🙋‍♂️',
-  '🙋‍♀️',
-  '🥳',
-  '🤖',
-  '👾',
-  '💻',
-  '🎮',
-  '⚽',
-  '🏀',
-  '🎾',
-  '🎸',
-  '🎹',
-  '🍩',
-  '🍔',
-  '🍟',
-  '🍦',
-  '🍲',
-  '🍱',
-  '🧋',
-  '🛵',
-  '🏎️',
-  '✈️',
-  '🏕️',
+  '😊', '😎', '🎓', '🚀', '🐱', '☕', '🌟', '📚', '💬',
+  '⚡', '🔥', '🌈', '🐶', '🍕', '💡', '🥑', '🦊', '☘️',
+  '🎧', '🎨', '📌', '✨', '🙋‍♂️', '🙋‍♀️', '🥳', '🤖', '👾',
+  '💻', '🎮', '⚽', '🏀', '🎾', '🎸', '🎹', '🍩', '🍔',
+  '🍟', '🍦', '🍲', '🍱', '🧋', '🛵', '🏎️', '✈️', '🏕️',
 ];
 
 const ALLOWED_IMAGE_TYPES = [
@@ -147,10 +109,21 @@ export const CreatePostForm: React.FC<
     userProfile.username || ''
   );
 
+  /* =========================================================
+     CUSTOM PHOTO PROFILE STATE
+     ========================================================= */
+  const [editPhotoUrl, setEditPhotoUrl] = useState<string | undefined>(
+    userProfile.photoUrl
+  );
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+
   const galleryInputRef =
     useRef<HTMLInputElement>(null);
 
   const cameraInputRef =
+    useRef<HTMLInputElement>(null);
+
+  const avatarInputRef =
     useRef<HTMLInputElement>(null);
 
   /* =========================================================
@@ -201,8 +174,6 @@ export const CreatePostForm: React.FC<
       e.target.files || []
     );
 
-    // Reset input supaya file yang sama
-    // tetap bisa dipilih lagi.
     e.target.value = '';
 
     if (!files.length) {
@@ -280,6 +251,42 @@ export const CreatePostForm: React.FC<
   };
 
   /* =========================================================
+     AVATAR UPLOAD HANDLER (CLOUDINARY)
+     ========================================================= */
+  const handleAvatarSelection = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+
+    if (!file) return;
+
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      alert('Format gambar tidak didukung.');
+      return;
+    }
+
+    if (file.size > MAX_IMAGE_SIZE) {
+      alert('Ukuran foto profil maksimal 10 MB.');
+      return;
+    }
+
+    setIsUploadingAvatar(true);
+
+    try {
+      const uploadedUrls = await uploadImagesToCloudinary([file]);
+      if (uploadedUrls && uploadedUrls.length > 0) {
+        setEditPhotoUrl(uploadedUrls[0]);
+      }
+    } catch (error) {
+      console.error('[mbudiary] Gagal upload foto profil:', error);
+      alert('Gagal mengunggah foto profil. Silakan coba lagi.');
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
+
+  /* =========================================================
      CREATE POST
      ========================================================= */
 
@@ -300,11 +307,6 @@ export const CreatePostForm: React.FC<
       setIsPosting(true);
 
       try {
-        /**
-         * Upload semua gambar terlebih dahulu.
-         *
-         * Cloudinary mengembalikan array URL.
-         */
         const imageUrls =
           await uploadImagesToCloudinary(
             selectedImages
@@ -390,6 +392,8 @@ export const CreatePostForm: React.FC<
 
           emoji:
             editEmoji,
+
+          photoUrl: editPhotoUrl, // Saved photoUrl
         });
 
         setIsEditModalOpen(
@@ -466,7 +470,7 @@ export const CreatePostForm: React.FC<
       >
         <div className="flex items-start gap-3">
 
-          {/* EMOJI / EDIT PROFILE BUTTON */}
+          {/* AVATAR / EMOJI BUTTON (CUSTOM PHOTO READY) */}
           <button
             type="button"
             onClick={() => {
@@ -480,19 +484,30 @@ export const CreatePostForm: React.FC<
                   ''
               );
 
+              setEditPhotoUrl(
+                userProfile.photoUrl
+              );
+
               setIsEditModalOpen(
                 true
               );
             }}
-            className="text-2xl p-2 rounded-2xl bg-slate-50 dark:bg-zinc-800 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-all shrink-0 active:scale-95 group relative"
+            className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-slate-50 dark:bg-zinc-800 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-all shrink-0 active:scale-95 group relative flex items-center justify-center overflow-hidden border border-slate-200/60 dark:border-zinc-700/60"
             title="Edit Profil"
           >
-            <span>
-              {userProfile.emoji ||
-                '😊'}
-            </span>
+            {userProfile.photoUrl ? (
+              <img
+                src={userProfile.photoUrl}
+                alt="Foto Profil"
+                className="w-full h-full object-cover rounded-2xl"
+              />
+            ) : (
+              <span className="text-2xl leading-none">
+                {userProfile.emoji || '😊'}
+              </span>
+            )}
 
-            <div className="absolute -bottom-1 -right-1 bg-indigo-600 text-white p-1 rounded-full shadow-xs">
+            <div className="absolute -bottom-1 -right-1 bg-indigo-600 text-white p-1 rounded-full shadow-xs z-10">
               <Edit3 className="w-2.5 h-2.5" />
             </div>
           </button>
@@ -837,6 +852,63 @@ export const CreatePostForm: React.FC<
                 className="space-y-4"
               >
 
+                {/* FOTO PROFIL CUSTOM UPLOAD SECTION */}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-2">
+                    Foto Profil Custom
+                  </label>
+
+                  <div className="flex items-center gap-4 p-3 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800">
+                    
+                    {/* AVATAR PREVIEW */}
+                    <div className="relative w-16 h-16 rounded-2xl overflow-hidden bg-slate-200 dark:bg-zinc-700 flex items-center justify-center shrink-0 border border-slate-200 dark:border-zinc-700">
+                      {isUploadingAvatar ? (
+                        <Loader2 className="w-6 h-6 text-indigo-500 animate-spin" />
+                      ) : editPhotoUrl ? (
+                        <img
+                          src={editPhotoUrl}
+                          alt="Avatar Preview"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-3xl">{editEmoji}</span>
+                      )}
+                    </div>
+
+                    {/* UPLOAD & REMOVE BUTTONS */}
+                    <div className="flex flex-col gap-1.5 flex-1">
+                      <button
+                        type="button"
+                        disabled={isUploadingAvatar}
+                        onClick={() => avatarInputRef.current?.click()}
+                        className="px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-colors flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
+                      >
+                        <Camera className="w-3.5 h-3.5" />
+                        <span>{editPhotoUrl ? 'Ganti Foto' : 'Upload Foto'}</span>
+                      </button>
+
+                      {editPhotoUrl && (
+                        <button
+                          type="button"
+                          onClick={() => setEditPhotoUrl(undefined)}
+                          className="px-3 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 text-xs font-semibold hover:bg-rose-100 transition-colors flex items-center justify-center gap-1.5"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          <span>Hapus Foto (Gunakan Emoji)</span>
+                        </button>
+                      )}
+                    </div>
+
+                    <input
+                      ref={avatarInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      className="hidden"
+                      onChange={handleAvatarSelection}
+                    />
+                  </div>
+                </div>
+
                 {/* USERNAME */}
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-2">
@@ -923,11 +995,12 @@ export const CreatePostForm: React.FC<
                   <button
                     type="submit"
                     disabled={
-                      !editUsername.trim()
+                      !editUsername.trim() || isUploadingAvatar
                     }
-                    className="px-5 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-bold transition-all shadow-md shadow-indigo-500/20 active:scale-95"
+                    className="px-5 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-bold transition-all shadow-md shadow-indigo-500/20 active:scale-95 flex items-center gap-1.5"
                   >
-                    Simpan Profil
+                    {isUploadingAvatar && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                    <span>Simpan Profil</span>
                   </button>
 
                 </div>
