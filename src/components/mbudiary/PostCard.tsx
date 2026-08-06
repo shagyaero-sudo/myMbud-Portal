@@ -32,8 +32,6 @@ import {
   MoreVertical,
   Trash2,
   X,
-  ChevronLeft,
-  ChevronRight,
 } from 'lucide-react';
 
 import {
@@ -90,106 +88,9 @@ export const PostCard: React.FC<
      ========================================================= */
 
   const [
-    selectedImageIndex,
-    setSelectedImageIndex,
-  ] = useState<number | null>(null);
-
-  const isLightboxOpen =
-    selectedImageIndex !== null;
-
-  const imageUrls =
-    post.imageUrls || [];
-
-  const closeLightbox = () => {
-    setSelectedImageIndex(null);
-  };
-
-  const openLightbox = (
-    index: number
-  ) => {
-    setSelectedImageIndex(index);
-  };
-
-  const showPreviousImage = () => {
-    if (
-      selectedImageIndex === null ||
-      imageUrls.length <= 1
-    ) {
-      return;
-    }
-
-    setSelectedImageIndex(
-      (selectedImageIndex -
-        1 +
-        imageUrls.length) %
-        imageUrls.length
-    );
-  };
-
-  const showNextImage = () => {
-    if (
-      selectedImageIndex === null ||
-      imageUrls.length <= 1
-    ) {
-      return;
-    }
-
-    setSelectedImageIndex(
-      (selectedImageIndex + 1) %
-        imageUrls.length
-    );
-  };
-
-  /**
-   * Keyboard controls + lock body scroll
-   * while lightbox is open.
-   */
-  useEffect(() => {
-    if (!isLightboxOpen) {
-      return;
-    }
-
-    const handleKeyDown = (
-      event: KeyboardEvent
-    ) => {
-      if (event.key === 'Escape') {
-        closeLightbox();
-      }
-
-      if (event.key === 'ArrowLeft') {
-        showPreviousImage();
-      }
-
-      if (event.key === 'ArrowRight') {
-        showNextImage();
-      }
-    };
-
-    const originalOverflow =
-      document.body.style.overflow;
-
-    document.body.style.overflow =
-      'hidden';
-
-    window.addEventListener(
-      'keydown',
-      handleKeyDown
-    );
-
-    return () => {
-      document.body.style.overflow =
-        originalOverflow;
-
-      window.removeEventListener(
-        'keydown',
-        handleKeyDown
-      );
-    };
-  }, [
-    isLightboxOpen,
-    selectedImageIndex,
-    imageUrls.length,
-  ]);
+    selectedImage,
+    setSelectedImage,
+  ] = useState<string | null>(null);
 
   /* =========================================================
      DELETE MENU
@@ -204,7 +105,7 @@ export const PostCard: React.FC<
     useRef<HTMLDivElement>(null);
 
   /**
-   * Close the three-dot menu
+   * Close three-dot menu
    * when clicking outside.
    */
   useEffect(() => {
@@ -235,6 +136,37 @@ export const PostCard: React.FC<
       );
     };
   }, [isMenuOpen]);
+
+  /**
+   * Close image lightbox
+   * with Escape key.
+   */
+  useEffect(() => {
+    const handleKeyDown = (
+      event: KeyboardEvent
+    ) => {
+      if (
+        event.key === 'Escape' &&
+        selectedImage
+      ) {
+        setSelectedImage(null);
+      }
+    };
+
+    if (selectedImage) {
+      document.addEventListener(
+        'keydown',
+        handleKeyDown
+      );
+    }
+
+    return () => {
+      document.removeEventListener(
+        'keydown',
+        handleKeyDown
+      );
+    };
+  }, [selectedImage]);
 
   /**
    * IMPORTANT:
@@ -457,10 +389,6 @@ export const PostCard: React.FC<
 
   return (
     <>
-      {/* =====================================================
-          POST CARD
-          ===================================================== */}
-
       <motion.article
         layout
         initial={{
@@ -621,61 +549,66 @@ export const PostCard: React.FC<
             IMAGES
             ===================================================== */}
 
-        {imageUrls.length > 0 && (
-          <div
-            className={`mb-4 grid gap-2 ${
-              imageUrls.length === 1
-                ? 'grid-cols-1'
-                : 'grid-cols-2'
-            }`}
-          >
-            {imageUrls.map(
-              (
-                imageUrl,
-                index
-              ) => (
-                <button
-                  key={`${imageUrl}-${index}`}
-                  type="button"
-                  onClick={() =>
-                    openLightbox(index)
-                  }
-                  className={`relative overflow-hidden rounded-2xl bg-slate-100 dark:bg-zinc-800 border border-slate-100 dark:border-zinc-800 cursor-zoom-in focus:outline-none focus:ring-2 focus:ring-indigo-500 group ${
-                    imageUrls.length === 1
-                      ? 'max-h-[520px]'
-                      : 'aspect-square'
-                  }`}
-                  title="Klik untuk melihat gambar"
-                  aria-label={`Lihat gambar ${
-                    index + 1
-                  }`}
-                >
-                  <img
-                    src={imageUrl}
-                    alt={`Gambar postingan ${
+        {post.imageUrls &&
+          post.imageUrls.length >
+            0 && (
+            <div
+              className={`mb-4 grid gap-2 ${
+                post.imageUrls.length === 1
+                  ? 'grid-cols-1'
+                  : 'grid-cols-2'
+              }`}
+            >
+              {post.imageUrls.map(
+                (
+                  imageUrl,
+                  index
+                ) => (
+                  <button
+                    key={`${imageUrl}-${index}`}
+                    type="button"
+                    onClick={() =>
+                      setSelectedImage(
+                        imageUrl
+                      )
+                    }
+                    className={`relative overflow-hidden rounded-2xl bg-slate-100 dark:bg-zinc-800 border border-slate-100 dark:border-zinc-800 cursor-zoom-in focus:outline-none focus:ring-2 focus:ring-indigo-500 group ${
+                      post.imageUrls
+                        ?.length === 1
+                        ? 'max-h-[520px]'
+                        : 'aspect-square'
+                    }`}
+                    title="Klik untuk melihat gambar"
+                    aria-label={`Lihat gambar postingan ${
                       index + 1
                     }`}
-                    loading="lazy"
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-                    onError={(e) => {
-                      console.error(
-                        '[mbudiary] Gagal memuat gambar:',
-                        imageUrl
-                      );
+                  >
+                    <img
+                      src={imageUrl}
+                      alt={`Gambar postingan ${
+                        index + 1
+                      }`}
+                      loading="lazy"
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                      onError={(e) => {
+                        console.error(
+                          '[mbudiary] Gagal memuat gambar:',
+                          imageUrl
+                        );
 
-                      e.currentTarget.style.display =
-                        'none';
-                    }}
-                  />
+                        e.currentTarget.style.display =
+                          'none';
+                      }}
+                    />
 
-                  {/* Hover overlay */}
+                    {/* SUBTLE HOVER OVERLAY */}
 
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors pointer-events-none" />
-                </button>
-              )
-            )}
-          </div>
-        )}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors pointer-events-none" />
+                  </button>
+                )
+              )}
+            </div>
+          )}
 
         {/* =====================================================
             ACTIONS
@@ -886,156 +819,107 @@ export const PostCard: React.FC<
         </AnimatePresence>
       </motion.article>
 
-      {/* =====================================================
-          FULLSCREEN IMAGE LIGHTBOX
-          
-          IMPORTANT:
-          z-[9999] sengaja dibuat jauh lebih tinggi
-          daripada mobile bottom navigation (z-40)
-          dan bottom sheet (z-50).
-          ===================================================== */}
+      {/* =======================================================
+          IMAGE LIGHTBOX / POPUP
+          ======================================================= */}
 
       <AnimatePresence>
-        {isLightboxOpen &&
-          selectedImageIndex !== null &&
-          imageUrls[
-            selectedImageIndex
-          ] && (
-            <motion.div
-              key="image-lightbox"
+        {selectedImage && (
+          <motion.div
+            initial={{
+              opacity: 0,
+            }}
+            animate={{
+              opacity: 1,
+            }}
+            exit={{
+              opacity: 0,
+            }}
+            transition={{
+              duration: 0.2,
+            }}
+            className="fixed inset-0 z-[999999] w-screen h-[100dvh] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6"
+            onMouseDown={(e) => {
+              if (
+                e.target ===
+                e.currentTarget
+              ) {
+                setSelectedImage(null);
+              }
+            }}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Pratinjau gambar"
+          >
+            {/* =================================================
+                FLOATING CLOSE BUTTON
+                ================================================= */}
+
+            <motion.button
               initial={{
                 opacity: 0,
+                scale: 0.8,
               }}
               animate={{
                 opacity: 1,
+                scale: 1,
               }}
               exit={{
                 opacity: 0,
+                scale: 0.8,
               }}
               transition={{
-                duration: 0.18,
+                duration: 0.2,
               }}
-              className="fixed inset-0 z-[9999] w-screen h-screen bg-black/95 flex items-center justify-center"
-              onClick={closeLightbox}
+              type="button"
+              onClick={() =>
+                setSelectedImage(null)
+              }
+              className="fixed top-5 right-5 sm:top-6 sm:right-6 z-[1000000] w-11 h-11 sm:w-12 sm:h-12 flex items-center justify-center rounded-full bg-black/60 hover:bg-black/80 active:bg-black/90 border border-white/20 text-white shadow-2xl backdrop-blur-md transition-all"
+              title="Tutup"
+              aria-label="Tutup gambar"
             >
-              {/* =================================================
-                  TOP RIGHT FLOATING CLOSE BUTTON
-                  ================================================= */}
+              <X className="w-5 h-5 sm:w-6 sm:h-6" />
+            </motion.button>
 
-              <button
-                type="button"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  closeLightbox();
-                }}
-                className="fixed top-4 right-4 sm:top-6 sm:right-6 z-[10001] w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white/15 hover:bg-white/25 active:bg-white/30 backdrop-blur-xl border border-white/20 text-white flex items-center justify-center shadow-2xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/60"
-                aria-label="Tutup gambar"
-                title="Tutup"
-              >
-                <X className="w-6 h-6 sm:w-7 sm:h-7" />
-              </button>
+            {/* =================================================
+                IMAGE CONTAINER
+                ================================================= */}
 
-              {/* =================================================
-                  IMAGE COUNTER
-                  ================================================= */}
-
-              {imageUrls.length > 1 && (
-                <div
-                  className="fixed top-5 left-1/2 -translate-x-1/2 z-[10001] px-3.5 py-1.5 rounded-full bg-black/50 backdrop-blur-xl border border-white/10 text-white text-xs font-medium"
-                  onClick={(event) =>
-                    event.stopPropagation()
-                  }
-                >
-                  {selectedImageIndex + 1} /{' '}
-                  {imageUrls.length}
-                </div>
-              )}
-
-              {/* =================================================
-                  PREVIOUS BUTTON
-                  ================================================= */}
-
-              {imageUrls.length > 1 && (
-                <button
-                  type="button"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    showPreviousImage();
-                  }}
-                  className="fixed left-3 sm:left-6 top-1/2 -translate-y-1/2 z-[10001] w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white/15 hover:bg-white/25 active:bg-white/30 backdrop-blur-xl border border-white/20 text-white flex items-center justify-center shadow-2xl transition-all focus:outline-none focus:ring-2 focus:ring-white/60"
-                  aria-label="Gambar sebelumnya"
-                >
-                  <ChevronLeft className="w-6 h-6 sm:w-7 sm:h-7" />
-                </button>
-              )}
-
-              {/* =================================================
-                  NEXT BUTTON
-                  ================================================= */}
-
-              {imageUrls.length > 1 && (
-                <button
-                  type="button"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    showNextImage();
-                  }}
-                  className="fixed right-3 sm:right-6 top-1/2 -translate-y-1/2 z-[10001] w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white/15 hover:bg-white/25 active:bg-white/30 backdrop-blur-xl border border-white/20 text-white flex items-center justify-center shadow-2xl transition-all focus:outline-none focus:ring-2 focus:ring-white/60"
-                  aria-label="Gambar berikutnya"
-                >
-                  <ChevronRight className="w-6 h-6 sm:w-7 sm:h-7" />
-                </button>
-              )}
-
-              {/* =================================================
-                  IMAGE CONTAINER
-                  ================================================= */}
-
-              <motion.div
-                key={imageUrls[
-                  selectedImageIndex
-                ]}
-                initial={{
-                  opacity: 0,
-                  scale: 0.96,
-                }}
-                animate={{
-                  opacity: 1,
-                  scale: 1,
-                }}
-                transition={{
-                  duration: 0.18,
-                }}
-                className="relative z-[10000] w-full h-full flex items-center justify-center p-4 pt-20 pb-10 sm:p-10 sm:pt-20 sm:pb-12"
-                onClick={(event) =>
-                  event.stopPropagation()
-                }
-              >
-                <img
-                  src={
-                    imageUrls[
-                      selectedImageIndex
-                    ]
-                  }
-                  alt={`Gambar postingan ${
-                    selectedImageIndex + 1
-                  }`}
-                  className="max-w-full max-h-full w-auto h-auto object-contain select-none"
-                  draggable={false}
-                />
-              </motion.div>
-
-              {/* =================================================
-                  BOTTOM HINT
-                  ================================================= */}
-
-              <div
-                className="fixed bottom-5 left-1/2 -translate-x-1/2 z-[10001] px-3 py-1.5 rounded-full bg-black/50 backdrop-blur-xl border border-white/10 text-white/60 text-[10px] pointer-events-none"
-              >
-                Ketuk area gelap untuk menutup
-              </div>
+            <motion.div
+              initial={{
+                opacity: 0,
+                scale: 0.92,
+                y: 10,
+              }}
+              animate={{
+                opacity: 1,
+                scale: 1,
+                y: 0,
+              }}
+              exit={{
+                opacity: 0,
+                scale: 0.92,
+                y: 10,
+              }}
+              transition={{
+                duration: 0.2,
+                ease: 'easeOut',
+              }}
+              className="relative z-[999999] max-w-[95vw] max-h-[90dvh] flex items-center justify-center"
+              onMouseDown={(e) =>
+                e.stopPropagation()
+              }
+            >
+              <img
+                src={selectedImage}
+                alt="Pratinjau gambar postingan"
+                className="max-w-[95vw] max-h-[90dvh] w-auto h-auto object-contain rounded-2xl shadow-2xl select-none"
+                draggable={false}
+              />
             </motion.div>
-          )}
+          </motion.div>
+        )}
       </AnimatePresence>
     </>
   );
