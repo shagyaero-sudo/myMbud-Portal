@@ -313,7 +313,6 @@ async function setupLocalServer() {
   const PORT = Number(process.env.PORT) || 3000;
 
   if (process.env.NODE_ENV !== 'production') {
-    // Dynamic import dipindahkan ke sini agar Vercel tidak membacanya saat production
     const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: { middlewareMode: true },
@@ -333,10 +332,9 @@ async function setupLocalServer() {
   });
 }
 
-// Hanya jalankan listener server lokal jika BUKAN di lingkungan Vercel
+// Hanya jalankan server lokal jika bukan Vercel
 if (!process.env.VERCEL) {
   setupLocalServer();
 }
 
-// Export default app untuk Serverless Function Vercel
 export default app;
