@@ -4,9 +4,23 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { collection, getDocs, addDoc, deleteDoc, doc, Timestamp } from 'firebase/firestore';
+import {
+  collection,
+  getDocs,
+  addDoc,
+  deleteDoc,
+  doc,
+  Timestamp,
+} from 'firebase/firestore';
+
 import { db } from './services/firebase';
 import { subscribeAnnouncements } from './services/announcements';
+
+import {
+  initOneSignal,
+  loginOneSignal,
+  logoutOneSignal,
+} from './services/oneSignal';
 
 import { Header } from './components/Header';
 import { Sidebar, TabType } from './components/Sidebar';
@@ -65,38 +79,71 @@ const AppSkeleton = () => (
 
 export default function App() {
   // ============================================================
-  // LOGIKA AUTENTIKASI (PENJAGA GERBANG)
+  // LOGIKA AUTENTIKASI
   // ============================================================
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     return localStorage.getItem('mymbud_auth') === 'true';
   });
 
-  const handleLogout = () => {
+  // ============================================================
+  // ONESIGNAL INITIALIZATION
+  // ============================================================
+  useEffect(() => {
+    initOneSignal();
+  }, []);
+
+  // ============================================================
+  // HUBUNGKAN USER LOGIN KE ONESIGNAL
+  // ============================================================
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const nrp = localStorage.getItem('mymbud_user_nrp');
+
+    if (!nrp) {
+      console.warn('[OneSignal] NRP user tidak ditemukan.');
+      return;
+    }
+
+    loginOneSignal(nrp);
+  }, [isAuthenticated]);
+
+  // ============================================================
+  // LOGOUT
+  // ============================================================
+  const handleLogout = async () => {
+    await logoutOneSignal();
+
     localStorage.removeItem('mymbud_auth');
     localStorage.removeItem('mymbud_user_name');
     localStorage.removeItem('mymbud_user_nrp');
+
     setIsAuthenticated(false);
   };
 
-  // Cek apakah dibuka di layar besar (PC) atau PWA (Homescreen)
+  // ============================================================
+  // DEVICE CHECK
+  // ============================================================
   const isDesktop = window.innerWidth >= 1024;
 
   const isStandalone =
     window.matchMedia('(display-mode: standalone)').matches ||
     ('standalone' in navigator && (navigator as any).standalone);
 
-  // Perlu login jika belum auth DAN (dibuka di PC atau via PWA Homescreen)
-  const requiresLogin = !isAuthenticated && (isDesktop || isStandalone);
+  const requiresLogin =
+    !isAuthenticated && (isDesktop || isStandalone);
 
   // ============================================================
   // STATE APLIKASI
   // ============================================================
-  const [activeTab, setActiveTab] = useState<TabType>('dashboard');
+  const [activeTab, setActiveTab] =
+    useState<TabType>('dashboard');
 
   const [selectedContactCourse, setSelectedContactCourse] =
     useState<string>('ALL');
 
-  const [isOfficer, setIsOfficer] = useState<boolean>(false);
+  const [isOfficer, setIsOfficer] =
+    useState<boolean>(false);
 
   const [isGpaModalOpen, setIsGpaModalOpen] =
     useState<boolean>(false);
@@ -119,7 +166,8 @@ export default function App() {
     materials: [],
   }));
 
-  const [isSyncing, setIsSyncing] = useState<boolean>(false);
+  const [isSyncing, setIsSyncing] =
+    useState<boolean>(false);
 
   const [isInitialLoad, setIsInitialLoad] =
     useState<boolean>(true);
@@ -128,7 +176,7 @@ export default function App() {
     useState<MaterialFile | null>(null);
 
   // ============================================================
-  // THEME SWITCHER LOGIC
+  // THEME SWITCHER
   // ============================================================
   const [theme, setTheme] = useState<
     'light' | 'dark' | 'pink' | 'purple' | 'green'
@@ -171,21 +219,36 @@ export default function App() {
 
     if (metaThemeColor) {
       if (theme === 'dark') {
-        metaThemeColor.setAttribute('content', '#09090b');
+        metaThemeColor.setAttribute(
+          'content',
+          '#09090b'
+        );
       } else if (theme === 'pink') {
-        metaThemeColor.setAttribute('content', '#fff0f3');
+        metaThemeColor.setAttribute(
+          'content',
+          '#fff0f3'
+        );
       } else if (theme === 'purple') {
-        metaThemeColor.setAttribute('content', '#f8f0fe');
+        metaThemeColor.setAttribute(
+          'content',
+          '#f8f0fe'
+        );
       } else if (theme === 'green') {
-        metaThemeColor.setAttribute('content', '#f7fcf5');
+        metaThemeColor.setAttribute(
+          'content',
+          '#f7fcf5'
+        );
       } else {
-        metaThemeColor.setAttribute('content', '#f8fafc');
+        metaThemeColor.setAttribute(
+          'content',
+          '#f8fafc'
+        );
       }
     }
   }, [theme]);
 
   // ============================================================
-  // FIREBASE REALTIME ANNOUNCEMENTS LISTENER
+  // FIREBASE REALTIME ANNOUNCEMENTS
   // ============================================================
   useEffect(() => {
     const unsubscribe = subscribeAnnouncements(
@@ -240,7 +303,8 @@ export default function App() {
                 .trim()
             : '');
 
-        const courseName = d.name || d.course || '';
+        const courseName =
+          d.name || d.course || '';
 
         firebaseSchedules.push({
           id: courseDoc.id,
@@ -256,19 +320,24 @@ export default function App() {
           sks: Number(d.sks) || 0,
         });
 
+        // ======================================================
+        // FIREBASE CONTACTS
+        // ======================================================
         firebaseContacts.push({
           id: courseDoc.id,
           code: d.code || '',
           course: courseName,
           sks: Number(d.sks) || 0,
-          lecturerName: d.lecturerName || '',
-          lecturerPhone: d.lecturerPhone || '',
+          lecturerName:
+            d.lecturerName || '',
+          lecturerPhone:
+            d.lecturerPhone || '',
           pjName: d.pjName || '',
           pjPhone: d.pjPhone || '',
           room: d.room || '',
           scheduleDayTime:
             d.scheduleDayTime ||
-            `${scheduleDay}, ${scheduleTime}`,
+            scheduleDay + ', ' + scheduleTime,
         });
       });
 
@@ -323,9 +392,10 @@ export default function App() {
       // --------------------------------------------------------
       // FETCH MATERIALS
       // --------------------------------------------------------
-      const querySnapshotMaterials = await getDocs(
-        collection(db, 'materials')
-      );
+      const querySnapshotMaterials =
+        await getDocs(
+          collection(db, 'materials')
+        );
 
       const firebaseMaterials: MaterialFile[] = [];
 
@@ -403,14 +473,16 @@ export default function App() {
   // ============================================================
   // URGENT TASK COUNT
   // ============================================================
-  const urgentTaskCount = appState.tasks.filter(
-    (task) => {
+  const urgentTaskCount =
+    appState.tasks.filter((task) => {
       if (task.status === 'done') return false;
 
       const deadlineTime =
         new Date(task.deadline).getTime();
 
-      if (Number.isNaN(deadlineTime)) return false;
+      if (Number.isNaN(deadlineTime)) {
+        return false;
+      }
 
       const diffHours =
         (deadlineTime - Date.now()) /
@@ -420,8 +492,7 @@ export default function App() {
         diffHours >= 0 &&
         diffHours < 48
       );
-    }
-  ).length;
+    }).length;
 
   // ============================================================
   // CONTACT HANDLERS
@@ -449,7 +520,11 @@ export default function App() {
     contact: Partial<Contact>
   ) => {
     try {
-      await updateContactApi(id, contact);
+      await updateContactApi(
+        id,
+        contact
+      );
+
       await syncState();
     } catch (error) {
       console.error(
@@ -824,9 +899,6 @@ export default function App() {
 
               {/* ==================================================
                   MBUDIARY
-              ==================================================
-                  Mbudiary adalah halaman penuh sendiri,
-                  bukan floating popup.
               ================================================== */}
               {activeTab === 'mbudiary' && (
                 <MbudiaryView />
