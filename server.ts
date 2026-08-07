@@ -1,7 +1,6 @@
 import express from 'express';
 import path from 'path';
 import fs from 'fs';
-import { createServer as createViteServer } from 'vite';
 import { initialAppState } from './src/data/mockData';
 import { AppState, Task, Contact, MaterialFile, Announcement, ScheduleItem, GroupResult } from './src/types';
 
@@ -314,6 +313,8 @@ async function setupLocalServer() {
   const PORT = Number(process.env.PORT) || 3000;
 
   if (process.env.NODE_ENV !== 'production') {
+    // Dynamic import dipindahkan ke sini agar Vercel tidak membacanya saat production
+    const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'spa',
