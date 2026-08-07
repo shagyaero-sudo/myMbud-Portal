@@ -50,24 +50,24 @@ interface AttachmentData {
   fileUrl: string;
 }
 
-// --- KOMPONEN WIDGET KALENDER MINI (FOLDABLE CALENDAR) ---
+// --- KOMPONEN WIDGET KALENDER MINI (HEADER MERAH RAMPING) ---
 const FlipCalendarWidget: React.FC = () => {
   const now = new Date();
   const dayNumber = now.getDate();
   const monthName = now.toLocaleDateString('id-ID', { month: 'short' }).toUpperCase();
 
   return (
-    <div className="flex flex-col items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-sm overflow-hidden shrink-0 transition-transform hover:scale-105 select-none">
-      {/* Header Bulan */}
-      <div className="w-full bg-rose-600 dark:bg-rose-700 py-0.5 text-center">
-        <span className="text-[9px] sm:text-[10px] font-black text-white tracking-widest uppercase">
+    <div className="flex flex-col items-center justify-between w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-sm overflow-hidden shrink-0 transition-transform hover:scale-105 select-none">
+      {/* Header Bulan Ramping */}
+      <div className="w-full bg-rose-600 dark:bg-rose-700 py-[2px] text-center shrink-0">
+        <span className="text-[9px] font-black text-white tracking-widest uppercase leading-none block">
           {monthName}
         </span>
       </div>
       
-      {/* Angka Tanggal Utama */}
-      <div className="flex-1 flex items-center justify-center leading-none px-1">
-        <span className="text-base sm:text-lg font-black text-slate-900 dark:text-zinc-100 tracking-tight">
+      {/* Angka Tanggal Utama Lebih Besar & Dominan */}
+      <div className="flex-1 w-full flex items-center justify-center leading-none">
+        <span className="text-xl sm:text-2xl font-black text-slate-900 dark:text-zinc-100 tracking-tight">
           {dayNumber}
         </span>
       </div>
@@ -437,7 +437,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               {getGreeting()}
             </h2>
             <p className="text-xs font-medium text-slate-500 dark:text-zinc-400 mt-1 leading-relaxed">
-              Siap untuk produktif dan mengecek perkuliahan hari ini?
+              Udah siap buat produktif hari ini?!
             </p>
           </div>
 

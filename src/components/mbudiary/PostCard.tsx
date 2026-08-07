@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { MbudiaryPost, MbudiaryReply, UserProfile } from '../types';
 import {
   toggleLikePost,
@@ -463,15 +464,62 @@ export const PostCard: React.FC<PostCardProps> = ({
         )}
       </AnimatePresence>
 
-      {/* IMAGE LIGHTBOX */}
-      <AnimatePresence>
-        {selectedImage && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[999999] w-screen h-[100dvh] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6" onMouseDown={(e) => { if (e.target === e.currentTarget) setSelectedImage(null); }}>
-            <motion.button initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }} onClick={() => setSelectedImage(null)} className="fixed top-5 right-5 sm:top-6 sm:right-6 z-[1000000] w-11 h-11 sm:w-12 sm:h-12 flex items-center justify-center rounded-full bg-black/60 hover:bg-black/80 active:bg-black/90 border border-white/20 text-white shadow-2xl backdrop-blur-md transition-all"><X className="w-5 h-5 sm:w-6 sm:h-6" /></motion.button>
-            <motion.div initial={{ opacity: 0, scale: 0.92, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.92, y: 10 }} className="relative z-[999999] max-w-[95vw] max-h-[90dvh] flex items-center justify-center" onMouseDown={(e) => e.stopPropagation()}><img src={selectedImage} alt="Pratinjau gambar postingan" className="max-w-[95vw] max-h-[90dvh] w-auto h-auto object-contain rounded-2xl shadow-2xl select-none" draggable={false} /></motion.div>
-          </motion.div>
+      {/* IMAGE LIGHTBOX (FULLSCREEN TOTAL MENUTUPI HEADER & NAVBAR PORTAL) */}
+      {typeof document !== 'undefined' &&
+        createPortal(
+          <AnimatePresence>
+            {selectedImage && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[9999999] w-screen h-[100dvh] bg-black/95 backdrop-blur-md flex items-center justify-center p-4 sm:p-6"
+                onMouseDown={(e) => {
+                  if (e.target === e.currentTarget) setSelectedImage(null);
+                }}
+              >
+                {/* 1. TOMBOL (X) MELAYANG DI KANAN ATAS LAYAR */}
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  onClick={() => setSelectedImage(null)}
+                  className="fixed top-6 right-5 sm:top-6 sm:right-6 z-[10000002] w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full bg-zinc-800/80 hover:bg-zinc-700 active:bg-zinc-900 border border-white/20 text-white shadow-2xl backdrop-blur-md transition-all active:scale-95 cursor-pointer"
+                  title="Tutup Pratinjau"
+                >
+                  <X className="w-5 h-5 sm:w-6 sm:h-6" />
+                </motion.button>
+
+                {/* 2. KONTAINER GAMBAR + TOMBOL (X) MERAH NEMPEL DI POJOK GAMBAR */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.92, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.92, y: 10 }}
+                  className="relative z-[10000001] max-w-[95vw] max-h-[85dvh] flex items-center justify-center"
+                  onMouseDown={(e) => e.stopPropagation()}
+                >
+                  {/* TOMBOL (X) MERAH DI POJOK GAMBAR */}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedImage(null)}
+                    className="absolute -top-3 -right-3 sm:-top-4 sm:-right-4 z-[10000003] w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-rose-600 hover:bg-rose-500 text-white flex items-center justify-center shadow-2xl border-2 border-white transition-transform active:scale-90 cursor-pointer"
+                    title="Tutup"
+                  >
+                    <X className="w-4 h-4 sm:w-5 sm:h-5 stroke-[3]" />
+                  </button>
+
+                  <img
+                    src={selectedImage}
+                    alt="Pratinjau gambar postingan"
+                    className="max-w-[95vw] max-h-[85dvh] w-auto h-auto object-contain rounded-2xl sm:rounded-3xl shadow-2xl select-none border border-white/10"
+                    draggable={false}
+                  />
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>,
+          document.body
         )}
-      </AnimatePresence>
     </>
   );
 };
