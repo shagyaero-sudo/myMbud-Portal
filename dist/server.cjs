@@ -470,6 +470,62 @@ var initialAppState = {
   ]
 };
 
+// services/oneSignalServer.ts
+var ONE_SIGNAL_APP_ID = "d5b7e852-4651-49dd-8123-41f1613e5169";
+var ONE_SIGNAL_API_URL = "https://api.onesignal.com/notifications";
+async function sendOneSignalNotification({
+  targetNrp,
+  title,
+  message,
+  url
+}) {
+  const apiKey = process.env.ONESIGNAL_REST_API_KEY;
+  if (!apiKey) {
+    throw new Error(
+      "ONESIGNAL_REST_API_KEY belum diset di environment variable."
+    );
+  }
+  if (!targetNrp) {
+    throw new Error("targetNrp wajib diisi.");
+  }
+  const response = await fetch(ONE_SIGNAL_API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Key ${apiKey}`
+    },
+    body: JSON.stringify({
+      app_id: ONE_SIGNAL_APP_ID,
+      include_aliases: {
+        external_id: [targetNrp]
+      },
+      target_channel: "push",
+      headings: {
+        en: title
+      },
+      contents: {
+        en: message
+      },
+      ...url ? { url } : {}
+    })
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    console.error(
+      "[OneSignal] API Error:",
+      data
+    );
+    throw new Error(
+      data?.errors?.join?.(", ") || "Gagal mengirim OneSignal notification."
+    );
+  }
+  console.log(
+    "[OneSignal] Notification sent:",
+    data
+  );
+  return data;
+}
+
 // server.ts
 var import_meta = {};
 var __filename = (0, import_url.fileURLToPath)(import_meta.url);
@@ -509,6 +565,60 @@ async function startServer() {
   const app = (0, import_express.default)();
   const PORT = 3e3;
   app.use(import_express.default.json());
+  app.post("/api/notifications/send", async (req, res) => {
+    try {
+      const { targetNrp, title, message, url } = req.body;
+      if (!targetNrp || !title || !message) {
+        return res.status(400).json({
+          success: false,
+          error: "targetNrp, title, dan message wajib diisi."
+        });
+      }
+      const result = await sendOneSignalNotification({
+        targetNrp,
+        title,
+        message,
+        url
+      });
+      return res.json({
+        success: true,
+        result
+      });
+    } catch (error) {
+      console.error("[Notification API] Error:", error);
+      return res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : "Gagal mengirim notifikasi."
+      });
+    }
+  });
+  app.post("/api/notifications/mbudiary", async (req, res) => {
+    try {
+      const { targetNrp, title, message, data } = req.body;
+      if (!targetNrp || !title || !message) {
+        return res.status(400).json({
+          success: false,
+          error: "targetNrp, title, dan message wajib diisi."
+        });
+      }
+      const result = await sendOneSignalNotification({
+        targetNrp,
+        title,
+        message,
+        data
+      });
+      return res.json({
+        success: true,
+        result
+      });
+    } catch (error) {
+      console.error("[Mbudiary Notification] Error:", error);
+      return res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : "Gagal mengirim notifikasi Mbudiary."
+      });
+    }
+  });
   app.get("/api/health", (_req, res) => {
     res.json({ status: "ok", time: (/* @__PURE__ */ new Date()).toISOString() });
   });

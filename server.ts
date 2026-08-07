@@ -6,6 +6,9 @@ import { createServer as createViteServer } from 'vite';
 import { initialAppState } from './src/data/mockData';
 import { AppState, Task, Contact, MaterialFile, Announcement, ScheduleItem, GroupResult } from './src/types';
 
+// Import OneSignal Notification Helper
+import { sendOneSignalNotification } from './services/oneSignalServer';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -49,6 +52,76 @@ async function startServer() {
   const PORT = 3000;
 
   app.use(express.json());
+
+  // ============================================================
+  // ONESIGNAL NOTIFICATION API (GENERAL)
+  // ============================================================
+  app.post('/api/notifications/send', async (req, res) => {
+    try {
+      const { targetNrp, title, message, url } = req.body;
+
+      if (!targetNrp || !title || !message) {
+        return res.status(400).json({
+          success: false,
+          error: 'targetNrp, title, dan message wajib diisi.',
+        });
+      }
+
+      const result = await sendOneSignalNotification({
+        targetNrp,
+        title,
+        message,
+        url,
+      });
+
+      return res.json({
+        success: true,
+        result,
+      });
+    } catch (error) {
+      console.error('[Notification API] Error:', error);
+
+      return res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : 'Gagal mengirim notifikasi.',
+      });
+    }
+  });
+
+  // ============================================================
+  // ONESIGNAL NOTIFICATION API (MBUDIARY TRIGGER)
+  // ============================================================
+  app.post('/api/notifications/mbudiary', async (req, res) => {
+    try {
+      const { targetNrp, title, message, data } = req.body;
+
+      if (!targetNrp || !title || !message) {
+        return res.status(400).json({
+          success: false,
+          error: 'targetNrp, title, dan message wajib diisi.',
+        });
+      }
+
+      const result = await sendOneSignalNotification({
+        targetNrp,
+        title,
+        message,
+        data,
+      });
+
+      return res.json({
+        success: true,
+        result,
+      });
+    } catch (error) {
+      console.error('[Mbudiary Notification] Error:', error);
+
+      return res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : 'Gagal mengirim notifikasi Mbudiary.',
+      });
+    }
+  });
 
   // Health check
   app.get('/api/health', (_req, res) => {
