@@ -50,23 +50,16 @@ interface AttachmentData {
   fileUrl: string;
 }
 
-// --- KOMPONEN WIDGET KALENDER MINI (DENGAN ORNAMENT & PADDING) ---
+// --- KOMPONEN WIDGET KALENDER MINI (MINIMALIS & CLEAN) ---
 const FlipCalendarWidget: React.FC = () => {
   const now = new Date();
   const dayNumber = now.getDate();
   const monthName = now.toLocaleDateString('id-ID', { month: 'short' }).toUpperCase();
 
   return (
-    <div className="relative flex flex-col items-center justify-between w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-sm overflow-hidden shrink-0 transition-transform hover:scale-105 select-none mt-2">
-      
-      {/* ORNAMENT TITIK DUA DI ATAS */}
-      <div className="absolute -top-1 left-0 w-full flex justify-center gap-3">
-        <div className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-zinc-700 shadow-inner" />
-        <div className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-zinc-700 shadow-inner" />
-      </div>
-
-      {/* Header Bulan (Padding ditambah 1 satuan) */}
-      <div className="w-full bg-rose-600 dark:bg-rose-700 py-[4px] text-center shrink-0 mt-2">
+    <div className="flex flex-col items-center justify-between w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-sm overflow-hidden shrink-0 transition-transform hover:scale-105 select-none">
+      {/* Header Bulan */}
+      <div className="w-full bg-rose-600 dark:bg-rose-700 py-[4px] text-center shrink-0">
         <span className="text-[9px] font-black text-white tracking-widest uppercase leading-none block">
           {monthName}
         </span>
