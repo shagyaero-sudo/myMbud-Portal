@@ -243,23 +243,30 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
             )}
           </div>
 
+          {/* STAT BAR: 2 BARIS DI MOBILE (IKON + ANGKA SEJAJAR) */}
           <div className="grid grid-cols-3 gap-2 w-full">
             <div className="p-2 sm:px-3.5 sm:py-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 flex flex-col xl:flex-row items-center justify-center gap-1 sm:gap-2 text-[11px] sm:text-[13px] transition-colors text-center">
-              <FileText className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0 mb-0.5 xl:mb-0" />
-              <span className="font-black text-slate-900 dark:text-zinc-100 leading-none">{userPosts.length}</span>
-              <span className="text-slate-500 dark:text-zinc-400 font-medium leading-none">Post</span>
+              <div className="flex items-center gap-1.5">
+                <FileText className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                <span className="font-black text-slate-900 dark:text-zinc-100 leading-none">{userPosts.length}</span>
+              </div>
+              <span className="text-slate-500 dark:text-zinc-400 font-medium leading-none mt-0.5 xl:mt-0">Post</span>
             </div>
 
             <button onClick={() => openFollowModal('followers')} className="p-2 sm:px-3.5 sm:py-2.5 rounded-2xl bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800/60 dark:hover:bg-zinc-800 border border-slate-100 dark:border-zinc-800 flex flex-col xl:flex-row items-center justify-center gap-1 sm:gap-2 text-[11px] sm:text-[13px] transition-all cursor-pointer text-center">
-              <Users className="w-4 h-4 text-amber-500 shrink-0 mb-0.5 xl:mb-0" />
-              <span className="font-black text-slate-900 dark:text-zinc-100 leading-none">{followerCount}</span>
-              <span className="text-slate-500 dark:text-zinc-400 font-medium leading-none">Pengikut</span>
+              <div className="flex items-center gap-1.5">
+                <Users className="w-4 h-4 text-amber-500 shrink-0" />
+                <span className="font-black text-slate-900 dark:text-zinc-100 leading-none">{followerCount}</span>
+              </div>
+              <span className="text-slate-500 dark:text-zinc-400 font-medium leading-none mt-0.5 xl:mt-0">Pengikut</span>
             </button>
 
             <button onClick={() => openFollowModal('following')} className="p-2 sm:px-3.5 sm:py-2.5 rounded-2xl bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800/60 dark:hover:bg-zinc-800 border border-slate-100 dark:border-zinc-800 flex flex-col xl:flex-row items-center justify-center gap-1 sm:gap-2 text-[11px] sm:text-[13px] transition-all cursor-pointer text-center">
-              <UserPlus className="w-4 h-4 text-emerald-500 shrink-0 mb-0.5 xl:mb-0" />
-              <span className="font-black text-slate-900 dark:text-zinc-100 leading-none">{followingCount}</span>
-              <span className="text-slate-500 dark:text-zinc-400 font-medium leading-none">Mengikuti</span>
+              <div className="flex items-center gap-1.5">
+                <UserPlus className="w-4 h-4 text-emerald-500 shrink-0" />
+                <span className="font-black text-slate-900 dark:text-zinc-100 leading-none">{followingCount}</span>
+              </div>
+              <span className="text-slate-500 dark:text-zinc-400 font-medium leading-none mt-0.5 xl:mt-0">Mengikuti</span>
             </button>
           </div>
         </div>
