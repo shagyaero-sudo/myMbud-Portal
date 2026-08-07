@@ -1,55 +1,13 @@
-import React, {
-  useEffect,
-  useState,
-} from 'react';
-
-import {
-  ArrowLeft,
-  User,
-  Edit3,
-  X,
-  Smile,
-  Camera,
-  Trash2,
-  Loader2,
-} from 'lucide-react';
-
-import {
-  motion,
-  AnimatePresence,
-} from 'framer-motion';
-
-import {
-  UserProfile,
-  MbudiaryPost,
-} from './mbudiary/types';
-
-import {
-  getUserProfile,
-  getPosts,
-  initializeMbudiary,
-  saveUserProfile,
-} from './mbudiary/lib/storage';
-
-import {
-  uploadImagesToCloudinary,
-} from './mbudiary/lib/cloudinary';
-
-import {
-  CreatePostForm,
-} from './mbudiary/CreatePostForm';
-
-import {
-  PostList,
-} from './mbudiary/PostList';
-
-import {
-  PostCard,
-} from './mbudiary/PostCard';
-
-import {
-  UserProfileView,
-} from './mbudiary/UserProfileView';
+import React, { useEffect, useState } from 'react';
+import { ArrowLeft, User, Edit3, X, Smile, Camera, Trash2, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { UserProfile, MbudiaryPost } from './mbudiary/types';
+import { getUserProfile, getPosts, initializeMbudiary, saveUserProfile } from './mbudiary/lib/storage';
+import { uploadImagesToCloudinary } from './mbudiary/lib/cloudinary';
+import { CreatePostForm } from './mbudiary/CreatePostForm';
+import { PostList } from './mbudiary/PostList';
+import { PostCard } from './mbudiary/PostCard';
+import { UserProfileView } from './mbudiary/UserProfileView';
 
 const EMOJI_OPTIONS = [
   '😊', '😎', '🎓', '🚀', '🐱', '☕', '🌟', '📚', '💬',
@@ -65,9 +23,6 @@ export const MbudiaryView: React.FC = () => {
   const [selectedAuthorNrp, setSelectedAuthorNrp] = useState<string | null>(null);
   const [, forceRefresh] = useState(0);
 
-  /* =========================================================
-     EDIT PROFILE MODAL STATE
-     ========================================================= */
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editUsername, setEditUsername] = useState(currentUser.username || '');
   const [editEmoji, setEditEmoji] = useState(currentUser.emoji || '😊');
@@ -77,7 +32,6 @@ export const MbudiaryView: React.FC = () => {
 
   useEffect(() => {
     const unsubscribe = initializeMbudiary();
-
     const sync = () => {
       const updatedUser = getUserProfile();
       setCurrentUser(updatedUser);
@@ -157,9 +111,9 @@ export const MbudiaryView: React.FC = () => {
 
   return (
     <div className="w-full bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 font-sans transition-colors duration-300 antialiased relative overflow-x-hidden">
-      <main className="flex-1 max-w-2xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 pb-24 sm:pb-8 relative z-10 space-y-6">
+      {/* REVISI: max-w dan px diubah agar feed selebar floating navbar */}
+      <main className="flex-1 max-w-[600px] w-full mx-auto px-2 sm:px-0 py-6 sm:py-8 pb-24 sm:pb-8 relative z-10 space-y-6">
 
-        {/* USER PROFILE VIEW */}
         {selectedAuthorNrp ? (
           <UserProfileView
             authorNrp={selectedAuthorNrp}
@@ -173,8 +127,6 @@ export const MbudiaryView: React.FC = () => {
             onSelectAuthor={(authorNrp) => setSelectedAuthorNrp(authorNrp)}
           />
         ) : selectedPostId ? (
-
-          /* POST DETAIL VIEW */
           <div className="space-y-4">
             <button
               onClick={() => setSelectedPostId(null)}
@@ -202,13 +154,9 @@ export const MbudiaryView: React.FC = () => {
             )}
           </div>
         ) : (
-
-          /* FEED VIEW */
           <>
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-              {/* HEADER FEED */}
-              <div className="flex items-start justify-between gap-3">
-                {/* TITLE */}
+              <div className="flex items-start justify-between gap-3 px-2 sm:px-0">
                 <div>
                   <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-zinc-100">
                     mbudiary.
@@ -217,8 +165,6 @@ export const MbudiaryView: React.FC = () => {
                     #Ruangamanbersama
                   </p>
                 </div>
-
-                {/* ACTION BUTTONS (EDIT PROFIL & PROFIL SAYA) */}
                 <div className="flex items-center gap-2 shrink-0">
                   <button
                     onClick={handleOpenEditModal}
@@ -258,9 +204,7 @@ export const MbudiaryView: React.FC = () => {
         )}
       </main>
 
-      {/* =====================================================
-          EDIT PROFILE MODAL
-          ===================================================== */}
+      {/* EDIT PROFILE MODAL */}
       <AnimatePresence>
         {isEditModalOpen && (
           <motion.div
@@ -280,127 +224,47 @@ export const MbudiaryView: React.FC = () => {
                   <Smile className="w-5 h-5 text-indigo-500" />
                   <span>Edit Profil</span>
                 </h3>
-                <button
-                  type="button"
-                  onClick={() => setIsEditModalOpen(false)}
-                  className="p-2 rounded-2xl text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                </button>
+                <button type="button" onClick={() => setIsEditModalOpen(false)} className="p-2 rounded-2xl text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"><X className="w-4 h-4" /></button>
               </div>
-
               <form onSubmit={handleSaveProfile} className="space-y-4">
-                {/* FOTO PROFIL SECTION */}
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-2">
-                    Foto Profil Custom
-                  </label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-2">Foto Profil Custom</label>
                   <div className="flex items-center gap-4 p-3 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800">
                     <div className="relative w-16 h-16 rounded-2xl overflow-hidden bg-slate-200 dark:bg-zinc-700 flex items-center justify-center shrink-0 border border-slate-200 dark:border-zinc-700">
-                      {isUploadingAvatar ? (
-                        <Loader2 className="w-6 h-6 text-indigo-500 animate-spin" />
-                      ) : editPhotoUrl ? (
-                        <img src={editPhotoUrl} alt="Avatar Preview" className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-3xl">{editEmoji}</span>
-                      )}
+                      {isUploadingAvatar ? <Loader2 className="w-6 h-6 text-indigo-500 animate-spin" /> : editPhotoUrl ? <img src={editPhotoUrl} alt="Avatar Preview" className="w-full h-full object-cover" /> : <span className="text-3xl">{editEmoji}</span>}
                     </div>
-
                     <div className="flex flex-col gap-1.5 flex-1">
-                      <button
-                        type="button"
-                        disabled={isUploadingAvatar}
-                        onClick={() => avatarInputRef.current?.click()}
-                        className="px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-colors flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
-                      >
-                        <Camera className="w-3.5 h-3.5" />
-                        <span>{editPhotoUrl ? 'Ganti Foto' : 'Upload Foto'}</span>
+                      <button type="button" disabled={isUploadingAvatar} onClick={() => avatarInputRef.current?.click()} className="px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-colors flex items-center justify-center gap-2 shadow-sm disabled:opacity-50">
+                        <Camera className="w-3.5 h-3.5" /><span>{editPhotoUrl ? 'Ganti Foto' : 'Upload Foto'}</span>
                       </button>
-
                       {editPhotoUrl && (
-                        <button
-                          type="button"
-                          onClick={() => setEditPhotoUrl(undefined)}
-                          className="px-3 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 text-xs font-semibold hover:bg-rose-100 transition-colors flex items-center justify-center gap-1.5"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                          <span>Hapus Foto (Gunakan Emoji)</span>
+                        <button type="button" onClick={() => setEditPhotoUrl(undefined)} className="px-3 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 text-xs font-semibold hover:bg-rose-100 transition-colors flex items-center justify-center gap-1.5">
+                          <Trash2 className="w-3 h-3" /><span>Hapus Foto (Gunakan Emoji)</span>
                         </button>
                       )}
                     </div>
-
-                    <input
-                      ref={avatarInputRef}
-                      type="file"
-                      accept="image/jpeg,image/png,image/webp"
-                      className="hidden"
-                      onChange={handleAvatarSelection}
-                    />
+                    <input ref={avatarInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleAvatarSelection} />
                   </div>
                 </div>
-
-                {/* USERNAME */}
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-2">
-                    Username
-                  </label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-2">Username</label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400 dark:text-zinc-500">
-                      @
-                    </span>
-                    <input
-                      type="text"
-                      value={editUsername}
-                      onChange={(e) =>
-                        setEditUsername(e.target.value.replace(/\s+/g, '').toLowerCase())
-                      }
-                      placeholder="usernamekamu"
-                      maxLength={30}
-                      className="w-full pl-7 pr-3.5 py-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-xs border border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    />
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400 dark:text-zinc-500">@</span>
+                    <input type="text" value={editUsername} onChange={(e) => setEditUsername(e.target.value.replace(/\s+/g, '').toLowerCase())} placeholder="usernamekamu" maxLength={30} className="w-full pl-7 pr-3.5 py-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-xs border border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                   </div>
                 </div>
-
-                {/* EMOJI */}
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-2">
-                    Pilih emoji default jika foto tidak terpasang...
-                  </label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-2">Pilih emoji default...</label>
                   <div className="grid grid-cols-9 gap-1.5 p-2 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 max-h-48 overflow-y-auto">
                     {EMOJI_OPTIONS.map((emoji) => (
-                      <button
-                        key={emoji}
-                        type="button"
-                        onClick={() => setEditEmoji(emoji)}
-                        className={`text-xl p-1.5 rounded-xl transition-all ${
-                          editEmoji === emoji
-                            ? 'bg-indigo-600 text-white scale-110 shadow-sm'
-                            : 'hover:bg-slate-200 dark:hover:bg-zinc-700'
-                        }`}
-                      >
-                        {emoji}
-                      </button>
+                      <button key={emoji} type="button" onClick={() => setEditEmoji(emoji)} className={`text-xl p-1.5 rounded-xl transition-all ${editEmoji === emoji ? 'bg-indigo-600 text-white scale-110 shadow-sm' : 'hover:bg-slate-200 dark:hover:bg-zinc-700'}`}>{emoji}</button>
                     ))}
                   </div>
                 </div>
-
-                {/* MODAL ACTIONS */}
                 <div className="flex items-center justify-end gap-2 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsEditModalOpen(false)}
-                    className="px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 text-xs font-semibold hover:bg-slate-200 dark:hover:bg-zinc-700 transition-colors"
-                  >
-                    Batal
-                  </button>
-
-                  <button
-                    type="submit"
-                    disabled={!editUsername.trim() || isUploadingAvatar}
-                    className="px-5 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-bold transition-all shadow-md shadow-indigo-500/20 active:scale-95 flex items-center gap-1.5"
-                  >
-                    {isUploadingAvatar && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                    <span>Simpan Profil</span>
+                  <button type="button" onClick={() => setIsEditModalOpen(false)} className="px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 text-xs font-semibold hover:bg-slate-200 dark:hover:bg-zinc-700 transition-colors">Batal</button>
+                  <button type="submit" disabled={!editUsername.trim() || isUploadingAvatar} className="px-5 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-bold transition-all shadow-md shadow-indigo-500/20 active:scale-95 flex items-center gap-1.5">
+                    {isUploadingAvatar && <Loader2 className="w-3.5 h-3.5 animate-spin" />}<span>Simpan Profil</span>
                   </button>
                 </div>
               </form>
