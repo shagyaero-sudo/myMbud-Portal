@@ -9,6 +9,8 @@ import {
   getCachedUserByNrp,
   getPosts,
   savePost,
+  toggleBookmarkPost,
+  getBookmarkedPostIds,
 } from './lib/storage';
 import { formatDateFormatted, formatTimeAgo, formatPostTimestamp, getOptimizedImageUrl } from './lib/utils';
 import {
@@ -21,6 +23,7 @@ import {
   X,
   Repeat2,
   Quote,
+  Bookmark,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -48,6 +51,7 @@ export const PostCard: React.FC<PostCardProps> = ({
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(post.likes.length);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState(false);
 
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -89,6 +93,7 @@ export const PostCard: React.FC<PostCardProps> = ({
     setLikeCount(post.likes.length);
     setReplies(getReplies(post.id));
     setAuthorProfile(getCachedUserByNrp(post.authorNrp));
+    setIsBookmarked(getBookmarkedPostIds().includes(post.id));
   };
 
   useEffect(() => {
@@ -98,11 +103,13 @@ export const PostCard: React.FC<PostCardProps> = ({
     window.addEventListener('mbud_users_change', syncData);
     window.addEventListener('mbud_posts_change', syncData);
     window.addEventListener('mbud_replies_change', syncData);
+    window.addEventListener('mbud_bookmarks_change', syncData);
 
     return () => {
       window.removeEventListener('mbud_users_change', syncData);
       window.removeEventListener('mbud_posts_change', syncData);
       window.removeEventListener('mbud_replies_change', syncData);
+      window.removeEventListener('mbud_bookmarks_change', syncData);
     };
   }, [post, currentUser, isDetailPage]);
 
@@ -134,6 +141,11 @@ export const PostCard: React.FC<PostCardProps> = ({
       setIsLiked(updated.likes.includes(currentUser.nrp.toLowerCase()));
       setLikeCount(updated.likes.length);
     }
+  };
+
+  const handleBookmarkToggle = () => {
+    const updatedBookmarkStatus = toggleBookmarkPost(post.id);
+    setIsBookmarked(updatedBookmarkStatus);
   };
 
   const handleCommentClick = () => {
@@ -336,22 +348,26 @@ export const PostCard: React.FC<PostCardProps> = ({
           </div>
         )}
 
-        {/* ACTIONS */}
-        <div className="flex items-center justify-between pt-3.5 border-t border-slate-100 dark:border-zinc-800 text-xs">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <motion.button whileTap={{ scale: 0.9 }} onClick={handleLikeToggle} className={`flex items-center gap-1.5 px-3 py-2 rounded-full transition-all text-xs sm:text-[13px] ${isLiked ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-500 font-bold border border-rose-200/80 dark:border-rose-900/50' : 'text-slate-400 dark:text-zinc-500 hover:text-rose-500 hover:bg-rose-50/60 dark:hover:bg-zinc-800/80 border border-transparent'}`}>
-              <Heart className={`w-4 h-4 sm:w-4.5 sm:h-4.5 transition-transform ${isLiked ? 'fill-rose-500 text-rose-500 scale-110' : ''}`} />
+        {/* ACTIONS & BOOKMARK (Ramping & Proporsional) */}
+        <div className="flex items-center justify-between pt-2.5 sm:pt-3 border-t border-slate-100 dark:border-zinc-800/80 text-xs">
+          
+          <div className="flex items-center gap-1 sm:gap-2 -ml-1">
+            <motion.button whileTap={{ scale: 0.9 }} onClick={handleLikeToggle} className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full transition-all text-xs font-medium ${isLiked ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-500 font-bold border border-rose-200/80 dark:border-rose-900/50' : 'text-slate-500 dark:text-zinc-400 hover:text-rose-500 hover:bg-rose-50/60 dark:hover:bg-zinc-800/80 border border-transparent'}`}>
+              <Heart className={`w-4 h-4 transition-transform ${isLiked ? 'fill-rose-500 text-rose-500 scale-110' : ''}`} />
               <span>{likeCount}</span>
             </motion.button>
-            <button onClick={handleCommentClick} className={`flex items-center gap-1.5 px-3 py-2 rounded-full transition-all text-xs sm:text-[13px] ${isRepliesExpanded && isDetailPage ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-bold border border-indigo-200/80 dark:border-indigo-900/50' : 'text-slate-400 dark:text-zinc-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50/60 dark:hover:bg-zinc-800/80 border border-transparent'}`}>
-              <MessageSquare className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
+            
+            <button onClick={handleCommentClick} className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full transition-all text-xs font-medium ${isRepliesExpanded && isDetailPage ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-bold border border-indigo-200/80 dark:border-indigo-900/50' : 'text-slate-500 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50/60 dark:hover:bg-zinc-800/80 border border-transparent'}`}>
+              <MessageSquare className="w-4 h-4" />
               <span>{post.replyCount || replies.length}</span>
             </button>
+            
             <div ref={repostMenuRef} className="relative">
-              <button type="button" onClick={() => setIsRepostMenuOpen((prev) => !prev)} disabled={isReposting} className={`flex items-center gap-1.5 px-3 py-2 rounded-full transition-all text-xs sm:text-[13px] ${isRepostMenuOpen ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-200/80 dark:border-emerald-900/50' : 'text-slate-400 dark:text-zinc-500 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50/60 dark:hover:bg-zinc-800/80 border border-transparent disabled:opacity-50'}`}>
-                <Repeat2 className={`w-4 h-4 sm:w-4.5 sm:h-4.5 ${isReposting ? 'animate-pulse' : ''}`} />
+              <button type="button" onClick={() => setIsRepostMenuOpen((prev) => !prev)} disabled={isReposting} className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full transition-all text-xs font-medium ${isRepostMenuOpen ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-200/80 dark:border-emerald-900/50' : 'text-slate-500 dark:text-zinc-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50/60 dark:hover:bg-zinc-800/80 border border-transparent disabled:opacity-50'}`}>
+                <Repeat2 className={`w-4 h-4 ${isReposting ? 'animate-pulse' : ''}`} />
                 <span className="hidden xs:inline">Repost</span>
               </button>
+              
               <AnimatePresence>
                 {isRepostMenuOpen && (
                   <motion.div initial={{ opacity: 0, y: -4, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -4, scale: 0.97 }} className="absolute left-0 bottom-full mb-1.5 z-30 w-44 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-2xl p-1.5 shadow-xl">
@@ -366,12 +382,24 @@ export const PostCard: React.FC<PostCardProps> = ({
               </AnimatePresence>
             </div>
           </div>
+
+          {/* TOMBOL BOOKMARK (Pojok Kanan) */}
+          <div className="-mr-1">
+            <motion.button 
+              whileTap={{ scale: 0.9 }} 
+              onClick={handleBookmarkToggle} 
+              className={`flex items-center justify-center p-2 rounded-full transition-all border border-transparent ${isBookmarked ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-500 hover:bg-amber-100 dark:hover:bg-amber-900/50' : 'text-slate-400 dark:text-zinc-500 hover:text-amber-500 hover:bg-amber-50/60 dark:hover:bg-zinc-800/80'}`}
+              title={isBookmarked ? 'Hapus Bookmark' : 'Simpan Postingan'}
+            >
+              <Bookmark className={`w-4 h-4 transition-all ${isBookmarked ? 'fill-amber-500 text-amber-500' : ''}`} />
+            </motion.button>
+          </div>
         </div>
 
         {/* REPLIES */}
         <AnimatePresence>
           {isRepliesExpanded && (
-            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mt-4 pt-4 border-t border-slate-100 dark:border-zinc-800 space-y-3 overflow-hidden">
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mt-3 pt-4 border-t border-slate-100 dark:border-zinc-800 space-y-3 overflow-hidden">
               <h4 className="text-xs font-bold text-slate-700 dark:text-zinc-300 flex items-center gap-1.5">
                 <CornerDownRight className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
                 Komen & Balasan ({replies.length})
@@ -464,7 +492,7 @@ export const PostCard: React.FC<PostCardProps> = ({
         )}
       </AnimatePresence>
 
-      {/* IMAGE LIGHTBOX (FULLSCREEN TOTAL MENUTUPI HEADER & NAVBAR PORTAL) */}
+      {/* IMAGE LIGHTBOX (FULLSCREEN) */}
       {typeof document !== 'undefined' &&
         createPortal(
           <AnimatePresence>
@@ -478,7 +506,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                   if (e.target === e.currentTarget) setSelectedImage(null);
                 }}
               >
-                {/* TOMBOL (X) MELAYANG DI KANAN ATAS LAYAR */}
+                {/* TOMBOL (X) MELAYANG */}
                 <motion.button
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}

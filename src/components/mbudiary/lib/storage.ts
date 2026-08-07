@@ -605,7 +605,6 @@ export function getFollowerNrps(targetNrp: string): string[] {
     .map((follow) => follow.followerNrp);
 }
 
-// Fungsi Baru untuk mendapatkan daftar NRP yang sedang diikuti (Mengikuti) v3.1
 export function getFollowingNrps(targetNrp: string): string[] {
   const target = targetNrp.trim().toLowerCase();
   return followsCache
@@ -653,4 +652,42 @@ export function getFollowerCount(targetNrp: string): number {
 export function getFollowingCount(targetNrp: string): number {
   const target = targetNrp.trim().toLowerCase();
   return followsCache.filter((follow) => follow.followerNrp === target).length;
+}
+
+/* =========================================================
+   BOOKMARKS (LOCAL STORAGE)
+   ========================================================= */
+export const BOOKMARKS_KEY = 'mymbud_bookmarks';
+
+export function getBookmarkedPostIds(): string[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const data = localStorage.getItem(BOOKMARKS_KEY);
+    return data ? JSON.parse(data) : [];
+  } catch (error) {
+    console.error('Gagal membaca bookmark:', error);
+    return [];
+  }
+}
+
+export function toggleBookmarkPost(postId: string): boolean {
+  const bookmarks = getBookmarkedPostIds();
+  const index = bookmarks.indexOf(postId);
+  let isBookmarked = false;
+
+  if (index >= 0) {
+    bookmarks.splice(index, 1);
+    isBookmarked = false;
+  } else {
+    bookmarks.push(postId);
+    isBookmarked = true;
+  }
+
+  localStorage.setItem(BOOKMARKS_KEY, JSON.stringify(bookmarks));
+  
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('mbud_bookmarks_change'));
+  }
+  
+  return isBookmarked;
 }
