@@ -16,8 +16,10 @@ export async function sendOneSignalNotification({
   const appId = process.env.ONESIGNAL_APP_ID;
   const apiKey = process.env.ONESIGNAL_REST_API_KEY;
 
+  // Pengaman 1: Jangan biarkan aplikasi crash kalau Env Var kosong
   if (!appId || !apiKey) {
-    throw new Error('ONESIGNAL_APP_ID dan ONESIGNAL_REST_API_KEY belum dikonfigurasi.');
+    console.warn('[OneSignal] Missing APP_ID or REST_API_KEY in Vercel Environment Variables');
+    return { success: false, error: 'Environment variables not configured' };
   }
 
   const payload = {
@@ -29,19 +31,26 @@ export async function sendOneSignalNotification({
     ...(data && { data }),
   };
 
-  const response = await fetch('https://onesignal.com/api/v1/notifications', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Basic ${apiKey}`,
-    },
-    body: JSON.stringify(payload),
-  });
+  try {
+    const response = await fetch('https://onesignal.com/api/v1/notifications', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Basic ${apiKey}`,
+      },
+      body: JSON.stringify(payload),
+    });
 
-  const resData = await response.json();
-  if (!response.ok) {
-    throw new Error(resData?.errors?.[0] || 'Gagal mengontak API OneSignal');
+    // Pengaman 2: Handle error response dari API OneSignal tanpa throw Error yang bikin 500
+    const resData = await response.json();
+    if (!response.ok) {
+      console.error('[OneSignal API Error]:', resData);
+      return { success: false, error: resData?.errors?.[0] || 'OneSignal API Error' };
+    }
+
+    return resData;
+  } catch (error) {
+    console.error('[OneSignal Network Error]:', error);
+    return { success: false, error: 'Failed to reach OneSignal servers' };
   }
-
-  return resData;
 }
