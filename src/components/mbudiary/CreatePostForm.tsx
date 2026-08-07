@@ -345,7 +345,7 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
                     className="px-3 py-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-zinc-800 disabled:opacity-50 text-indigo-500 dark:text-indigo-400 text-xs font-semibold transition-all flex items-center gap-1.5 active:scale-95"
                   >
                     <ImagePlus className="w-4 h-4" />
-                    <span>Upload Media</span>
+                    <span>Upload Gambar</span>
                     {selectedImages.length > 0 && (
                       <span className="font-bold bg-indigo-100 dark:bg-indigo-900/50 px-1.5 rounded-md text-[10px]">
                         {selectedImages.length}/{MAX_IMAGES}
