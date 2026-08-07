@@ -50,6 +50,31 @@ interface AttachmentData {
   fileUrl: string;
 }
 
+// --- KOMPONEN WIDGET KALENDER MINI (FOLDABLE CALENDAR) ---
+const FlipCalendarWidget: React.FC = () => {
+  const now = new Date();
+  const dayNumber = now.getDate();
+  const monthName = now.toLocaleDateString('id-ID', { month: 'short' }).toUpperCase();
+
+  return (
+    <div className="flex flex-col items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-sm overflow-hidden shrink-0 transition-transform hover:scale-105 select-none">
+      {/* Header Bulan */}
+      <div className="w-full bg-rose-600 dark:bg-rose-700 py-0.5 text-center">
+        <span className="text-[9px] sm:text-[10px] font-black text-white tracking-widest uppercase">
+          {monthName}
+        </span>
+      </div>
+      
+      {/* Angka Tanggal Utama */}
+      <div className="flex-1 flex items-center justify-center leading-none px-1">
+        <span className="text-base sm:text-lg font-black text-slate-900 dark:text-zinc-100 tracking-tight">
+          {dayNumber}
+        </span>
+      </div>
+    </div>
+  );
+};
+
 // --- LOGIKA KALKULASI MINGGU AKADEMIK + STYLE DINAMIS ---
 const getCurrentAcademicWeek = () => {
   // Tanggal acuan: Senin, 31 Agustus 2026, 00:00:00 WIB (GMT+7)
@@ -404,14 +429,21 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       transition={{ duration: 0.3 }}
       className="space-y-6 pb-12"
     >
-      {/* --- GREETING KHUSUS MOBILE/TABLET --- */}
+      {/* --- GREETING KHUSUS MOBILE/TABLET + KALENDER MINI --- */}
       <div className="block lg:hidden px-2 pt-2 pb-0">
-        <h2 className="text-xl font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
-          {getGreeting()}
-        </h2>
-        <p className="text-xs font-medium text-slate-500 dark:text-zinc-400 mt-1 leading-relaxed">
-          Siap untuk produktif dan mengecek perkuliahan hari ini?
-        </p>
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
+              {getGreeting()}
+            </h2>
+            <p className="text-xs font-medium text-slate-500 dark:text-zinc-400 mt-1 leading-relaxed">
+              Siap untuk produktif dan mengecek perkuliahan hari ini?
+            </p>
+          </div>
+
+          {/* WIDGET KALENDER MINI */}
+          <FlipCalendarWidget />
+        </div>
       </div>
 
       {/* Mobile & Tablet Announcements Carousel */}
