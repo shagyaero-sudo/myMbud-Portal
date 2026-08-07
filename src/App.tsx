@@ -86,26 +86,27 @@ export default function App() {
   });
 
   // ============================================================
-  // ONESIGNAL INITIALIZATION
+  // ONESIGNAL INITIALIZATION & USER LINKING (SEQUENTIAL)
   // ============================================================
   useEffect(() => {
-    initOneSignal();
-  }, []);
+    const setupOneSignal = async () => {
+      // Step 1: Inisialisasi SDK hingga selesai
+      await initOneSignal();
 
-  // ============================================================
-  // HUBUNGKAN USER LOGIN KE ONESIGNAL
-  // ============================================================
-  useEffect(() => {
-    if (!isAuthenticated) return;
+      // Step 2: Hubungkan akun jika user sudah terautentikasi
+      if (isAuthenticated) {
+        const nrp = localStorage.getItem('mymbud_user_nrp');
 
-    const nrp = localStorage.getItem('mymbud_user_nrp');
+        if (nrp) {
+          console.log('[OneSignal] Linking user NRP:', nrp);
+          await loginOneSignal(nrp);
+        } else {
+          console.warn('[OneSignal] NRP user tidak ditemukan di localStorage.');
+        }
+      }
+    };
 
-    if (!nrp) {
-      console.warn('[OneSignal] NRP user tidak ditemukan.');
-      return;
-    }
-
-    loginOneSignal(nrp);
+    setupOneSignal();
   }, [isAuthenticated]);
 
   // ============================================================
