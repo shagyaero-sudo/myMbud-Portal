@@ -254,7 +254,7 @@ export const MbudiaryView: React.FC = () => {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-2">Pilih emoji default...</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-2">Pilih emoji (Jika ingin tanpa Foto Profil Custom)</label>
                   <div className="grid grid-cols-9 gap-1.5 p-2 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 max-h-48 overflow-y-auto">
                     {EMOJI_OPTIONS.map((emoji) => (
                       <button key={emoji} type="button" onClick={() => setEditEmoji(emoji)} className={`text-xl p-1.5 rounded-xl transition-all ${editEmoji === emoji ? 'bg-indigo-600 text-white scale-110 shadow-sm' : 'hover:bg-slate-200 dark:hover:bg-zinc-700'}`}>{emoji}</button>
