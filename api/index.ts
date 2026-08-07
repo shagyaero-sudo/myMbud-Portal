@@ -1,21 +1,13 @@
-import express from 'express';
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-const app = express();
-
-app.use(express.json());
-
-app.get('/api/health', (_req, res) => {
-  res.status(200).json({
+export default function handler(
+  req: VercelRequest,
+  res: VercelResponse
+) {
+  return res.status(200).json({
     status: 'ok',
+    message: 'Vercel Function is working',
+    method: req.method,
     time: new Date().toISOString(),
   });
-});
-
-app.get('/api/state', (_req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'API state endpoint is working',
-  });
-});
-
-export default app;
+}
