@@ -18,7 +18,6 @@ import { PostCard } from './PostCard';
 import {
   ArrowLeft,
   FileText,
-  User,
   Users,
   UserPlus,
   UserCheck,
@@ -150,15 +149,17 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
   const authorHeaderUrl = authorProfile?.headerUrl || (isSelf ? currentUser.headerUrl : undefined);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
+      {/* TOMBOL KEMBALI COMPACT */}
       <button
         onClick={onBack}
-        className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-xs font-bold text-slate-700 dark:text-zinc-200 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-all shadow-sm group"
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-xs font-bold text-slate-700 dark:text-zinc-200 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-all shadow-sm group active:scale-95"
       >
-        <ArrowLeft className="w-4 h-4 text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" />
+        <ArrowLeft className="w-3.5 h-3.5 text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" />
         <span>Kembali</span>
       </button>
 
+      {/* CARD PROFIL USER */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -272,13 +273,8 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
         </div>
       </motion.div>
 
-      <div className="space-y-3 pt-2">
-        <div className="flex items-center px-1 mb-3">
-          <h3 className="text-sm font-bold text-slate-800 dark:text-zinc-200 flex items-center gap-2">
-            <User className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
-            Riwayat Postingan ({userPosts.length})
-          </h3>
-        </div>
+      {/* DAFTAR POSTINGAN USER (JUDUL RIWAYAT POSTINGAN SUDAH DIHAPUS) */}
+      <div className="space-y-3 pt-1">
         {userPosts.length === 0 ? (
           <div className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl p-8 text-center text-xs text-slate-400 dark:text-zinc-500 shadow-sm w-full">
             User ini belum membuat postingan di mbudiary.
@@ -290,6 +286,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
         )}
       </div>
 
+      {/* MODAL PENGIKUT & MENGIKUTI */}
       <AnimatePresence>
         {followModalType && (
           <motion.div

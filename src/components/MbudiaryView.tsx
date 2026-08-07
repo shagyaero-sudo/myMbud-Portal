@@ -111,8 +111,8 @@ export const MbudiaryView: React.FC = () => {
 
   return (
     <div className="w-full bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 font-sans transition-colors duration-300 antialiased relative overflow-x-hidden">
-      {/* REVISI: max-w dan px diubah agar feed selebar floating navbar */}
-      <main className="flex-1 max-w-[600px] w-full mx-auto px-2 sm:px-0 py-6 sm:py-8 pb-24 sm:pb-8 relative z-10 space-y-6">
+      {/* REVISI: Padding atas di HP dirapatkan (py-3 sm:py-8) & space-y-3 sm:space-y-6 */}
+      <main className="flex-1 max-w-[600px] w-full mx-auto px-2 sm:px-0 py-3 sm:py-8 pb-24 sm:pb-8 relative z-10 space-y-3 sm:space-y-6">
 
         {selectedAuthorNrp ? (
           <UserProfileView
@@ -127,10 +127,10 @@ export const MbudiaryView: React.FC = () => {
             onSelectAuthor={(authorNrp) => setSelectedAuthorNrp(authorNrp)}
           />
         ) : selectedPostId ? (
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             <button
               onClick={() => setSelectedPostId(null)}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-xs font-bold text-slate-700 dark:text-zinc-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-all shadow-sm active:scale-95 group"
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 sm:px-4 sm:py-2.5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-xs font-bold text-slate-700 dark:text-zinc-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-all shadow-sm active:scale-95 group"
             >
               <ArrowLeft className="w-4 h-4 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
               <span>Kembali</span>
@@ -156,7 +156,7 @@ export const MbudiaryView: React.FC = () => {
         ) : (
           <>
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-              <div className="flex items-start justify-between gap-3 px-2 sm:px-0">
+              <div className="flex items-start justify-between gap-3 px-2 sm:px-0 pt-1 sm:pt-0">
                 <div>
                   <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-zinc-100">
                     mbudiary.
