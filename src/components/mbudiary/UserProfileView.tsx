@@ -13,6 +13,7 @@ import {
   saveUserProfile,
 } from './lib/storage';
 import { uploadImagesToCloudinary } from './lib/cloudinary';
+import { getOptimizedImageUrl } from './lib/utils';
 import { PostCard } from './PostCard';
 import {
   ArrowLeft,
@@ -165,7 +166,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
       >
         <div className="w-full h-32 sm:h-44 relative bg-slate-200 dark:bg-zinc-800/80">
           {authorHeaderUrl ? (
-            <img src={authorHeaderUrl} alt="Header Profil" className="w-full h-full object-cover" />
+            <img src={getOptimizedImageUrl(authorHeaderUrl)} alt="Header Profil" className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full bg-gradient-to-tr from-indigo-100 to-sky-50 dark:from-indigo-900/40 dark:to-sky-900/20" />
           )}
@@ -190,7 +191,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
             <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-[1.25rem] sm:rounded-[1.5rem] bg-white dark:bg-zinc-900 p-1.5 shadow-sm">
               <div className="w-full h-full rounded-xl sm:rounded-2xl bg-slate-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-slate-200/50 dark:border-zinc-700/50">
                 {authorPhotoUrl ? (
-                  <img src={authorPhotoUrl} alt={authorName} className="w-full h-full object-cover" />
+                  <img src={getOptimizedImageUrl(authorPhotoUrl)} alt={authorName} className="w-full h-full object-cover" />
                 ) : (
                   <span className="text-4xl sm:text-5xl leading-none">{authorEmoji}</span>
                 )}
@@ -243,7 +244,6 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
             )}
           </div>
 
-          {/* STAT BAR: 2 BARIS DI MOBILE (IKON + ANGKA SEJAJAR) */}
           <div className="grid grid-cols-3 gap-2 w-full">
             <div className="p-2 sm:px-3.5 sm:py-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 flex flex-col xl:flex-row items-center justify-center gap-1 sm:gap-2 text-[11px] sm:text-[13px] transition-colors text-center">
               <div className="flex items-center gap-1.5">
@@ -332,7 +332,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                       >
                         <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden border border-slate-200 dark:border-zinc-700">
                           {user.photoUrl ? (
-                            <img src={user.photoUrl} alt={user.nickname} className="w-full h-full object-cover" />
+                            <img src={getOptimizedImageUrl(user.photoUrl)} alt={user.nickname} className="w-full h-full object-cover" />
                           ) : (
                             <span className="text-xl leading-none">{user.emoji}</span>
                           )}

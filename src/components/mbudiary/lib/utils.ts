@@ -65,7 +65,6 @@ export function formatPostTimestamp(dateInput: string | Date | number): string {
   const year = date.getFullYear();
   const dateStr = `${day} ${month} ${year}`;
 
-  // Postingan pada hari yang sama: gunakan hitungan menit/jam
   if (isSameDay) {
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
     let relativeStr = 'Baru saja';
@@ -85,6 +84,16 @@ export function formatPostTimestamp(dateInput: string | Date | number): string {
     return `${relativeStr} • ${dateStr}`;
   }
 
-  // Jika tanggal sudah berbeda: tampilkan jam asli (misal: 12.30 • 5 Agt 2026)
   return `${timeStr} • ${dateStr}`;
+}
+
+/**
+ * HELPER BARU: Mengubah URL Cloudinary biasa menjadi URL terkompresi otomatis
+ */
+export function getOptimizedImageUrl(url: string | undefined): string {
+  if (!url) return '';
+  if (url.includes('res.cloudinary.com') && url.includes('/upload/')) {
+    return url.replace('/upload/', '/upload/f_auto,q_auto,w_1280,c_limit/');
+  }
+  return url;
 }

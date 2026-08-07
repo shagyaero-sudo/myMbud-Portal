@@ -9,7 +9,7 @@ import {
   getPosts,
   savePost,
 } from './lib/storage';
-import { formatDateFormatted, formatTimeAgo, formatPostTimestamp } from './lib/utils';
+import { formatDateFormatted, formatTimeAgo, formatPostTimestamp, getOptimizedImageUrl } from './lib/utils';
 import {
   Heart,
   MessageSquare,
@@ -227,7 +227,6 @@ export const PostCard: React.FC<PostCardProps> = ({
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95 }}
         transition={{ duration: 0.25 }}
-        // REVISI V3.1: Padding kartu diperlebar (p-5 sm:p-6)
         className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl p-5 sm:p-6 transition-all duration-200 shadow-sm w-full mx-auto"
       >
         {isPlainRepost && (
@@ -242,7 +241,7 @@ export const PostCard: React.FC<PostCardProps> = ({
           <div onClick={() => onSelectAuthor?.(displayAuthorNrp)} className="flex items-center gap-3 cursor-pointer group/author" title={`Lihat profil ${displayAuthorName}`}>
             <div className="w-11 h-11 rounded-2xl bg-slate-50 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden border border-slate-100 dark:border-zinc-800 group-hover/author:scale-105 transition-transform">
               {displayAuthorPhotoUrl ? (
-                <img src={displayAuthorPhotoUrl} alt={displayAuthorName} className="w-full h-full object-cover rounded-2xl" />
+                <img src={getOptimizedImageUrl(displayAuthorPhotoUrl)} alt={displayAuthorName} className="w-full h-full object-cover rounded-2xl" />
               ) : (
                 <span className="text-2xl leading-none">{displayAuthorEmoji}</span>
               )}
@@ -291,7 +290,7 @@ export const PostCard: React.FC<PostCardProps> = ({
             <div className="px-4 pt-3.5 pb-2 flex items-center gap-2.5">
               <div className="w-7 h-7 rounded-xl bg-slate-200 dark:bg-zinc-700 flex items-center justify-center shrink-0 overflow-hidden">
                 {originalAuthorPhotoUrl ? (
-                  <img src={originalAuthorPhotoUrl} alt={originalAuthorName} className="w-full h-full object-cover" />
+                  <img src={getOptimizedImageUrl(originalAuthorPhotoUrl)} alt={originalAuthorName} className="w-full h-full object-cover" />
                 ) : (
                   <span className="text-sm leading-none">{originalAuthorEmoji}</span>
                 )}
@@ -310,8 +309,8 @@ export const PostCard: React.FC<PostCardProps> = ({
             {originalPost.imageUrls && originalPost.imageUrls.length > 0 && (
               <div className={`grid gap-1.5 px-2 pb-2 ${originalPost.imageUrls.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
                 {originalPost.imageUrls.map((imageUrl, index) => (
-                  <div key={`${imageUrl}-${index}`} onClick={(e) => { e.stopPropagation(); setSelectedImage(imageUrl); }} className={`relative overflow-hidden rounded-xl bg-slate-100 dark:bg-zinc-800 ${originalPost.imageUrls?.length === 1 ? 'max-h-[400px]' : 'aspect-square'}`}>
-                    <img src={imageUrl} alt={`Gambar repost ${index + 1}`} loading="lazy" className="w-full h-full object-cover" />
+                  <div key={`${imageUrl}-${index}`} onClick={(e) => { e.stopPropagation(); setSelectedImage(getOptimizedImageUrl(imageUrl)); }} className={`relative overflow-hidden rounded-xl bg-slate-100 dark:bg-zinc-800 ${originalPost.imageUrls?.length === 1 ? 'max-h-[400px]' : 'aspect-square'}`}>
+                    <img src={getOptimizedImageUrl(imageUrl)} alt={`Gambar repost ${index + 1}`} loading="lazy" className="w-full h-full object-cover" />
                   </div>
                 ))}
               </div>
@@ -328,8 +327,8 @@ export const PostCard: React.FC<PostCardProps> = ({
         {!isQuoteRepost && displayImages && displayImages.length > 0 && (
           <div className={`mb-4 grid gap-2 w-full ${displayImages.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
             {displayImages.map((imageUrl, index) => (
-              <button key={`${imageUrl}-${index}`} type="button" onClick={() => setSelectedImage(imageUrl)} className={`relative overflow-hidden rounded-2xl bg-slate-100 dark:bg-zinc-800 border border-slate-100 dark:border-zinc-800 cursor-zoom-in focus:outline-none focus:ring-2 focus:ring-indigo-500 group ${displayImages.length === 1 ? 'max-h-[520px]' : 'aspect-square'}`}>
-                <img src={imageUrl} alt={`Gambar postingan ${index + 1}`} loading="lazy" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]" />
+              <button key={`${imageUrl}-${index}`} type="button" onClick={() => setSelectedImage(getOptimizedImageUrl(imageUrl))} className={`relative overflow-hidden rounded-2xl bg-slate-100 dark:bg-zinc-800 border border-slate-100 dark:border-zinc-800 cursor-zoom-in focus:outline-none focus:ring-2 focus:ring-indigo-500 group ${displayImages.length === 1 ? 'max-h-[520px]' : 'aspect-square'}`}>
+                <img src={getOptimizedImageUrl(imageUrl)} alt={`Gambar postingan ${index + 1}`} loading="lazy" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]" />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors pointer-events-none" />
               </button>
             ))}
@@ -393,7 +392,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                           <div onClick={() => onSelectAuthor?.(reply.authorNrp)} className="flex items-center gap-2 cursor-pointer group/replyAuthor">
                             <div className="w-6 h-6 rounded-lg bg-slate-200 dark:bg-zinc-700 flex items-center justify-center shrink-0 overflow-hidden">
                               {replyPhotoUrl ? (
-                                <img src={replyPhotoUrl} alt={replyName} className="w-full h-full object-cover" />
+                                <img src={getOptimizedImageUrl(replyPhotoUrl)} alt={replyName} className="w-full h-full object-cover" />
                               ) : (
                                 <span className="text-sm leading-none">{replyEmoji}</span>
                               )}
@@ -422,7 +421,7 @@ export const PostCard: React.FC<PostCardProps> = ({
         </AnimatePresence>
       </motion.article>
 
-      {/* QUOTE MODAL - Sama seperti sebelumnya */}
+      {/* QUOTE MODAL */}
       <AnimatePresence>
         {isQuoteOpen && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className={`fixed inset-0 z-[999998] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 transition-all duration-300 ${isQuoteFocused ? 'pb-[26dvh] sm:pb-0' : 'pb-0'}`} onMouseDown={(e) => { if (e.target === e.currentTarget) { setIsQuoteOpen(false); setQuoteContent(''); setIsQuoteFocused(false); } }}>
@@ -440,7 +439,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                   <div className="px-4 py-3 flex items-center gap-2">
                     <div className="w-8 h-8 rounded-xl bg-slate-200 dark:bg-zinc-700 flex items-center justify-center shrink-0 overflow-hidden">
                       {(post.isRepost && originalPost ? originalAuthorPhotoUrl : authorPhotoUrl) ? (
-                        <img src={post.isRepost && originalPost ? originalAuthorPhotoUrl : authorPhotoUrl} alt="Avatar" className="w-full h-full object-cover" />
+                        <img src={getOptimizedImageUrl(post.isRepost && originalPost ? originalAuthorPhotoUrl : authorPhotoUrl)} alt="Avatar" className="w-full h-full object-cover" />
                       ) : (
                         <span className="text-base leading-none">{post.isRepost && originalPost ? originalAuthorEmoji : authorEmoji}</span>
                       )}
@@ -464,7 +463,7 @@ export const PostCard: React.FC<PostCardProps> = ({
         )}
       </AnimatePresence>
 
-      {/* IMAGE LIGHTBOX - Sama seperti sebelumnya */}
+      {/* IMAGE LIGHTBOX */}
       <AnimatePresence>
         {selectedImage && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[999999] w-screen h-[100dvh] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6" onMouseDown={(e) => { if (e.target === e.currentTarget) setSelectedImage(null); }}>
