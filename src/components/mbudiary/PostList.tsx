@@ -2,11 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { MbudiaryPost, UserProfile, FeedSort } from '../types';
 import { getPosts, getCachedUserByNrp, getBookmarkedPostIds } from './lib/storage';
 import { PostCard } from './PostCard';
-import { Search, MessageCircle, Clock, TrendingUp, Bookmark } from 'lucide-react';
+import { Search, MessageCircle, Clock, TrendingUp, Bookmark, ArrowUpDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-
-// Tambahan FeedSort
-type ExtendedFeedSort = FeedSort | 'bookmarked';
 
 interface PostListProps {
   currentUser: UserProfile;
@@ -41,9 +38,10 @@ export const PostList: React.FC<PostListProps> = ({
   onSelectAuthor,
 }) => {
   const [posts, setPosts] = useState<MbudiaryPost[]>([]);
-  const [sort, setSort] = useState<ExtendedFeedSort>('newest');
+  const [sort, setSort] = useState<FeedSort>('newest');
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [showBookmarksOnly, setShowBookmarksOnly] = useState(false);
 
   const loadPosts = async () => {
     setIsLoading(true);
@@ -71,20 +69,14 @@ export const PostList: React.FC<PostListProps> = ({
     };
   }, []);
 
-  const handleSortToggle = () => {
-    if (sort === 'newest') setSort('popular');
-    else if (sort === 'popular') setSort('bookmarked');
-    else setSort('newest');
-  };
-
   const filteredPosts = posts.filter((post) => {
-    // 1. Cek Bookmark
-    if (sort === 'bookmarked') {
+    // 1. Filter Bookmark Jika Tombol Aktif
+    if (showBookmarksOnly) {
       const bookmarkedIds = getBookmarkedPostIds();
       if (!bookmarkedIds.includes(post.id)) return false;
     }
 
-    // 2. Cek Search Query
+    // 2. Filter Pencarian
     if (!searchQuery.trim()) return true;
     const q = searchQuery.trim().toLowerCase();
     const author = getCachedUserByNrp(post.authorNrp);
@@ -106,11 +98,12 @@ export const PostList: React.FC<PostListProps> = ({
 
   return (
     <div className="space-y-3">
-      {/* Control bar yang bersih dan ramping tanpa tombol refresh */}
+      {/* Control Bar dengan Tombol Bookmark Terpisah */}
       <div className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-2xl sm:rounded-3xl p-2 sm:p-2.5 shadow-sm">
         <div className="flex items-center gap-1.5 sm:gap-2">
+          
           {/* SEARCH BAR */}
-          <div className="relative flex-1">
+          <div className="relative flex-1 min-w-0">
             <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-500" />
             <input
               type="text"
@@ -124,21 +117,28 @@ export const PostList: React.FC<PostListProps> = ({
             )}
           </div>
 
-          {/* TOMBOL TAB FILTER RAMPING (3 MODE: Terbaru -> Terpopuler -> Tersimpan) */}
+          {/* TOMBOL TAB SORTING (Ditambah Ikon Switch) */}
           <button
-            onClick={handleSortToggle}
-            className="px-2.5 py-1.5 rounded-xl sm:rounded-2xl bg-slate-50 dark:bg-zinc-800/80 hover:bg-slate-100 dark:hover:bg-zinc-800 border border-slate-100 dark:border-zinc-800 text-slate-700 dark:text-zinc-200 text-[11px] sm:text-xs font-bold flex items-center gap-1 sm:gap-1.5 transition-colors shrink-0"
+            onClick={() => setSort(sort === 'newest' ? 'popular' : 'newest')}
+            className="px-2.5 py-1.5 rounded-xl sm:rounded-2xl bg-slate-50 dark:bg-zinc-800/80 hover:bg-slate-100 dark:hover:bg-zinc-800 border border-slate-100 dark:border-zinc-800 text-slate-700 dark:text-zinc-200 text-[11px] sm:text-xs font-bold flex items-center gap-1.5 transition-colors shrink-0"
             title="Ubah Urutan Postingan"
           >
-            {sort === 'newest' && (
-              <><Clock className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" /><span>Terbaru</span></>
+            {sort === 'newest' ? (
+              <><Clock className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" /><span className="hidden sm:inline">Terbaru</span></>
+            ) : (
+              <><TrendingUp className="w-3.5 h-3.5 text-rose-500" /><span className="hidden sm:inline">Terpopuler</span></>
             )}
-            {sort === 'popular' && (
-              <><TrendingUp className="w-3.5 h-3.5 text-rose-500" /><span>Terpopuler</span></>
-            )}
-            {sort === 'bookmarked' && (
-              <><Bookmark className="w-3.5 h-3.5 text-amber-500 fill-amber-500" /><span>Tersimpan</span></>
-            )}
+            <ArrowUpDown className="w-3 h-3 text-slate-400 ml-0.5" />
+          </button>
+
+          {/* TOMBOL BOOKMARK TERPISAH */}
+          <button
+            onClick={() => setShowBookmarksOnly((prev) => !prev)}
+            className={`px-2.5 py-1.5 rounded-xl sm:rounded-2xl border ${showBookmarksOnly ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-900/50 text-amber-600 dark:text-amber-400' : 'bg-slate-50 dark:bg-zinc-800/80 border-slate-100 dark:border-zinc-800 text-slate-400 dark:text-zinc-500 hover:text-amber-500'} transition-all shrink-0 flex items-center gap-1.5`}
+            title="Lihat Postingan Tersimpan"
+          >
+            <Bookmark className={`w-3.5 h-3.5 transition-all ${showBookmarksOnly ? 'fill-amber-500 text-amber-500' : ''}`} />
+            <span className="hidden sm:inline text-[11px] sm:text-xs font-bold">Tersimpan</span>
           </button>
         </div>
       </div>
@@ -153,21 +153,26 @@ export const PostList: React.FC<PostListProps> = ({
         ) : sortedPosts.length === 0 ? (
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl p-8 text-center shadow-sm space-y-3">
             <div className="w-12 h-12 rounded-full bg-slate-50 dark:bg-zinc-800 border border-slate-100 dark:border-zinc-800 text-slate-400 dark:text-zinc-500 flex items-center justify-center mx-auto">
-              {sort === 'bookmarked' ? <Bookmark className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}
+              {showBookmarksOnly ? <Bookmark className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}
             </div>
             <h3 className="font-bold text-sm text-slate-800 dark:text-zinc-200">
-              {sort === 'bookmarked' ? 'Belum Ada Bookmark' : 'Tidak Ada Postingan Ditemukan'}
+              {showBookmarksOnly ? 'Belum Ada Bookmark' : 'Tidak Ada Postingan Ditemukan'}
             </h3>
             <p className="text-xs text-slate-500 dark:text-zinc-400 max-w-sm mx-auto">
-              {sort === 'bookmarked' 
-                ? 'Kamu belum menyimpan postingan apa pun.' 
-                : searchQuery 
-                  ? `Tidak ada hasil untuk kata kunci "${searchQuery}". Coba kata kunci lain.` 
+              {showBookmarksOnly
+                ? 'Kamu belum menyimpan postingan apa pun ke Bookmark.'
+                : searchQuery
+                  ? `Tidak ada hasil untuk kata kunci "${searchQuery}". Coba kata kunci lain.`
                   : 'Belum ada aktivitas di feed. Buat postingan pertama untuk kelas!'
               }
             </p>
-            {searchQuery && (
-              <button onClick={() => setSearchQuery('')} className="px-4 py-2 bg-indigo-600 text-white rounded-full text-xs font-semibold hover:bg-indigo-500 transition-colors inline-block shadow-sm">Bersihkan Pencarian</button>
+            {(searchQuery || showBookmarksOnly) && (
+              <button 
+                onClick={() => { setSearchQuery(''); setShowBookmarksOnly(false); }} 
+                className="px-4 py-2 bg-indigo-600 text-white rounded-full text-xs font-semibold hover:bg-indigo-500 transition-colors inline-block shadow-sm mt-2"
+              >
+                Kembali ke Feed
+              </button>
             )}
           </motion.div>
         ) : (
