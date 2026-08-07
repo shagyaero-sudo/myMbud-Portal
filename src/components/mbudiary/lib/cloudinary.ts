@@ -11,7 +11,6 @@ const CLOUDINARY_UPLOAD_URL =
    IMAGE COMPRESSION SETTINGS
    ========================================================= */
 
-// Diturunkan dari 1920 ke 1280 (sangat cukup & sangat jernih untuk HP/Laptop)
 const MAX_IMAGE_DIMENSION = 1280;
 const IMAGE_QUALITY = 0.8;
 
@@ -26,8 +25,6 @@ async function compressImage(
     return file;
   }
 
-  // Kompresi aktif jika ukuran file di atas 800 KB (bukan 1.5MB)
-  // Biar file 2MB - 10MB milik temenmu langsung masuk ruang eksekusi
   if (file.size <= 800 * 1024) {
     return file;
   }
@@ -125,9 +122,6 @@ export async function uploadImageToCloudinary(
   const formData = new FormData();
   formData.append('file', compressedFile);
   formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-
-  // DOUBLE PROTECTION: Minta Cloudinary optimasi otomatis (q_auto, f_auto)
-  formData.append('transformation', 'w_1280,h_1280,c_limit,q_auto,f_auto');
 
   const response = await fetch(CLOUDINARY_UPLOAD_URL, {
     method: 'POST',
