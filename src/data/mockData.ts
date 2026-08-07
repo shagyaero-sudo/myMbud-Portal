@@ -1,4 +1,4 @@
-import { AppState } from '../types';
+import type { AppState } from '../types.js';
 
 export const initialAppState: AppState = {
   lastUpdated: new Date().toISOString(),

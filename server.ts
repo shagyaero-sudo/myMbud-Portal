@@ -1,11 +1,11 @@
 import express from 'express';
 import path from 'path';
 import fs from 'fs';
-import { initialAppState } from './src/data/mockData';
-import { AppState, Task, Contact, MaterialFile, Announcement, ScheduleItem, GroupResult } from './src/types';
+import { initialAppState } from './src/data/mockData.js';
+import type { AppState, Task, Contact, MaterialFile, Announcement, ScheduleItem, GroupResult } from './src/types.js';
 
 // Import OneSignal Notification Helper
-import { sendOneSignalNotification } from './services/oneSignalServer';
+import { sendOneSignalNotification } from './services/oneSignalServer.js';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 const DATA_FILE = path.join(DATA_DIR, 'store.json');
