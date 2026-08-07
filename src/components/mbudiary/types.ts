@@ -1,85 +1,44 @@
+export interface MbudiaryNotification {
+  id: string;
+  recipientNrp: string;
+  senderNrp: string;
+  type: 'like' | 'reply' | 'repost' | 'follow';
+  postId?: string;
+  isRead: boolean;
+  createdAt: string;
+}
+
 export interface MbudiaryPost {
   id: string;
-
-  /**
-   * Identity permanen user.
-   * Semua relasi Mbudiary menggunakan NRP, bukan username/nickname.
-   */
   authorNrp: string;
-
   content: string;
-
-  /**
-   * Array NRP user yang menyukai post.
-   */
   likes: string[];
-
   replyCount: number;
-
   isOfficerPost?: boolean;
-
-  /**
-   * Digunakan untuk Poin 4.
-   * URL gambar berasal dari Cloudinary.
-   */
   imageUrls?: string[];
-
-  /**
-   * Digunakan untuk Poin 6.
-   */
   isRepost?: boolean;
   originalPostId?: string;
   quoteContent?: string;
-
   createdAt: string;
 }
 
 export interface MbudiaryReply {
   id: string;
-
   postId: string;
-
-  /**
-   * Identity permanen user.
-   */
   authorNrp: string;
-
   content: string;
-
   createdAt: string;
 }
 
 export interface UserProfile {
-  /**
-   * Primary identity.
-   * Document ID Firestore = nrp.toLowerCase()
-   */
   nrp: string;
-
-  /**
-   * Username/handle yang dapat berubah.
-   * Harus unik di mbudiary_users.
-   */
   username: string;
-
-  /**
-   * Nama tampilan.
-   */
   nickname: string;
-
   isOfficer: boolean;
-
   emoji: string;
-
-  /**
-   * Status centang biru akun.
-   */
   isVerified?: boolean;
-
-  /**
-   * Custom foto profil (URL Cloudinary).
-   */
   photoUrl?: string;
+  headerUrl?: string; // <-- Tambahan untuk v3.1
 }
 
 export interface MbudiaryUser {
@@ -88,18 +47,9 @@ export interface MbudiaryUser {
   nickname: string;
   isOfficer: boolean;
   emoji: string;
-
-  /**
-   * Status centang biru akun.
-   * Disimpan langsung di Firestore.
-   */
   isVerified?: boolean;
-
-  /**
-   * Custom foto profil (URL Cloudinary).
-   */
   photoUrl?: string;
-
+  headerUrl?: string; // <-- Tambahan untuk v3.1
   updatedAt?: string;
 }
 
