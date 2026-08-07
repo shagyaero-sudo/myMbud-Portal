@@ -1,77 +1,47 @@
-const ONE_SIGNAL_APP_ID =
-  'd5b7e852-4651-49dd-8123-41f1613e5169';
-
-const ONE_SIGNAL_API_URL =
-  'https://api.onesignal.com/notifications';
+export type OneSignalNotificationParams = {
+  targetNrp: string;
+  title: string;
+  message: string;
+  url?: string;
+  data?: Record<string, any>;
+};
 
 export async function sendOneSignalNotification({
   targetNrp,
   title,
   message,
   url,
-}: {
-  targetNrp: string;
-  title: string;
-  message: string;
-  url?: string;
-}) {
+  data,
+}: OneSignalNotificationParams) {
+  const appId = process.env.ONESIGNAL_APP_ID;
   const apiKey = process.env.ONESIGNAL_REST_API_KEY;
 
-  if (!apiKey) {
-    throw new Error(
-      'ONESIGNAL_REST_API_KEY belum diset di environment variable.'
-    );
+  if (!appId || !apiKey) {
+    throw new Error('ONESIGNAL_APP_ID dan ONESIGNAL_REST_API_KEY belum dikonfigurasi.');
   }
 
-  if (!targetNrp) {
-    throw new Error('targetNrp wajib diisi.');
-  }
+  const payload = {
+    app_id: appId,
+    include_external_user_ids: [targetNrp],
+    contents: { en: message },
+    headings: { en: title },
+    ...(url && { url }),
+    ...(data && { data }),
+  };
 
-  const response = await fetch(ONE_SIGNAL_API_URL, {
+  const response = await fetch('https://onesignal.com/api/v1/notifications', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Key ${apiKey}`,
+      Authorization: `Basic ${apiKey}`,
     },
-    body: JSON.stringify({
-      app_id: ONE_SIGNAL_APP_ID,
-
-      include_aliases: {
-        external_id: [targetNrp],
-      },
-
-      target_channel: 'push',
-
-      headings: {
-        en: title,
-      },
-
-      contents: {
-        en: message,
-      },
-
-      ...(url ? { url } : {}),
-    }),
+    body: JSON.stringify(payload),
   });
 
-  const data = await response.json();
-
+  const resData = await response.json();
   if (!response.ok) {
-    console.error(
-      '[OneSignal] API Error:',
-      data
-    );
-
-    throw new Error(
-      data?.errors?.join?.(', ') ||
-        'Gagal mengirim OneSignal notification.'
-    );
+    throw new Error(resData?.errors?.[0] || 'Gagal mengontak API OneSignal');
   }
 
-  console.log(
-    '[OneSignal] Notification sent:',
-    data
-  );
-
-  return data;
+  return resData;
 }

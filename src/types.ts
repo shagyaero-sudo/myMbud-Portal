@@ -32,6 +32,7 @@ export interface Contact {
   pjPhone: string;
   room?: string;
   scheduleDayTime?: string;
+  lecturers?: any[];
 }
 
 export interface MaterialFile {

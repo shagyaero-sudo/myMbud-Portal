@@ -1,7 +1,6 @@
 import express from 'express';
 import path from 'path';
 import fs from 'fs';
-import { fileURLToPath } from 'url';
 import { createServer as createViteServer } from 'vite';
 import { initialAppState } from './src/data/mockData';
 import { AppState, Task, Contact, MaterialFile, Announcement, ScheduleItem, GroupResult } from './src/types';
@@ -9,17 +8,17 @@ import { AppState, Task, Contact, MaterialFile, Announcement, ScheduleItem, Grou
 // Import OneSignal Notification Helper
 import { sendOneSignalNotification } from './services/oneSignalServer';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const DATA_DIR = path.join(__dirname, 'data');
+const DATA_DIR = path.join(process.cwd(), 'data');
 const DATA_FILE = path.join(DATA_DIR, 'store.json');
 
-// Memory store fallback agar Vercel Serverless Function tidak crash saat membaca/menulis file
+// Memory store fallback agar Vercel Serverless Function tidak crash
 let memoryStore: AppState = JSON.parse(JSON.stringify(initialAppState));
 
 function getStoreData(): AppState {
   try {
+    if (process.env.VERCEL) {
+      return memoryStore;
+    }
     if (!fs.existsSync(DATA_DIR) || !fs.existsSync(DATA_FILE)) {
       return memoryStore;
     }
@@ -27,7 +26,7 @@ function getStoreData(): AppState {
     memoryStore = JSON.parse(raw);
     return memoryStore;
   } catch (err) {
-    console.error('Error reading store data, falling back to memory store:', err);
+    console.error('Error reading store data, using memory store:', err);
     return memoryStore;
   }
 }
@@ -37,8 +36,7 @@ function saveStoreData(data: AppState): AppState {
     data.lastUpdated = new Date().toISOString();
     memoryStore = data;
 
-    // Hanya tulis ke disk jika bukan di lingkungan Vercel / Production Read-Only
-    if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+    if (!process.env.VERCEL && process.env.NODE_ENV !== 'production') {
       if (!fs.existsSync(DATA_DIR)) {
         fs.mkdirSync(DATA_DIR, { recursive: true });
       }
@@ -313,7 +311,7 @@ app.post('/api/groups', (req, res) => {
 
 // Fungsi untuk pengembangan lokal (Vite Middleware)
 async function setupLocalServer() {
-  const PORT = process.env.PORT || 3000;
+  const PORT = Number(process.env.PORT) || 3000;
 
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
@@ -339,5 +337,5 @@ if (!process.env.VERCEL) {
   setupLocalServer();
 }
 
-// Export default app agar Vercel bisa menggunakannya sebagai Serverless Function
+// Export default app untuk Serverless Function Vercel
 export default app;
