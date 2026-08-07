@@ -32,18 +32,19 @@ export const USER_OFFICER_KEY = 'mymbud_is_officer';
 export const USER_EMOJI_KEY = 'mymbud_user_emoji';
 export const USER_USERNAME_KEY = 'mymbud_user_username';
 export const USER_PHOTO_URL_KEY = 'mymbud_user_photo_url';
+export const USER_HEADER_URL_KEY = 'mymbud_user_header_url'; // <-- Key Baru v3.1
 
 const POSTS_COLLECTION = 'mbudiary_posts';
 const REPLIES_COLLECTION = 'mbudiary_replies';
 const FOLLOWS_COLLECTION = 'mbudiary_follows';
 const USERS_COLLECTION = 'mbudiary_users';
-const NOTIFICATIONS_COLLECTION = 'mbudiary_notifications'; // Collection baru
+const NOTIFICATIONS_COLLECTION = 'mbudiary_notifications';
 
 let postsCache: MbudiaryPost[] = [];
 let repliesCache: MbudiaryReply[] = [];
 let followsCache: MbudiaryFollow[] = [];
 let usersCache: Record<string, MbudiaryUser> = {};
-let notificationsCache: MbudiaryNotification[] = []; // Cache notif
+let notificationsCache: MbudiaryNotification[] = [];
 
 let initialized = false;
 let unsubscribeAll: (() => void) | null = null;
@@ -67,6 +68,7 @@ function normalizeUser(nrp: string, data: Record<string, any>): MbudiaryUser {
     emoji: String(data.emoji || '😊'),
     isVerified: Boolean(data.isVerified),
     photoUrl: data.photoUrl || undefined,
+    headerUrl: data.headerUrl || undefined, // <-- Mapping Header
     updatedAt: data.updatedAt?.toDate?.()?.toISOString?.() || data.updatedAt || undefined,
   };
 }
@@ -116,8 +118,9 @@ export function getUserProfile(): UserProfile {
   const isOfficer = localStorage.getItem(USER_OFFICER_KEY) === 'true';
   const emoji = localStorage.getItem(USER_EMOJI_KEY) || '😊';
   const photoUrl = localStorage.getItem(USER_PHOTO_URL_KEY) || undefined;
+  const headerUrl = localStorage.getItem(USER_HEADER_URL_KEY) || undefined; // <-- Get Header
 
-  return { nrp, username, nickname, isOfficer, emoji, photoUrl };
+  return { nrp, username, nickname, isOfficer, emoji, photoUrl, headerUrl };
 }
 
 /* =========================================================
@@ -200,6 +203,7 @@ export async function syncUserProfileWithFirebase(): Promise<UserProfile> {
         emoji: cloudUser.emoji,
         isVerified: cloudUser.isVerified,
         photoUrl: cloudUser.photoUrl,
+        headerUrl: cloudUser.headerUrl, // <-- Sync Header
       };
 
       localStorage.setItem(USER_NRP_KEY, syncedProfile.nrp);
@@ -214,6 +218,12 @@ export async function syncUserProfileWithFirebase(): Promise<UserProfile> {
         localStorage.removeItem(USER_PHOTO_URL_KEY);
       }
 
+      if (syncedProfile.headerUrl) {
+        localStorage.setItem(USER_HEADER_URL_KEY, syncedProfile.headerUrl);
+      } else {
+        localStorage.removeItem(USER_HEADER_URL_KEY);
+      }
+
       emit('mbud_user_change');
       return syncedProfile;
     }
@@ -226,6 +236,7 @@ export async function syncUserProfileWithFirebase(): Promise<UserProfile> {
       emoji: currentProfile.emoji || '😊',
       isVerified: currentProfile.isVerified || false,
       photoUrl: currentProfile.photoUrl || undefined,
+      headerUrl: currentProfile.headerUrl || undefined,
     };
 
     await setDoc(userDocRef, { ...initialUser, updatedAt: serverTimestamp() });
@@ -236,6 +247,7 @@ export async function syncUserProfileWithFirebase(): Promise<UserProfile> {
     localStorage.setItem(USER_OFFICER_KEY, String(initialUser.isOfficer));
     localStorage.setItem(USER_EMOJI_KEY, initialUser.emoji);
     if (initialUser.photoUrl) localStorage.setItem(USER_PHOTO_URL_KEY, initialUser.photoUrl);
+    if (initialUser.headerUrl) localStorage.setItem(USER_HEADER_URL_KEY, initialUser.headerUrl);
 
     emit('mbud_user_change');
     return initialUser;
@@ -264,6 +276,7 @@ export async function saveUserProfile(profile: UserProfile): Promise<void> {
     emoji: profile.emoji || '😊',
     isVerified: profile.isVerified || false,
     photoUrl: profile.photoUrl || undefined,
+    headerUrl: profile.headerUrl || undefined, // <-- Save Header
   };
 
   await setDoc(userDocRef, { ...cloudUser, updatedAt: serverTimestamp() }, { merge: true });
@@ -274,10 +287,17 @@ export async function saveUserProfile(profile: UserProfile): Promise<void> {
   localStorage.setItem(USER_NAME_KEY, cloudUser.nickname);
   localStorage.setItem(USER_OFFICER_KEY, String(cloudUser.isOfficer));
   localStorage.setItem(USER_EMOJI_KEY, cloudUser.emoji);
+  
   if (cloudUser.photoUrl) {
     localStorage.setItem(USER_PHOTO_URL_KEY, cloudUser.photoUrl);
   } else {
     localStorage.removeItem(USER_PHOTO_URL_KEY);
+  }
+
+  if (cloudUser.headerUrl) {
+    localStorage.setItem(USER_HEADER_URL_KEY, cloudUser.headerUrl);
+  } else {
+    localStorage.removeItem(USER_HEADER_URL_KEY);
   }
 
   emit('mbud_user_change');
@@ -303,7 +323,6 @@ export async function setUserVerified(userNrp: string, verified: boolean): Promi
    NOTIFICATIONS CACHE & LISTENERS
    ========================================================= */
 
-// Helper untuk mengirim notifikasi ke Firestore
 export async function createNotification({
   recipientNrp,
   senderNrp,
@@ -315,7 +334,6 @@ export async function createNotification({
   type: 'like' | 'reply' | 'repost' | 'follow';
   postId?: string;
 }) {
-  // Jangan kirim notif ke diri sendiri
   if (recipientNrp.toLowerCase() === senderNrp.toLowerCase()) return;
 
   try {
@@ -333,7 +351,6 @@ export async function createNotification({
   }
 }
 
-// Listener Notifikasi Realtime
 export function subscribeNotifications(userNrp: string, callback: (notifs: MbudiaryNotification[]) => void) {
   const normalizedNrp = userNrp.trim().toLowerCase();
   const q = query(
@@ -358,7 +375,6 @@ export function subscribeNotifications(userNrp: string, callback: (notifs: Mbudi
   });
 }
 
-// Tandai Notifikasi Sudah Dibaca
 export async function markNotificationAsRead(notifId: string) {
   try {
     const notifRef = doc(db, NOTIFICATIONS_COLLECTION, notifId);
@@ -405,6 +421,8 @@ export function initializeMbudiary(): () => void {
       localStorage.setItem(USER_OFFICER_KEY, String(user.isOfficer));
       if (user.photoUrl) localStorage.setItem(USER_PHOTO_URL_KEY, user.photoUrl);
       else localStorage.removeItem(USER_PHOTO_URL_KEY);
+      if (user.headerUrl) localStorage.setItem(USER_HEADER_URL_KEY, user.headerUrl);
+      else localStorage.removeItem(USER_HEADER_URL_KEY);
       emit('mbud_user_change');
       emit('mbud_users_change');
     });
@@ -508,7 +526,6 @@ export async function toggleLikePost(postId: string, userNrp: string): Promise<M
 
   if (!updatedLikes) return null;
 
-  // Trigger notifikasi jika like baru ditambahkan (bukan unlike)
   if (isNowLiked && postAuthorNrp) {
     createNotification({
       recipientNrp: postAuthorNrp,
@@ -560,7 +577,6 @@ export async function addReply(postId: string, content: string): Promise<Mbudiar
     transaction.update(postRef, { replyCount: count + 1 });
   });
 
-  // Trigger notifikasi balasan
   if (postAuthorNrp) {
     createNotification({
       recipientNrp: postAuthorNrp,
@@ -582,12 +598,19 @@ export function getFollows(): string[] {
   return followsCache.filter((follow) => follow.followerNrp === currentNrp).map((follow) => follow.targetNrp);
 }
 
-// Tambahkan helper getFollowerNrps (yang baru aja kita diskusikan buat modal follower!)
 export function getFollowerNrps(targetNrp: string): string[] {
   const target = targetNrp.trim().toLowerCase();
   return followsCache
     .filter((follow) => follow.targetNrp === target)
     .map((follow) => follow.followerNrp);
+}
+
+// Fungsi Baru untuk mendapatkan daftar NRP yang sedang diikuti (Mengikuti) v3.1
+export function getFollowingNrps(targetNrp: string): string[] {
+  const target = targetNrp.trim().toLowerCase();
+  return followsCache
+    .filter((follow) => follow.followerNrp === target)
+    .map((follow) => follow.targetNrp);
 }
 
 export function isFollowing(targetNrp: string): boolean {
@@ -613,7 +636,6 @@ export async function toggleFollow(targetNrp: string): Promise<boolean> {
 
   await setDoc(followRef, { followerNrp, targetNrp: target, createdAt: serverTimestamp() });
 
-  // Trigger notifikasi follow
   createNotification({
     recipientNrp: target,
     senderNrp: followerNrp,

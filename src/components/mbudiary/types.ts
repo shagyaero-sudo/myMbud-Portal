@@ -38,6 +38,7 @@ export interface UserProfile {
   emoji: string;
   isVerified?: boolean;
   photoUrl?: string;
+  headerUrl?: string; // <-- Tambahan untuk v3.1
 }
 
 export interface MbudiaryUser {
@@ -48,6 +49,7 @@ export interface MbudiaryUser {
   emoji: string;
   isVerified?: boolean;
   photoUrl?: string;
+  headerUrl?: string; // <-- Tambahan untuk v3.1
   updatedAt?: string;
 }
 
