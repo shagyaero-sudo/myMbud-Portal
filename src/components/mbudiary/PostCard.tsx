@@ -478,7 +478,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                   if (e.target === e.currentTarget) setSelectedImage(null);
                 }}
               >
-                {/* 1. TOMBOL (X) MELAYANG DI KANAN ATAS LAYAR */}
+                {/* TOMBOL (X) MELAYANG DI KANAN ATAS LAYAR */}
                 <motion.button
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -490,7 +490,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                   <X className="w-5 h-5 sm:w-6 sm:h-6" />
                 </motion.button>
 
-                {/* 2. KONTAINER GAMBAR + TOMBOL (X) MERAH NEMPEL DI POJOK GAMBAR */}
+                {/* KONTAINER GAMBAR */}
                 <motion.div
                   initial={{ opacity: 0, scale: 0.92, y: 10 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -498,16 +498,6 @@ export const PostCard: React.FC<PostCardProps> = ({
                   className="relative z-[10000001] max-w-[95vw] max-h-[85dvh] flex items-center justify-center"
                   onMouseDown={(e) => e.stopPropagation()}
                 >
-                  {/* TOMBOL (X) MERAH DI POJOK GAMBAR */}
-                  <button
-                    type="button"
-                    onClick={() => setSelectedImage(null)}
-                    className="absolute -top-3 -right-3 sm:-top-4 sm:-right-4 z-[10000003] w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-rose-600 hover:bg-rose-500 text-white flex items-center justify-center shadow-2xl border-2 border-white transition-transform active:scale-90 cursor-pointer"
-                    title="Tutup"
-                  >
-                    <X className="w-4 h-4 sm:w-5 sm:h-5 stroke-[3]" />
-                  </button>
-
                   <img
                     src={selectedImage}
                     alt="Pratinjau gambar postingan"

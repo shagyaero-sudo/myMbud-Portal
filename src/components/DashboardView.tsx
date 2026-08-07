@@ -50,23 +50,30 @@ interface AttachmentData {
   fileUrl: string;
 }
 
-// --- KOMPONEN WIDGET KALENDER MINI (HEADER MERAH RAMPING) ---
+// --- KOMPONEN WIDGET KALENDER MINI (DENGAN ORNAMENT & PADDING) ---
 const FlipCalendarWidget: React.FC = () => {
   const now = new Date();
   const dayNumber = now.getDate();
   const monthName = now.toLocaleDateString('id-ID', { month: 'short' }).toUpperCase();
 
   return (
-    <div className="flex flex-col items-center justify-between w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-sm overflow-hidden shrink-0 transition-transform hover:scale-105 select-none">
-      {/* Header Bulan Ramping */}
-      <div className="w-full bg-rose-600 dark:bg-rose-700 py-[2px] text-center shrink-0">
+    <div className="relative flex flex-col items-center justify-between w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-sm overflow-hidden shrink-0 transition-transform hover:scale-105 select-none mt-2">
+      
+      {/* ORNAMENT TITIK DUA DI ATAS */}
+      <div className="absolute -top-1 left-0 w-full flex justify-center gap-3">
+        <div className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-zinc-700 shadow-inner" />
+        <div className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-zinc-700 shadow-inner" />
+      </div>
+
+      {/* Header Bulan (Padding ditambah 1 satuan) */}
+      <div className="w-full bg-rose-600 dark:bg-rose-700 py-[4px] text-center shrink-0 mt-2">
         <span className="text-[9px] font-black text-white tracking-widest uppercase leading-none block">
           {monthName}
         </span>
       </div>
       
-      {/* Angka Tanggal Utama Lebih Besar & Dominan */}
-      <div className="flex-1 w-full flex items-center justify-center leading-none">
+      {/* Angka Tanggal Utama */}
+      <div className="flex-1 w-full flex items-center justify-center leading-none pb-0.5">
         <span className="text-xl sm:text-2xl font-black text-slate-900 dark:text-zinc-100 tracking-tight">
           {dayNumber}
         </span>
@@ -437,7 +444,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               {getGreeting()}
             </h2>
             <p className="text-xs font-medium text-slate-500 dark:text-zinc-400 mt-1 leading-relaxed">
-              Udah siap buat produktif hari ini?!
+              Siap untuk produktif dan mengecek perkuliahan hari ini?
             </p>
           </div>
 
