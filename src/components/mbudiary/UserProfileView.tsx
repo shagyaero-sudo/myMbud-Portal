@@ -1,21 +1,28 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { UserProfile } from '../types';
+import React, {
+  useState,
+  useEffect,
+} from 'react';
+
+import {
+  UserProfile,
+} from '../types';
+
 import {
   getPosts,
   isFollowing,
   toggleFollow,
   getFollowerCount,
-  getFollowingCount,
-  getFollowerNrps,
-  getFollowingNrps,
   getCachedUserByNrp,
   setUserVerified,
-  saveUserProfile,
 } from './lib/storage';
-import { uploadImagesToCloudinary } from './lib/cloudinary';
-import { PostCard } from './PostCard';
+
+import {
+  PostCard,
+} from './PostCard';
+
 import {
   ArrowLeft,
+  Heart,
   FileText,
   User,
   Users,
@@ -23,21 +30,37 @@ import {
   UserCheck,
   BadgeCheck,
   Loader2,
-  Edit2,
-  X,
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+
+import {
+  motion,
+} from 'framer-motion';
 
 interface UserProfileViewProps {
+  /**
+   * Identity permanen user.
+   * Semua navigasi profile menggunakan NRP.
+   */
   authorNrp: string;
+
   currentUser: UserProfile;
+
   onBack: () => void;
-  onSelectPost?: (postId: string) => void;
+
+  onSelectPost?: (
+    postId: string
+  ) => void;
+
   onPostUpdate?: () => void;
-  onSelectAuthor?: (authorNrp: string) => void;
+
+  onSelectAuthor?: (
+    authorNrp: string
+  ) => void;
 }
 
-export const UserProfileView: React.FC<UserProfileViewProps> = ({
+export const UserProfileView: React.FC<
+  UserProfileViewProps
+> = ({
   authorNrp,
   currentUser,
   onBack,
@@ -46,51 +69,102 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
   onSelectAuthor,
 }) => {
   const allPosts = getPosts();
-  const [following, setFollowing] = useState<boolean>(isFollowing(authorNrp));
-  const [followerCount, setFollowerCount] = useState<number>(getFollowerCount(authorNrp));
-  const [followingCount, setFollowingCount] = useState<number>(getFollowingCount(authorNrp));
+
+  const [
+    following,
+    setFollowing,
+  ] = useState<boolean>(
+    isFollowing(authorNrp)
+  );
+
+  const [
+    followerCount,
+    setFollowerCount,
+  ] = useState<number>(
+    getFollowerCount(authorNrp)
+  );
+
   const [isTogglingVerified, setIsTogglingVerified] = useState(false);
-  
-  // Header Image Upload State
-  const [isUploadingHeader, setIsUploadingHeader] = useState(false);
-  const headerInputRef = useRef<HTMLInputElement>(null);
 
-  // Modal State untuk Pengikut / Mengikuti
-  const [followModalType, setFollowModalType] = useState<'followers' | 'following' | null>(null);
-  const [modalUsersList, setModalUsersList] = useState<string[]>([]);
-
-  const authorProfile = getCachedUserByNrp(authorNrp);
-  const isSelf = currentUser.nrp.toLowerCase() === authorNrp.toLowerCase();
+  /**
+   * Profile visual user diambil
+   * berdasarkan NRP permanen.
+   */
+  const authorProfile =
+    getCachedUserByNrp(
+      authorNrp
+    );
 
   useEffect(() => {
     const syncProfileState = () => {
-      setFollowing(isFollowing(authorNrp));
-      setFollowerCount(getFollowerCount(authorNrp));
-      setFollowingCount(getFollowingCount(authorNrp));
+      setFollowing(
+        isFollowing(authorNrp)
+      );
+
+      setFollowerCount(
+        getFollowerCount(authorNrp)
+      );
     };
 
     syncProfileState();
-    window.addEventListener('mbud_follows_change', syncProfileState);
-    window.addEventListener('mbud_users_change', syncProfileState);
-    window.addEventListener('mbud_posts_change', syncProfileState);
+
+    window.addEventListener(
+      'mbud_follows_change',
+      syncProfileState
+    );
+
+    window.addEventListener(
+      'mbud_users_change',
+      syncProfileState
+    );
+
+    window.addEventListener(
+      'mbud_posts_change',
+      syncProfileState
+    );
 
     return () => {
-      window.removeEventListener('mbud_follows_change', syncProfileState);
-      window.removeEventListener('mbud_users_change', syncProfileState);
-      window.removeEventListener('mbud_posts_change', syncProfileState);
+      window.removeEventListener(
+        'mbud_follows_change',
+        syncProfileState
+      );
+
+      window.removeEventListener(
+        'mbud_users_change',
+        syncProfileState
+      );
+
+      window.removeEventListener(
+        'mbud_posts_change',
+        syncProfileState
+      );
     };
   }, [authorNrp]);
 
-  const handleFollowToggle = async () => {
-    try {
-      const isNowFollowing = await toggleFollow(authorNrp);
-      setFollowing(isNowFollowing);
-      setFollowerCount(getFollowerCount(authorNrp));
-      setFollowingCount(getFollowingCount(authorNrp));
-    } catch (error) {
-      console.error('[mbudiary] Gagal mengubah follow:', error);
-    }
-  };
+  const handleFollowToggle =
+    async () => {
+      try {
+        const isNowFollowing =
+          await toggleFollow(
+            authorNrp
+          );
+
+        setFollowing(
+          isNowFollowing
+        );
+
+        setFollowerCount(
+          getFollowerCount(
+            authorNrp
+          )
+        );
+      } catch (error) {
+        console.error(
+          '[mbudiary] Gagal mengubah follow:',
+          error
+        );
+      }
+    };
 
   const handleVerifyToggle = async () => {
     if (isTogglingVerified) return;
@@ -106,262 +180,335 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
     }
   };
 
-  const handleHeaderSelection = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    e.target.value = '';
-    if (!file) return;
+  /**
+   * Semua postingan dicari menggunakan
+   * authorNrp sebagai identity.
+   */
+  const userPosts =
+    allPosts.filter(
+      (post) =>
+        post.authorNrp
+          .toLowerCase() ===
+        authorNrp.toLowerCase()
+    );
 
-    if (file.size > 10 * 1024 * 1024) {
-      alert('Ukuran foto header maksimal 10 MB.');
-      return;
-    }
+  const isSelf =
+    currentUser.nrp.toLowerCase() ===
+    authorNrp.toLowerCase();
 
-    setIsUploadingHeader(true);
-    try {
-      const uploadedUrls = await uploadImagesToCloudinary([file]);
-      if (uploadedUrls && uploadedUrls.length > 0) {
-        await saveUserProfile({
-          ...currentUser,
-          headerUrl: uploadedUrls[0],
-        });
-      }
-    } catch (error) {
-      console.error('[mbudiary] Gagal upload foto header:', error);
-      alert('Gagal mengunggah foto header. Silakan coba lagi.');
-    } finally {
-      setIsUploadingHeader(false);
-    }
-  };
+  const authorName =
+    authorProfile?.nickname ||
+    (isSelf
+      ? currentUser.nickname
+      : 'Mbuders');
 
-  const openFollowModal = (type: 'followers' | 'following') => {
-    setFollowModalType(type);
-    if (type === 'followers') {
-      setModalUsersList(getFollowerNrps(authorNrp));
-    } else {
-      setModalUsersList(getFollowingNrps(authorNrp));
-    }
-  };
+  const authorUsername =
+    authorProfile?.username ||
+    (isSelf
+      ? currentUser.username
+      : '');
 
-  const userPosts = allPosts.filter((post) => post.authorNrp.toLowerCase() === authorNrp.toLowerCase());
+  const authorEmoji =
+    authorProfile?.emoji ||
+    (isSelf
+      ? currentUser.emoji
+      : '😊');
 
-  const authorName = authorProfile?.nickname || (isSelf ? currentUser.nickname : 'Mbuders');
-  const authorUsername = authorProfile?.username || (isSelf ? currentUser.username : '');
-  const authorEmoji = authorProfile?.emoji || (isSelf ? currentUser.emoji : '😊');
-  const authorPhotoUrl = authorProfile?.photoUrl || (isSelf ? currentUser.photoUrl : undefined);
-  const authorHeaderUrl = authorProfile?.headerUrl || (isSelf ? currentUser.headerUrl : undefined);
+  const authorPhotoUrl =
+    authorProfile?.photoUrl ||
+    (isSelf
+      ? currentUser.photoUrl
+      : undefined);
+
+  /**
+   * Total likes yang diterima
+   * dari seluruh posting user.
+   */
+  const totalLikesReceived =
+    userPosts.reduce(
+      (acc, post) =>
+        acc +
+        (post.likes?.length || 0),
+      0
+    );
 
   return (
     <div className="space-y-4">
+
       {/* BACK BUTTON */}
       <button
         onClick={onBack}
         className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-xs font-bold text-slate-700 dark:text-zinc-200 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-all shadow-sm group"
       >
         <ArrowLeft className="w-4 h-4 text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" />
-        <span>Kembali</span>
+
+        <span>
+          Kembali
+        </span>
       </button>
 
-      {/* PROFILE CARD */}
+      {/* PROFILE HEADER */}
       <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl shadow-sm relative overflow-hidden"
+        initial={{
+          opacity: 0,
+          y: 10,
+        }}
+        animate={{
+          opacity: 1,
+          y: 0,
+        }}
+        className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl p-4 sm:p-5 shadow-sm relative overflow-hidden"
       >
-        {/* HEADER PICTURE SECTION */}
-        <div className="w-full h-32 sm:h-44 relative bg-slate-200 dark:bg-zinc-800/80">
-          {authorHeaderUrl ? (
-            <img src={authorHeaderUrl} alt="Header Profil" className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full bg-gradient-to-tr from-indigo-100 to-sky-50 dark:from-indigo-900/40 dark:to-sky-900/20" />
-          )}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
 
-          {/* EDIT HEADER BUTTON (Only Self) */}
-          {isSelf && (
-            <div className="absolute top-4 right-4 z-10">
-              <input type="file" accept="image/*" className="hidden" ref={headerInputRef} onChange={handleHeaderSelection} />
-              <button
-                onClick={() => headerInputRef.current?.click()}
-                disabled={isUploadingHeader}
-                className="p-2 sm:px-3 sm:py-2 rounded-full sm:rounded-xl bg-black/40 hover:bg-black/60 backdrop-blur-md text-white text-[11px] font-bold shadow-lg transition-all flex items-center gap-1.5 disabled:opacity-50"
-              >
-                {isUploadingHeader ? <Loader2 className="w-4 h-4 animate-spin" /> : <Edit2 className="w-4 h-4" />}
-                <span className="hidden sm:inline">Edit Sampul</span>
-              </button>
-            </div>
-          )}
-        </div>
+          {/* PROFILE IDENTITY */}
+          <div className="flex items-center justify-between sm:justify-start gap-3 min-w-0">
+            <div className="flex items-center gap-3 min-w-0">
 
-        {/* INFO SECTION WITH NEGATIVE MARGIN AVATAR */}
-        <div className="px-4 sm:px-6 pb-5">
-          {/* TOP ROW: AVATAR & FOLLOW BUTTON */}
-          <div className="flex justify-between items-end -mt-10 sm:-mt-12 mb-3 relative z-10">
-            {/* AVATAR */}
-            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-[1.25rem] sm:rounded-[1.5rem] bg-white dark:bg-zinc-900 p-1.5 shadow-sm">
-              <div className="w-full h-full rounded-xl sm:rounded-2xl bg-slate-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-slate-200/50 dark:border-zinc-700/50">
+              {/* AVATAR / PHOTO / EMOJI */}
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-slate-50 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden border border-slate-200/60 dark:border-zinc-700/60">
                 {authorPhotoUrl ? (
-                  <img src={authorPhotoUrl} alt={authorName} className="w-full h-full object-cover" />
+                  <img
+                    src={authorPhotoUrl}
+                    alt={authorName}
+                    className="w-full h-full object-cover rounded-2xl"
+                  />
                 ) : (
-                  <span className="text-4xl sm:text-5xl leading-none">{authorEmoji}</span>
+                  <span className="text-3xl sm:text-4xl leading-none">
+                    {authorEmoji}
+                  </span>
                 )}
+              </div>
+
+              {/* NAME + USERNAME */}
+              <div className="min-w-0">
+
+                <div className="flex items-center gap-2 flex-wrap">
+
+                  {/* NAME + VERIFIED */}
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-zinc-100 truncate">
+                      {authorName}
+                    </h2>
+
+                    {/* VERIFIED BADGE */}
+                    {authorProfile?.isVerified && (
+                      <span
+                        className="inline-flex items-center justify-center shrink-0 w-4 h-4 rounded-full bg-blue-500 text-white"
+                        title="Akun terverifikasi"
+                        aria-label="Akun terverifikasi"
+                      >
+                        <svg
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                          className="w-2.5 h-2.5"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M16.704 5.29a1 1 0 0 1 .006 1.414l-7.25 7.25a1 1 0 0 1-1.414 0l-3.25-3.25A1 1 0 0 1 6.21 9.29l2.543 2.543 6.543-6.543a1 1 0 0 1 1.408 0Z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </span>
+                    )}
+                  </div>
+
+                  {/* SAYA */}
+                  {isSelf && (
+                    <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/50">
+                      Saya
+                    </span>
+                  )}
+
+                  {/* =========================================================
+                      ADMIN EXCLUSIVE: QUICK TOGGLE VERIFIED BUTTON
+                      ========================================================= */}
+                  {currentUser.isOfficer && !isSelf && (
+                    <button
+                      type="button"
+                      disabled={isTogglingVerified}
+                      onClick={handleVerifyToggle}
+                      className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold transition-all flex items-center gap-1 shrink-0 active:scale-95 disabled:opacity-50 ${
+                        authorProfile?.isVerified
+                          ? 'bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400 border border-rose-200 dark:border-rose-900/50 hover:bg-rose-100'
+                          : 'bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400 border border-blue-200 dark:border-blue-900/50 hover:bg-blue-100'
+                      }`}
+                      title="Akses Admin: Quick Toggle Centang Biru"
+                    >
+                      {isTogglingVerified ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : (
+                        <BadgeCheck className="w-3 h-3 text-blue-500" />
+                      )}
+                      <span>
+                        {authorProfile?.isVerified ? 'Cabut Cenblu' : '+ Kasih Cenblu'}
+                      </span>
+                    </button>
+                  )}
+                </div>
+
+                {/* USERNAME */}
+                {authorUsername && (
+                  <div className="text-[11px] text-slate-400 dark:text-zinc-500 font-medium mt-0.5">
+                    @{authorUsername}
+                  </div>
+                )}
+
               </div>
             </div>
 
-            {/* ACTION BUTTONS (FOLLOW / MOBILE) */}
-            <div className="flex gap-2">
-              {currentUser.isOfficer && !isSelf && (
-                <button
-                  type="button"
-                  disabled={isTogglingVerified}
-                  onClick={handleVerifyToggle}
-                  className={`p-2 sm:px-3 sm:py-2 rounded-2xl text-[11px] font-bold transition-all flex items-center gap-1.5 active:scale-95 disabled:opacity-50 ${authorProfile?.isVerified ? 'bg-rose-50 text-rose-600 dark:bg-rose-950/40 border border-rose-200' : 'bg-blue-50 text-blue-600 dark:bg-blue-950/40 border border-blue-200'}`}
-                >
-                  {isTogglingVerified ? <Loader2 className="w-4 h-4 animate-spin" /> : <BadgeCheck className="w-4 h-4" />}
-                  <span className="hidden sm:inline">{authorProfile?.isVerified ? 'Cabut Cenblu' : '+ Kasih Cenblu'}</span>
-                </button>
-              )}
+            {/* MOBILE FOLLOW */}
+            {!isSelf && (
+              <button
+                onClick={
+                  handleFollowToggle
+                }
+                className={`sm:hidden px-3.5 py-1.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm shrink-0 active:scale-95 ${
+                  following
+                    ? 'bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40 dark:hover:text-rose-400'
+                    : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-500/20'
+                }`}
+              >
+                {following ? (
+                  <>
+                    <UserCheck className="w-3.5 h-3.5 text-emerald-500" />
 
-              {!isSelf && (
-                <button
-                  onClick={handleFollowToggle}
-                  className={`px-5 py-2 sm:py-2.5 rounded-2xl text-xs sm:text-[13px] font-bold transition-all flex items-center gap-1.5 shadow-sm active:scale-95 ${following ? 'bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700 hover:bg-rose-50 hover:text-rose-600' : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-500/20'}`}
-                >
-                  {following ? (
-                    <><UserCheck className="w-4 h-4 text-emerald-500" /><span className="hidden sm:inline">Mengikuti</span></>
-                  ) : (
-                    <><UserPlus className="w-4 h-4" /><span className="hidden sm:inline">Ikuti</span></>
-                  )}
-                  <span className="sm:hidden">{following ? 'Mengikuti' : 'Ikuti'}</span>
-                </button>
-              )}
-            </div>
-          </div>
+                    <span>
+                      Mengikuti
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <UserPlus className="w-3.5 h-3.5" />
 
-          {/* NAME AND USERNAME */}
-          <div className="mb-4">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-zinc-100 tracking-tight">{authorName}</h2>
-              {authorProfile?.isVerified && (
-                <span className="inline-flex items-center justify-center shrink-0 w-5 h-5 rounded-full bg-blue-500 text-white shadow-sm">
-                  <svg viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5"><path fillRule="evenodd" d="M16.704 5.29a1 1 0 0 1 .006 1.414l-7.25 7.25a1 1 0 0 1-1.414 0l-3.25-3.25A1 1 0 0 1 6.21 9.29l2.543 2.543 6.543-6.543a1 1 0 0 1 1.408 0Z" clipRule="evenodd" /></svg>
-                </span>
-              )}
-              {isSelf && (
-                <span className="px-2.5 py-0.5 text-[11px] font-bold rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/50 ml-1">Saya</span>
-              )}
-            </div>
-            {authorUsername && (
-              <div className="text-[13px] text-slate-500 dark:text-zinc-400 font-medium mt-0.5">@{authorUsername}</div>
+                    <span>
+                      Ikuti
+                    </span>
+                  </>
+                )}
+              </button>
             )}
           </div>
 
-          {/* NEW STAT BAR (POST - PENGIKUT - MENGIKUTI) */}
-          <div className="flex items-center gap-2">
-            <div className="px-3.5 py-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 flex items-center gap-2 text-xs sm:text-[13px] transition-colors">
-              <FileText className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
-              <span className="font-black text-slate-900 dark:text-zinc-100">{userPosts.length}</span>
-              <span className="text-slate-500 dark:text-zinc-400 font-medium">Post</span>
+          {/* STATS */}
+          <div className="flex items-center gap-2 pt-2.5 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-zinc-800">
+
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-2 flex-1 sm:flex sm:flex-initial">
+
+              {/* POST */}
+              <div className="px-2.5 py-1.5 sm:px-3 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 flex items-center justify-center gap-1.5 text-xs">
+                <FileText className="w-3 h-3 text-indigo-600 dark:text-indigo-400 shrink-0" />
+
+                <span className="font-extrabold text-slate-900 dark:text-zinc-100">
+                  {userPosts.length}
+                </span>
+
+                <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-medium">
+                  Post
+                </span>
+              </div>
+
+              {/* SUKA */}
+              <div className="px-2.5 py-1.5 sm:px-3 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 flex items-center justify-center gap-1.5 text-xs">
+                <Heart className="w-3 h-3 text-rose-500 shrink-0" />
+
+                <span className="font-extrabold text-slate-900 dark:text-zinc-100">
+                  {totalLikesReceived}
+                </span>
+
+                <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-medium">
+                  Suka
+                </span>
+              </div>
+
+              {/* PENGIKUT */}
+              <div className="px-2.5 py-1.5 sm:px-3 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 flex items-center justify-center gap-1.5 text-xs">
+                <Users className="w-3 h-3 text-amber-500 shrink-0" />
+
+                <span className="font-extrabold text-slate-900 dark:text-zinc-100">
+                  {followerCount}
+                </span>
+
+                <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-medium">
+                  Pengikut
+                </span>
+              </div>
+
             </div>
 
-            <button onClick={() => openFollowModal('followers')} className="px-3.5 py-2.5 rounded-2xl bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800/60 dark:hover:bg-zinc-800 border border-slate-100 dark:border-zinc-800 flex items-center gap-2 text-xs sm:text-[13px] transition-all cursor-pointer">
-              <Users className="w-4 h-4 text-amber-500 shrink-0" />
-              <span className="font-black text-slate-900 dark:text-zinc-100">{followerCount}</span>
-              <span className="text-slate-500 dark:text-zinc-400 font-medium">Pengikut</span>
-            </button>
+            {/* DESKTOP FOLLOW */}
+            {!isSelf && (
+              <button
+                onClick={
+                  handleFollowToggle
+                }
+                className={`hidden sm:flex px-4 py-1.5 rounded-2xl text-xs font-bold transition-all items-center gap-1.5 shadow-sm shrink-0 active:scale-95 ${
+                  following
+                    ? 'bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40 dark:hover:text-rose-400'
+                    : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-500/20'
+                }`}
+              >
+                {following ? (
+                  <>
+                    <UserCheck className="w-3.5 h-3.5 text-emerald-500" />
 
-            <button onClick={() => openFollowModal('following')} className="px-3.5 py-2.5 rounded-2xl bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800/60 dark:hover:bg-zinc-800 border border-slate-100 dark:border-zinc-800 flex items-center gap-2 text-xs sm:text-[13px] transition-all cursor-pointer">
-              <UserPlus className="w-4 h-4 text-emerald-500 shrink-0" />
-              <span className="font-black text-slate-900 dark:text-zinc-100">{followingCount}</span>
-              <span className="text-slate-500 dark:text-zinc-400 font-medium">Mengikuti</span>
-            </button>
+                    <span>
+                      Mengikuti
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <UserPlus className="w-3.5 h-3.5" />
+
+                    <span>
+                      Ikuti
+                    </span>
+                  </>
+                )}
+              </button>
+            )}
+
           </div>
         </div>
       </motion.div>
 
-      {/* USER POSTS LIST */}
-      <div className="space-y-3 pt-2">
-        <div className="flex items-center px-1 mb-3">
-          <h3 className="text-sm font-bold text-slate-800 dark:text-zinc-200 flex items-center gap-2">
-            <User className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
-            Riwayat Postingan ({userPosts.length})
+      {/* USER POSTS */}
+      <div className="space-y-3">
+
+        <div className="flex items-center justify-between px-1">
+          <h3 className="text-xs font-bold text-slate-700 dark:text-zinc-300 flex items-center gap-1.5">
+            <User className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
+
+            Riwayat Postingan (
+            {userPosts.length}
+            )
           </h3>
         </div>
+
         {userPosts.length === 0 ? (
           <div className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl p-8 text-center text-xs text-slate-400 dark:text-zinc-500 shadow-sm">
             User ini belum membuat postingan di mbudiary.
           </div>
         ) : (
           userPosts.map((post) => (
-            <PostCard key={post.id} post={post} currentUser={currentUser} onPostUpdate={onPostUpdate} onSelectPost={onSelectPost} onSelectAuthor={onSelectAuthor} />
+            <PostCard
+              key={post.id}
+              post={post}
+              currentUser={currentUser}
+              onPostUpdate={
+                onPostUpdate
+              }
+              onSelectPost={
+                onSelectPost
+              }
+              onSelectAuthor={
+                onSelectAuthor
+              }
+            />
           ))
         )}
+
       </div>
-
-      {/* MODAL PENGIKUT / MENGIKUTI */}
-      <AnimatePresence>
-        {followModalType && (
-          <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6"
-            onClick={() => setFollowModalType(null)}
-          >
-            <motion.div
-              initial={{ scale: 0.95, y: 10, opacity: 0 }} animate={{ scale: 1, y: 0, opacity: 1 }} exit={{ scale: 0.95, y: 10, opacity: 0 }} transition={{ duration: 0.2 }}
-              className="w-full max-w-sm bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-3xl p-5 shadow-2xl flex flex-col max-h-[70dvh]"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100 dark:border-zinc-800 shrink-0">
-                <h3 className="text-base font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
-                  {followModalType === 'followers' ? <Users className="w-5 h-5 text-amber-500" /> : <UserPlus className="w-5 h-5 text-emerald-500" />}
-                  {followModalType === 'followers' ? 'Pengikut' : 'Mengikuti'}
-                </h3>
-                <button onClick={() => setFollowModalType(null)} className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors">
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              <div className="overflow-y-auto space-y-2 flex-1 custom-scrollbar pr-2">
-                {modalUsersList.length === 0 ? (
-                  <div className="text-center p-6 text-sm text-slate-500 dark:text-zinc-400 italic">
-                    Belum ada {followModalType === 'followers' ? 'pengikut' : 'yang diikuti'}.
-                  </div>
-                ) : (
-                  modalUsersList.map((nrp) => {
-                    const user = getCachedUserByNrp(nrp);
-                    if (!user) return null;
-                    return (
-                      <div
-                        key={nrp}
-                        onClick={() => {
-                          setFollowModalType(null);
-                          onSelectAuthor?.(nrp);
-                        }}
-                        className="flex items-center gap-3 p-2.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-zinc-800/50 cursor-pointer transition-colors border border-transparent hover:border-slate-100 dark:hover:border-zinc-800"
-                      >
-                        <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden border border-slate-200 dark:border-zinc-700">
-                          {user.photoUrl ? (
-                            <img src={user.photoUrl} alt={user.nickname} className="w-full h-full object-cover" />
-                          ) : (
-                            <span className="text-xl leading-none">{user.emoji}</span>
-                          )}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-sm font-bold text-slate-900 dark:text-zinc-100 truncate">{user.nickname}</span>
-                            {user.isVerified && (
-                              <span className="inline-flex items-center justify-center shrink-0 w-3.5 h-3.5 rounded-full bg-blue-500 text-white"><svg viewBox="0 0 20 20" fill="currentColor" className="w-2.5 h-2.5"><path fillRule="evenodd" d="M16.704 5.29a1 1 0 0 1 .006 1.414l-7.25 7.25a1 1 0 0 1-1.414 0l-3.25-3.25A1 1 0 0 1 6.21 9.29l2.543 2.543 6.543-6.543a1 1 0 0 1 1.408 0Z" clipRule="evenodd" /></svg></span>
-                            )}
-                          </div>
-                          <div className="text-[11px] text-slate-500 dark:text-zinc-400 truncate">@{user.username}</div>
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 };

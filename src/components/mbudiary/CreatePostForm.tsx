@@ -387,7 +387,7 @@ export const CreatePostForm: React.FC<
                   e.target.value
                 )
               }
-              placeholder="Apa yang terjadi hari ini? Ceritakan...."
+              placeholder="Apa yang terjadi hari ini? Ceritakan..."
               rows={3}
               maxLength={
                 MAX_CHARS
