@@ -60,6 +60,12 @@ import {
 } from './services/api';
 
 // ============================================================
+// MAINTENANCE GATE FLAG
+// Ubah ke `true` untuk mengunci web, ubah ke `false` jika sudah siap dibuka
+// ============================================================
+const IS_MAINTENANCE = true;
+
+// ============================================================
 // KOMPONEN SKELETON LOADER
 // ============================================================
 const AppSkeleton = () => (
@@ -78,6 +84,33 @@ const AppSkeleton = () => (
 );
 
 export default function App() {
+  // ============================================================
+  // MAINTENANCE SCREEN GATE
+  // ============================================================
+  if (IS_MAINTENANCE) {
+    return (
+      <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col items-center justify-center p-6 text-center font-sans">
+        <div className="bg-slate-800/80 border border-slate-700/60 rounded-3xl p-8 max-w-md w-full shadow-2xl backdrop-blur-md flex flex-col items-center space-y-4">
+          <div className="w-16 h-16 bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center text-3xl mb-2 border border-blue-500/20">
+            🛠️
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight text-white">
+            myMbud Portal
+          </h1>
+          <p className="text-sm text-slate-400 leading-relaxed">
+            Sistem sedang dalam perbaikan dan pemeliharaan. Web sementara tidak dapat diakses, mohon kembali lagi nanti ya!
+          </p>
+          <div className="pt-2">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
+              <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping mr-2"></span>
+              Maintenance Mode
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // ============================================================
   // LOGIKA AUTENTIKASI
   // ============================================================
