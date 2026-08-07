@@ -15,39 +15,43 @@ const __dirname = path.dirname(__filename);
 const DATA_DIR = path.join(__dirname, 'data');
 const DATA_FILE = path.join(DATA_DIR, 'store.json');
 
-// Ensure data directory and initial store file exist
+// Memory store fallback agar Vercel Serverless Function tidak crash saat membaca/menulis file
+let memoryStore: AppState = JSON.parse(JSON.stringify(initialAppState));
+
 function getStoreData(): AppState {
   try {
-    if (!fs.existsSync(DATA_DIR)) {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
-    }
-    if (!fs.existsSync(DATA_FILE)) {
-      fs.writeFileSync(DATA_FILE, JSON.stringify(initialAppState, null, 2), 'utf-8');
-      return initialAppState;
+    if (!fs.existsSync(DATA_DIR) || !fs.existsSync(DATA_FILE)) {
+      return memoryStore;
     }
     const raw = fs.readFileSync(DATA_FILE, 'utf-8');
-    return JSON.parse(raw);
+    memoryStore = JSON.parse(raw);
+    return memoryStore;
   } catch (err) {
-    console.error('Error reading store data:', err);
-    return initialAppState;
+    console.error('Error reading store data, falling back to memory store:', err);
+    return memoryStore;
   }
 }
 
 function saveStoreData(data: AppState): AppState {
   try {
     data.lastUpdated = new Date().toISOString();
-    if (!fs.existsSync(DATA_DIR)) {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
+    memoryStore = data;
+
+    // Hanya tulis ke disk jika bukan di lingkungan Vercel / Production Read-Only
+    if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+      if (!fs.existsSync(DATA_DIR)) {
+        fs.mkdirSync(DATA_DIR, { recursive: true });
+      }
+      fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf-8');
     }
-    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf-8');
-    return data;
+    return memoryStore;
   } catch (err) {
-    console.error('Error saving store data:', err);
-    return data;
+    console.error('Error saving store data, using memory store:', err);
+    return memoryStore;
   }
 }
 
-// Inisialisasi Express App di level paling atas (Diperlukan oleh Vercel)
+// Inisialisasi Express App
 const app = express();
 app.use(express.json());
 
