@@ -205,3 +205,33 @@ export async function notifyAnnouncement({
     },
   });
 }
+
+/**
+ * ============================================================
+ * MBUDIARY FOLLOW
+ * ============================================================
+ */
+export async function notifyUserFollowed({
+  targetNrp,
+  actorNrp,
+  actorName,
+}: {
+  targetNrp: string;
+  actorNrp: string;
+  actorName: string;
+}) {
+  if (targetNrp.toLowerCase() === actorNrp.toLowerCase()) {
+    return;
+  }
+
+  return sendMbudiaryNotification({
+    targetNrp,
+    title: '👤 Mbudiary',
+    message: `${actorName} mulai mengikutimu.`,
+    type: 'mbudiary_follow',
+    data: {
+      type: 'mbudiary_follow',
+      actorNrp,
+    },
+  });
+}

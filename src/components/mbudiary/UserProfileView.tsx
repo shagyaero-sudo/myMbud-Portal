@@ -28,6 +28,8 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+import { notifyUserFollowed } from '../../services/oneSignalNotification';
+
 interface UserProfileViewProps {
   authorNrp: string;
   currentUser: UserProfile;
@@ -85,6 +87,14 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
       setFollowing(isNowFollowing);
       setFollowerCount(getFollowerCount(authorNrp));
       setFollowingCount(getFollowingCount(authorNrp));
+
+      if (isNowFollowing) {
+        void notifyUserFollowed({
+          targetNrp: authorNrp,
+          actorNrp: currentUser.nrp,
+          actorName: currentUser.nickname || currentUser.username || 'Mbuders',
+        });
+      }
     } catch (error) {
       console.error('[mbudiary] Gagal mengubah follow:', error);
     }
@@ -273,7 +283,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
         </div>
       </motion.div>
 
-      {/* DAFTAR POSTINGAN USER (JUDUL RIWAYAT POSTINGAN SUDAH DIHAPUS) */}
+      {/* DAFTAR POSTINGAN USER */}
       <div className="space-y-3 pt-1">
         {userPosts.length === 0 ? (
           <div className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl p-8 text-center text-xs text-slate-400 dark:text-zinc-500 shadow-sm w-full">
