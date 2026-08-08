@@ -110,6 +110,8 @@ function formatNotificationTime(
 export const Header: React.FC<HeaderProps> = ({
   isOfficer,
   setIsOfficer,
+  activeTab,
+  setActiveTab,
   theme = 'light',
   setTheme,
   onLogout,
@@ -217,12 +219,13 @@ export const Header: React.FC<HeaderProps> = ({
 
   /*
    * ==========================================================
-   * OPEN NOTIFICATION
+   * OPEN & ROUTE NOTIFICATION
    * ==========================================================
    */
   const handleNotificationClick = async (
     notification: AppNotification
   ) => {
+    // 1. Mark as read
     if (!notification.isRead) {
       try {
         await markNotificationAsRead(
@@ -235,6 +238,28 @@ export const Header: React.FC<HeaderProps> = ({
         );
       }
     }
+
+    // 2. Tutup panel notifikasi
+    setIsNotificationOpen(false);
+
+    // 3. Routing berdasarkan data notifikasi
+    const data = notification.data || {};
+
+    if (data.postId) {
+      localStorage.setItem('mbud_target_post_id', data.postId);
+    }
+
+    if (data.actorNrp) {
+      localStorage.setItem('mbud_target_actor_nrp', data.actorNrp);
+    }
+
+    // Switch ke tab Mbudiary
+    if (setActiveTab) {
+      setActiveTab('mbudiary');
+    }
+
+    // Dispatch custom event agar MbudiaryView merespons seketika
+    window.dispatchEvent(new Event('mbud_notification_navigate'));
   };
 
   /*
@@ -371,14 +396,17 @@ export const Header: React.FC<HeaderProps> = ({
               </motion.button>
 
               {/* =================================================
-                  NOTIFICATION PANEL (FIXED FOR MOBILE LAYOUT)
+                  NOTIFICATION PANEL WITH REDUP BACKDROP
               ================================================= */}
               <AnimatePresence>
                 {isNotificationOpen && (
                   <>
-                    {/* Click outside */}
-                    <div
-                      className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[1px] sm:bg-transparent sm:backdrop-blur-none"
+                    {/* BACKDROP DIM / REDUP AGAR NYAMAN DI MATA */}
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity"
                       onClick={() =>
                         setIsNotificationOpen(false)
                       }

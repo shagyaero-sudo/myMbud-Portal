@@ -38,16 +38,37 @@ export const MbudiaryView: React.FC = () => {
       forceRefresh((value) => value + 1);
     };
 
+    // HANDLER KHUSUS ROUTING DARI NOTIFIKASI
+    const handleNotificationNavigation = () => {
+      const targetPostId = localStorage.getItem('mbud_target_post_id');
+      const targetActorNrp = localStorage.getItem('mbud_target_actor_nrp');
+
+      if (targetPostId) {
+        setSelectedPostId(targetPostId);
+        setSelectedAuthorNrp(null);
+        localStorage.removeItem('mbud_target_post_id');
+      } else if (targetActorNrp) {
+        setSelectedAuthorNrp(targetActorNrp);
+        setSelectedPostId(null);
+        localStorage.removeItem('mbud_target_actor_nrp');
+      }
+    };
+
+    // Cek langsung saat pertama kali dipasang
+    handleNotificationNavigation();
+
     window.addEventListener('mbud_user_change', sync);
     window.addEventListener('mbud_users_change', sync);
     window.addEventListener('mbud_posts_change', sync);
     window.addEventListener('mbud_follows_change', sync);
+    window.addEventListener('mbud_notification_navigate', handleNotificationNavigation);
 
     return () => {
       window.removeEventListener('mbud_user_change', sync);
       window.removeEventListener('mbud_users_change', sync);
       window.removeEventListener('mbud_posts_change', sync);
       window.removeEventListener('mbud_follows_change', sync);
+      window.removeEventListener('mbud_notification_navigate', handleNotificationNavigation);
       unsubscribe();
     };
   }, []);
@@ -111,7 +132,6 @@ export const MbudiaryView: React.FC = () => {
 
   return (
     <div className="w-full bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 font-sans transition-colors duration-300 antialiased relative overflow-x-hidden">
-      {/* REVISI: Padding atas di HP dirapatkan (py-3 sm:py-8) & space-y-3 sm:space-y-6 */}
       <main className="flex-1 max-w-[600px] w-full mx-auto px-2 sm:px-0 py-3 sm:py-8 pb-24 sm:pb-8 relative z-10 space-y-3 sm:space-y-6">
 
         {selectedAuthorNrp ? (
