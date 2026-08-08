@@ -1,46 +1,171 @@
+import {
+  createNotification,
+  updateNotificationPushStatus,
+} from './notifications';
+
 type MbudiaryNotificationParams = {
   targetNrp: string;
   title: string;
   message: string;
+  type?: string;
   data?: Record<string, any>;
 };
 
+/**
+ * ============================================================
+ * CREATE IN-APP NOTIFICATION + SEND ONESIGNAL PUSH
+ * ============================================================
+ *
+ * Urutan:
+ *
+ * 1. Simpan notification ke Firestore
+ * 2. Kalau berhasil, panggil backend OneSignal
+ * 3. Update pushStatus
+ *
+ * Firestore adalah source of truth.
+ */
 export async function sendMbudiaryNotification({
   targetNrp,
   title,
   message,
+  type = 'mbudiary',
   data,
 }: MbudiaryNotificationParams) {
-  if (!targetNrp) return;
+  if (!targetNrp) return null;
+
+  let notificationId: string;
 
   try {
-    const response = await fetch('/api/notifications/mbudiary', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        targetNrp,
-        title,
-        message,
-        data,
-      }),
+    /*
+     * ========================================================
+     * STEP 1 — FIRESTORE
+     * ========================================================
+     */
+    notificationId = await createNotification({
+      targetNrp,
+      title,
+      message,
+      type,
+      data,
     });
 
-    const result = await response.json();
+    console.log(
+      '[Notification] Saved to Firestore:',
+      notificationId
+    );
+  } catch (error) {
+    console.error(
+      '[Notification] Failed to save Firestore notification:',
+      error
+    );
 
-    if (!response.ok) {
-      console.error('[Mbudiary Notification] Server error:', result);
-      return null;
+    return null;
+  }
+
+  /*
+   * ==========================================================
+   * STEP 2 — ONESIGNAL BACKEND
+   * ==========================================================
+   */
+  try {
+    const response = await fetch(
+      '/api/notifications/mbudiary',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          targetNrp,
+          title,
+          message,
+          data,
+        }),
+      }
+    );
+
+    let result: any = null;
+
+    try {
+      result = await response.json();
+    } catch {
+      result = null;
     }
 
-    return result;
+    if (!response.ok) {
+      console.error(
+        '[Mbudiary Notification] Server error:',
+        result
+      );
+
+      await updateNotificationPushStatus(
+        notificationId,
+        'failed'
+      );
+
+      return {
+        notificationId,
+        pushSent: false,
+        result,
+      };
+    }
+
+    /*
+     * ========================================================
+     * STEP 3 — MARK PUSH SENT
+     * ========================================================
+     */
+    await updateNotificationPushStatus(
+      notificationId,
+      'sent'
+    );
+
+    console.log(
+      '[Notification] Firestore + OneSignal success:',
+      notificationId
+    );
+
+    return {
+      notificationId,
+      pushSent: true,
+      result,
+    };
   } catch (error) {
-    console.error('[Mbudiary Notification] Failed:', error);
-    return null;
+    console.error(
+      '[Mbudiary Notification] Push failed:',
+      error
+    );
+
+    /*
+     * Push gagal ≠ notification hilang.
+     *
+     * Firestore tetap menyimpan histori.
+     */
+    try {
+      await updateNotificationPushStatus(
+        notificationId,
+        'failed'
+      );
+    } catch (updateError) {
+      console.error(
+        '[Notification] Failed updating push status:',
+        updateError
+      );
+    }
+
+    return {
+      notificationId,
+      pushSent: false,
+      result: null,
+    };
   }
 }
 
+/**
+ * ============================================================
+ * MBUDIARY LIKE
+ * ============================================================
+ */
 export async function notifyPostLiked({
   postAuthorNrp,
   actorNrp,
@@ -52,7 +177,10 @@ export async function notifyPostLiked({
   actorName: string;
   postId: string;
 }) {
-  if (postAuthorNrp.toLowerCase() === actorNrp.toLowerCase()) {
+  if (
+    postAuthorNrp.toLowerCase() ===
+    actorNrp.toLowerCase()
+  ) {
     return;
   }
 
@@ -60,6 +188,7 @@ export async function notifyPostLiked({
     targetNrp: postAuthorNrp,
     title: '❤️ Mbudiary',
     message: `${actorName} menyukai postinganmu.`,
+    type: 'mbudiary_like',
     data: {
       type: 'mbudiary_like',
       postId,
@@ -68,6 +197,11 @@ export async function notifyPostLiked({
   });
 }
 
+/**
+ * ============================================================
+ * MBUDIARY COMMENT
+ * ============================================================
+ */
 export async function notifyPostCommented({
   postAuthorNrp,
   actorNrp,
@@ -81,7 +215,10 @@ export async function notifyPostCommented({
   postId: string;
   comment: string;
 }) {
-  if (postAuthorNrp.toLowerCase() === actorNrp.toLowerCase()) {
+  if (
+    postAuthorNrp.toLowerCase() ===
+    actorNrp.toLowerCase()
+  ) {
     return;
   }
 
@@ -89,10 +226,39 @@ export async function notifyPostCommented({
     targetNrp: postAuthorNrp,
     title: '💬 Mbudiary',
     message: `${actorName} mengomentari postinganmu: "${comment}"`,
+    type: 'mbudiary_comment',
     data: {
       type: 'mbudiary_comment',
       postId,
       actorNrp,
+    },
+  });
+}
+
+/**
+ * ============================================================
+ * GENERAL ANNOUNCEMENT
+ * ============================================================
+ */
+export async function notifyAnnouncement({
+  targetNrp,
+  title,
+  message,
+  announcementId,
+}: {
+  targetNrp: string;
+  title: string;
+  message: string;
+  announcementId?: string;
+}) {
+  return sendMbudiaryNotification({
+    targetNrp,
+    title,
+    message,
+    type: 'announcement',
+    data: {
+      type: 'announcement',
+      announcementId,
     },
   });
 }

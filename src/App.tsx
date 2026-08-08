@@ -63,7 +63,7 @@ import {
 // MAINTENANCE GATE FLAG
 // Ubah ke `true` untuk mengunci web, ubah ke `false` jika sudah siap dibuka
 // ============================================================
-const IS_MAINTENANCE = true;
+const IS_MAINTENANCE = false;
 
 // ============================================================
 // KOMPONEN SKELETON LOADER
