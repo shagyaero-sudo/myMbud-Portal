@@ -3,8 +3,6 @@ import {
   updateNotificationPushStatus,
 } from './notifications';
 
-import { sendOneSignalNotification } from '../../services/oneSignalServer';
-
 type MbudiaryNotificationParams = {
   targetNrp: string;
   title: string;
@@ -13,14 +11,41 @@ type MbudiaryNotificationParams = {
   data?: Record<string, any>;
 };
 
+const PUSH_API_ENDPOINT = '/api/notifications/mbudiary';
+
+/**
+ * Panggil Vercel Serverless Function, BUKAN OneSignal langsung.
+ * REST API Key OneSignal tidak boleh menyentuh bundle client.
+ */
+async function triggerOneSignalPush({
+  targetNrp,
+  title,
+  message,
+  data,
+}: Omit<MbudiaryNotificationParams, 'type'>) {
+  const response = await fetch(PUSH_API_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ targetNrp, title, message, data }),
+  });
+
+  const result = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw new Error(result?.error || `Push API returned ${response.status}`);
+  }
+
+  return result;
+}
+
 /**
  * ============================================================
  * CREATE IN-APP NOTIFICATION + SEND ONESIGNAL PUSH
  * ============================================================
  *
  * Urutan:
- * 1. Simpan notification ke Firestore
- * 2. Kalau berhasil, tembak OneSignal REST API langsung via sendOneSignalNotification
+ * 1. Simpan notification ke Firestore (client SDK, sudah OK)
+ * 2. Kalau berhasil, panggil /api/notifications/mbudiary (server-side)
  * 3. Update pushStatus di Firestore ('sent' / 'failed')
  *
  * Firestore adalah source of truth.
@@ -36,11 +61,6 @@ export async function sendMbudiaryNotification({
 
   let notificationId: string;
 
-  /*
-   * ==========================================================
-   * STEP 1 — FIRESTORE
-   * ==========================================================
-   */
   try {
     notificationId = await createNotification({
       targetNrp,
@@ -50,64 +70,23 @@ export async function sendMbudiaryNotification({
       data,
     });
 
-    console.log(
-      '[Notification] Saved to Firestore:',
-      notificationId
-    );
+    console.log('[Notification] Saved to Firestore:', notificationId);
   } catch (error) {
-    console.error(
-      '[Notification] Failed to save Firestore notification:',
-      error
-    );
-
+    console.error('[Notification] Failed to save Firestore notification:', error);
     return null;
   }
 
-  /*
-   * ==========================================================
-   * STEP 2 — ONESIGNAL PUSH (Direct Server Call)
-   * ==========================================================
-   */
   try {
-    const pushResult = await sendOneSignalNotification({
+    const pushResult = await triggerOneSignalPush({
       targetNrp,
       title,
       message,
       data,
     });
 
-    if (pushResult && pushResult.error) {
-      console.error(
-        '[Mbudiary Notification] OneSignal push error:',
-        pushResult.error
-      );
+    await updateNotificationPushStatus(notificationId, 'sent');
 
-      await updateNotificationPushStatus(
-        notificationId,
-        'failed'
-      );
-
-      return {
-        notificationId,
-        pushSent: false,
-        result: pushResult,
-      };
-    }
-
-    /*
-     * ========================================================
-     * STEP 3 — MARK PUSH SENT
-     * ========================================================
-     */
-    await updateNotificationPushStatus(
-      notificationId,
-      'sent'
-    );
-
-    console.log(
-      '[Notification] Firestore + OneSignal success:',
-      notificationId
-    );
+    console.log('[Notification] Firestore + OneSignal success:', notificationId);
 
     return {
       notificationId,
@@ -115,21 +94,12 @@ export async function sendMbudiaryNotification({
       result: pushResult,
     };
   } catch (error) {
-    console.error(
-      '[Mbudiary Notification] Direct Push failed:',
-      error
-    );
+    console.error('[Mbudiary Notification] Push failed:', error);
 
     try {
-      await updateNotificationPushStatus(
-        notificationId,
-        'failed'
-      );
+      await updateNotificationPushStatus(notificationId, 'failed');
     } catch (updateError) {
-      console.error(
-        '[Notification] Failed updating push status:',
-        updateError
-      );
+      console.error('[Notification] Failed updating push status:', updateError);
     }
 
     return {
@@ -156,10 +126,7 @@ export async function notifyPostLiked({
   actorName: string;
   postId: string;
 }) {
-  if (
-    postAuthorNrp.toLowerCase() ===
-    actorNrp.toLowerCase()
-  ) {
+  if (postAuthorNrp.toLowerCase() === actorNrp.toLowerCase()) {
     return;
   }
 
@@ -194,10 +161,7 @@ export async function notifyPostCommented({
   postId: string;
   comment: string;
 }) {
-  if (
-    postAuthorNrp.toLowerCase() ===
-    actorNrp.toLowerCase()
-  ) {
+  if (postAuthorNrp.toLowerCase() === actorNrp.toLowerCase()) {
     return;
   }
 
