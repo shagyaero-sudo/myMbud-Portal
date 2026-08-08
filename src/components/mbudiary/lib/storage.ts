@@ -32,7 +32,7 @@ export const USER_OFFICER_KEY = 'mymbud_is_officer';
 export const USER_EMOJI_KEY = 'mymbud_user_emoji';
 export const USER_USERNAME_KEY = 'mymbud_user_username';
 export const USER_PHOTO_URL_KEY = 'mymbud_user_photo_url';
-export const USER_HEADER_URL_KEY = 'mymbud_user_header_url'; // <-- Key Baru v3.1
+export const USER_HEADER_URL_KEY = 'mymbud_user_header_url';
 
 const POSTS_COLLECTION = 'mbudiary_posts';
 const REPLIES_COLLECTION = 'mbudiary_replies';
@@ -68,7 +68,7 @@ function normalizeUser(nrp: string, data: Record<string, any>): MbudiaryUser {
     emoji: String(data.emoji || '😊'),
     isVerified: Boolean(data.isVerified),
     photoUrl: data.photoUrl || undefined,
-    headerUrl: data.headerUrl || undefined, // <-- Mapping Header
+    headerUrl: data.headerUrl || undefined,
     updatedAt: data.updatedAt?.toDate?.()?.toISOString?.() || data.updatedAt || undefined,
   };
 }
@@ -118,7 +118,7 @@ export function getUserProfile(): UserProfile {
   const isOfficer = localStorage.getItem(USER_OFFICER_KEY) === 'true';
   const emoji = localStorage.getItem(USER_EMOJI_KEY) || '😊';
   const photoUrl = localStorage.getItem(USER_PHOTO_URL_KEY) || undefined;
-  const headerUrl = localStorage.getItem(USER_HEADER_URL_KEY) || undefined; // <-- Get Header
+  const headerUrl = localStorage.getItem(USER_HEADER_URL_KEY) || undefined;
 
   return { nrp, username, nickname, isOfficer, emoji, photoUrl, headerUrl };
 }
@@ -203,7 +203,7 @@ export async function syncUserProfileWithFirebase(): Promise<UserProfile> {
         emoji: cloudUser.emoji,
         isVerified: cloudUser.isVerified,
         photoUrl: cloudUser.photoUrl,
-        headerUrl: cloudUser.headerUrl, // <-- Sync Header
+        headerUrl: cloudUser.headerUrl,
       };
 
       localStorage.setItem(USER_NRP_KEY, syncedProfile.nrp);
@@ -239,7 +239,13 @@ export async function syncUserProfileWithFirebase(): Promise<UserProfile> {
       headerUrl: currentProfile.headerUrl || undefined,
     };
 
-    await setDoc(userDocRef, { ...initialUser, updatedAt: serverTimestamp() });
+    // FIX: Cegah undefined untuk Firestore
+    await setDoc(userDocRef, {
+      ...initialUser,
+      photoUrl: initialUser.photoUrl || null,
+      headerUrl: initialUser.headerUrl || null,
+      updatedAt: serverTimestamp(),
+    });
     usersCache[normalizedNrp] = initialUser;
 
     localStorage.setItem(USER_USERNAME_KEY, initialUser.username);
@@ -276,10 +282,25 @@ export async function saveUserProfile(profile: UserProfile): Promise<void> {
     emoji: profile.emoji || '😊',
     isVerified: profile.isVerified || false,
     photoUrl: profile.photoUrl || undefined,
-    headerUrl: profile.headerUrl || undefined, // <-- Save Header
+    headerUrl: profile.headerUrl || undefined,
   };
 
-  await setDoc(userDocRef, { ...cloudUser, updatedAt: serverTimestamp() }, { merge: true });
+  // FIX UTAMA: Ubah undefined menjadi null untuk payload setDoc Firestore
+  await setDoc(
+    userDocRef,
+    {
+      nrp: cloudUser.nrp,
+      username: cloudUser.username,
+      nickname: cloudUser.nickname,
+      isOfficer: cloudUser.isOfficer,
+      emoji: cloudUser.emoji,
+      isVerified: cloudUser.isVerified,
+      photoUrl: cloudUser.photoUrl || null,
+      headerUrl: cloudUser.headerUrl || null,
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true }
+  );
   usersCache[normalizedNrp] = cloudUser;
 
   localStorage.setItem(USER_NRP_KEY, normalizedNrp);
@@ -287,7 +308,7 @@ export async function saveUserProfile(profile: UserProfile): Promise<void> {
   localStorage.setItem(USER_NAME_KEY, cloudUser.nickname);
   localStorage.setItem(USER_OFFICER_KEY, String(cloudUser.isOfficer));
   localStorage.setItem(USER_EMOJI_KEY, cloudUser.emoji);
-  
+
   if (cloudUser.photoUrl) {
     localStorage.setItem(USER_PHOTO_URL_KEY, cloudUser.photoUrl);
   } else {
@@ -651,7 +672,7 @@ export function getFollowerCount(targetNrp: string): number {
 
 export function getFollowingCount(targetNrp: string): number {
   const target = targetNrp.trim().toLowerCase();
-  return followsCache.filter((follow) => follow.followerNrp === target).length;
+  return followsCache.filter((follow) => follow.targetNrp === target).length;
 }
 
 /* =========================================================

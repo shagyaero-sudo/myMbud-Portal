@@ -128,8 +128,10 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
     try {
       const uploadedUrls = await uploadImagesToCloudinary([file]);
       if (uploadedUrls && uploadedUrls.length > 0) {
+        // FIX: Pastikan foto & header tidak undefined saat disimpan ke storage
         await saveUserProfile({
           ...currentUser,
+          photoUrl: currentUser.photoUrl || undefined,
           headerUrl: uploadedUrls[0],
         });
       }
@@ -305,7 +307,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
             onClick={() => setFollowModalType(null)}
           >
             <motion.div
-              initial={{ scale: 0.95, y: 10, opacity: 0 }} animate={{ scale: 1, y: 0, opacity: 1 }} exit={{ scale: 0.95, y: 10, opacity: 0 }} transition={{ duration: 0.2 }}
+              initial={{ scale: 0.95, y: 10, opacity: 0 }} animate={{ scale: 1, y: 0, opacity: 1 }} exit={{ scale: 0.95, y: 0, opacity: 0 }} transition={{ duration: 0.2 }}
               className="w-full max-w-sm bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-3xl p-5 shadow-2xl flex flex-col max-h-[70dvh]"
               onClick={(e) => e.stopPropagation()}
             >
