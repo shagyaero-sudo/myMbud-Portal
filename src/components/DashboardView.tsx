@@ -82,7 +82,7 @@ const getCurrentAcademicWeek = () => {
 
   if (diffDays < 0) {
     return {
-      label: 'di luar masa perkuliahan',
+      label: 'mode libur',
       badgeClass: 'bg-rose-50 dark:bg-rose-950/40 border-rose-100 dark:border-rose-900/50 text-rose-600 dark:text-rose-400'
     };
   }
