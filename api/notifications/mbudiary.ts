@@ -14,10 +14,10 @@ export default async function handler(req: any, res: any) {
     return res.status(405).json({ success: false, error: 'Method not allowed' });
   }
 
-  const appId = process.env.ONESIGNAL_APP_ID;
-  const apiKey = process.env.ONESIGNAL_REST_API_KEY;
+  const appId = process.env.ONESIGNAL_APP_ID?.trim();
+  const rawApiKey = process.env.ONESIGNAL_REST_API_KEY?.trim();
 
-  if (!appId || !apiKey) {
+  if (!appId || !rawApiKey) {
     console.error(
       '[OneSignal] Missing ONESIGNAL_APP_ID / ONESIGNAL_REST_API_KEY di Vercel Environment Variables'
     );
@@ -45,9 +45,11 @@ export default async function handler(req: any, res: any) {
   };
 
   try {
-    // Memastikan format header Authorization menggunakan Basic Auth yang valid
-    const cleanKey = apiKey.trim().replace(/^(Basic|Key)\s+/i, '');
-    const authHeader = `Basic ${cleanKey}`;
+    // Sanitasi key jika ada tanda petik terikut
+    const cleanKey = rawApiKey.replace(/['"]/g, '').replace(/^(Key|Basic)\s+/i, '');
+    
+    // Key versi 'os_v2_app_...' milik OneSignal Wajib menggunakan prefix "Key "
+    const authHeader = `Key ${cleanKey}`;
 
     const response = await fetch(ONESIGNAL_API_URL, {
       method: 'POST',
