@@ -839,7 +839,7 @@ export const Header: React.FC<HeaderProps> = ({
                       <ShieldAlert className="w-3.5 h-3.5" />
 
                       <span>
-                        PIN salah. Silakan coba lagi.
+                        PIN salah. Silakan coba lagi ya.
                       </span>
                     </p>
                   )}
