@@ -45,11 +45,15 @@ export default async function handler(req: any, res: any) {
   };
 
   try {
+    // Memastikan format header Authorization menggunakan Basic Auth yang valid
+    const cleanKey = apiKey.trim().replace(/^(Basic|Key)\s+/i, '');
+    const authHeader = `Basic ${cleanKey}`;
+
     const response = await fetch(ONESIGNAL_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Key ${apiKey}`,
+        Authorization: authHeader,
       },
       body: JSON.stringify(payload),
     });
