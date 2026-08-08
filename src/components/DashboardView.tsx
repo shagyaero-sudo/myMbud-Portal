@@ -32,6 +32,7 @@ import {
   addAnnouncement,
   updateAnnouncement,
   deleteAnnouncement,
+  subscribeAnnouncements // Tambahkan import subscribeAnnouncements di sini
 } from '../services/announcements';
 
 interface DashboardViewProps {
@@ -58,14 +59,11 @@ const FlipCalendarWidget: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center justify-between w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-sm overflow-hidden shrink-0 transition-transform hover:scale-105 select-none">
-      {/* Header Bulan */}
       <div className="w-full bg-rose-600 dark:bg-rose-700 py-[4px] text-center shrink-0">
         <span className="text-[9px] font-black text-white tracking-widest uppercase leading-none block">
           {monthName}
         </span>
       </div>
-      
-      {/* Angka Tanggal Utama */}
       <div className="flex-1 w-full flex items-center justify-center leading-none pb-0.5">
         <span className="text-xl sm:text-2xl font-black text-slate-900 dark:text-zinc-100 tracking-tight">
           {dayNumber}
@@ -77,17 +75,11 @@ const FlipCalendarWidget: React.FC = () => {
 
 // --- LOGIKA KALKULASI MINGGU AKADEMIK + STYLE DINAMIS ---
 const getCurrentAcademicWeek = () => {
-  // Tanggal acuan: Senin, 31 Agustus 2026, 00:00:00 WIB (GMT+7)
   const startDate = new Date('2026-08-31T00:00:00+07:00');
   const now = new Date();
-
-  // Hitung selisih waktu dalam milidetik
   const diffTime = now.getTime() - startDate.getTime();
-  
-  // Konversi ke selisih hari (dibulatkan ke bawah)
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
-  // Jika sebelum tanggal 31 Agustus 2026 (Warna Merah/Rose)
   if (diffDays < 0) {
     return {
       label: 'di luar masa perkuliahan',
@@ -95,7 +87,6 @@ const getCurrentAcademicWeek = () => {
     };
   }
 
-  // Hitung minggu ke-x (Warna Biru Pas Kuliah Aktif)
   const weekNumber = Math.floor(diffDays / 7) + 1;
   return {
     label: `Minggu ke-${weekNumber}`,
@@ -113,6 +104,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [editingAnnId, setEditingAnnId] = useState<string | null>(null);
   const [isSubmittingAnn, setIsSubmittingAnn] = useState(false);
 
+  // --- STATE REAL-TIME UNTUK PENGUMUMAN DARI FIRESTORE ---
+  const [realAnnouncements, setRealAnnouncements] = useState<Announcement[]>(state.announcements || []);
+
   const [newAnnTitle, setNewAnnTitle] = useState('');
   const [newAnnContent, setNewAnnContent] = useState('');
   const [newAnnCategory, setNewAnnCategory] = useState<
@@ -129,9 +123,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [isPaused, setIsPaused] = useState(false);
 
-  const totalAnn = state.announcements.length;
+  // Ganti referensi dari state.announcements menjadi realAnnouncements
+  const totalAnn = realAnnouncements.length;
   const activeAnnIndex = Math.min(mobileAnnIndex, Math.max(0, totalAnn - 1));
-  const currentMobileAnn = state.announcements[activeAnnIndex];
+  const currentMobileAnn = realAnnouncements[activeAnnIndex];
+
+  // --- EFFECT UNTUK BERLANGGANAN DATA PENGUMUMAN SECARA REAL-TIME ---
+  useEffect(() => {
+    const unsubscribe = subscribeAnnouncements((data) => {
+      setRealAnnouncements(data);
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     if (totalAnn <= 1 || isPaused || selectedAnnModal !== null) return;
@@ -429,7 +432,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       transition={{ duration: 0.3 }}
       className="space-y-6 pb-12"
     >
-      {/* --- GREETING KHUSUS MOBILE/TABLET + KALENDER MINI --- */}
       <div className="block lg:hidden px-2 pt-2 pb-0">
         <div className="flex items-center justify-between gap-3">
           <div>
@@ -441,7 +443,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </p>
           </div>
 
-          {/* WIDGET KALENDER MINI */}
           <FlipCalendarWidget />
         </div>
       </div>
@@ -468,7 +469,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <div className="space-y-2">
             <motion.div
               layout
-              key={currentMobileAnn.id}
+              key={currentMobileAnn?.id}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
@@ -481,11 +482,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             >
               <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-zinc-400">
                 <span className="font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2.5 py-0.5 rounded-full text-[10px]">
-                  {currentMobileAnn.category}
+                  {currentMobileAnn?.category}
                 </span>
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] text-slate-400 dark:text-zinc-500">
-                    {formatAnnouncementDate(currentMobileAnn.date)}
+                    {formatAnnouncementDate(currentMobileAnn?.date)}
                   </span>
                   {isOfficer && (
                     <div className="flex items-center gap-1">
@@ -515,10 +516,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
 
               <h4 className="text-xs font-bold text-slate-800 dark:text-zinc-100 line-clamp-1">
-                {currentMobileAnn.title}
+                {currentMobileAnn?.title}
               </h4>
               <p className="text-xs text-slate-600 dark:text-zinc-300 leading-relaxed line-clamp-2">
-                {renderFormattedContent(currentMobileAnn.content)}
+                {renderFormattedContent(currentMobileAnn?.content)}
               </p>
             </motion.div>
 
@@ -536,7 +537,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 </button>
 
                 <div className="flex items-center justify-center gap-1.5">
-                  {state.announcements.map((_, idx) => (
+                  {realAnnouncements.map((_, idx) => (
                     <button
                       key={idx}
                       onClick={() => setMobileAnnIndex(idx)}
@@ -572,13 +573,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           {/* Jadwal Kuliah */}
           <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-4 transition-colors">
             
-            {/* Header Jadwal dengan Badge Minggu Akademik Dinamis */}
             <div className="flex items-center justify-between">
               <h3 className="text-base font-bold text-slate-800 dark:text-zinc-100">
                 Jadwal Perkuliahan
               </h3>
 
-              {/* Badge Dynamic Week */}
               {(() => {
                 const weekInfo = getCurrentAcademicWeek();
                 return (
@@ -755,7 +754,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
 
-        {/* Right Column: Announcements */}
+        {/* Right Column: Announcements (Sekarang Menggunakan realAnnouncements) */}
         <div className="hidden lg:block space-y-6">
           <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-4 transition-colors">
             <div className="flex items-center justify-between">
@@ -777,12 +776,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
 
             <div className="space-y-3">
-              {state.announcements.length === 0 ? (
+              {realAnnouncements.length === 0 ? (
                 <div className="p-6 text-center text-slate-400 dark:text-zinc-500 text-xs bg-slate-50/70 dark:bg-zinc-800/40 rounded-2xl">
                   Belum ada pengumuman kelas.
                 </div>
               ) : (
-                state.announcements.map((ann) => (
+                realAnnouncements.map((ann) => (
                   <motion.div
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.99 }}
