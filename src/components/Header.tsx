@@ -235,16 +235,6 @@ export const Header: React.FC<HeaderProps> = ({
         );
       }
     }
-
-    /*
-     * Nanti bisa dikembangkan:
-     *
-     * notification.type === 'mbudiary_like'
-     * → buka Mbudiary
-     *
-     * notification.type === 'announcement'
-     * → buka Dashboard
-     */
   };
 
   /*
@@ -273,8 +263,6 @@ export const Header: React.FC<HeaderProps> = ({
    * ==========================================================
    * REQUEST ONESIGNAL PERMISSION
    * ==========================================================
-   *
-   * Dipanggil dari click handler.
    */
   const handleEnablePush = async () => {
     if (isRequestingPush) return;
@@ -383,14 +371,14 @@ export const Header: React.FC<HeaderProps> = ({
               </motion.button>
 
               {/* =================================================
-                  NOTIFICATION PANEL
+                  NOTIFICATION PANEL (FIXED FOR MOBILE LAYOUT)
               ================================================= */}
               <AnimatePresence>
                 {isNotificationOpen && (
                   <>
                     {/* Click outside */}
                     <div
-                      className="fixed inset-0 z-40"
+                      className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[1px] sm:bg-transparent sm:backdrop-blur-none"
                       onClick={() =>
                         setIsNotificationOpen(false)
                       }
@@ -417,7 +405,7 @@ export const Header: React.FC<HeaderProps> = ({
                         stiffness: 400,
                         damping: 28,
                       }}
-                      className="absolute right-0 mt-3 w-[calc(100vw-2rem)] sm:w-[380px] max-w-[380px] bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl shadow-2xl z-50 overflow-hidden"
+                      className="fixed top-16 left-4 right-4 sm:absolute sm:top-auto sm:left-auto sm:right-0 sm:mt-3 sm:w-[380px] max-w-md mx-auto bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl shadow-2xl z-50 overflow-hidden"
                     >
 
                       {/* HEADER PANEL */}
@@ -489,7 +477,7 @@ export const Header: React.FC<HeaderProps> = ({
                       {/* =================================================
                           NOTIFICATION LIST
                       ================================================= */}
-                      <div className="max-h-[430px] overflow-y-auto p-3 space-y-1.5">
+                      <div className="max-h-[350px] sm:max-h-[430px] overflow-y-auto p-3 space-y-1.5">
 
                         {notifications.length === 0 ? (
                           <div className="py-10 text-center">
@@ -551,7 +539,7 @@ export const Header: React.FC<HeaderProps> = ({
                                         {notification.title}
                                       </p>
 
-                                      <span className="text-[9px] text-slate-400 dark:text-zinc-500 whitespace-nowrap">
+                                      <span className="text-[9px] text-slate-400 dark:text-zinc-500 whitespace-nowrap shrink-0">
                                         {formatNotificationTime(
                                           notification.createdAt
                                         )}
@@ -559,7 +547,7 @@ export const Header: React.FC<HeaderProps> = ({
 
                                     </div>
 
-                                    <p className="text-[10px] leading-relaxed text-slate-500 dark:text-zinc-400 mt-1">
+                                    <p className="text-[10px] leading-relaxed text-slate-500 dark:text-zinc-400 mt-1 break-words">
                                       {notification.message}
                                     </p>
 
