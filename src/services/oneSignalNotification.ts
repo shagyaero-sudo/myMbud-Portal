@@ -3,7 +3,7 @@ import {
   updateNotificationPushStatus,
 } from './notifications';
 
-import { sendOneSignalNotification } from './oneSignalServer';
+import { sendOneSignalNotification } from '../../services/oneSignalServer';
 
 type MbudiaryNotificationParams = {
   targetNrp: string;
