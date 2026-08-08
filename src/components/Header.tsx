@@ -16,6 +16,8 @@ import {
   Bell,
   BellRing,
   CheckCheck,
+  Megaphone,
+  Send,
 } from 'lucide-react';
 
 import { TabType } from './Sidebar';
@@ -30,6 +32,8 @@ import {
 import {
   requestOneSignalPermission,
 } from '../services/oneSignal';
+
+import { sendOfficerNotification } from '../services/oneSignalNotification';
 
 interface HeaderProps {
   isOfficer: boolean;
@@ -96,6 +100,13 @@ export const Header: React.FC<HeaderProps> = ({
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [isRequestingPush, setIsRequestingPush] = useState(false);
 
+  // STATE UNTUK FORM OFFICER
+  const [isOfficerFormOpen, setIsOfficerFormOpen] = useState(false);
+  const [officerTargetNrp, setOfficerTargetNrp] = useState('');
+  const [officerTitle, setOfficerTitle] = useState('');
+  const [officerMessage, setOfficerMessage] = useState('');
+  const [isSendingOfficerNotif, setIsSendingOfficerNotif] = useState(false);
+
   const targetNrp = useMemo(() => {
     return localStorage.getItem('mymbud_user_nrp') || '';
   }, []);
@@ -117,6 +128,7 @@ export const Header: React.FC<HeaderProps> = ({
   const handleLogoClick = () => {
     if (isOfficer) {
       setIsOfficer(false);
+      setIsOfficerFormOpen(false); // Tutup form officer jika keluar mode PJ
     } else {
       setPinInput('');
       setPinError(false);
@@ -146,6 +158,7 @@ export const Header: React.FC<HeaderProps> = ({
     }
 
     setIsNotificationOpen(false);
+    setIsOfficerFormOpen(false);
 
     const data = notification.data || {};
 
@@ -180,6 +193,35 @@ export const Header: React.FC<HeaderProps> = ({
       await requestOneSignalPermission();
     } finally {
       setIsRequestingPush(false);
+    }
+  };
+
+  // HANDLER PENGIRIMAN OFFICER NOTIF
+  const handleSendOfficerNotif = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!officerTargetNrp.trim() || !officerTitle.trim() || !officerMessage.trim() || isSendingOfficerNotif) {
+      return;
+    }
+
+    setIsSendingOfficerNotif(true);
+
+    try {
+      await sendOfficerNotification({
+        targetNrp: officerTargetNrp.trim(),
+        title: officerTitle.trim(),
+        message: officerMessage.trim(),
+      });
+
+      alert('Notifikasi berhasil dikirim!');
+      setOfficerTargetNrp('');
+      setOfficerTitle('');
+      setOfficerMessage('');
+      setIsOfficerFormOpen(false); // Tutup form setelah berhasil kirim
+    } catch (error) {
+      console.error('[Officer Notif Error]:', error);
+      alert('Gagal mengirim notifikasi.');
+    } finally {
+      setIsSendingOfficerNotif(false);
     }
   };
 
@@ -309,6 +351,22 @@ export const Header: React.FC<HeaderProps> = ({
                     <div>
                       <div className="flex items-center gap-2">
                         <h2 className="text-sm font-bold text-slate-900 dark:text-zinc-100">Notifikasi</h2>
+                        
+                        {/* TOMBOL PENGIRIMAN NOTIFIKASI KHUSUS PJ */}
+                        {isOfficer && (
+                          <button
+                            onClick={() => setIsOfficerFormOpen(!isOfficerFormOpen)}
+                            className={`p-1.5 rounded-lg transition-all ${
+                              isOfficerFormOpen 
+                                ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400' 
+                                : 'text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800 hover:text-indigo-500'
+                            }`}
+                            title="Kirim Notifikasi Manual"
+                          >
+                            <Megaphone className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+
                         {unreadCount > 0 && (
                           <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-red-50 dark:bg-red-950/40 text-red-500">
                             {unreadCount} baru
@@ -324,6 +382,55 @@ export const Header: React.FC<HeaderProps> = ({
                       </button>
                     )}
                   </div>
+
+                  {/* FORM BROADCAST OFFICER YANG MUNCUL KETIKA TOMBOL MEGAPHONE DIPENCET */}
+                  <AnimatePresence>
+                    {isOfficer && isOfficerFormOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="px-3 pt-3 overflow-hidden"
+                      >
+                        <div className="p-3.5 rounded-2xl bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/60">
+                          <form onSubmit={handleSendOfficerNotif} className="space-y-2">
+                            <input
+                              type="text"
+                              value={officerTargetNrp}
+                              onChange={(e) => setOfficerTargetNrp(e.target.value)}
+                              placeholder="NRP Target (misal: 50132...)"
+                              required
+                              className="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-800 text-xs border border-indigo-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                            />
+                            <input
+                              type="text"
+                              value={officerTitle}
+                              onChange={(e) => setOfficerTitle(e.target.value)}
+                              placeholder="Judul Notifikasi"
+                              required
+                              className="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-800 text-xs border border-indigo-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                            />
+                            <textarea
+                              value={officerMessage}
+                              onChange={(e) => setOfficerMessage(e.target.value)}
+                              placeholder="Isi pesan notifikasi..."
+                              rows={2}
+                              required
+                              className="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-800 text-xs border border-indigo-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 resize-none"
+                            />
+                            <button
+                              type="submit"
+                              disabled={isSendingOfficerNotif}
+                              className="w-full py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95"
+                            >
+                              <Send className="w-3.5 h-3.5" />
+                              <span>{isSendingOfficerNotif ? 'Mengirim...' : 'Kirim Pesan'}</span>
+                            </button>
+                          </form>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
 
                   <div className="px-3 pt-3">
                     <button onClick={handleEnablePush} disabled={isRequestingPush} className="w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50 hover:bg-blue-100 transition-all text-left disabled:opacity-60">

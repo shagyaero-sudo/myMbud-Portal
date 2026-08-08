@@ -235,3 +235,28 @@ export async function notifyUserFollowed({
     },
   });
 }
+
+/**
+ * ============================================================
+ * OFFICER MANUAL NOTIFICATION
+ * ============================================================
+ */
+export async function sendOfficerNotification({
+  targetNrp,
+  title,
+  message,
+}: {
+  targetNrp: string;
+  title: string;
+  message: string;
+}) {
+  return sendMbudiaryNotification({
+    targetNrp,
+    title: `📢 ${title}`,
+    message,
+    type: 'officer_announcement',
+    data: {
+      type: 'officer_announcement',
+    },
+  });
+}
