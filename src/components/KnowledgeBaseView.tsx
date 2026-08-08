@@ -165,7 +165,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="space-y-6 pb-12"
+      className="space-y-6 pb-28 sm:pb-16 pb-[calc(7rem+env(safe-area-inset-bottom))] sm:pb-[calc(4rem+env(safe-area-inset-bottom))]"
     >
       {/* Header Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 p-6 sm:p-8 rounded-3xl shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none transition-colors">
