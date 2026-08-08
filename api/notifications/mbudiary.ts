@@ -12,8 +12,9 @@ function sanitizeVal(raw: string | undefined): string {
   if (!raw) return '';
   return raw
     .trim()
-    .replace(/^['"]|['"]$/g, '') // Hapus tanda petik terikut
-    .replace(/[\r\n\t]/g, '');   // Hapus newline/tab tersembunyi
+    .replace(/^['"]|['"]$/g, '')
+    .replace(/[\r\n\t]/g, '')
+    .replace(/^(Key|Basic|Bearer)\s+/i, '');
 }
 
 export default async function handler(req: any, res: any) {
@@ -23,21 +24,29 @@ export default async function handler(req: any, res: any) {
   }
 
   const appId = sanitizeVal(process.env.ONESIGNAL_APP_ID);
-  let apiKey = sanitizeVal(process.env.ONESIGNAL_REST_API_KEY);
-
-  // Bersihkan jika ada prefix 'Key ' atau 'Basic ' yang terikut di env
-  apiKey = apiKey.replace(/^(Key|Basic)\s+/i, '');
+  const apiKey = sanitizeVal(process.env.ONESIGNAL_REST_API_KEY);
 
   if (!appId || !apiKey) {
-    console.error(
-      '[OneSignal] Missing ONESIGNAL_APP_ID / ONESIGNAL_REST_API_KEY di Vercel Environment Variables'
-    );
+    console.error('[OneSignal] Missing ONESIGNAL_APP_ID / ONESIGNAL_REST_API_KEY');
     return res.status(500).json({ success: false, error: 'Server not configured' });
   }
 
-  // Diagnostic log aman
+  // Penjaga: notifikasi HARUS pakai App API Key (os_v2_app_...), bukan
+  // Organization Key (os_v2_org_...). Org Key tidak punya izin kirim push
+  // walau header & endpoint sudah benar — akan selalu 401.
+  if (!apiKey.startsWith('os_v2_app_')) {
+    console.error(
+      `[OneSignal] ONESIGNAL_REST_API_KEY salah jenis (prefix: ${apiKey.slice(0, 10)}...). ` +
+      `Wajib pakai App API Key dari Dashboard App → Settings → Keys & IDs, bukan Organization Key.`
+    );
+    return res.status(500).json({
+      success: false,
+      error: 'Wrong OneSignal key type: expected an App API Key (os_v2_app_...)',
+    });
+  }
+
   console.log(
-    `[OneSignal Debug] appId=${appId}, apiKey length=${apiKey.length}, prefix=${apiKey.substring(0, 10)}...`
+    `[OneSignal Debug] appId=${appId}, apiKey length=${apiKey.length}, prefix=${apiKey.slice(0, 10)}...`
   );
 
   const { targetNrp, title, message, url, data } = (req.body ?? {}) as MbudiaryPushBody;
@@ -61,7 +70,6 @@ export default async function handler(req: any, res: any) {
   };
 
   try {
-    // Header resmi OneSignal API untuk Organization Key (os_v2_org_...)
     const response = await fetch(ONESIGNAL_API_URL, {
       method: 'POST',
       headers: {
