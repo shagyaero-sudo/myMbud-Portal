@@ -8,21 +8,37 @@ type MbudiaryPushBody = {
   data?: Record<string, any>;
 };
 
+function sanitizeVal(raw: string | undefined): string {
+  if (!raw) return '';
+  return raw
+    .trim()
+    .replace(/^['"]|['"]$/g, '') // Hapus tanda petik terikut
+    .replace(/[\r\n\t]/g, '');   // Hapus newline/tab tersembunyi
+}
+
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ success: false, error: 'Method not allowed' });
   }
 
-  const appId = process.env.ONESIGNAL_APP_ID?.trim();
-  const rawApiKey = process.env.ONESIGNAL_REST_API_KEY?.trim();
+  const appId = sanitizeVal(process.env.ONESIGNAL_APP_ID);
+  let apiKey = sanitizeVal(process.env.ONESIGNAL_REST_API_KEY);
 
-  if (!appId || !rawApiKey) {
+  // Bersihkan jika ada prefix 'Key ' atau 'Basic ' yang terikut di env
+  apiKey = apiKey.replace(/^(Key|Basic)\s+/i, '');
+
+  if (!appId || !apiKey) {
     console.error(
       '[OneSignal] Missing ONESIGNAL_APP_ID / ONESIGNAL_REST_API_KEY di Vercel Environment Variables'
     );
     return res.status(500).json({ success: false, error: 'Server not configured' });
   }
+
+  // Diagnostic log aman
+  console.log(
+    `[OneSignal Debug] appId=${appId}, apiKey length=${apiKey.length}, prefix=${apiKey.substring(0, 10)}...`
+  );
 
   const { targetNrp, title, message, url, data } = (req.body ?? {}) as MbudiaryPushBody;
 
@@ -45,17 +61,12 @@ export default async function handler(req: any, res: any) {
   };
 
   try {
-    // Sanitasi key jika ada tanda petik terikut
-    const cleanKey = rawApiKey.replace(/['"]/g, '').replace(/^(Key|Basic)\s+/i, '');
-    
-    // Key versi 'os_v2_app_...' milik OneSignal Wajib menggunakan prefix "Key "
-    const authHeader = `Key ${cleanKey}`;
-
+    // Header resmi OneSignal API untuk Organization Key (os_v2_org_...)
     const response = await fetch(ONESIGNAL_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: authHeader,
+        Authorization: `Key ${apiKey}`,
       },
       body: JSON.stringify(payload),
     });
@@ -63,7 +74,7 @@ export default async function handler(req: any, res: any) {
     const resData = await response.json();
 
     if (!response.ok) {
-      console.error('[OneSignal API Error]:', resData);
+      console.error('[OneSignal API Error]:', response.status, resData);
       return res.status(response.status).json({
         success: false,
         error: resData?.errors?.[0] ?? 'OneSignal API Error',
