@@ -35,7 +35,6 @@ import {
 } from '../services/oneSignal';
 
 import { sendOfficerNotification } from '../services/oneSignalNotification';
-import { getAllUsers } from './mbudiary/lib/storage'; // Ambil daftar user untuk broadcast
 
 interface HeaderProps {
   isOfficer: boolean;
@@ -100,7 +99,7 @@ export const Header: React.FC<HeaderProps> = ({
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [isRequestingPush, setIsRequestingPush] = useState(false);
 
-  // STATE UNTUK FORM OFFICER
+  // STATE FORM OFFICER
   const [isOfficerFormOpen, setIsOfficerFormOpen] = useState(false);
   const [officerTargetNrp, setOfficerTargetNrp] = useState('');
   const [officerTitle, setOfficerTitle] = useState('');
@@ -196,7 +195,7 @@ export const Header: React.FC<HeaderProps> = ({
     }
   };
 
-  // HANDLER PENGIRIMAN OFFICER NOTIF (SINGLE & ALL)
+  // HANDLER PENGIRIMAN OFFICER NOTIF
   const handleSendOfficerNotif = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!officerTargetNrp.trim() || !officerTitle.trim() || !officerMessage.trim() || isSendingOfficerNotif) {
@@ -206,18 +205,13 @@ export const Header: React.FC<HeaderProps> = ({
     setIsSendingOfficerNotif(true);
 
     try {
-      // Ambil seluruh daftar user dari storage jika mau broadcast
-      const allUsers = getAllUsers();
-      const allNrps = allUsers.map((u) => u.nrp);
-
       await sendOfficerNotification({
         targetNrp: officerTargetNrp.trim(),
         title: officerTitle.trim(),
         message: officerMessage.trim(),
-        allNrps,
       });
 
-      alert(officerTargetNrp.toUpperCase() === 'ALL' ? 'Notifikasi broadcast ke SEMUA USER berhasil dikirim!' : 'Notifikasi berhasil dikirim!');
+      alert(officerTargetNrp.toUpperCase() === 'ALL' ? 'Notifikasi broadcast berhasil dikirim!' : 'Notifikasi berhasil dikirim!');
       setOfficerTargetNrp('');
       setOfficerTitle('');
       setOfficerMessage('');
@@ -335,7 +329,6 @@ export const Header: React.FC<HeaderProps> = ({
           <AnimatePresence>
             {isNotificationOpen && (
               <>
-                {/* FULLSCREEN DIM BACKDROP */}
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -344,7 +337,6 @@ export const Header: React.FC<HeaderProps> = ({
                   onClick={() => setIsNotificationOpen(false)}
                 />
 
-                {/* MODAL CONTAINER */}
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95, y: -10 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -357,7 +349,6 @@ export const Header: React.FC<HeaderProps> = ({
                       <div className="flex items-center gap-2">
                         <h2 className="text-sm font-bold text-slate-900 dark:text-zinc-100">Notifikasi</h2>
                         
-                        {/* TOMBOL PENGIRIMAN NOTIFIKASI KHUSUS PJ */}
                         {isOfficer && (
                           <button
                             onClick={() => setIsOfficerFormOpen(!isOfficerFormOpen)}
@@ -388,7 +379,7 @@ export const Header: React.FC<HeaderProps> = ({
                     )}
                   </div>
 
-                  {/* FORM BROADCAST OFFICER YANG MUNCUL KETIKA TOMBOL MEGAPHONE DIPENCET */}
+                  {/* FORM BROADCAST OFFICER */}
                   <AnimatePresence>
                     {isOfficer && isOfficerFormOpen && (
                       <motion.div
