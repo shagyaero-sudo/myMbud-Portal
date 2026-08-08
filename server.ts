@@ -4,9 +4,6 @@ import fs from 'fs';
 import { initialAppState } from './src/data/mockData.js';
 import type { AppState, Task, Contact, MaterialFile, Announcement, ScheduleItem, GroupResult } from './src/types.js';
 
-// Import OneSignal Notification Helper
-import { sendOneSignalNotification } from './services/oneSignalServer.js';
-
 const DATA_DIR = path.join(process.cwd(), 'data');
 const DATA_FILE = path.join(DATA_DIR, 'store.json');
 
@@ -51,76 +48,6 @@ function saveStoreData(data: AppState): AppState {
 // Inisialisasi Express App
 const app = express();
 app.use(express.json());
-
-// ============================================================
-// ONESIGNAL NOTIFICATION API (GENERAL)
-// ============================================================
-app.post('/api/notifications/send', async (req, res) => {
-  try {
-    const { targetNrp, title, message, url } = req.body;
-
-    if (!targetNrp || !title || !message) {
-      return res.status(400).json({
-        success: false,
-        error: 'targetNrp, title, dan message wajib diisi.',
-      });
-    }
-
-    const result = await sendOneSignalNotification({
-      targetNrp,
-      title,
-      message,
-      url,
-    });
-
-    return res.json({
-      success: true,
-      result,
-    });
-  } catch (error) {
-    console.error('[Notification API] Error:', error);
-
-    return res.status(500).json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Gagal mengirim notifikasi.',
-    });
-  }
-});
-
-// ============================================================
-// ONESIGNAL NOTIFICATION API (MBUDIARY TRIGGER)
-// ============================================================
-app.post('/api/notifications/mbudiary', async (req, res) => {
-  try {
-    const { targetNrp, title, message, data } = req.body;
-
-    if (!targetNrp || !title || !message) {
-      return res.status(400).json({
-        success: false,
-        error: 'targetNrp, title, dan message wajib diisi.',
-      });
-    }
-
-    const result = await sendOneSignalNotification({
-      targetNrp,
-      title,
-      message,
-      data,
-    });
-
-    return res.json({
-      success: true,
-      result,
-    });
-  } catch (error) {
-    console.error('[Mbudiary Notification] Error:', error);
-
-    return res.status(500).json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Gagal mengirim notifikasi Mbudiary.',
-    });
-  }
-});
 
 // Health check
 app.get('/api/health', (_req, res) => {
