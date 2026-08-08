@@ -3,6 +3,8 @@ import {
   updateNotificationPushStatus,
 } from './notifications';
 
+import { sendOneSignalNotification } from './oneSignalServer';
+
 type MbudiaryNotificationParams = {
   targetNrp: string;
   title: string;
@@ -17,10 +19,9 @@ type MbudiaryNotificationParams = {
  * ============================================================
  *
  * Urutan:
- *
  * 1. Simpan notification ke Firestore
- * 2. Kalau berhasil, panggil backend OneSignal
- * 3. Update pushStatus
+ * 2. Kalau berhasil, tembak OneSignal REST API langsung via sendOneSignalNotification
+ * 3. Update pushStatus di Firestore ('sent' / 'failed')
  *
  * Firestore adalah source of truth.
  */
@@ -35,12 +36,12 @@ export async function sendMbudiaryNotification({
 
   let notificationId: string;
 
+  /*
+   * ==========================================================
+   * STEP 1 — FIRESTORE
+   * ==========================================================
+   */
   try {
-    /*
-     * ========================================================
-     * STEP 1 — FIRESTORE
-     * ========================================================
-     */
     notificationId = await createNotification({
       targetNrp,
       title,
@@ -64,38 +65,21 @@ export async function sendMbudiaryNotification({
 
   /*
    * ==========================================================
-   * STEP 2 — ONESIGNAL BACKEND
+   * STEP 2 — ONESIGNAL PUSH (Direct Server Call)
    * ==========================================================
    */
   try {
-    const response = await fetch(
-      '/api/notifications/mbudiary',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          targetNrp,
-          title,
-          message,
-          data,
-        }),
-      }
-    );
+    const pushResult = await sendOneSignalNotification({
+      targetNrp,
+      title,
+      message,
+      data,
+    });
 
-    let result: any = null;
-
-    try {
-      result = await response.json();
-    } catch {
-      result = null;
-    }
-
-    if (!response.ok) {
+    if (pushResult && pushResult.error) {
       console.error(
-        '[Mbudiary Notification] Server error:',
-        result
+        '[Mbudiary Notification] OneSignal push error:',
+        pushResult.error
       );
 
       await updateNotificationPushStatus(
@@ -106,7 +90,7 @@ export async function sendMbudiaryNotification({
       return {
         notificationId,
         pushSent: false,
-        result,
+        result: pushResult,
       };
     }
 
@@ -128,19 +112,14 @@ export async function sendMbudiaryNotification({
     return {
       notificationId,
       pushSent: true,
-      result,
+      result: pushResult,
     };
   } catch (error) {
     console.error(
-      '[Mbudiary Notification] Push failed:',
+      '[Mbudiary Notification] Direct Push failed:',
       error
     );
 
-    /*
-     * Push gagal ≠ notification hilang.
-     *
-     * Firestore tetap menyimpan histori.
-     */
     try {
       await updateNotificationPushStatus(
         notificationId,
