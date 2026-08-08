@@ -18,6 +18,7 @@ import {
   CheckCheck,
   Megaphone,
   Send,
+  Users,
 } from 'lucide-react';
 
 import { TabType } from './Sidebar';
@@ -34,6 +35,7 @@ import {
 } from '../services/oneSignal';
 
 import { sendOfficerNotification } from '../services/oneSignalNotification';
+import { getAllUsers } from './mbudiary/lib/storage'; // Ambil daftar user untuk broadcast
 
 interface HeaderProps {
   isOfficer: boolean;
@@ -59,9 +61,7 @@ interface HeaderProps {
 function formatNotificationTime(
   timestamp: AppNotification['createdAt']
 ) {
-  if (!timestamp) {
-    return 'Baru saja';
-  }
+  if (!timestamp) return 'Baru saja';
 
   const date = timestamp.toDate();
   const now = new Date();
@@ -128,7 +128,7 @@ export const Header: React.FC<HeaderProps> = ({
   const handleLogoClick = () => {
     if (isOfficer) {
       setIsOfficer(false);
-      setIsOfficerFormOpen(false); // Tutup form officer jika keluar mode PJ
+      setIsOfficerFormOpen(false);
     } else {
       setPinInput('');
       setPinError(false);
@@ -196,7 +196,7 @@ export const Header: React.FC<HeaderProps> = ({
     }
   };
 
-  // HANDLER PENGIRIMAN OFFICER NOTIF
+  // HANDLER PENGIRIMAN OFFICER NOTIF (SINGLE & ALL)
   const handleSendOfficerNotif = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!officerTargetNrp.trim() || !officerTitle.trim() || !officerMessage.trim() || isSendingOfficerNotif) {
@@ -206,17 +206,22 @@ export const Header: React.FC<HeaderProps> = ({
     setIsSendingOfficerNotif(true);
 
     try {
+      // Ambil seluruh daftar user dari storage jika mau broadcast
+      const allUsers = getAllUsers();
+      const allNrps = allUsers.map((u) => u.nrp);
+
       await sendOfficerNotification({
         targetNrp: officerTargetNrp.trim(),
         title: officerTitle.trim(),
         message: officerMessage.trim(),
+        allNrps,
       });
 
-      alert('Notifikasi berhasil dikirim!');
+      alert(officerTargetNrp.toUpperCase() === 'ALL' ? 'Notifikasi broadcast ke SEMUA USER berhasil dikirim!' : 'Notifikasi berhasil dikirim!');
       setOfficerTargetNrp('');
       setOfficerTitle('');
       setOfficerMessage('');
-      setIsOfficerFormOpen(false); // Tutup form setelah berhasil kirim
+      setIsOfficerFormOpen(false);
     } catch (error) {
       console.error('[Officer Notif Error]:', error);
       alert('Gagal mengirim notifikasi.');
@@ -392,13 +397,25 @@ export const Header: React.FC<HeaderProps> = ({
                         exit={{ opacity: 0, height: 0 }}
                         className="px-3 pt-3 overflow-hidden"
                       >
-                        <div className="p-3.5 rounded-2xl bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/60">
+                        <div className="p-3.5 rounded-2xl bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/60 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-bold text-indigo-700 dark:text-indigo-300">Target Penerima:</span>
+                            <button
+                              type="button"
+                              onClick={() => setOfficerTargetNrp('ALL')}
+                              className="px-2 py-0.5 rounded-full bg-indigo-600 text-white text-[9px] font-bold hover:bg-indigo-500 transition-all flex items-center gap-1 active:scale-95"
+                            >
+                              <Users className="w-2.5 h-2.5" />
+                              <span>Semua User (ALL)</span>
+                            </button>
+                          </div>
+
                           <form onSubmit={handleSendOfficerNotif} className="space-y-2">
                             <input
                               type="text"
                               value={officerTargetNrp}
                               onChange={(e) => setOfficerTargetNrp(e.target.value)}
-                              placeholder="NRP Target (misal: 50132...)"
+                              placeholder="NRP Target (atau ketik ALL)"
                               required
                               className="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-800 text-xs border border-indigo-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                             />
@@ -424,7 +441,7 @@ export const Header: React.FC<HeaderProps> = ({
                               className="w-full py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95"
                             >
                               <Send className="w-3.5 h-3.5" />
-                              <span>{isSendingOfficerNotif ? 'Mengirim...' : 'Kirim Pesan'}</span>
+                              <span>{isSendingOfficerNotif ? 'Mengirim Broadcast...' : 'Kirim Pesan'}</span>
                             </button>
                           </form>
                         </div>

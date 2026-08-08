@@ -238,25 +238,44 @@ export async function notifyUserFollowed({
 
 /**
  * ============================================================
- * OFFICER MANUAL NOTIFICATION
+ * OFFICER MANUAL NOTIFICATION (SUPPORT SINGLE & BROADCAST ALL)
  * ============================================================
  */
 export async function sendOfficerNotification({
   targetNrp,
   title,
   message,
+  allNrps = [],
 }: {
   targetNrp: string;
   title: string;
   message: string;
+  allNrps?: string[];
 }) {
+  const isBroadcast = targetNrp.trim().toUpperCase() === 'ALL' || targetNrp.trim() === '*';
+
+  if (isBroadcast && allNrps.length > 0) {
+    // Broadcast ke seluruh NRP
+    const results = await Promise.allSettled(
+      allNrps.map((nrp) =>
+        sendMbudiaryNotification({
+          targetNrp: nrp,
+          title: `📢 ${title}`,
+          message,
+          type: 'officer_announcement',
+          data: { type: 'officer_announcement' },
+        })
+      )
+    );
+    return results;
+  }
+
+  // Kirim ke 1 NRP spesifik
   return sendMbudiaryNotification({
-    targetNrp,
+    targetNrp: targetNrp.trim(),
     title: `📢 ${title}`,
     message,
     type: 'officer_announcement',
-    data: {
-      type: 'officer_announcement',
-    },
+    data: { type: 'officer_announcement' },
   });
 }
