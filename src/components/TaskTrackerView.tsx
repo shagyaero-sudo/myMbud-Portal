@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';[cite: 3]
-import { motion, AnimatePresence } from 'framer-motion';[cite: 3]
+import React, { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus,
   Search,
@@ -20,28 +20,28 @@ import {
   RotateCcw,
   CheckCircle2,
   Circle,
-} from 'lucide-react';[cite: 3]
-import { Task, Contact } from '../types';[cite: 3]
+} from 'lucide-react';
+import { Task, Contact } from '../types';
 import { subscribeUserTaskCompletions, toggleTaskCompletion } from '../services/api';
 
 interface TaskTrackerViewProps {
-  tasks: Task[];[cite: 3]
-  contacts?: Contact[];[cite: 3]
-  isOfficer: boolean;[cite: 3]
-  initialSelectedTaskId?: string | null; // PROP BARU DARI DASHBOARD
-  onClearInitialSelectedTask?: () => void; // HANDLER CLEAR STATE DARI DASHBOARD
-  onAddTask: (task: Omit<Task, 'id'>) => void;[cite: 3]
-  onUpdateTask?: (id: string, updatedTask: Partial<Task>) => void;[cite: 3]
+  tasks: Task[];
+  contacts?: Contact[];
+  isOfficer: boolean;
+  initialSelectedTaskId?: string | null;
+  onClearInitialSelectedTask?: () => void;
+  onAddTask: (task: Omit<Task, 'id'>) => void;
+  onUpdateTask?: (id: string, updatedTask: Partial<Task>) => void;
   onUpdateTaskStatus: (
     id: string,
     newStatus: 'todo' | 'in_progress' | 'done'
-  ) => void;[cite: 3]
-  onDeleteTask: (id: string) => void;[cite: 3]
+  ) => void;
+  onDeleteTask: (id: string) => void;
 }
 
 interface AttachmentData {
-  fileName: string;[cite: 3]
-  fileUrl: string;[cite: 3]
+  fileName: string;
+  fileUrl: string;
 }
 
 export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
@@ -54,11 +54,11 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
   onUpdateTask,
   onDeleteTask,
 }) => {
-  const [search, setSearch] = useState('');[cite: 3]
-  const [filterCourse, setFilterCourse] = useState('ALL');[cite: 3]
-  const [filterType, setFilterType] = useState<'ALL' | 'Individu' | 'Kelompok'>('ALL');[cite: 3]
-  const [activeTab, setActiveTab] = useState<'active' | 'history'>('active');[cite: 3]
-  const [selectedDetailTask, setSelectedDetailTask] = useState<Task | null>(null);[cite: 3]
+  const [search, setSearch] = useState('');
+  const [filterCourse, setFilterCourse] = useState('ALL');
+  const [filterType, setFilterType] = useState<'ALL' | 'Individu' | 'Kelompok'>('ALL');
+  const [activeTab, setActiveTab] = useState<'active' | 'history'>('active');
+  const [selectedDetailTask, setSelectedDetailTask] = useState<Task | null>(null);
 
   // --- EFFECT UNTUK OTOMATIS MEMBUKA MODAL TUGAS SAAT DILINK DARI DASHBOARD ---
   useEffect(() => {
@@ -85,7 +85,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
   }, [currentUserNrp]);
 
   const handleToggleComplete = async (e: React.MouseEvent, taskId: string) => {
-    e.stopPropagation(); // Mencegah membuka modal detail saat tombol centang diklik
+    e.stopPropagation();
     const isDone = completedTaskIds.includes(taskId);
     try {
       await toggleTaskCompletion(currentUserNrp, taskId, !isDone);
@@ -94,48 +94,48 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
     }
   };
 
-  const [previewAttachment, setPreviewAttachment] = useState<AttachmentData | null>(null);[cite: 3]
-  const [zoomLevel, setZoomLevel] = useState(1);[cite: 3]
-  const [showModal, setShowModal] = useState(false);[cite: 3]
-  const [editingTaskId, setEditingTaskId] = useState<string | null>(null);[cite: 3]
+  const [previewAttachment, setPreviewAttachment] = useState<AttachmentData | null>(null);
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [showModal, setShowModal] = useState(false);
+  const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
 
-  const [title, setTitle] = useState('');[cite: 3]
-  const [course, setCourse] = useState('');[cite: 3]
-  const [description, setDescription] = useState('');[cite: 3]
-  const [type, setType] = useState<'Individu' | 'Kelompok'>('Individu');[cite: 3]
-  const [assigner, setAssigner] = useState('');[cite: 3]
-  const [deadlineDate, setDeadlineDate] = useState('');[cite: 3]
-  const [deadlineTime, setDeadlineTime] = useState('23:59');[cite: 3]
-  const [priority, setPriority] = useState<'High' | 'Medium' | 'Low'>('High');[cite: 3]
-  const [classroomUrl, setClassroomUrl] = useState('');[cite: 3]
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);[cite: 3]
-  const [isUploading, setIsUploading] = useState(false);[cite: 3]
-  const [uploadProgress, setUploadProgress] = useState(0);[cite: 3]
-  const [existingAttachment, setExistingAttachment] = useState<AttachmentData | null>(null);[cite: 3]
+  const [title, setTitle] = useState('');
+  const [course, setCourse] = useState('');
+  const [description, setDescription] = useState('');
+  const [type, setType] = useState<'Individu' | 'Kelompok'>('Individu');
+  const [assigner, setAssigner] = useState('');
+  const [deadlineDate, setDeadlineDate] = useState('');
+  const [deadlineTime, setDeadlineTime] = useState('23:59');
+  const [priority, setPriority] = useState<'High' | 'Medium' | 'Low'>('High');
+  const [classroomUrl, setClassroomUrl] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [existingAttachment, setExistingAttachment] = useState<AttachmentData | null>(null);
 
-  const fileInputRef = useRef<HTMLInputElement>(null);[cite: 3]
-  const [isDragOver, setIsDragOver] = useState(false);[cite: 3]
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
 
-  const getContactCourse = (c: any) => c.course || c.courseName || '';[cite: 3]
-  const getContactLecturer = (c: any) => c.lecturerName || c.lecturer || c.name || '';[cite: 3]
+  const getContactCourse = (c: any) => c.course || c.courseName || '';
+  const getContactLecturer = (c: any) => c.lecturerName || c.lecturer || c.name || '';
 
   const availableCourseOptions = Array.from(
     new Set([
-      ...contacts.map((c) => getContactCourse(c)).filter((c) => c && c.trim() !== ''),[cite: 3]
-      ...tasks.map((t) => t.course).filter((c) => c && c.trim() !== ''),[cite: 3]
+      ...contacts.map((c) => getContactCourse(c)).filter((c) => c && c.trim() !== ''),
+      ...tasks.map((t) => t.course).filter((c) => c && c.trim() !== ''),
     ])
-  ).sort();[cite: 3]
+  ).sort();
 
-  const uniqueCourses = Array.from(new Set(tasks.map((t) => t.course)));[cite: 3]
+  const uniqueCourses = Array.from(new Set(tasks.map((t) => t.course)));
 
   const handleCourseChange = (selectedCourseName: string) => {
-    setCourse(selectedCourseName);[cite: 3]
+    setCourse(selectedCourseName);
     const matchedContact = contacts.find(
       (c) => getContactCourse(c).toLowerCase() === selectedCourseName.toLowerCase()
-    );[cite: 3]
+    );
 
     if (matchedContact) {
-      setAssigner(getContactLecturer(matchedContact));[cite: 3]
+      setAssigner(getContactLecturer(matchedContact));
     }
   };
 
@@ -148,58 +148,58 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
     if (activeTab === 'active' && isDone) return false;
     if (activeTab === 'history' && !isDone) return false;
 
-    const searchLower = search.toLowerCase();[cite: 3]
+    const searchLower = search.toLowerCase();
     const matchSearch =
       t.title.toLowerCase().includes(searchLower) ||
       t.course.toLowerCase().includes(searchLower) ||
-      t.assigner.toLowerCase().includes(searchLower);[cite: 3]
+      t.assigner.toLowerCase().includes(searchLower);
 
-    const matchCourse = filterCourse === 'ALL' || t.course === filterCourse;[cite: 3]
-    const matchType = filterType === 'ALL' || t.type === filterType;[cite: 3]
+    const matchCourse = filterCourse === 'ALL' || t.course === filterCourse;
+    const matchType = filterType === 'ALL' || t.type === filterType;
 
-    return matchSearch && matchCourse && matchType;[cite: 3]
+    return matchSearch && matchCourse && matchType;
   });
 
   const getDeadlineBadge = (deadlineStr: string) => {
-    const nowDate = new Date();[cite: 3]
-    const deadline = new Date(deadlineStr);[cite: 3]
+    const nowDate = new Date();
+    const deadline = new Date(deadlineStr);
 
-    const todayStart = new Date(nowDate.getFullYear(), nowDate.getMonth(), nowDate.getDate()).getTime();[cite: 3]
-    const deadlineStart = new Date(deadline.getFullYear(), deadline.getMonth(), deadline.getDate()).getTime();[cite: 3]
+    const todayStart = new Date(nowDate.getFullYear(), nowDate.getMonth(), nowDate.getDate()).getTime();
+    const deadlineStart = new Date(deadline.getFullYear(), deadline.getMonth(), deadline.getDate()).getTime();
 
-    const diffDays = Math.round((deadlineStart - todayStart) / (1000 * 3600 * 24));[cite: 3]
+    const diffDays = Math.round((deadlineStart - todayStart) / (1000 * 3600 * 24));
 
     if (diffDays < 0) {
       return {
         label: 'Tenggat Lewat',
-        bg: 'bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 border-slate-200 dark:border-zinc-700',[cite: 3]
+        bg: 'bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 border-slate-200 dark:border-zinc-700',
       };
     }
 
     if (diffDays <= 2) {
-      const dayText = diffDays <= 0 ? 'H-0' : `H-${diffDays}`;[cite: 3]
+      const dayText = diffDays <= 0 ? 'H-0' : `H-${diffDays}`;
       return {
         label: `URGENT ${dayText}`,
-        bg: 'bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-900/50 animate-pulse',[cite: 3]
+        bg: 'bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-900/50 animate-pulse',
       };
     }
 
     if (diffDays <= 5) {
       return {
         label: `Mepet H-${diffDays}`,
-        bg: 'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-900/50',[cite: 3]
+        bg: 'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-900/50',
       };
     }
 
     return {
       label: `Masih H-${diffDays}`,
-      bg: 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/50',[cite: 3]
+      bg: 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/50',
     };
   };
 
   const formatDeadlineDetails = (dateStr: string) => {
-    const d = new Date(dateStr);[cite: 3]
-    if (isNaN(d.getTime())) return dateStr;[cite: 3]
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
 
     return (
       d.toLocaleString('id-ID', {
@@ -210,192 +210,192 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
         hour: '2-digit',
         minute: '2-digit',
       }) + ' WIB'
-    );[cite: 3]
+    );
   };
 
   const getAttachmentData = (attachment: any): AttachmentData | null => {
-    if (!attachment) return null;[cite: 3]
+    if (!attachment) return null;
 
     if (typeof attachment === 'string') {
       return {
-        fileName: attachment.split('/').pop()?.split('?')[0] || 'Dokumen Lampiran',[cite: 3]
-        fileUrl: attachment,[cite: 3]
+        fileName: attachment.split('/').pop()?.split('?')[0] || 'Dokumen Lampiran',
+        fileUrl: attachment,
       };
     }
 
-    const fileUrl = attachment.fileUrl || attachment.url || '';[cite: 3]
-    if (!fileUrl) return null;[cite: 3]
+    const fileUrl = attachment.fileUrl || attachment.url || '';
+    if (!fileUrl) return null;
 
     return {
-      fileName: attachment.fileName || 'Dokumen Lampiran',[cite: 3]
+      fileName: attachment.fileName || 'Dokumen Lampiran',
       fileUrl,
     };
   };
 
-  const getFileExtension = (fileName: string) => fileName.split('.').pop()?.toLowerCase() || '';[cite: 3]
-  const isImageFile = (fileName: string) => ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg', 'avif'].includes(getFileExtension(fileName));[cite: 3]
-  const isPdfFile = (fileName: string) => getFileExtension(fileName) === 'pdf';[cite: 3]
+  const getFileExtension = (fileName: string) => fileName.split('.').pop()?.toLowerCase() || '';
+  const isImageFile = (fileName: string) => ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg', 'avif'].includes(getFileExtension(fileName));
+  const isPdfFile = (fileName: string) => getFileExtension(fileName) === 'pdf';
 
   const handleOpenAddModal = () => {
-    setEditingTaskId(null);[cite: 3]
-    setTitle('');[cite: 3]
-    const defaultCourse = availableCourseOptions[0] || '';[cite: 3]
-    setCourse(defaultCourse);[cite: 3]
+    setEditingTaskId(null);
+    setTitle('');
+    const defaultCourse = availableCourseOptions[0] || '';
+    setCourse(defaultCourse);
 
     if (defaultCourse) {
       const matchedContact = contacts.find(
         (c) => getContactCourse(c).toLowerCase() === defaultCourse.toLowerCase()
-      );[cite: 3]
-      setAssigner(matchedContact ? getContactLecturer(matchedContact) : '');[cite: 3]
+      );
+      setAssigner(matchedContact ? getContactLecturer(matchedContact) : '');
     } else {
-      setAssigner('');[cite: 3]
+      setAssigner('');
     }
 
-    setDescription('');[cite: 3]
-    setType('Individu');[cite: 3]
-    setDeadlineDate('');[cite: 3]
-    setDeadlineTime('23:59');[cite: 3]
-    setPriority('High');[cite: 3]
-    setClassroomUrl('');[cite: 3]
-    setSelectedFile(null);[cite: 3]
-    setExistingAttachment(null);[cite: 3]
-    setUploadProgress(0);[cite: 3]
-    setShowModal(true);[cite: 3]
+    setDescription('');
+    setType('Individu');
+    setDeadlineDate('');
+    setDeadlineTime('23:59');
+    setPriority('High');
+    setClassroomUrl('');
+    setSelectedFile(null);
+    setExistingAttachment(null);
+    setUploadProgress(0);
+    setShowModal(true);
   };
 
   const handleOpenEditModal = (t: Task) => {
-    setEditingTaskId(t.id);[cite: 3]
-    setTitle(t.title);[cite: 3]
-    setCourse(t.course);[cite: 3]
-    setDescription(t.description || '');[cite: 3]
-    setType(t.type);[cite: 3]
-    setAssigner(t.assigner || '');[cite: 3]
+    setEditingTaskId(t.id);
+    setTitle(t.title);
+    setCourse(t.course);
+    setDescription(t.description || '');
+    setType(t.type);
+    setAssigner(t.assigner || '');
 
     if (t.deadline) {
-      const d = new Date(t.deadline);[cite: 3]
+      const d = new Date(t.deadline);
       if (!isNaN(d.getTime())) {
-        const yyyy = d.getFullYear();[cite: 3]
-        const mm = String(d.getMonth() + 1).padStart(2, '0');[cite: 3]
-        const dd = String(d.getDate()).padStart(2, '0');[cite: 3]
-        setDeadlineDate(`${yyyy}-${mm}-${dd}`);[cite: 3]
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        setDeadlineDate(`${yyyy}-${mm}-${dd}`);
 
-        const hh = String(d.getHours()).padStart(2, '0');[cite: 3]
-        const min = String(d.getMinutes()).padStart(2, '0');[cite: 3]
-        setDeadlineTime(`${hh}:${min}`);[cite: 3]
+        const hh = String(d.getHours()).padStart(2, '0');
+        const min = String(d.getMinutes()).padStart(2, '0');
+        setDeadlineTime(`${hh}:${min}`);
       }
     }
 
-    setPriority(t.priority || 'High');[cite: 3]
-    setClassroomUrl(t.classroomUrl || '');[cite: 3]
-    setSelectedFile(null);[cite: 3]
-    setExistingAttachment(getAttachmentData(t.attachment));[cite: 3]
-    setUploadProgress(0);[cite: 3]
-    setShowModal(true);[cite: 3]
+    setPriority(t.priority || 'High');
+    setClassroomUrl(t.classroomUrl || '');
+    setSelectedFile(null);
+    setExistingAttachment(getAttachmentData(t.attachment));
+    setUploadProgress(0);
+    setShowModal(true);
   };
 
-  const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); setIsDragOver(true); };[cite: 3]
-  const handleDragLeave = (e: React.DragEvent) => { e.preventDefault(); setIsDragOver(false); };[cite: 3]
+  const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); setIsDragOver(true); };
+  const handleDragLeave = (e: React.DragEvent) => { e.preventDefault(); setIsDragOver(false); };
   const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();[cite: 3]
-    setIsDragOver(false);[cite: 3]
+    e.preventDefault();
+    setIsDragOver(false);
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      setSelectedFile(e.dataTransfer.files[0]);[cite: 3]
-      setExistingAttachment(null);[cite: 3]
+      setSelectedFile(e.dataTransfer.files[0]);
+      setExistingAttachment(null);
     }
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      setSelectedFile(e.target.files[0]);[cite: 3]
-      setExistingAttachment(null);[cite: 3]
+      setSelectedFile(e.target.files[0]);
+      setExistingAttachment(null);
     }
   };
 
   const fileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
-      const reader = new FileReader();[cite: 3]
-      reader.readAsDataURL(file);[cite: 3]
-      reader.onload = () => resolve((reader.result as string).split(',')[1]);[cite: 3]
-      reader.onerror = (error) => reject(error);[cite: 3]
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve((reader.result as string).split(',')[1]);
+      reader.onerror = (error) => reject(error);
     });
   };
 
   const uploadTaskAttachmentToDrive = async (file: File): Promise<string> => {
-    const GAS_URL = 'https://script.google.com/macros/s/AKfycbyce8cTZ2F25PwyfISpmVJJDMiIunl8G8lCyzkPKQaiuUl-nxKNM5i9b72MMo4M_xis/exec';[cite: 3]
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbyce8cTZ2F25PwyfISpmVJJDMiIunl8G8lCyzkPKQaiuUl-nxKNM5i9b72MMo4M_xis/exec';
 
-    setUploadProgress(10);[cite: 3]
-    const base64Data = await fileToBase64(file);[cite: 3]
-    setUploadProgress(40);[cite: 3]
+    setUploadProgress(10);
+    const base64Data = await fileToBase64(file);
+    setUploadProgress(40);
 
     const payload = {
-      fileName: file.name,[cite: 3]
-      mimeType: file.type,[cite: 3]
-      base64: base64Data,[cite: 3]
-      folderName: 'myMbud Task Attachments',[cite: 3]
+      fileName: file.name,
+      mimeType: file.type,
+      base64: base64Data,
+      folderName: 'myMbud Task Attachments',
     };
 
     const response = await fetch(GAS_URL, {
-      method: 'POST',[cite: 3]
-      body: JSON.stringify(payload),[cite: 3]
+      method: 'POST',
+      body: JSON.stringify(payload),
     });
-    setUploadProgress(80);[cite: 3]
+    setUploadProgress(80);
 
-    if (!response.ok) throw new Error(`Upload Lampiran Tugas gagal (${response.status}).`);[cite: 3]
+    if (!response.ok) throw new Error(`Upload Lampiran Tugas gagal (${response.status}).`);
 
-    const data = await response.json();[cite: 3]
-    setUploadProgress(100);[cite: 3]
+    const data = await response.json();
+    setUploadProgress(100);
 
-    if (data.status !== 'success') throw new Error(data.message);[cite: 3]
+    if (data.status !== 'success') throw new Error(data.message);
 
-    return data.url;[cite: 3]
+    return data.url;
   };
 
   const handleTaskFormSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();[cite: 3]
-    if (!title.trim() || !course.trim() || !deadlineDate) return;[cite: 3]
+    e.preventDefault();
+    if (!title.trim() || !course.trim() || !deadlineDate) return;
 
-    setIsUploading(true);[cite: 3]
-    setUploadProgress(0);[cite: 3]
+    setIsUploading(true);
+    setUploadProgress(0);
 
-    let finalAttachment: AttachmentData | undefined = existingAttachment || undefined;[cite: 3]
+    let finalAttachment: AttachmentData | undefined = existingAttachment || undefined;
 
     try {
       if (selectedFile) {
-        const fileUrl = await uploadTaskAttachmentToDrive(selectedFile);[cite: 3]
-        finalAttachment = { fileName: selectedFile.name, fileUrl };[cite: 3]
+        const fileUrl = await uploadTaskAttachmentToDrive(selectedFile);
+        finalAttachment = { fileName: selectedFile.name, fileUrl };
       }
 
-      const fullIsoDeadline = new Date(`${deadlineDate}T${deadlineTime || '23:59'}:00`).toISOString();[cite: 3]
+      const fullIsoDeadline = new Date(`${deadlineDate}T${deadlineTime || '23:59'}:00`).toISOString();
 
       const taskData: Omit<Task, 'id'> = {
-        title: title.trim(),[cite: 3]
-        course: course.trim(),[cite: 3]
-        description: description.trim(),[cite: 3]
-        type,[cite: 3]
-        assigner: assigner.trim() || 'Dosen Pengampu',[cite: 3]
-        deadline: fullIsoDeadline,[cite: 3]
-        status: 'todo',[cite: 3]
-        priority,[cite: 3]
-        ...(classroomUrl.trim() ? { classroomUrl: classroomUrl.trim() } : {}),[cite: 3]
-        ...(finalAttachment ? { attachment: finalAttachment } : {}),[cite: 3]
+        title: title.trim(),
+        course: course.trim(),
+        description: description.trim(),
+        type,
+        assigner: assigner.trim() || 'Dosen Pengampu',
+        deadline: fullIsoDeadline,
+        status: 'todo',
+        priority,
+        ...(classroomUrl.trim() ? { classroomUrl: classroomUrl.trim() } : {}),
+        ...(finalAttachment ? { attachment: finalAttachment } : {})
       };
 
       if (editingTaskId && onUpdateTask) {
-        onUpdateTask(editingTaskId, taskData);[cite: 3]
+        onUpdateTask(editingTaskId, taskData);
       } else {
-        onAddTask(taskData);[cite: 3]
+        onAddTask(taskData);
       }
 
-      setEditingTaskId(null);[cite: 3]
-      setShowModal(false);[cite: 3]
-      setSelectedFile(null);[cite: 3]
-      setExistingAttachment(null);[cite: 3]
-      setUploadProgress(0);[cite: 3]
+      setEditingTaskId(null);
+      setShowModal(false);
+      setSelectedFile(null);
+      setExistingAttachment(null);
+      setUploadProgress(0);
     } catch (error) {
-      console.error('Gagal menyimpan tugas:', error);[cite: 3]
-      alert(`Gagal menyimpan tugas.`);[cite: 3]
+      console.error('Gagal menyimpan tugas:', error);
+      alert(`Gagal menyimpan tugas.`);
     } finally {
-      setIsUploading(false);[cite: 3]
+      setIsUploading(false);
     }
   };
 
@@ -404,7 +404,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="space-y-6 pb-32 sm:pb-36" // EXTRA PADDING BOTTOM LEGA
+      className="space-y-6 pb-32 sm:pb-36"
     >
       {/* HEADER BANNER */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 p-6 sm:p-8 rounded-3xl shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none transition-colors">

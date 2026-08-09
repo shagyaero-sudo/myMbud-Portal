@@ -1,5 +1,5 @@
-import React, { useState } from 'react';[cite: 2]
-import { motion, AnimatePresence } from 'framer-motion';[cite: 2]
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   CalendarDays,
   Users,
@@ -18,15 +18,15 @@ import {
   Award,
   Palette,
   FileSpreadsheet
-} from 'lucide-react';[cite: 2]
+} from 'lucide-react';
 
-export type TabType = 'dashboard' | 'contacts' | 'materials' | 'tasks' | 'spinwheel' | 'calculator' | 'letter' | 'mbudiary' | 'blockblast';[cite: 2]
+export type TabType = 'dashboard' | 'contacts' | 'materials' | 'tasks' | 'spinwheel' | 'calculator' | 'letter' | 'mbudiary' | 'blockblast';
 
 interface SidebarProps {
-  activeTab: TabType;[cite: 2]
-  setActiveTab: (tab: TabType) => void;[cite: 2]
-  urgentTaskCount: number;[cite: 2]
-  onOpenGpaModal: () => void;[cite: 2]
+  activeTab: TabType;
+  setActiveTab: (tab: TabType) => void;
+  urgentTaskCount: number;
+  onOpenGpaModal: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -35,31 +35,31 @@ export const Sidebar: React.FC<SidebarProps> = ({
   urgentTaskCount,
   onOpenGpaModal
 }) => {
-  const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);[cite: 2]
+  const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
 
   const getGreeting = () => {
-    const hour = new Date().getHours();[cite: 2]
-    const userName = localStorage.getItem('mymbud_user_name') || 'Mbuders';[cite: 2]
-    if (hour >= 4 && hour < 11) return `Selamat Pagi, ${userName}! 🌅`;[cite: 2]
-    if (hour >= 11 && hour < 15) return `Selamat Siang, ${userName}! ☀️`;[cite: 2]
-    if (hour >= 15 && hour < 18) return `Selamat Sore, ${userName}! 🌆`;[cite: 2]
-    return `Selamat Malam, ${userName}! 🌙`;[cite: 2]
+    const hour = new Date().getHours();
+    const userName = localStorage.getItem('mymbud_user_name') || 'Mbuders';
+    if (hour >= 4 && hour < 11) return `Selamat Pagi, ${userName}! 🌅`;
+    if (hour >= 11 && hour < 15) return `Selamat Siang, ${userName}! ☀️`;
+    if (hour >= 15 && hour < 18) return `Selamat Sore, ${userName}! 🌆`;
+    return `Selamat Malam, ${userName}! 🌙`;
   };
 
   const menuItems = [
-    { id: 'dashboard' as TabType, label: 'Jadwal Perkuliahan', icon: CalendarDays, badge: null, isModal: false },[cite: 2]
-    { id: 'tasks' as TabType, label: 'Manajemen Tugas', icon: FolderKanban, badge: urgentTaskCount > 0 ? urgentTaskCount : null, isModal: false },[cite: 2]
-    { id: 'contacts' as TabType, label: 'Direktori Kontak', icon: Users, badge: null, isModal: false },[cite: 2]
-    { id: 'materials' as TabType, label: 'Bank Materi PDF', icon: FileText, badge: null, isModal: false },[cite: 2]
-    { id: 'spinwheel' as TabType, label: 'Spinwheel', icon: Dices, badge: null, isModal: false },[cite: 2]
-    { id: 'calculator' as TabType, label: 'Kalkulator Nilai', icon: Calculator, badge: null, isModal: false },[cite: 2]
-    { id: 'letter' as TabType, label: 'Ajukan Surat Turlap', icon: FileEdit, badge: null, isModal: false },[cite: 2]
-    { id: 'gpacalculator' as any, label: 'Hitung IP Semester', icon: Award, badge: null, isModal: true },[cite: 2]
+    { id: 'dashboard' as TabType, label: 'Jadwal Perkuliahan', icon: CalendarDays, badge: null, isModal: false },
+    { id: 'tasks' as TabType, label: 'Manajemen Tugas', icon: FolderKanban, badge: urgentTaskCount > 0 ? urgentTaskCount : null, isModal: false },
+    { id: 'contacts' as TabType, label: 'Direktori Kontak', icon: Users, badge: null, isModal: false },
+    { id: 'materials' as TabType, label: 'Bank Materi PDF', icon: FileText, badge: null, isModal: false },
+    { id: 'spinwheel' as TabType, label: 'Spinwheel', icon: Dices, badge: null, isModal: false },
+    { id: 'calculator' as TabType, label: 'Kalkulator Nilai', icon: Calculator, badge: null, isModal: false },
+    { id: 'letter' as TabType, label: 'Ajukan Surat Turlap', icon: FileEdit, badge: null, isModal: false },
+    { id: 'gpacalculator' as any, label: 'Hitung IP Semester', icon: Award, badge: null, isModal: true },
   ];
 
   const navigateFromSheet = (tab: TabType) => {
-    setActiveTab(tab);[cite: 2]
-    setIsBottomSheetOpen(false);[cite: 2]
+    setActiveTab(tab);
+    setIsBottomSheetOpen(false);
   };
 
   return (
@@ -77,17 +77,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         <nav className="flex-1 space-y-2 overflow-y-auto pr-1 pb-4 custom-scrollbar">
           {menuItems.map((item) => {
-            const Icon = item.icon;[cite: 2]
-            const isActive = activeTab === item.id;[cite: 2]
+            const Icon = item.icon;
+            const isActive = activeTab === item.id;
             return (
               <motion.button
                 whileTap={{ scale: 0.98 }}
                 key={item.id}
                 onClick={() => {
                   if (item.isModal) {
-                    onOpenGpaModal();[cite: 2]
+                    onOpenGpaModal();
                   } else {
-                    setActiveTab(item.id);[cite: 2]
+                    setActiveTab(item.id);
                   }
                 }}
                 className={`relative w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-medium transition-all ${
@@ -260,8 +260,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     </button>
                     <button
                       onClick={() => {
-                        setIsBottomSheetOpen(false);[cite: 2]
-                        onOpenGpaModal();[cite: 2]
+                        setIsBottomSheetOpen(false);
+                        onOpenGpaModal();
                       }}
                       className="flex items-center justify-between p-3 rounded-2xl text-xs font-semibold transition-all bg-amber-50/70 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 active:bg-amber-100"
                     >
@@ -327,7 +327,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
 /* --- HELPER COMPONENT UNTUK BOTTOM NAV BUTTONS --- */
 const BottomTabItem = ({ id, label, icon: Icon, activeTab, onClick, badge }: any) => {
-  const isActive = activeTab === id;[cite: 2]
+  const isActive = activeTab === id;
   return (
     <button
       onClick={() => onClick(id)}
