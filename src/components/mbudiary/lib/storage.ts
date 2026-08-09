@@ -55,10 +55,6 @@ function emit(name: string) {
   }
 }
 
-/* =========================================================
-   NORMALIZERS
-   ========================================================= */
-
 function normalizeUser(nrp: string, data: Record<string, any>): MbudiaryUser {
   return {
     nrp: String(data.nrp || nrp).toLowerCase(),
@@ -107,10 +103,6 @@ function normalizeFollow(data: Record<string, any>): MbudiaryFollow {
   };
 }
 
-/* =========================================================
-   LOCAL USER PROFILE
-   ========================================================= */
-
 export function getUserProfile(): UserProfile {
   const nrp = localStorage.getItem(USER_NRP_KEY) || 'unknown';
   const nickname = localStorage.getItem(USER_NAME_KEY) || 'Mbuders';
@@ -122,10 +114,6 @@ export function getUserProfile(): UserProfile {
 
   return { nrp, username, nickname, isOfficer, emoji, photoUrl, headerUrl };
 }
-
-/* =========================================================
-   USER CLOUD IDENTITY
-   ========================================================= */
 
 export async function getUserByNrp(userNrp: string): Promise<MbudiaryUser | null> {
   const normalizedNrp = userNrp.trim().toLowerCase();
@@ -239,7 +227,6 @@ export async function syncUserProfileWithFirebase(): Promise<UserProfile> {
       headerUrl: currentProfile.headerUrl || undefined,
     };
 
-    // FIX: Cegah undefined untuk Firestore
     await setDoc(userDocRef, {
       ...initialUser,
       photoUrl: initialUser.photoUrl || null,
@@ -285,7 +272,6 @@ export async function saveUserProfile(profile: UserProfile): Promise<void> {
     headerUrl: profile.headerUrl || undefined,
   };
 
-  // FIX UTAMA: Ubah undefined menjadi null untuk payload setDoc Firestore
   await setDoc(
     userDocRef,
     {
@@ -340,10 +326,6 @@ export async function setUserVerified(userNrp: string, verified: boolean): Promi
   emit('mbud_user_change');
 }
 
-/* =========================================================
-   NOTIFICATIONS CACHE & LISTENERS
-   ========================================================= */
-
 export async function createNotification({
   recipientNrp,
   senderNrp,
@@ -352,7 +334,7 @@ export async function createNotification({
 }: {
   recipientNrp: string;
   senderNrp: string;
-  type: 'like' | 'reply' | 'repost' | 'follow';
+  type: 'like' | 'reply' | 'repost' | 'follow' | 'mention';
   postId?: string;
 }) {
   if (recipientNrp.toLowerCase() === senderNrp.toLowerCase()) return;
@@ -369,6 +351,49 @@ export async function createNotification({
     });
   } catch (err) {
     console.error('[mbudiary] Gagal membuat notifikasi:', err);
+  }
+}
+
+export async function processMentionsInContent({
+  content,
+  senderNrp,
+  senderName,
+  postId,
+}: {
+  content: string;
+  senderNrp: string;
+  senderName: string;
+  postId: string;
+}) {
+  if (!content) return;
+
+  const matches = content.match(/@([a-zA-10-9_.]+)/g);
+  if (!matches || matches.length === 0) return;
+
+  const uniqueUsernames = Array.from(new Set(matches.map((m) => m.substring(1).toLowerCase())));
+
+  for (const username of uniqueUsernames) {
+    try {
+      const targetUser = await getUserByUsername(username);
+      if (targetUser && targetUser.nrp !== senderNrp.toLowerCase()) {
+        await createNotification({
+          recipientNrp: targetUser.nrp,
+          senderNrp: senderNrp,
+          type: 'mention',
+          postId: postId,
+        });
+
+        const { notifyUserMentioned } = await import('../../../services/oneSignalNotification');
+        void notifyUserMentioned({
+          targetNrp: targetUser.nrp,
+          actorNrp: senderNrp,
+          actorName: senderName,
+          postId: postId,
+        });
+      }
+    } catch (err) {
+      console.error('[mbudiary] Gagal memproses mention untuk @' + username, err);
+    }
   }
 }
 
@@ -404,10 +429,6 @@ export async function markNotificationAsRead(notifId: string) {
     console.error('[mbudiary] Gagal update notifikasi:', err);
   }
 }
-
-/* =========================================================
-   REALTIME INITIALIZATION
-   ========================================================= */
 
 export function initializeMbudiary(): () => void {
   if (initialized && unsubscribeAll) return unsubscribeAll;
@@ -479,10 +500,6 @@ export function initializeMbudiary(): () => void {
 
   return unsubscribeAll;
 }
-
-/* =========================================================
-   POSTS
-   ========================================================= */
 
 export function getPosts(): MbudiaryPost[] {
   return postsCache;
@@ -560,10 +577,6 @@ export async function toggleLikePost(postId: string, userNrp: string): Promise<M
   return current ? { ...current, likes: updatedLikes } : null;
 }
 
-/* =========================================================
-   REPLIES
-   ========================================================= */
-
 export function getAllReplies(): MbudiaryReply[] {
   return repliesCache;
 }
@@ -609,10 +622,6 @@ export async function addReply(postId: string, content: string): Promise<Mbudiar
 
   return { id: replyRef.id, postId, authorNrp, content, createdAt };
 }
-
-/* =========================================================
-   FOLLOWS
-   ========================================================= */
 
 export function getFollows(): string[] {
   const currentNrp = getUserProfile().nrp.trim().toLowerCase();
@@ -672,12 +681,9 @@ export function getFollowerCount(targetNrp: string): number {
 
 export function getFollowingCount(targetNrp: string): number {
   const target = targetNrp.trim().toLowerCase();
-  return followsCache.filter((follow) => follow.targetNrp === target).length;
+  return followsCache.filter((follow) => follow.followerNrp === target).length;
 }
 
-/* =========================================================
-   BOOKMARKS (LOCAL STORAGE)
-   ========================================================= */
 export const BOOKMARKS_KEY = 'mymbud_bookmarks';
 
 export function getBookmarkedPostIds(): string[] {

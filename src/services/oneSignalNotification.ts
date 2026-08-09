@@ -13,10 +13,6 @@ type MbudiaryNotificationParams = {
 
 const PUSH_API_ENDPOINT = '/api/notifications/mbudiary';
 
-/**
- * Panggil Vercel Serverless Function, BUKAN OneSignal langsung.
- * REST API Key OneSignal tidak boleh menyentuh bundle client.
- */
 async function triggerOneSignalPush({
   targetNrp,
   title,
@@ -38,18 +34,6 @@ async function triggerOneSignalPush({
   return result;
 }
 
-/**
- * ============================================================
- * CREATE IN-APP NOTIFICATION + SEND ONESIGNAL PUSH
- * ============================================================
- *
- * Urutan:
- * 1. Simpan notification ke Firestore (client SDK, sudah OK)
- * 2. Kalau berhasil, panggil /api/notifications/mbudiary (server-side)
- * 3. Update pushStatus di Firestore ('sent' / 'failed')
- *
- * Firestore adalah source of truth.
- */
 export async function sendMbudiaryNotification({
   targetNrp,
   title,
@@ -110,11 +94,6 @@ export async function sendMbudiaryNotification({
   }
 }
 
-/**
- * ============================================================
- * MBUDIARY LIKE
- * ============================================================
- */
 export async function notifyPostLiked({
   postAuthorNrp,
   actorNrp,
@@ -143,11 +122,6 @@ export async function notifyPostLiked({
   });
 }
 
-/**
- * ============================================================
- * MBUDIARY COMMENT
- * ============================================================
- */
 export async function notifyPostCommented({
   postAuthorNrp,
   actorNrp,
@@ -178,11 +152,6 @@ export async function notifyPostCommented({
   });
 }
 
-/**
- * ============================================================
- * GENERAL ANNOUNCEMENT
- * ============================================================
- */
 export async function notifyAnnouncement({
   targetNrp,
   title,
@@ -206,11 +175,6 @@ export async function notifyAnnouncement({
   });
 }
 
-/**
- * ============================================================
- * MBUDIARY FOLLOW
- * ============================================================
- */
 export async function notifyUserFollowed({
   targetNrp,
   actorNrp,
@@ -236,11 +200,6 @@ export async function notifyUserFollowed({
   });
 }
 
-/**
- * ============================================================
- * OFFICER MANUAL NOTIFICATION (SUPPORT SINGLE & BROADCAST ALL)
- * ============================================================
- */
 export async function sendOfficerNotification({
   targetNrp,
   title,
@@ -255,7 +214,6 @@ export async function sendOfficerNotification({
   const isBroadcast = targetNrp.trim().toUpperCase() === 'ALL' || targetNrp.trim() === '*';
 
   if (isBroadcast && allNrps.length > 0) {
-    // Broadcast ke seluruh NRP
     const results = await Promise.allSettled(
       allNrps.map((nrp) =>
         sendMbudiaryNotification({
@@ -270,12 +228,44 @@ export async function sendOfficerNotification({
     return results;
   }
 
-  // Kirim ke 1 NRP spesifik
   return sendMbudiaryNotification({
     targetNrp: targetNrp.trim(),
     title: `📢 ${title}`,
     message,
     type: 'officer_announcement',
     data: { type: 'officer_announcement' },
+  });
+}
+
+/**
+ * ============================================================
+ * MBUDIARY MENTION / TAG USER
+ * ============================================================
+ */
+export async function notifyUserMentioned({
+  targetNrp,
+  actorNrp,
+  actorName,
+  postId,
+}: {
+  targetNrp: string;
+  actorNrp: string;
+  actorName: string;
+  postId?: string;
+}) {
+  if (targetNrp.toLowerCase() === actorNrp.toLowerCase()) {
+    return;
+  }
+
+  return sendMbudiaryNotification({
+    targetNrp,
+    title: '🏷️ Mbudiary',
+    message: `${actorName} menyebut kamu dalam postingan/komentar.`,
+    type: 'mbudiary_mention',
+    data: {
+      type: 'mbudiary_mention',
+      postId,
+      actorNrp,
+    },
   });
 }

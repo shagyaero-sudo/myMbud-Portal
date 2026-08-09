@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { UserProfile } from './types';
-import { savePost } from './lib/storage';
+import { savePost, processMentionsInContent } from './lib/storage';
 import { uploadImagesToCloudinary } from './lib/cloudinary';
 import {
   Send,
@@ -34,7 +34,6 @@ const ALLOWED_IMAGE_TYPES = [
 export const CreatePostForm: React.FC<CreatePostFormProps> = ({
   userProfile,
   onPostCreated,
-  onSelectAuthor,
 }) => {
   const [content, setContent] = useState('');
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
@@ -42,7 +41,6 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
   const [isPosting, setIsPosting] = useState(false);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   
-  // State untuk kontrol Modal ala Twitter
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isUploadMenuOpen, setIsUploadMenuOpen] = useState(false);
 
@@ -50,9 +48,6 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  /* =========================================================
-     AUTO RESIZE TEXTAREA (MELAR SESUAI ISI)
-     ========================================================= */
   useEffect(() => {
     if (isModalOpen && textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -60,9 +55,6 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
     }
   }, [content, isModalOpen]);
 
-  /* =========================================================
-     KEYBOARD & OUTSIDE CLICK HANDLER
-     ========================================================= */
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && isModalOpen) {
@@ -73,9 +65,6 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isModalOpen]);
 
-  /* =========================================================
-     IMAGE CLEANUP
-     ========================================================= */
   const clearSelectedImages = () => {
     previewUrls.forEach((url) => URL.revokeObjectURL(url));
     setSelectedImages([]);
@@ -89,9 +78,6 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
     setPreviewUrls((prev) => prev.filter((_, i) => i !== index));
   };
 
-  /* =========================================================
-     IMAGE PICKER
-     ========================================================= */
   const handleImageSelection = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     e.target.value = '';
@@ -132,9 +118,6 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
     setIsUploadMenuOpen(false);
   };
 
-  /* =========================================================
-     CREATE POST
-     ========================================================= */
   const handleSubmitPost = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -145,7 +128,7 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
     try {
       const imageUrls = await uploadImagesToCloudinary(selectedImages);
 
-      await savePost({
+      const newPost = await savePost({
         authorNrp: userProfile.nrp,
         content: content.trim(),
         isOfficerPost: userProfile.isOfficer,
@@ -153,9 +136,16 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
         isRepost: false,
       });
 
+      await processMentionsInContent({
+        content: content.trim(),
+        senderNrp: userProfile.nrp,
+        senderName: userProfile.nickname || userProfile.username || 'Mbuders',
+        postId: newPost.id,
+      });
+
       setContent('');
       clearSelectedImages();
-      setIsModalOpen(false); // Tutup Modal
+      setIsModalOpen(false);
       setShowSuccessToast(true);
 
       setTimeout(() => setShowSuccessToast(false), 3000);
@@ -174,12 +164,7 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
 
   return (
     <>
-      {/* =========================================================
-          VIEW DEFAULT (TOMBOL PANCINGAN / TRIGGER)
-          ========================================================= */}
       <div className="relative bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl p-3.5 sm:p-4 shadow-sm space-y-2.5 transition-all duration-300">
-        
-        {/* SUCCESS TOAST */}
         <AnimatePresence>
           {showSuccessToast && (
             <motion.div
@@ -194,7 +179,6 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
           )}
         </AnimatePresence>
 
-        {/* TRIGGER CONTENT */}
         <div onClick={() => setIsModalOpen(true)} className="flex items-start gap-3 cursor-text group select-none">
           <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-slate-50 dark:bg-zinc-800 transition-all shrink-0 flex items-center justify-center overflow-hidden border border-slate-200/60 dark:border-zinc-700/60 mt-0.5">
             {userProfile.photoUrl ? (
@@ -219,7 +203,6 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
           </div>
         </div>
 
-        {/* FAKE ACTIONS (Trigger) */}
         <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-zinc-800/80">
           <button onClick={() => setIsModalOpen(true)} className="px-2.5 py-1.5 rounded-xl sm:rounded-2xl bg-slate-50 dark:bg-zinc-800/80 text-slate-500 dark:text-zinc-400 hover:text-indigo-500 dark:hover:text-indigo-400 text-[11px] font-semibold transition-all flex items-center gap-1.5">
             <ImagePlus className="w-3.5 h-3.5" />
@@ -232,9 +215,6 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
         </div>
       </div>
 
-      {/* =========================================================
-          VIEW MODAL (POP-OUT FOKUS ALA TWITTER)
-          ========================================================= */}
       {typeof document !== 'undefined' && createPortal(
         <AnimatePresence>
           {isModalOpen && (
@@ -243,7 +223,6 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.15 }}
-              /* pt-[12dvh] sengaja dipakai agar di mobile posisinya agak di atas untuk ngasih space buat keyboard! */
               className="fixed inset-0 z-[999999] bg-slate-900/60 backdrop-blur-sm flex items-start sm:items-center justify-center p-3 sm:p-4 pt-[12dvh] sm:pt-4"
               onMouseDown={(e) => {
                 if (e.target === e.currentTarget) setIsModalOpen(false);
@@ -256,7 +235,6 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
                 className="bg-white dark:bg-zinc-900 w-full max-w-[600px] rounded-3xl shadow-2xl border border-slate-100 dark:border-zinc-800 flex flex-col overflow-hidden max-h-[85dvh]"
                 onMouseDown={(e) => e.stopPropagation()}
               >
-                {/* MODAL HEADER */}
                 <div className="flex items-center justify-between px-4 py-3.5 sm:px-5 border-b border-slate-100 dark:border-zinc-800 shrink-0">
                   <div className="flex items-center gap-3">
                     <button
@@ -286,7 +264,6 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
                   </div>
                 </div>
 
-                {/* MODAL BODY */}
                 <div className="p-4 sm:p-5 overflow-y-auto custom-scrollbar flex-1 min-h-[120px]">
                   <div className="flex items-start gap-3">
                     <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-2xl bg-slate-50 dark:bg-zinc-800 shrink-0 flex items-center justify-center overflow-hidden border border-slate-200/60 dark:border-zinc-700/60">
@@ -299,7 +276,7 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
                     
                     <div className="flex-1 min-w-0 pt-0.5">
                       <textarea
-                        autoFocus // Langsung narik keyboard saat modal kebuka!
+                        autoFocus
                         ref={textareaRef}
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
@@ -311,7 +288,6 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
                     </div>
                   </div>
 
-                  {/* PREVIEW GAMBAR */}
                   <AnimatePresence>
                     {previewUrls.length > 0 && (
                       <motion.div
@@ -336,7 +312,6 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
                   </AnimatePresence>
                 </div>
 
-                {/* MODAL FOOTER (UPLOAD MENU) */}
                 <div className="px-4 py-3 sm:px-5 border-t border-slate-100 dark:border-zinc-800/80 bg-slate-50/30 dark:bg-zinc-900 flex items-center shrink-0 relative">
                   <button
                     type="button"
@@ -353,7 +328,6 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
                     )}
                   </button>
 
-                  {/* DROP-UP MENU UPLOAD GAMBAR */}
                   <AnimatePresence>
                     {isUploadMenuOpen && (
                       <>
@@ -402,7 +376,6 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
         document.body
       )}
 
-      {/* HIDDEN INPUTS BUAT MODAL */}
       <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" multiple className="hidden" onChange={handleImageSelection} />
       <input ref={galleryInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple className="hidden" onChange={handleImageSelection} />
     </>
