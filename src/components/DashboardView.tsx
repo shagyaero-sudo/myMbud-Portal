@@ -2,32 +2,23 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Clock,
-  Calendar,
-  AlertTriangle,
-  CheckCircle2,
+  Calendar as CalendarIcon,
+  ChevronLeft,
+  ChevronRight,
   Plus,
   Trash2,
   Edit2,
-  Pin,
-  ExternalLink,
-  ChevronRight,
-  ChevronLeft,
-  Flame,
-  BookOpen,
-  Paperclip,
+  ChevronRight as ArrowRight,
   X,
   UserCheck,
-  Download,
-  File as FileIcon,
-  Loader2,
-  ZoomIn,
-  ZoomOut,
-  RotateCcw,
-  BookHeart,
   Pencil,
-  CalendarDays
+  BookOpenCheck,
+  CheckCircle2,
+  FolderKanban,
+  RotateCcw,
+  Loader2
 } from 'lucide-react';
-import { AppState, DayOfWeek, Task, Announcement, ScheduleItem } from '../types';
+import { AppState, DayOfWeek, Task, Announcement } from '../types';
 import {
   addAnnouncement,
   updateAnnouncement,
@@ -42,15 +33,11 @@ interface DashboardViewProps {
   onDeleteAnnouncement: (id: string) => void;
   onNavigateTab: (
     tab: 'tasks' | 'contacts' | 'materials' | 'spinwheel' | 'calculator' | 'mbudiary' | any,
-    courseFilter?: string
+    courseFilterOrTaskId?: string
   ) => void;
 }
 
-interface AttachmentData {
-  fileName: string;
-  fileUrl: string;
-}
-
+// --- WIDGET KALENDER MINI HEADER ---
 const FlipCalendarWidget: React.FC = () => {
   const now = new Date();
   const dayNumber = now.getDate();
@@ -72,6 +59,7 @@ const FlipCalendarWidget: React.FC = () => {
   );
 };
 
+// --- LOGIKA MINGGU AKADEMIK ---
 const getCurrentAcademicWeek = () => {
   const startDate = new Date('2026-08-31T00:00:00+07:00');
   const now = new Date();
@@ -102,20 +90,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [editingAnnId, setEditingAnnId] = useState<string | null>(null);
   const [isSubmittingAnn, setIsSubmittingAnn] = useState(false);
 
+  // --- STATE KALENDER BUILD-IN ---
+  const [currentMonthDate, setCurrentMonthDate] = useState<Date>(new Date());
+  const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date>(new Date());
+
   const [realAnnouncements, setRealAnnouncements] = useState<Announcement[]>(state.announcements || []);
 
   const [newAnnTitle, setNewAnnTitle] = useState('');
   const [newAnnContent, setNewAnnContent] = useState('');
-  const [newAnnCategory, setNewAnnCategory] = useState<
-    'Penting' | 'Akademik' | 'Kegiatan' | 'Info'
-  >('Penting');
+  const [newAnnCategory, setNewAnnCategory] = useState<'Penting' | 'Akademik' | 'Kegiatan' | 'Info'>('Penting');
   const [newAnnPinned, setNewAnnPinned] = useState(true);
 
-  // MODAL LOKAL KHUSUS DASHBOARD (KEMBALI KE SEMULA)
-  const [selectedTaskModal, setSelectedTaskModal] = useState<Task | null>(null);
   const [selectedAnnModal, setSelectedAnnModal] = useState<Announcement | null>(null);
-  const [previewAttachment, setPreviewAttachment] = useState<AttachmentData | null>(null);
-  const [zoomLevel, setZoomLevel] = useState(1);
 
   const [mobileAnnIndex, setMobileAnnIndex] = useState(0);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
@@ -134,11 +120,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   useEffect(() => {
     if (totalAnn <= 1 || isPaused || selectedAnnModal !== null) return;
-
     const interval = setInterval(() => {
       setMobileAnnIndex((prev) => (prev < totalAnn - 1 ? prev + 1 : 0));
     }, 4000);
-
     return () => clearInterval(interval);
   }, [totalAnn, isPaused, selectedAnnModal]);
 
@@ -163,25 +147,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     const touchEndX = e.changedTouches[0].clientX;
     const diff = touchStartX - touchEndX;
     if (Math.abs(diff) > 40) {
-      if (diff > 0) {
-        handleNextAnn();
-      } else {
-        handlePrevAnn();
-      }
+      if (diff > 0) handleNextAnn();
+      else handlePrevAnn();
     }
     setTouchStartX(null);
   };
 
   useEffect(() => {
-    const days: DayOfWeek[] = [
-      'Minggu' as DayOfWeek,
-      'Senin',
-      'Selasa',
-      'Rabu',
-      'Kamis',
-      'Jumat',
-      'Sabtu',
-    ];
+    const days: DayOfWeek[] = ['Minggu' as DayOfWeek, 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
     const currentDayIndex = new Date().getDay();
     const todayName = days[currentDayIndex];
     if (todayName && todayName !== ('Minggu' as DayOfWeek)) {
@@ -189,13 +162,46 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }
   }, []);
 
-  const now = Date.now();
-  const upcomingTasks = state.tasks
-    .filter((t) => t.status !== 'done' && new Date(t.deadline).getTime() > now)
-    .sort(
-      (a, b) =>
-        new Date(a.deadline).getTime() - new Date(b.deadline).getTime()
-    );
+  // --- HELPER METODE KALENDER ---
+  const daysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
+  const firstDayOfMonth = (year: number, month: number) => {
+    const day = new Date(year, month, 1).getDay();
+    return day === 0 ? 6 : day - 1; // Sesuaikan agar Senin = 0, Minggu = 6
+  };
+
+  const currentYear = currentMonthDate.getFullYear();
+  const currentMonth = currentMonthDate.getMonth();
+
+  const handlePrevMonth = () => setCurrentMonthDate(new Date(currentYear, currentMonth - 1, 1));
+  const handleNextMonth = () => setCurrentMonthDate(new Date(currentYear, currentMonth + 1, 1));
+  const handleResetToday = () => {
+    const today = new Date();
+    setCurrentMonthDate(today);
+    setSelectedCalendarDate(today);
+  };
+
+  // Helper Pembanding Tanggal Sama
+  const isSameDay = (d1: Date, d2: Date) =>
+    d1.getFullYear() === d2.getFullYear() &&
+    d1.getMonth() === d2.getMonth() &&
+    d1.getDate() === d2.getDate();
+
+  // Helper Mendapatkan Daftar Tugas & Kuliah Pada Tanggal Tertentu
+  const getTasksForDate = (targetDate: Date) => {
+    return state.tasks.filter((task) => {
+      const taskDate = new Date(task.deadline);
+      return isSameDay(taskDate, targetDate);
+    });
+  };
+
+  const getDayNameFromDate = (targetDate: Date): DayOfWeek | null => {
+    const mapDays: DayOfWeek[] = ['Minggu' as any, 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu' as any];
+    return mapDays[targetDate.getDay()];
+  };
+
+  const selectedDateTasks = getTasksForDate(selectedCalendarDate);
+  const selectedDateDayName = getDayNameFromDate(selectedCalendarDate);
+  const selectedDateSchedules = state.schedules.filter((s) => s.day === selectedDateDayName);
 
   const formatAnnouncementDate = (dateStr: string) => {
     if (!dateStr) return '';
@@ -212,66 +218,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       return `${day}/${month}/${year}`;
     }
     return dateStr;
-  };
-
-  const formatDeadlineDetails = (dateStr: string) => {
-    const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return dateStr;
-    return (
-      d.toLocaleString('id-ID', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      }) + ' WIB'
-    );
-  };
-
-  const getPillBadge = (deadlineStr: string) => {
-    const nowDate = new Date();
-    const deadline = new Date(deadlineStr);
-    const todayStart = new Date(
-      nowDate.getFullYear(),
-      nowDate.getMonth(),
-      nowDate.getDate()
-    ).getTime();
-    const deadlineStart = new Date(
-      deadline.getFullYear(),
-      deadline.getMonth(),
-      deadline.getDate()
-    ).getTime();
-    const diffDays = Math.round(
-      (deadlineStart - todayStart) / (1000 * 3600 * 24)
-    );
-
-    if (diffDays < 0) {
-      return {
-        label: 'Tenggat Lewat',
-        badgeClass:
-          'bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400 border border-slate-200 dark:border-zinc-700 font-bold',
-      };
-    } else if (diffDays <= 2) {
-      const dayText = diffDays <= 0 ? 'H-0' : `H-${diffDays}`;
-      return {
-        label: `Mendesak ${dayText}`,
-        badgeClass:
-          'bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-200 dark:border-rose-900/50 animate-pulse font-bold',
-      };
-    } else if (diffDays <= 5) {
-      return {
-        label: `Mepet H-${diffDays}`,
-        badgeClass:
-          'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400 border border-amber-200 dark:border-amber-900/50 font-bold',
-      };
-    } else {
-      return {
-        label: `Masih H-${diffDays}`,
-        badgeClass:
-          'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-900/50 font-bold',
-      };
-    }
   };
 
   const renderFormattedContent = (content: string) => {
@@ -296,44 +242,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       }
       return part;
     });
-  };
-
-  const getAttachmentData = (attachment: any): AttachmentData | null => {
-    if (!attachment) return null;
-    if (typeof attachment === 'string') {
-      return {
-        fileName:
-          attachment.split('/').pop()?.split('?')[0] || 'Dokumen Lampiran',
-        fileUrl: attachment,
-      };
-    }
-    const fileUrl = attachment.fileUrl || attachment.url || '';
-    if (!fileUrl) return null;
-    return {
-      fileName: attachment.fileName || 'Dokumen Lampiran',
-      fileUrl,
-    };
-  };
-
-  const getFileExtension = (fileName: string) => {
-    return fileName.split('.').pop()?.toLowerCase() || '';
-  };
-
-  const isImageFile = (fileName: string) => {
-    return [
-      'jpg',
-      'jpeg',
-      'png',
-      'gif',
-      'webp',
-      'bmp',
-      'svg',
-      'avif',
-    ].includes(getFileExtension(fileName));
-  };
-
-  const isPdfFile = (fileName: string) => {
-    return getFileExtension(fileName) === 'pdf';
   };
 
   const dayTabs: DayOfWeek[] = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
@@ -380,7 +288,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     if (!newAnnTitle.trim() || !newAnnContent.trim()) return;
 
     setIsSubmittingAnn(true);
-
     try {
       if (editingAnnId) {
         await updateAnnouncement(editingAnnId, {
@@ -398,7 +305,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           pinned: newAnnPinned,
         });
       }
-
       setNewAnnTitle('');
       setNewAnnContent('');
       setEditingAnnId(null);
@@ -414,7 +320,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const getGreeting = () => {
     const hour = new Date().getHours();
     const userName = localStorage.getItem('mymbud_user_name') || 'Mbuders'; 
-  
     if (hour >= 4 && hour < 11) return `Selamat Pagi, ${userName}! 🌅`;
     if (hour >= 11 && hour < 15) return `Selamat Siang, ${userName}! ☀️`;
     if (hour >= 15 && hour < 18) return `Selamat Sore, ${userName}! ☕`;
@@ -438,12 +343,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               Siap untuk produktif hari ini?
             </p>
           </div>
-
           <FlipCalendarWidget />
         </div>
       </div>
 
-      {/* Mobile & Tablet Announcements Carousel */}
+      {/* Mobile Announcements Carousel */}
       <div className="block lg:hidden bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-4 sm:p-5 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-2.5 transition-colors">
         {isOfficer && (
           <div className="flex justify-end pb-1">
@@ -492,7 +396,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                           handleOpenEditAnn(currentMobileAnn);
                         }}
                         className="text-slate-400 hover:text-blue-600 transition-colors p-0.5"
-                        title="Edit Pengumuman"
                       >
                         <Edit2 className="w-3.5 h-3.5" />
                       </button>
@@ -502,7 +405,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                           handleDeleteAnn(currentMobileAnn.id);
                         }}
                         className="text-slate-400 hover:text-rose-600 transition-colors p-0.5"
-                        title="Hapus Pengumuman"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -526,8 +428,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     e.stopPropagation();
                     handlePrevAnn();
                   }}
-                  aria-label="Pengumuman sebelumnya"
-                  className="p-1 rounded-xl text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-100 hover:bg-slate-100 dark:hover:bg-zinc-800 active:scale-95 transition-all"
+                  className="p-1 rounded-xl text-slate-500 hover:text-slate-800 dark:hover:text-zinc-100"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
@@ -537,11 +438,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     <button
                       key={idx}
                       onClick={() => setMobileAnnIndex(idx)}
-                      aria-label={`Ke pengumuman ${idx + 1}`}
                       className={`h-1.5 rounded-full transition-all duration-200 ${
                         idx === activeAnnIndex
                           ? 'w-5 bg-blue-600 dark:bg-blue-400'
-                          : 'w-1.5 bg-slate-300 dark:bg-zinc-700 hover:bg-slate-400 dark:hover:bg-zinc-600'
+                          : 'w-1.5 bg-slate-300 dark:bg-zinc-700'
                       }`}
                     />
                   ))}
@@ -552,8 +452,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     e.stopPropagation();
                     handleNextAnn();
                   }}
-                  aria-label="Pengumuman selanjutnya"
-                  className="p-1 rounded-xl text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-100 hover:bg-slate-100 dark:hover:bg-zinc-800 active:scale-95 transition-all"
+                  className="p-1 rounded-xl text-slate-500 hover:text-slate-800 dark:hover:text-zinc-100"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
@@ -566,7 +465,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          {/* Jadwal Kuliah */}
+          {/* 1. JADWAL PERKULIAHAN */}
           <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-4 transition-colors">
             
             <div className="flex items-center justify-between">
@@ -682,72 +581,171 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
           </div>
 
-          {/* Upcoming Tasks Section */}
-          <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-4 transition-colors">
-            <div className="flex items-center justify-between">
-              <div>
+          {/* 2. NEW: WIDGET KALENDER BUILD-IN (MENGGANTIKAN DAFTAR TUGAS LAMA) */}
+          <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-6 transition-colors">
+            {/* Header Kalender */}
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <div className="flex items-center gap-2">
+                <CalendarIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 <h3 className="text-base font-bold text-slate-800 dark:text-zinc-100">
-                  Daftar Tugas
+                  Kalender & Tracking Agenda
                 </h3>
               </div>
-              <button
-                onClick={() => onNavigateTab('tasks')}
-                className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold flex items-center gap-1"
-              >
-                <span>Lihat Semua ({upcomingTasks.length})</span>
-                <ChevronRight className="w-4 h-4" />
-              </button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleResetToday}
+                  className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 text-xs font-semibold flex items-center gap-1 transition-all"
+                  title="Kembali ke Hari Ini"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  <span>Hari Ini</span>
+                </button>
+
+                <div className="flex items-center bg-slate-100 dark:bg-zinc-800 rounded-xl p-0.5">
+                  <button
+                    onClick={handlePrevMonth}
+                    className="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <span className="text-xs font-bold text-slate-800 dark:text-zinc-200 px-2 min-w-[100px] text-center select-none">
+                    {currentMonthDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
+                  </span>
+                  <button
+                    onClick={handleNextMonth}
+                    className="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
             </div>
 
-            <div className="space-y-3">
-              {upcomingTasks.length === 0 ? (
-                <div className="p-8 text-center text-slate-400 dark:text-zinc-500 text-xs bg-slate-50/70 dark:bg-zinc-800/40 rounded-2xl">
-                  Tidak ada tugas mendatang.
-                </div>
-              ) : (
-                upcomingTasks.map((task) => {
-                  const badge = getPillBadge(task.deadline);
-                  const deadlineFormatted = formatDeadlineDetails(task.deadline);
+            {/* Grid Kalender Bulanan */}
+            <div className="space-y-2">
+              {/* Nama Hari (Senin-Minggu) */}
+              <div className="grid grid-cols-7 gap-1 text-center border-b border-slate-100 dark:border-zinc-800 pb-2">
+                {['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'].map((dayName) => (
+                  <span key={dayName} className="text-[11px] font-bold text-slate-400 dark:text-zinc-500 uppercase">
+                    {dayName}
+                  </span>
+                ))}
+              </div>
+
+              {/* Tanggal Grid */}
+              <div className="grid grid-cols-7 gap-1 sm:gap-2">
+                {/* Empty Offset Days */}
+                {Array.from({ length: firstDayOfMonth(currentYear, currentMonth) }).map((_, i) => (
+                  <div key={`empty-${i}`} className="h-10 sm:h-12 rounded-2xl bg-transparent" />
+                ))}
+
+                {/* Days of Month */}
+                {Array.from({ length: daysInMonth(currentYear, currentMonth) }).map((_, i) => {
+                  const dayNum = i + 1;
+                  const dateObj = new Date(currentYear, currentMonth, dayNum);
+                  const isToday = isSameDay(dateObj, new Date());
+                  const isSelected = isSameDay(dateObj, selectedCalendarDate);
+
+                  const dayTasks = getTasksForDate(dateObj);
+                  const hasTasks = dayTasks.length > 0;
+                  const hasSchedule = getDayNameFromDate(dateObj) !== ('Minggu' as any) && getDayNameFromDate(dateObj) !== ('Sabtu' as any);
+
                   return (
-                    <motion.div
-                      whileHover={{ scale: 1.005 }}
-                      whileTap={{ scale: 0.995 }}
-                      key={task.id}
-                      /* DI REVERT KEMBALI KE LOKAL MODAL DASHBOARD */
-                      onClick={() => setSelectedTaskModal(task)}
-                      className="p-4 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/60 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-transparent hover:border-blue-100 dark:hover:border-zinc-700 group"
+                    <motion.button
+                      whileTap={{ scale: 0.92 }}
+                      key={dayNum}
+                      onClick={() => setSelectedCalendarDate(dateObj)}
+                      className={`relative h-10 sm:h-12 rounded-2xl flex flex-col items-center justify-center transition-all select-none border ${
+                        isSelected
+                          ? 'bg-blue-600 text-white font-black border-blue-600 shadow-md shadow-blue-500/30'
+                          : isToday
+                          ? 'bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 font-bold border-blue-200 dark:border-blue-800'
+                          : 'bg-slate-50/60 dark:bg-zinc-800/40 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-800 dark:text-zinc-200 border-transparent'
+                      }`}
                     >
-                      <div className="space-y-1 flex-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-sm font-bold text-slate-800 dark:text-zinc-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                            {task.title}
-                          </span>
+                      <span className="text-xs sm:text-sm leading-none">{dayNum}</span>
+
+                      {/* Dot Indikator Agenda */}
+                      <div className="flex items-center justify-center gap-1 mt-1">
+                        {hasSchedule && (
+                          <span className={`w-1 h-1 rounded-full ${isSelected ? 'bg-white' : 'bg-blue-500'}`} />
+                        )}
+                        {hasTasks && (
+                          <span className={`w-1 h-1 rounded-full ${isSelected ? 'bg-amber-300' : 'bg-rose-500'}`} />
+                        )}
+                      </div>
+                    </motion.button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Panel Ringkasan Agenda Tanggal Terpilih */}
+            <div className="pt-4 border-t border-slate-100 dark:border-zinc-800 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-700 dark:text-zinc-300 flex items-center gap-1.5">
+                  <span>Agenda Tanggal:</span>
+                  <span className="text-blue-600 dark:text-blue-400 font-extrabold">
+                    {selectedCalendarDate.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                  </span>
+                </span>
+
+                <button
+                  onClick={() => onNavigateTab('tasks')}
+                  className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold flex items-center gap-1"
+                >
+                  <span>Lihat Semua Tugas</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              {/* Items List */}
+              <div className="space-y-2">
+                {selectedDateSchedules.length === 0 && selectedDateTasks.length === 0 ? (
+                  <div className="p-4 text-center text-slate-400 dark:text-zinc-500 text-xs bg-slate-50/70 dark:bg-zinc-800/40 rounded-2xl">
+                    Tidak ada jadwal kuliah maupun deadline tugas di tanggal ini.
+                  </div>
+                ) : (
+                  <>
+                    {/* Jadwal Kuliah di Tanggal Ini */}
+                    {selectedDateSchedules.map((s) => (
+                      <div
+                        key={s.id}
+                        className="p-3 rounded-2xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50 flex items-center justify-between text-xs"
+                      >
+                        <div className="space-y-0.5">
+                          <span className="font-bold text-blue-900 dark:text-blue-200 block">{s.course}</span>
+                          <span className="text-[11px] text-blue-700 dark:text-blue-400">Dosen: {s.lecturer}</span>
                         </div>
-                        <div className="text-xs text-slate-500 dark:text-zinc-400 flex items-center gap-2 flex-wrap">
-                          <span className="font-medium text-slate-700 dark:text-zinc-300">
-                            {task.course}
-                          </span>
-                          <span>•</span>
-                          <span className="text-slate-500 dark:text-zinc-400 font-medium">
-                            {deadlineFormatted}
-                          </span>
+                        <div className="text-right">
+                          <span className="font-bold text-blue-600 dark:text-blue-400 block">{s.time}</span>
+                          <span className="text-[10px] text-slate-500 dark:text-zinc-400">{s.room}</span>
                         </div>
                       </div>
+                    ))}
 
-                      {badge && (
-                        <div className="flex items-center gap-3 shrink-0">
-                          <span
-                            className={`text-xs font-semibold px-2.5 py-1 rounded-full ${badge.badgeClass}`}
-                          >
-                            {badge.label}
-                          </span>
+                    {/* Deadline Tugas di Tanggal Ini */}
+                    {selectedDateTasks.map((t) => (
+                      <div
+                        key={t.id}
+                        onClick={() => onNavigateTab('tasks')}
+                        className="p-3 rounded-2xl bg-rose-50/60 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-900/50 flex items-center justify-between text-xs cursor-pointer hover:bg-rose-100/60 transition-colors"
+                      >
+                        <div className="space-y-0.5 min-w-0 pr-2">
+                          <span className="font-bold text-rose-900 dark:text-rose-200 block truncate">{t.title}</span>
+                          <span className="text-[11px] text-rose-700 dark:text-rose-400 block">{t.course}</span>
                         </div>
-                      )}
-                    </motion.div>
-                  );
-                })
-              )}
+                        <span className="font-bold px-2 py-1 rounded-xl bg-rose-600 text-white text-[10px] shrink-0">
+                          Deadline {new Date(t.deadline).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WIB
+                        </span>
+                      </div>
+                    ))}
+                  </>
+                )}
+              </div>
             </div>
+
           </div>
         </div>
 
@@ -798,7 +796,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                               handleOpenEditAnn(ann);
                             }}
                             className="text-slate-400 hover:text-blue-600 transition-colors p-0.5"
-                            title="Edit Pengumuman"
                           >
                             <Edit2 className="w-3.5 h-3.5" />
                           </button>
@@ -808,7 +805,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                               handleDeleteAnn(ann.id);
                             }}
                             className="text-slate-400 hover:text-rose-600 transition-colors p-0.5"
-                            title="Hapus Pengumuman"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -955,296 +951,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         )}
       </AnimatePresence>
 
-      {/* Modal: Task Detail (LOKAL DASHBOARD) */}
-      <AnimatePresence>
-        {selectedTaskModal && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
-          >
-            <motion.div 
-              initial={{ scale: 0.92, opacity: 0, y: 15 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.92, opacity: 0, y: 15 }}
-              transition={{ type: 'spring', stiffness: 350, damping: 28 }}
-              className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"
-            >
-              <div className="px-6 sm:px-8 py-5 border-b border-slate-100 dark:border-zinc-800 flex items-start justify-between gap-3 shrink-0 bg-white dark:bg-zinc-900">
-                <div className="pr-2">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-3 py-1 rounded-full">
-                      {selectedTaskModal.type} • {selectedTaskModal.course}
-                    </span>
-                    {getPillBadge(selectedTaskModal.deadline) && (
-                      <span className={`text-xs px-2.5 py-0.5 rounded-full ${getPillBadge(selectedTaskModal.deadline)?.badgeClass}`}>
-                        {getPillBadge(selectedTaskModal.deadline)?.label}
-                      </span>
-                    )}
-                  </div>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-100 mt-2">{selectedTaskModal.title}</h3>
-                </div>
-                <button
-                  onClick={() => setSelectedTaskModal(null)}
-                  className="p-2 rounded-2xl text-slate-400 hover:text-slate-800 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all shrink-0"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-4">
-                <div className="bg-slate-50 dark:bg-zinc-800/60 p-4 rounded-2xl text-xs border border-slate-100 dark:border-zinc-800 space-y-2">
-                  <div>
-                    <span className="text-slate-400 dark:text-zinc-400 block mb-0.5">Dosen:</span>
-                    <span className="font-bold text-slate-800 dark:text-zinc-200">
-                      {selectedTaskModal.assigner || 'Dosen Pengampu'}
-                    </span>
-                  </div>
-
-                  <div className="pt-2 border-t border-slate-200/50 dark:border-zinc-700/50">
-                    <span className="text-slate-400 dark:text-zinc-400 block mb-0.5">Tenggat:</span>
-                    <span className="font-bold text-blue-600 dark:text-blue-400 text-sm">
-                      {formatDeadlineDetails(selectedTaskModal.deadline)}
-                    </span>
-                  </div>
-                </div>
-
-                <div>
-                  <h4 className="text-[11px] font-bold text-slate-400 dark:text-zinc-400 uppercase tracking-wider mb-1">Rincian Tugas</h4>
-                  <p className="text-xs text-slate-600 dark:text-zinc-300 bg-slate-50 dark:bg-zinc-800/80 p-4 rounded-2xl leading-relaxed whitespace-pre-line border border-slate-100 dark:border-zinc-700/60">
-                    {selectedTaskModal.description || 'Tidak ada instruksi.'}
-                  </p>
-                </div>
-
-                {selectedTaskModal.attachment && (
-                  <div className="space-y-1.5">
-                    <h4 className="text-[11px] font-bold text-slate-400 dark:text-zinc-400 uppercase tracking-wider">
-                      Lampiran File / Dokumen
-                    </h4>
-                    {(() => {
-                      const attachment = getAttachmentData(selectedTaskModal.attachment);
-                      if (!attachment) return null;
-                      return (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setPreviewAttachment(attachment);
-                            setZoomLevel(1);
-                          }}
-                          className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-slate-100 hover:bg-slate-200/80 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-200/80 dark:border-zinc-700 text-slate-800 dark:text-zinc-200 text-xs font-semibold transition-all group shadow-xs text-left"
-                        >
-                          <div className="flex items-center gap-3 min-w-0 pr-2">
-                            <Paperclip className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 group-hover:scale-110 transition-transform" />
-                            <div className="min-w-0">
-                              <span className="truncate block">{attachment.fileName}</span>
-                              <span className="text-[10px] font-medium text-slate-400 dark:text-zinc-500 block mt-0.5">
-                                {isImageFile(attachment.fileName)
-                                  ? 'Klik untuk melihat gambar'
-                                  : isPdfFile(attachment.fileName)
-                                  ? 'Klik untuk membuka PDF'
-                                  : 'Klik untuk melihat lampiran'}
-                              </span>
-                            </div>
-                          </div>
-                          <ExternalLink className="w-4 h-4 text-slate-400 dark:text-zinc-400 group-hover:text-slate-800 dark:group-hover:text-white shrink-0 transition-colors" />
-                        </button>
-                      );
-                    })()}
-                  </div>
-                )}
-              </div>
-
-              <div className="px-6 sm:px-8 py-4 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-end gap-3 shrink-0 bg-white dark:bg-zinc-900">
-                {selectedTaskModal.classroomUrl && (
-                  <a
-                    href={selectedTaskModal.classroomUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-xs font-bold transition-colors flex items-center gap-1.5 shadow-sm shadow-blue-500/20"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5" />
-                    <span>Link Pengumpulan</span>
-                  </a>
-                )}
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Attachment Viewer Modal */}
-      <AnimatePresence>
-        {previewAttachment && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[70] bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6"
-            onClick={() => {
-              setPreviewAttachment(null);
-              setZoomLevel(1);
-            }}
-          >
-            <motion.div
-              initial={{ scale: 0.94, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.94, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 350, damping: 28 }}
-              className="relative w-full max-w-6xl h-[92vh] bg-white dark:bg-zinc-950 rounded-3xl overflow-hidden shadow-2xl flex flex-col"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="shrink-0 h-16 px-4 sm:px-6 flex items-center justify-between border-b border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/50 shrink-0">
-                    {isImageFile(previewAttachment.fileName) ? (
-                      <FileIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                    ) : (
-                      <Paperclip className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                    )}
-                  </div>
-
-                  <div className="min-w-0">
-                    <p className="text-xs sm:text-sm font-bold text-slate-800 dark:text-zinc-100 truncate max-w-[55vw] sm:max-w-[700px]">
-                      {previewAttachment.fileName}
-                    </p>
-                    <p className="text-[10px] text-slate-400 dark:text-zinc-500">
-                      Pratinjau lampiran
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 shrink-0">
-                  <a
-                    href={previewAttachment.fileUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    download={previewAttachment.fileName}
-                    className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 text-xs font-semibold transition-colors"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    Unduh
-                  </a>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPreviewAttachment(null);
-                      setZoomLevel(1);
-                    }}
-                    className="p-2 rounded-xl text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
-                    aria-label="Tutup viewer"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex-1 min-h-0 bg-slate-100 dark:bg-zinc-900 flex items-center justify-center overflow-hidden relative">
-                
-                {(isImageFile(previewAttachment.fileName) || isPdfFile(previewAttachment.fileName)) && (
-                  <div className="absolute top-4 right-4 z-20 flex md:hidden items-center gap-1 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-md p-1.5 rounded-2xl shadow-xl border border-slate-200/80 dark:border-zinc-700/80">
-                    <button
-                      onClick={() => setZoomLevel((prev) => Math.max(prev - 0.25, 0.75))}
-                      className="p-2 rounded-xl text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-all active:scale-95"
-                      title="Perkecil"
-                    >
-                      <ZoomOut className="w-4 h-4" />
-                    </button>
-                    <span className="text-xs font-bold text-slate-700 dark:text-zinc-200 px-1.5 min-w-[42px] text-center select-none">
-                      {Math.round(zoomLevel * 100)}%
-                    </span>
-                    <button
-                      onClick={() => setZoomLevel((prev) => Math.min(prev + 0.25, 2.5))}
-                      className="p-2 rounded-xl text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-all active:scale-95"
-                      title="Perbesar"
-                    >
-                      <ZoomIn className="w-4 h-4" />
-                    </button>
-                    {zoomLevel !== 1 && (
-                      <button
-                        onClick={() => setZoomLevel(1)}
-                        className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-all border-l border-slate-200 dark:border-zinc-700 ml-0.5"
-                        title="Reset Zoom"
-                      >
-                        <RotateCcw className="w-3.5 h-3.5" />
-                      </button>
-                    )}
-                  </div>
-                )}
-
-                {isImageFile(previewAttachment.fileName) ? (
-                  <div className="w-full h-full overflow-auto flex items-center justify-center p-4 sm:p-8">
-                    <div
-                      className="transition-transform duration-200 ease-out origin-center flex items-center justify-center"
-                      style={{ transform: `scale(${zoomLevel})` }}
-                    >
-                      <img
-                        src={previewAttachment.fileUrl}
-                        alt={previewAttachment.fileName}
-                        className="max-w-full max-h-[80vh] object-contain rounded-xl shadow-lg"
-                      />
-                    </div>
-                  </div>
-                ) : isPdfFile(previewAttachment.fileName) ? (
-                  <div className="w-full h-full overflow-auto flex relative">
-                    <div 
-                      className="w-full h-full min-w-full min-h-full transition-transform duration-200 ease-out origin-top-left"
-                      style={{
-                        transform: `scale(${zoomLevel})`,
-                        width: `${100 / zoomLevel}%`,
-                        height: `${100 / zoomLevel}%`,
-                      }}
-                    >
-                      <iframe
-                        src={previewAttachment.fileUrl.includes('drive.google.com') && previewAttachment.fileUrl.includes('/view') ? previewAttachment.fileUrl.replace('/view', '/preview') : previewAttachment.fileUrl}
-                        title={previewAttachment.fileName}
-                        className="w-full h-full border-0 bg-white"
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center p-8">
-                    <div className="mx-auto mb-4 w-14 h-14 rounded-2xl bg-white dark:bg-zinc-800 flex items-center justify-center shadow-sm">
-                      <FileIcon className="w-7 h-7 text-slate-400 dark:text-zinc-500" />
-                    </div>
-                    <h3 className="text-sm font-bold text-slate-800 dark:text-zinc-100">
-                      Preview tidak tersedia
-                    </h3>
-                    <p className="mt-1 text-xs text-slate-500 dark:text-zinc-400 max-w-sm">
-                      Format file ini tidak dapat ditampilkan langsung di dalam myMbud.
-                    </p>
-                    <a
-                      href={previewAttachment.fileUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      download={previewAttachment.fileName}
-                      className="inline-flex items-center gap-2 mt-4 px-4 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-colors"
-                    >
-                      <Download className="w-4 h-4" />
-                      Unduh File
-                    </a>
-                  </div>
-                )}
-              </div>
-
-              <div className="sm:hidden shrink-0 border-t border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-3">
-                <a
-                  href={previewAttachment.fileUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  download={previewAttachment.fileName}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 text-xs font-semibold transition-colors"
-                >
-                  <Download className="w-4 h-4" />
-                  Unduh Lampiran
-                </a>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Modal: Announcement Detail */}
       <AnimatePresence>
         {selectedAnnModal && (
@@ -1332,7 +1038,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         )}
       </AnimatePresence>
 
-      {/* FLOATING BUTTON MBUDIARY KHUSUS DI DASHBOARD */}
+      {/* FLOATING BUTTON MBUDIARY */}
       <motion.button
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -1342,7 +1048,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         className="fixed bottom-28 lg:bottom-10 right-4 lg:right-10 z-40 flex items-center gap-3.5 px-5 py-3.5 rounded-2xl bg-zinc-900 dark:bg-zinc-100 text-zinc-100 dark:text-zinc-900 border border-zinc-800 dark:border-zinc-200 shadow-2xl transition-all cursor-pointer group"
       >
         <Pencil className="w-5 h-5 text-zinc-100 dark:text-zinc-900 shrink-0" />
-
         <div className="text-left flex flex-col justify-center pr-1">
           <span className="text-base font-black tracking-tight text-zinc-100 dark:text-zinc-900 leading-none">
             mbudiary.
