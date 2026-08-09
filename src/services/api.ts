@@ -5,7 +5,7 @@ import {
   MaterialFile,
   Announcement,
   GroupResult,
-} from '../types';[cite: 4]
+} from '../types';
 
 import {
   collection,
@@ -18,9 +18,9 @@ import {
   where,
   onSnapshot,
   serverTimestamp,
-} from 'firebase/firestore';[cite: 4]
+} from 'firebase/firestore';
 
-import { db } from './firebase';[cite: 4]
+import { db } from './firebase';
 
 
 // ============================================================
@@ -29,31 +29,31 @@ import { db } from './firebase';[cite: 4]
 
 export async function fetchAppState(): Promise<AppState | null> {
   try {
-    const res = await fetch('/api/state');[cite: 4]
+    const res = await fetch('/api/state');
 
     if (!res.ok) {
-      throw new Error('Failed to fetch state');[cite: 4]
+      throw new Error('Failed to fetch state');
     }
 
-    return await res.json();[cite: 4]
+    return await res.json();
   } catch (err) {
-    console.error('API fetchAppState error:', err);[cite: 4]
-    return null;[cite: 4]
+    console.error('API fetchAppState error:', err);
+    return null;
   }
 }
 
 export async function resetAppState(): Promise<AppState | null> {
   try {
-    const res = await fetch('/api/reset', {[cite: 4]
-      method: 'POST',[cite: 4]
+    const res = await fetch('/api/reset', {
+      method: 'POST',
     });
 
-    const data = await res.json();[cite: 4]
+    const data = await res.json();
 
-    return data.state || data.data;[cite: 4]
+    return data.state || data.data;
   } catch (err) {
-    console.error('API reset error:', err);[cite: 4]
-    return null;[cite: 4]
+    console.error('API reset error:', err);
+    return null;
   }
 }
 
@@ -66,20 +66,20 @@ export async function addAnnouncementApi(
   announcement: Omit<Announcement, 'id' | 'date'>
 ): Promise<AppState | null> {
   try {
-    const res = await fetch('/api/announcements', {[cite: 4]
-      method: 'POST',[cite: 4]
+    const res = await fetch('/api/announcements', {
+      method: 'POST',
       headers: {
-        'Content-Type': 'application/json',[cite: 4]
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify(announcement),[cite: 4]
+      body: JSON.stringify(announcement),
     });
 
-    const data = await res.json();[cite: 4]
+    const data = await res.json();
 
-    return data.state;[cite: 4]
+    return data.state;
   } catch (err) {
-    console.error('API addAnnouncement error:', err);[cite: 4]
-    return null;[cite: 4]
+    console.error('API addAnnouncement error:', err);
+    return null;
   }
 }
 
@@ -87,16 +87,16 @@ export async function deleteAnnouncementApi(
   id: string
 ): Promise<AppState | null> {
   try {
-    const res = await fetch(`/api/announcements/${id}`, {[cite: 4]
-      method: 'DELETE',[cite: 4]
+    const res = await fetch(`/api/announcements/${id}`, {
+      method: 'DELETE',
     });
 
-    const data = await res.json();[cite: 4]
+    const data = await res.json();
 
-    return data.state;[cite: 4]
+    return data.state;
   } catch (err) {
-    console.error('API deleteAnnouncement error:', err);[cite: 4]
-    return null;[cite: 4]
+    console.error('API deleteAnnouncement error:', err);
+    return null;
   }
 }
 
@@ -109,12 +109,12 @@ export async function addContactApi(
   contact: Omit<Contact, 'id'>
 ): Promise<AppState | null> {
   try {
-    await addDoc(collection(db, 'courses'), contact);[cite: 4]
+    await addDoc(collection(db, 'courses'), contact);
 
-    return null;[cite: 4]
+    return null;
   } catch (err) {
-    console.error('Firebase addContact error:', err);[cite: 4]
-    throw err;[cite: 4]
+    console.error('Firebase addContact error:', err);
+    throw err;
   }
 }
 
@@ -123,14 +123,14 @@ export async function updateContactApi(
   contact: Partial<Contact>
 ): Promise<AppState | null> {
   try {
-    const courseRef = doc(db, 'courses', id);[cite: 4]
+    const courseRef = doc(db, 'courses', id);
 
-    await updateDoc(courseRef, contact);[cite: 4]
+    await updateDoc(courseRef, contact);
 
-    return null;[cite: 4]
+    return null;
   } catch (err) {
-    console.error('Firebase updateContact error:', err);[cite: 4]
-    throw err;[cite: 4]
+    console.error('Firebase updateContact error:', err);
+    throw err;
   }
 }
 
@@ -138,14 +138,14 @@ export async function deleteContactApi(
   id: string
 ): Promise<AppState | null> {
   try {
-    const courseRef = doc(db, 'courses', id);[cite: 4]
+    const courseRef = doc(db, 'courses', id);
 
-    await deleteDoc(courseRef);[cite: 4]
+    await deleteDoc(courseRef);
 
-    return null;[cite: 4]
+    return null;
   } catch (err) {
-    console.error('Firebase deleteContact error:', err);[cite: 4]
-    throw err;[cite: 4]
+    console.error('Firebase deleteContact error:', err);
+    throw err;
   }
 }
 
@@ -158,20 +158,20 @@ export async function addMaterialApi(
   material: Omit<MaterialFile, 'id' | 'uploadDate'>
 ): Promise<AppState | null> {
   try {
-    const res = await fetch('/api/materials', {[cite: 4]
-      method: 'POST',[cite: 4]
+    const res = await fetch('/api/materials', {
+      method: 'POST',
       headers: {
-        'Content-Type': 'application/json',[cite: 4]
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify(material),[cite: 4]
+      body: JSON.stringify(material),
     });
 
-    const data = await res.json();[cite: 4]
+    const data = await res.json();
 
-    return data.state;[cite: 4]
+    return data.state;
   } catch (err) {
-    console.error('API addMaterial error:', err);[cite: 4]
-    return null;[cite: 4]
+    console.error('API addMaterial error:', err);
+    return null;
   }
 }
 
@@ -179,16 +179,16 @@ export async function deleteMaterialApi(
   id: string
 ): Promise<AppState | null> {
   try {
-    const res = await fetch(`/api/materials/${id}`, {[cite: 4]
-      method: 'DELETE',[cite: 4]
+    const res = await fetch(`/api/materials/${id}`, {
+      method: 'DELETE',
     });
 
-    const data = await res.json();[cite: 4]
+    const data = await res.json();
 
-    return data.state;[cite: 4]
+    return data.state;
   } catch (err) {
-    console.error('API deleteMaterial error:', err);[cite: 4]
-    return null;[cite: 4]
+    console.error('API deleteMaterial error:', err);
+    return null;
   }
 }
 
@@ -201,14 +201,14 @@ export async function addTaskApi(
   task: Omit<Task, 'id'>
 ): Promise<AppState | null> {
   try {
-    await addDoc(collection(db, 'tasks'), task);[cite: 4]
+    await addDoc(collection(db, 'tasks'), task);
 
-    return null;[cite: 4]
+    return null;
   } catch (err) {
-    console.error('Firebase addTask error:', err);[cite: 4]
+    console.error('Firebase addTask error:', err);
 
     // Lempar error supaya App.tsx tahu kalau Firebase gagal
-    throw err;[cite: 4]
+    throw err;
   }
 }
 
@@ -217,15 +217,15 @@ export async function updateTaskApi(
   updates: Partial<Task>
 ): Promise<AppState | null> {
   try {
-    const taskRef = doc(db, 'tasks', id);[cite: 4]
+    const taskRef = doc(db, 'tasks', id);
 
-    await updateDoc(taskRef, updates);[cite: 4]
+    await updateDoc(taskRef, updates);
 
-    return null;[cite: 4]
+    return null;
   } catch (err) {
-    console.error('Firebase updateTask error:', err);[cite: 4]
+    console.error('Firebase updateTask error:', err);
 
-    throw err;[cite: 4]
+    throw err;
   }
 }
 
@@ -233,15 +233,15 @@ export async function deleteTaskApi(
   id: string
 ): Promise<AppState | null> {
   try {
-    const taskRef = doc(db, 'tasks', id);[cite: 4]
+    const taskRef = doc(db, 'tasks', id);
 
-    await deleteDoc(taskRef);[cite: 4]
+    await deleteDoc(taskRef);
 
-    return null;[cite: 4]
+    return null;
   } catch (err) {
-    console.error('Firebase deleteTask error:', err);[cite: 4]
+    console.error('Firebase deleteTask error:', err);
 
-    throw err;[cite: 4]
+    throw err;
   }
 }
 
@@ -305,19 +305,19 @@ export async function saveGroupResultApi(
   groupResult: Omit<GroupResult, 'id' | 'createdAt'>
 ): Promise<AppState | null> {
   try {
-    const res = await fetch('/api/groups', {[cite: 4]
-      method: 'POST',[cite: 4]
+    const res = await fetch('/api/groups', {
+      method: 'POST',
       headers: {
-        'Content-Type': 'application/json',[cite: 4]
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify(groupResult),[cite: 4]
+      body: JSON.stringify(groupResult),
     });
 
-    const data = await res.json();[cite: 4]
+    const data = await res.json();
 
-    return data.state;[cite: 4]
+    return data.state;
   } catch (err) {
-    console.error('API saveGroupResult error:', err);[cite: 4]
-    return null;[cite: 4]
+    console.error('API saveGroupResult error:', err);
+    return null;
   }
 }
