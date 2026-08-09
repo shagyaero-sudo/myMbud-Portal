@@ -32,7 +32,7 @@ import {
   addAnnouncement,
   updateAnnouncement,
   deleteAnnouncement,
-  subscribeAnnouncements // Tambahkan import subscribeAnnouncements di sini
+  subscribeAnnouncements
 } from '../services/announcements';
 
 interface DashboardViewProps {
@@ -42,7 +42,8 @@ interface DashboardViewProps {
   onDeleteAnnouncement: (id: string) => void;
   onNavigateTab: (
     tab: 'tasks' | 'contacts' | 'materials' | 'spinwheel' | 'calculator' | 'mbudiary' | any,
-    courseFilter?: string
+    courseFilterOrTaskId?: string,
+    taskId?: string
   ) => void;
 }
 
@@ -114,7 +115,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   >('Penting');
   const [newAnnPinned, setNewAnnPinned] = useState(true);
 
-  const [selectedTaskModal, setSelectedTaskModal] = useState<Task | null>(null);
   const [selectedAnnModal, setSelectedAnnModal] = useState<Announcement | null>(null);
   const [previewAttachment, setPreviewAttachment] = useState<AttachmentData | null>(null);
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -123,12 +123,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [isPaused, setIsPaused] = useState(false);
 
-  // Ganti referensi dari state.announcements menjadi realAnnouncements
   const totalAnn = realAnnouncements.length;
   const activeAnnIndex = Math.min(mobileAnnIndex, Math.max(0, totalAnn - 1));
   const currentMobileAnn = realAnnouncements[activeAnnIndex];
 
-  // --- EFFECT UNTUK BERLANGGANAN DATA PENGUMUMAN SECARA REAL-TIME ---
   useEffect(() => {
     const unsubscribe = subscribeAnnouncements((data) => {
       setRealAnnouncements(data);
@@ -300,44 +298,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       }
       return part;
     });
-  };
-
-  const getAttachmentData = (attachment: any): AttachmentData | null => {
-    if (!attachment) return null;
-    if (typeof attachment === 'string') {
-      return {
-        fileName:
-          attachment.split('/').pop()?.split('?')[0] || 'Dokumen Lampiran',
-        fileUrl: attachment,
-      };
-    }
-    const fileUrl = attachment.fileUrl || attachment.url || '';
-    if (!fileUrl) return null;
-    return {
-      fileName: attachment.fileName || 'Dokumen Lampiran',
-      fileUrl,
-    };
-  };
-
-  const getFileExtension = (fileName: string) => {
-    return fileName.split('.').pop()?.toLowerCase() || '';
-  };
-
-  const isImageFile = (fileName: string) => {
-    return [
-      'jpg',
-      'jpeg',
-      'png',
-      'gif',
-      'webp',
-      'bmp',
-      'svg',
-      'avif',
-    ].includes(getFileExtension(fileName));
-  };
-
-  const isPdfFile = (fileName: string) => {
-    return getFileExtension(fileName) === 'pdf';
   };
 
   const dayTabs: DayOfWeek[] = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
@@ -717,7 +677,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       whileHover={{ scale: 1.005 }}
                       whileTap={{ scale: 0.995 }}
                       key={task.id}
-                      onClick={() => setSelectedTaskModal(task)}
+                      /* DI SINI PERUBAHAN UTAMANYA: Pindah ke Tab 'tasks' dan Bawa ID Tugas */
+                      onClick={() => onNavigateTab('tasks', undefined, task.id)}
                       className="p-4 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/60 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-transparent hover:border-blue-100 dark:hover:border-zinc-700 group"
                     >
                       <div className="space-y-1 flex-1">
@@ -754,7 +715,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
 
-        {/* Right Column: Announcements (Sekarang Menggunakan realAnnouncements) */}
+        {/* Right Column: Announcements */}
         <div className="hidden lg:block space-y-6">
           <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-4 transition-colors">
             <div className="flex items-center justify-between">
@@ -953,297 +914,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   </motion.button>
                 </div>
               </form>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Modal: Task Detail */}
-      <AnimatePresence>
-        {selectedTaskModal && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
-          >
-            <motion.div 
-              initial={{ scale: 0.92, opacity: 0, y: 15 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.92, opacity: 0, y: 15 }}
-              transition={{ type: 'spring', stiffness: 350, damping: 28 }}
-              className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"
-            >
-              <div className="px-6 sm:px-8 py-5 border-b border-slate-100 dark:border-zinc-800 flex items-start justify-between gap-3 shrink-0 bg-white dark:bg-zinc-900">
-                <div className="pr-2">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-3 py-1 rounded-full">
-                      {selectedTaskModal.type} • {selectedTaskModal.course}
-                    </span>
-                    {getPillBadge(selectedTaskModal.deadline) && (
-                      <span className={`text-xs px-2.5 py-0.5 rounded-full ${getPillBadge(selectedTaskModal.deadline)?.badgeClass}`}>
-                        {getPillBadge(selectedTaskModal.deadline)?.label}
-                      </span>
-                    )}
-                  </div>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-100 mt-2">{selectedTaskModal.title}</h3>
-                </div>
-                <button
-                  onClick={() => setSelectedTaskModal(null)}
-                  className="p-2 rounded-2xl text-slate-400 hover:text-slate-800 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all shrink-0"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-4">
-                <div className="bg-slate-50 dark:bg-zinc-800/60 p-4 rounded-2xl text-xs border border-slate-100 dark:border-zinc-800 space-y-2">
-                  <div>
-                    <span className="text-slate-400 dark:text-zinc-400 block mb-0.5">Dosen:</span>
-                    <span className="font-bold text-slate-800 dark:text-zinc-200">
-                      {selectedTaskModal.assigner || 'Dosen Pengampu'}
-                    </span>
-                  </div>
-
-                  <div className="pt-2 border-t border-slate-200/50 dark:border-zinc-700/50">
-                    <span className="text-slate-400 dark:text-zinc-400 block mb-0.5">Tenggat:</span>
-                    <span className="font-bold text-blue-600 dark:text-blue-400 text-sm">
-                      {formatDeadlineDetails(selectedTaskModal.deadline)}
-                    </span>
-                  </div>
-                </div>
-
-                <div>
-                  <h4 className="text-[11px] font-bold text-slate-400 dark:text-zinc-400 uppercase tracking-wider mb-1">Rincian Tugas</h4>
-                  <p className="text-xs text-slate-600 dark:text-zinc-300 bg-slate-50 dark:bg-zinc-800/80 p-4 rounded-2xl leading-relaxed whitespace-pre-line border border-slate-100 dark:border-zinc-700/60">
-                    {selectedTaskModal.description || 'Tidak ada instruksi.'}
-                  </p>
-                </div>
-
-                {selectedTaskModal.attachment && (
-                  <div className="space-y-1.5">
-                    <h4 className="text-[11px] font-bold text-slate-400 dark:text-zinc-400 uppercase tracking-wider">
-                      Lampiran File / Dokumen
-                    </h4>
-                    {(() => {
-                      const attachment = getAttachmentData(selectedTaskModal.attachment);
-                      if (!attachment) return null;
-                      return (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setPreviewAttachment(attachment);
-                            setZoomLevel(1);
-                          }}
-                          className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-slate-100 hover:bg-slate-200/80 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-200/80 dark:border-zinc-700 text-slate-800 dark:text-zinc-200 text-xs font-semibold transition-all group shadow-xs text-left"
-                        >
-                          <div className="flex items-center gap-3 min-w-0 pr-2">
-                            <Paperclip className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 group-hover:scale-110 transition-transform" />
-                            <div className="min-w-0">
-                              <span className="truncate block">{attachment.fileName}</span>
-                              <span className="text-[10px] font-medium text-slate-400 dark:text-zinc-500 block mt-0.5">
-                                {isImageFile(attachment.fileName)
-                                  ? 'Klik untuk melihat gambar'
-                                  : isPdfFile(attachment.fileName)
-                                  ? 'Klik untuk membuka PDF'
-                                  : 'Klik untuk melihat lampiran'}
-                              </span>
-                            </div>
-                          </div>
-                          <ExternalLink className="w-4 h-4 text-slate-400 dark:text-zinc-400 group-hover:text-slate-800 dark:group-hover:text-white shrink-0 transition-colors" />
-                        </button>
-                      );
-                    })()}
-                  </div>
-                )}
-              </div>
-
-              <div className="px-6 sm:px-8 py-4 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-end gap-3 shrink-0 bg-white dark:bg-zinc-900">
-                {selectedTaskModal.classroomUrl && (
-                  <a
-                    href={selectedTaskModal.classroomUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-xs font-bold transition-colors flex items-center gap-1.5 shadow-sm shadow-blue-500/20"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5" />
-                    <span>Link Pengumpulan</span>
-                  </a>
-                )}
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Attachment Viewer Modal */}
-      <AnimatePresence>
-        {previewAttachment && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[70] bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6"
-            onClick={() => {
-              setPreviewAttachment(null);
-              setZoomLevel(1);
-            }}
-          >
-            <motion.div
-              initial={{ scale: 0.94, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.94, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 350, damping: 28 }}
-              className="relative w-full max-w-6xl h-[92vh] bg-white dark:bg-zinc-950 rounded-3xl overflow-hidden shadow-2xl flex flex-col"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="shrink-0 h-16 px-4 sm:px-6 flex items-center justify-between border-b border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/50 shrink-0">
-                    {isImageFile(previewAttachment.fileName) ? (
-                      <FileIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                    ) : (
-                      <Paperclip className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                    )}
-                  </div>
-
-                  <div className="min-w-0">
-                    <p className="text-xs sm:text-sm font-bold text-slate-800 dark:text-zinc-100 truncate max-w-[55vw] sm:max-w-[700px]">
-                      {previewAttachment.fileName}
-                    </p>
-                    <p className="text-[10px] text-slate-400 dark:text-zinc-500">
-                      Pratinjau lampiran
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 shrink-0">
-                  <a
-                    href={previewAttachment.fileUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    download={previewAttachment.fileName}
-                    className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 text-xs font-semibold transition-colors"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    Unduh
-                  </a>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPreviewAttachment(null);
-                      setZoomLevel(1);
-                    }}
-                    className="p-2 rounded-xl text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
-                    aria-label="Tutup viewer"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex-1 min-h-0 bg-slate-100 dark:bg-zinc-900 flex items-center justify-center overflow-hidden relative">
-                
-                {/* Floating Zoom Control (Mobile & Tablet) */}
-                {(isImageFile(previewAttachment.fileName) || isPdfFile(previewAttachment.fileName)) && (
-                  <div className="absolute top-4 right-4 z-20 flex md:hidden items-center gap-1 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-md p-1.5 rounded-2xl shadow-xl border border-slate-200/80 dark:border-zinc-700/80">
-                    <button
-                      onClick={() => setZoomLevel((prev) => Math.max(prev - 0.25, 0.75))}
-                      className="p-2 rounded-xl text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-all active:scale-95"
-                      title="Perkecil"
-                    >
-                      <ZoomOut className="w-4 h-4" />
-                    </button>
-                    <span className="text-xs font-bold text-slate-700 dark:text-zinc-200 px-1.5 min-w-[42px] text-center select-none">
-                      {Math.round(zoomLevel * 100)}%
-                    </span>
-                    <button
-                      onClick={() => setZoomLevel((prev) => Math.min(prev + 0.25, 2.5))}
-                      className="p-2 rounded-xl text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-all active:scale-95"
-                      title="Perbesar"
-                    >
-                      <ZoomIn className="w-4 h-4" />
-                    </button>
-                    {zoomLevel !== 1 && (
-                      <button
-                        onClick={() => setZoomLevel(1)}
-                        className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-all border-l border-slate-200 dark:border-zinc-700 ml-0.5"
-                        title="Reset Zoom"
-                      >
-                        <RotateCcw className="w-3.5 h-3.5" />
-                      </button>
-                    )}
-                  </div>
-                )}
-
-                {isImageFile(previewAttachment.fileName) ? (
-                  <div className="w-full h-full overflow-auto flex items-center justify-center p-4 sm:p-8">
-                    <div
-                      className="transition-transform duration-200 ease-out origin-center flex items-center justify-center"
-                      style={{ transform: `scale(${zoomLevel})` }}
-                    >
-                      <img
-                        src={previewAttachment.fileUrl}
-                        alt={previewAttachment.fileName}
-                        className="max-w-full max-h-[80vh] object-contain rounded-xl shadow-lg"
-                      />
-                    </div>
-                  </div>
-                ) : isPdfFile(previewAttachment.fileName) ? (
-                  <div className="w-full h-full overflow-auto flex relative">
-                    <div 
-                      className="w-full h-full min-w-full min-h-full transition-transform duration-200 ease-out origin-top-left"
-                      style={{
-                        transform: `scale(${zoomLevel})`,
-                        width: `${100 / zoomLevel}%`,
-                        height: `${100 / zoomLevel}%`,
-                      }}
-                    >
-                      <iframe
-                        src={previewAttachment.fileUrl.includes('drive.google.com') && previewAttachment.fileUrl.includes('/view') ? previewAttachment.fileUrl.replace('/view', '/preview') : previewAttachment.fileUrl}
-                        title={previewAttachment.fileName}
-                        className="w-full h-full border-0 bg-white"
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center p-8">
-                    <div className="mx-auto mb-4 w-14 h-14 rounded-2xl bg-white dark:bg-zinc-800 flex items-center justify-center shadow-sm">
-                      <FileIcon className="w-7 h-7 text-slate-400 dark:text-zinc-500" />
-                    </div>
-                    <h3 className="text-sm font-bold text-slate-800 dark:text-zinc-100">
-                      Preview tidak tersedia
-                    </h3>
-                    <p className="mt-1 text-xs text-slate-500 dark:text-zinc-400 max-w-sm">
-                      Format file ini tidak dapat ditampilkan langsung di dalam myMbud.
-                    </p>
-                    <a
-                      href={previewAttachment.fileUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      download={previewAttachment.fileName}
-                      className="inline-flex items-center gap-2 mt-4 px-4 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-colors"
-                    >
-                      <Download className="w-4 h-4" />
-                      Unduh File
-                    </a>
-                  </div>
-                )}
-              </div>
-
-              <div className="sm:hidden shrink-0 border-t border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-3">
-                <a
-                  href={previewAttachment.fileUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  download={previewAttachment.fileName}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 text-xs font-semibold transition-colors"
-                >
-                  <Download className="w-4 h-4" />
-                  Unduh Lampiran
-                </a>
-              </div>
             </motion.div>
           </motion.div>
         )}

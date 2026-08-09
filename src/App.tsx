@@ -123,10 +123,8 @@ export default function App() {
   // ============================================================
   useEffect(() => {
     const setupOneSignal = async () => {
-      // Step 1: Inisialisasi SDK hingga selesai
       await initOneSignal();
 
-      // Step 2: Hubungkan akun jika user sudah terautentikasi
       if (isAuthenticated) {
         const nrp = localStorage.getItem('mymbud_user_nrp');
 
@@ -152,7 +150,6 @@ export default function App() {
       console.log('[App Router] Redirecting to tab:', targetTab);
       setActiveTab(targetTab as TabType);
 
-      // Trigger event navigasi internal mbudiary agar postingan/profil langsung terbuka
       window.dispatchEvent(new Event('mbud_notification_navigate'));
     };
 
@@ -196,24 +193,27 @@ export default function App() {
     !isAuthenticated && (isDesktop || isStandalone);
 
   // ============================================================
-  // STATE APLIKASI
+  // STATE APLIKASI & NAVIGASI
   // ============================================================
-  const [activeTab, setActiveTab] =
-    useState<TabType>('dashboard');
+  const [activeTab, setActiveTab] = useState<TabType>('dashboard');
+  const [selectedContactCourse, setSelectedContactCourse] = useState<string>('ALL');
+  const [selectedTaskIdForModal, setSelectedTaskIdForModal] = useState<string | null>(null);
 
-  const [selectedContactCourse, setSelectedContactCourse] =
-    useState<string>('ALL');
-
-  const [isOfficer, setIsOfficer] =
-    useState<boolean>(false);
-
-  const [isGpaModalOpen, setIsGpaModalOpen] =
-    useState<boolean>(false);
+  const [isOfficer, setIsOfficer] = useState<boolean>(false);
+  const [isGpaModalOpen, setIsGpaModalOpen] = useState<boolean>(false);
 
   const handleNavigateTab = useCallback(
-    (tab: TabType, courseFilter?: string) => {
-      if (tab === 'contacts' && courseFilter) {
-        setSelectedContactCourse(courseFilter);
+    (tab: TabType, courseFilterOrTaskId?: string, taskId?: string) => {
+      if (tab === 'contacts' && courseFilterOrTaskId) {
+        setSelectedContactCourse(courseFilterOrTaskId);
+      }
+
+      // Jika berpindah ke tab 'tasks' dan membawa taskId dari Dashboard
+      if (tab === 'tasks' && (taskId || courseFilterOrTaskId)) {
+        const targetId = taskId || courseFilterOrTaskId;
+        if (targetId) {
+          setSelectedTaskIdForModal(targetId);
+        }
       }
 
       setActiveTab(tab);
@@ -228,14 +228,9 @@ export default function App() {
     materials: [],
   }));
 
-  const [isSyncing, setIsSyncing] =
-    useState<boolean>(false);
-
-  const [isInitialLoad, setIsInitialLoad] =
-    useState<boolean>(true);
-
-  const [previewMaterial, setPreviewMaterial] =
-    useState<MaterialFile | null>(null);
+  const [isSyncing, setIsSyncing] = useState<boolean>(false);
+  const [isInitialLoad, setIsInitialLoad] = useState<boolean>(true);
+  const [previewMaterial, setPreviewMaterial] = useState<MaterialFile | null>(null);
 
   // ============================================================
   // THEME SWITCHER
@@ -256,12 +251,7 @@ export default function App() {
   useEffect(() => {
     const root = document.documentElement;
 
-    root.classList.remove(
-      'dark',
-      'pink',
-      'purple',
-      'green'
-    );
+    root.classList.remove('dark', 'pink', 'purple', 'green');
 
     if (theme === 'dark') {
       root.classList.add('dark');
@@ -275,36 +265,19 @@ export default function App() {
 
     localStorage.setItem('theme', theme);
 
-    const metaThemeColor = document.querySelector(
-      "meta[name='theme-color']"
-    );
+    const metaThemeColor = document.querySelector("meta[name='theme-color']");
 
     if (metaThemeColor) {
       if (theme === 'dark') {
-        metaThemeColor.setAttribute(
-          'content',
-          '#09090b'
-        );
+        metaThemeColor.setAttribute('content', '#09090b');
       } else if (theme === 'pink') {
-        metaThemeColor.setAttribute(
-          'content',
-          '#fff0f3'
-        );
+        metaThemeColor.setAttribute('content', '#fff0f3');
       } else if (theme === 'purple') {
-        metaThemeColor.setAttribute(
-          'content',
-          '#f8f0fe'
-        );
+        metaThemeColor.setAttribute('content', '#f8f0fe');
       } else if (theme === 'green') {
-        metaThemeColor.setAttribute(
-          'content',
-          '#f7fcf5'
-        );
+        metaThemeColor.setAttribute('content', '#f7fcf5');
       } else {
-        metaThemeColor.setAttribute(
-          'content',
-          '#f8fafc'
-        );
+        metaThemeColor.setAttribute('content', '#f8fafc');
       }
     }
   }, [theme]);
@@ -313,14 +286,12 @@ export default function App() {
   // FIREBASE REALTIME ANNOUNCEMENTS
   // ============================================================
   useEffect(() => {
-    const unsubscribe = subscribeAnnouncements(
-      (announcementsData) => {
-        setAppState((prev) => ({
-          ...prev,
-          announcements: announcementsData,
-        }));
-      }
-    );
+    const unsubscribe = subscribeAnnouncements((announcementsData) => {
+      setAppState((prev) => ({
+        ...prev,
+        announcements: announcementsData,
+      }));
+    });
 
     return () => unsubscribe();
   }, []);
@@ -334,12 +305,8 @@ export default function App() {
     try {
       const data = await fetchAppState();
 
-      // --------------------------------------------------------
       // FETCH COURSES
-      // --------------------------------------------------------
-      const querySnapshotCourses = await getDocs(
-        collection(db, 'courses')
-      );
+      const querySnapshotCourses = await getDocs(collection(db, 'courses'));
 
       const firebaseSchedules: AppState['schedules'] = [];
       const firebaseContacts: AppState['contacts'] = [];
@@ -350,23 +317,16 @@ export default function App() {
         const scheduleDay =
           d.scheduleDay ||
           (d.scheduleDayTime
-            ? String(d.scheduleDayTime)
-                .split(',')[0]
-                ?.trim()
+            ? String(d.scheduleDayTime).split(',')[0]?.trim()
             : 'Senin');
 
         const scheduleTime =
           d.scheduleTime ||
           (d.scheduleDayTime
-            ? String(d.scheduleDayTime)
-                .split(',')
-                .slice(1)
-                .join(',')
-                .trim()
+            ? String(d.scheduleDayTime).split(',').slice(1).join(',').trim()
             : '');
 
-        const courseName =
-          d.name || d.course || '';
+        const courseName = d.name || d.course || '';
 
         firebaseSchedules.push({
           id: courseDoc.id,
@@ -376,40 +336,27 @@ export default function App() {
           time: scheduleTime,
           room: d.room || '',
           lecturer: d.lecturerName || '',
-          pjMatkul: d.pjName
-            ? String(d.pjName).trim()
-            : '',
+          pjMatkul: d.pjName ? String(d.pjName).trim() : '',
           sks: Number(d.sks) || 0,
         });
 
-        // ======================================================
-        // FIREBASE CONTACTS
-        // ======================================================
         firebaseContacts.push({
           id: courseDoc.id,
           code: d.code || '',
           course: courseName,
           sks: Number(d.sks) || 0,
-          lecturerName:
-            d.lecturerName || '',
-          lecturerPhone:
-            d.lecturerPhone || '',
+          lecturerName: d.lecturerName || '',
+          lecturerPhone: d.lecturerPhone || '',
           pjName: d.pjName || '',
           pjPhone: d.pjPhone || '',
           room: d.room || '',
           scheduleDayTime:
-            d.scheduleDayTime ||
-            scheduleDay + ', ' + scheduleTime,
+            d.scheduleDayTime || scheduleDay + ', ' + scheduleTime,
         });
       });
 
-      // --------------------------------------------------------
       // FETCH TASKS
-      // --------------------------------------------------------
-      const querySnapshotTasks = await getDocs(
-        collection(db, 'tasks')
-      );
-
+      const querySnapshotTasks = await getDocs(collection(db, 'tasks'));
       const firebaseTasks: Task[] = [];
 
       querySnapshotTasks.forEach((taskDoc) => {
@@ -420,10 +367,7 @@ export default function App() {
           title: d.title || '',
           course: d.course || '',
           description: d.description || '',
-          type:
-            d.type === 'Kelompok'
-              ? 'Kelompok'
-              : 'Individu',
+          type: d.type === 'Kelompok' ? 'Kelompok' : 'Individu',
           assigner: d.assigner || '',
           deadline: d.deadline || '',
           status:
@@ -438,27 +382,18 @@ export default function App() {
               : d.priority === 'Medium'
               ? 'Medium'
               : 'High',
-          classroomUrl:
-            d.classroomUrl || undefined,
+          classroomUrl: d.classroomUrl || undefined,
           attachment: d.attachment
             ? {
-                fileName:
-                  d.attachment.fileName || '',
-                fileUrl:
-                  d.attachment.fileUrl || '',
+                fileName: d.attachment.fileName || '',
+                fileUrl: d.attachment.fileUrl || '',
               }
             : undefined,
         });
       });
 
-      // --------------------------------------------------------
       // FETCH MATERIALS
-      // --------------------------------------------------------
-      const querySnapshotMaterials =
-        await getDocs(
-          collection(db, 'materials')
-        );
-
+      const querySnapshotMaterials = await getDocs(collection(db, 'materials'));
       const firebaseMaterials: MaterialFile[] = [];
 
       querySnapshotMaterials.forEach((matDoc) => {
@@ -472,25 +407,16 @@ export default function App() {
           title: d.title || '',
           fileUrl: d.fileUrl || '',
           fileType: 'pdf',
-          fileSize:
-            d.fileSize || '3.0 MB',
-          uploadDate:
-            d.uploadDate ||
-            new Date().toISOString(),
-          uploader:
-            d.uploader ||
-            'Pengurus Kelas A',
-          description:
-            d.description || '',
+          fileSize: d.fileSize || '3.0 MB',
+          uploadDate: d.uploadDate || new Date().toISOString(),
+          uploader: d.uploader || 'Pengurus Kelas A',
+          description: d.description || '',
         });
       });
 
-      // --------------------------------------------------------
       // UPDATE STATE
-      // --------------------------------------------------------
       setAppState((previousState) => {
-        const baseData =
-          data || previousState;
+        const baseData = data || previousState;
 
         return {
           ...baseData,
@@ -501,20 +427,13 @@ export default function App() {
               : baseData.contacts,
           tasks: firebaseTasks,
           materials: firebaseMaterials,
-          lastUpdated:
-            new Date().toISOString(),
+          lastUpdated: new Date().toISOString(),
         };
       });
     } catch (error) {
-      console.error(
-        'Gagal melakukan sinkronisasi:',
-        error
-      );
-
-      setAppState(
-        (previousState) => previousState
-      );
-    } finally {
+      console.error('Gagal melakukan sinkronisasi:', error);
+      setAppState((previousState) => previousState);
+    } fontally {
       setIsSyncing(false);
       setIsInitialLoad(false);
     }
@@ -532,278 +451,144 @@ export default function App() {
     };
   }, [syncState]);
 
-  // ============================================================
   // URGENT TASK COUNT
-  // ============================================================
-  const urgentTaskCount =
-    appState.tasks.filter((task) => {
-      if (task.status === 'done') return false;
+  const urgentTaskCount = appState.tasks.filter((task) => {
+    if (task.status === 'done') return false;
 
-      const deadlineTime =
-        new Date(task.deadline).getTime();
+    const deadlineTime = new Date(task.deadline).getTime();
+    if (Number.isNaN(deadlineTime)) return false;
 
-      if (Number.isNaN(deadlineTime)) {
-        return false;
-      }
+    const diffHours = (deadlineTime - Date.now()) / (1000 * 3600);
+    return diffHours >= 0 && diffHours < 48;
+  }).length;
 
-      const diffHours =
-        (deadlineTime - Date.now()) /
-        (1000 * 3600);
-
-      return (
-        diffHours >= 0 &&
-        diffHours < 48
-      );
-    }).length;
-
-  // ============================================================
   // CONTACT HANDLERS
-  // ============================================================
-  const handleAddContact = async (
-    contact: Omit<Contact, 'id'>
-  ) => {
+  const handleAddContact = async (contact: Omit<Contact, 'id'>) => {
     try {
       await addContactApi(contact);
       await syncState();
     } catch (error) {
-      console.error(
-        'Gagal menambahkan mata kuliah:',
-        error
-      );
-
-      alert(
-        'Gagal menyimpan data mata kuliah. Cek koneksi Firebase.'
-      );
+      console.error('Gagal menambahkan mata kuliah:', error);
+      alert('Gagal menyimpan data mata kuliah. Cek koneksi Firebase.');
     }
   };
 
-  const handleUpdateContact = async (
-    id: string,
-    contact: Partial<Contact>
-  ) => {
+  const handleUpdateContact = async (id: string, contact: Partial<Contact>) => {
     try {
-      await updateContactApi(
-        id,
-        contact
-      );
-
+      await updateContactApi(id, contact);
       await syncState();
     } catch (error) {
-      console.error(
-        'Gagal mengubah mata kuliah:',
-        error
-      );
-
-      alert(
-        'Gagal mengubah data mata kuliah. Cek koneksi Firebase.'
-      );
+      console.error('Gagal mengubah mata kuliah:', error);
+      alert('Gagal mengubah data mata kuliah. Cek koneksi Firebase.');
     }
   };
 
-  const handleDeleteContact = async (
-    id: string
-  ) => {
+  const handleDeleteContact = async (id: string) => {
     try {
       await deleteContactApi(id);
       await syncState();
     } catch (error) {
-      console.error(
-        'Gagal menghapus mata kuliah:',
-        error
-      );
-
-      alert(
-        'Gagal menghapus data mata kuliah. Cek koneksi Firebase.'
-      );
+      console.error('Gagal menghapus mata kuliah:', error);
+      alert('Gagal menghapus data mata kuliah. Cek koneksi Firebase.');
     }
   };
 
-  // ============================================================
   // BANK MATERI
-  // ============================================================
   const handleAddMaterial = async (
-    material: Omit<
-      MaterialFile,
-      'id' | 'uploadDate'
-    >
+    material: Omit<MaterialFile, 'id' | 'uploadDate'>
   ) => {
     try {
-      await addDoc(
-        collection(db, 'materials'),
-        {
-          ...material,
-          uploadDate:
-            new Date().toISOString(),
-          createdAt: Timestamp.now(),
-        }
-      );
-
+      await addDoc(collection(db, 'materials'), {
+        ...material,
+        uploadDate: new Date().toISOString(),
+        createdAt: Timestamp.now(),
+      });
       await syncState();
     } catch (error) {
-      console.error(
-        'Gagal menambahkan materi ke Firestore:',
-        error
-      );
-
-      alert(
-        'Gagal menyimpan berkas ke Firebase.'
-      );
+      console.error('Gagal menambahkan materi ke Firestore:', error);
+      alert('Gagal menyimpan berkas ke Firebase.');
     }
   };
 
-  const handleDeleteMaterial = async (
-    id: string
-  ) => {
-    if (
-      !confirm(
-        'Apakah kamu yakin ingin menghapus berkas materi ini?'
-      )
-    ) {
-      return;
-    }
+  const handleDeleteMaterial = async (id: string) => {
+    if (!confirm('Apakah kamu yakin ingin menghapus berkas materi ini?')) return;
 
     try {
-      await deleteDoc(
-        doc(db, 'materials', id)
-      );
-
+      await deleteDoc(doc(db, 'materials', id));
       await syncState();
     } catch (error) {
-      console.error(
-        'Gagal menghapus materi dari Firestore:',
-        error
-      );
-
-      alert(
-        'Gagal menghapus berkas dari Firebase.'
-      );
+      console.error('Gagal menghapus materi dari Firestore:', error);
+      alert('Gagal menghapus berkas dari Firebase.');
     }
   };
 
-  // ============================================================
   // TASK HANDLERS
-  // ============================================================
-  const handleAddTask = async (
-    task: Omit<Task, 'id'>
-  ) => {
+  const handleAddTask = async (task: Omit<Task, 'id'>) => {
     try {
       await addTaskApi(task);
       await syncState();
     } catch (error) {
-      console.error(
-        '[Task] Gagal menambahkan tugas:',
-        error
-      );
-
-      alert(
-        'Tugas gagal disimpan ke Firebase. Cek Console untuk detail error.'
-      );
+      console.error('[Task] Gagal menambahkan tugas:', error);
+      alert('Tugas gagal disimpan ke Firebase.');
     }
   };
 
-  const handleUpdateTask = async (
-    id: string,
-    updates: Partial<Task>
-  ) => {
+  const handleUpdateTask = async (id: string, updates: Partial<Task>) => {
     try {
       await updateTaskApi(id, updates);
       await syncState();
     } catch (error) {
-      console.error(
-        '[Task] Gagal mengubah tugas:',
-        error
-      );
-
-      alert(
-        'Tugas gagal diperbarui. Cek Console untuk detail error.'
-      );
+      console.error('[Task] Gagal mengubah tugas:', error);
+      alert('Tugas gagal diperbarui.');
     }
   };
 
   const handleUpdateTaskStatus = async (
     id: string,
-    status:
-      | 'todo'
-      | 'in_progress'
-      | 'done'
+    status: 'todo' | 'in_progress' | 'done'
   ) => {
     try {
       await updateTaskApi(id, { status });
       await syncState();
     } catch (error) {
-      console.error(
-        '[Task] Gagal mengubah status tugas:',
-        error
-      );
+      console.error('[Task] Gagal mengubah status tugas:', error);
     }
   };
 
-  const handleDeleteTask = async (
-    id: string
-  ) => {
+  const handleDeleteTask = async (id: string) => {
     try {
       await deleteTaskApi(id);
       await syncState();
     } catch (error) {
-      console.error(
-        '[Task] Gagal menghapus tugas:',
-        error
-      );
-
-      alert(
-        'Tugas gagal dihapus. Cek Console untuk detail error.'
-      );
+      console.error('[Task] Gagal menghapus tugas:', error);
+      alert('Tugas gagal dihapus.');
     }
   };
 
-  // ============================================================
   // GROUP RESULT
-  // ============================================================
   const handleSaveGroupResult = async (
-    result: Omit<
-      GroupResult,
-      'id' | 'createdAt'
-    >
+    result: Omit<GroupResult, 'id' | 'createdAt'>
   ) => {
     try {
-      const updated =
-        await saveGroupResultApi(result);
-
+      const updated = await saveGroupResultApi(result);
       if (updated) {
         setAppState(updated);
       } else {
         await syncState();
       }
     } catch (error) {
-      console.error(
-        'Gagal menyimpan hasil kelompok:',
-        error
-      );
+      console.error('Gagal menyimpan hasil kelompok:', error);
     }
   };
 
-  // ============================================================
   // CEK LOGIN
-  // ============================================================
   if (requiresLogin) {
-    return (
-      <LoginScreen
-        onLoginSuccess={() =>
-          setIsAuthenticated(true)
-        }
-      />
-    );
+    return <LoginScreen onLoginSuccess={() => setIsAuthenticated(true)} />;
   }
 
-  // ============================================================
   // RENDER UTAMA
-  // ============================================================
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-200">
-
-      {/* ======================================================
-          HEADER
-      ====================================================== */}
       <Header
         isOfficer={isOfficer}
         setIsOfficer={setIsOfficer}
@@ -819,31 +604,19 @@ export default function App() {
       />
 
       <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 flex flex-col lg:flex-row gap-6">
-
-        {/* ====================================================
-            SIDEBAR
-        ==================================================== */}
         <Sidebar
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           urgentTaskCount={urgentTaskCount}
-          onOpenGpaModal={() =>
-            setIsGpaModalOpen(true)
-          }
+          onOpenGpaModal={() => setIsGpaModalOpen(true)}
         />
 
-        {/* ====================================================
-            MAIN CONTENT
-        ==================================================== */}
         <main className="flex-1 py-6 lg:pt-2 lg:pb-8 overflow-y-auto space-y-6">
-
           {isInitialLoad ? (
             <AppSkeleton />
           ) : (
             <>
-              {/* ==================================================
-                  DASHBOARD
-              ================================================== */}
+              {/* DASHBOARD */}
               {activeTab === 'dashboard' && (
                 <DashboardView
                   state={appState}
@@ -854,142 +627,83 @@ export default function App() {
                 />
               )}
 
-              {/* ==================================================
-                  CONTACTS
-              ================================================== */}
+              {/* CONTACTS */}
               {activeTab === 'contacts' && (
                 <ContactsView
                   contacts={appState.contacts}
                   isOfficer={isOfficer}
-                  initialCourseFilter={
-                    selectedContactCourse
-                  }
-                  onAddContact={
-                    handleAddContact
-                  }
-                  onUpdateContact={
-                    handleUpdateContact
-                  }
-                  onDeleteContact={
-                    handleDeleteContact
-                  }
+                  initialCourseFilter={selectedContactCourse}
+                  onAddContact={handleAddContact}
+                  onUpdateContact={handleUpdateContact}
+                  onDeleteContact={handleDeleteContact}
                 />
               )}
 
-              {/* ==================================================
-                  MATERIALS
-              ================================================== */}
+              {/* MATERIALS */}
               {activeTab === 'materials' && (
                 <KnowledgeBaseView
                   materials={appState.materials}
                   isOfficer={isOfficer}
-                  availableCourses={appState.schedules.map(
-                    (s) => s.course
-                  )}
-                  onAddMaterial={
-                    handleAddMaterial
-                  }
-                  onDeleteMaterial={
-                    handleDeleteMaterial
-                  }
-                  onPreviewPdf={(material) =>
-                    setPreviewMaterial(material)
-                  }
+                  availableCourses={appState.schedules.map((s) => s.course)}
+                  onAddMaterial={handleAddMaterial}
+                  onDeleteMaterial={handleDeleteMaterial}
+                  onPreviewPdf={(material) => setPreviewMaterial(material)}
                 />
               )}
 
-              {/* ==================================================
-                  TASKS
-              ================================================== */}
+              {/* TASKS */}
               {activeTab === 'tasks' && (
                 <TaskTrackerView
                   tasks={appState.tasks}
                   contacts={appState.contacts}
                   isOfficer={isOfficer}
+                  initialSelectedTaskId={selectedTaskIdForModal}
+                  onClearInitialSelectedTask={() => setSelectedTaskIdForModal(null)}
                   onAddTask={handleAddTask}
-                  onUpdateTask={
-                    handleUpdateTask
-                  }
-                  onUpdateTaskStatus={
-                    handleUpdateTaskStatus
-                  }
-                  onDeleteTask={
-                    handleDeleteTask
-                  }
+                  onUpdateTask={handleUpdateTask}
+                  onUpdateTaskStatus={handleUpdateTaskStatus}
+                  onDeleteTask={handleDeleteTask}
                 />
               )}
 
-              {/* ==================================================
-                  SPINWHEEL
-              ================================================== */}
+              {/* SPINWHEEL */}
               {activeTab === 'spinwheel' && (
                 <SpinwheelView
-                  onSaveGroupResult={
-                    handleSaveGroupResult
-                  }
-                  savedResults={
-                    appState.groupResults
-                  }
+                  onSaveGroupResult={handleSaveGroupResult}
+                  savedResults={appState.groupResults}
                   isOfficer={isOfficer}
                 />
               )}
 
-              {/* ==================================================
-                  GRADE CALCULATOR
-              ================================================== */}
+              {/* GRADE CALCULATOR */}
               {activeTab === 'calculator' && (
-                <GradeCalculatorView
-                  courseGrades={
-                    appState.courseGrades
-                  }
-                />
+                <GradeCalculatorView courseGrades={appState.courseGrades} />
               )}
 
-              {/* ==================================================
-                  LETTER GENERATOR
-              ================================================== */}
-              {activeTab === 'letter' && (
-                <LetterGeneratorView />
-              )}
+              {/* LETTER GENERATOR */}
+              {activeTab === 'letter' && <LetterGeneratorView />}
 
-              {/* ==================================================
-                  BLOCKBLAST
-              ================================================== */}
-              {activeTab === 'blockblast' && (
-                <BlockBlastView />
-              )}
+              {/* BLOCKBLAST */}
+              {activeTab === 'blockblast' && <BlockBlastView />}
 
-              {/* ==================================================
-                  MBUDIARY
-              ================================================== */}
-              {activeTab === 'mbudiary' && (
-                <MbudiaryView />
-              )}
+              {/* MBUDIARY */}
+              {activeTab === 'mbudiary' && <MbudiaryView />}
             </>
           )}
-
         </main>
       </div>
 
-      {/* ======================================================
-          MODALS
-      ====================================================== */}
       <PdfViewerModal
         material={previewMaterial}
-        onClose={() =>
-          setPreviewMaterial(null)
-        }
+        onClose={() => setPreviewMaterial(null)}
       />
 
       <SoftForceModal />
 
       <GpaCalculatorModal
         isOpen={isGpaModalOpen}
-        onClose={() =>
-          setIsGpaModalOpen(false)
-        }
+        onClose={() => setIsGpaModalOpen(false)}
       />
-
     </div>
   );
 }

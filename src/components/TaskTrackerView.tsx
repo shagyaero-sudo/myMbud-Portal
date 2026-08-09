@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useRef, useEffect } from 'react';[cite: 3]
+import { motion, AnimatePresence } from 'framer-motion';[cite: 3]
 import {
   Plus,
   Search,
@@ -18,199 +18,188 @@ import {
   ZoomIn,
   ZoomOut,
   RotateCcw,
-} from 'lucide-react';
-import { Task, Contact } from '../types';
+  CheckCircle2,
+  Circle,
+} from 'lucide-react';[cite: 3]
+import { Task, Contact } from '../types';[cite: 3]
+import { subscribeUserTaskCompletions, toggleTaskCompletion } from '../services/api';
 
 interface TaskTrackerViewProps {
-  tasks: Task[];
-  contacts?: Contact[];
-  isOfficer: boolean;
-  onAddTask: (task: Omit<Task, 'id'>) => void;
-  onUpdateTask?: (id: string, updatedTask: Partial<Task>) => void;
+  tasks: Task[];[cite: 3]
+  contacts?: Contact[];[cite: 3]
+  isOfficer: boolean;[cite: 3]
+  initialSelectedTaskId?: string | null; // PROP BARU DARI DASHBOARD
+  onClearInitialSelectedTask?: () => void; // HANDLER CLEAR STATE DARI DASHBOARD
+  onAddTask: (task: Omit<Task, 'id'>) => void;[cite: 3]
+  onUpdateTask?: (id: string, updatedTask: Partial<Task>) => void;[cite: 3]
   onUpdateTaskStatus: (
     id: string,
     newStatus: 'todo' | 'in_progress' | 'done'
-  ) => void;
-  onDeleteTask: (id: string) => void;
+  ) => void;[cite: 3]
+  onDeleteTask: (id: string) => void;[cite: 3]
 }
 
 interface AttachmentData {
-  fileName: string;
-  fileUrl: string;
+  fileName: string;[cite: 3]
+  fileUrl: string;[cite: 3]
 }
 
 export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
   tasks,
   contacts = [],
   isOfficer,
+  initialSelectedTaskId,
+  onClearInitialSelectedTask,
   onAddTask,
   onUpdateTask,
   onDeleteTask,
 }) => {
-  const [search, setSearch] = useState('');
-  const [filterCourse, setFilterCourse] = useState('ALL');
+  const [search, setSearch] = useState('');[cite: 3]
+  const [filterCourse, setFilterCourse] = useState('ALL');[cite: 3]
+  const [filterType, setFilterType] = useState<'ALL' | 'Individu' | 'Kelompok'>('ALL');[cite: 3]
+  const [activeTab, setActiveTab] = useState<'active' | 'history'>('active');[cite: 3]
+  const [selectedDetailTask, setSelectedDetailTask] = useState<Task | null>(null);[cite: 3]
 
-  const [filterType, setFilterType] = useState<
-    'ALL' | 'Individu' | 'Kelompok'
-  >('ALL');
+  // --- EFFECT UNTUK OTOMATIS MEMBUKA MODAL TUGAS SAAT DILINK DARI DASHBOARD ---
+  useEffect(() => {
+    if (initialSelectedTaskId && tasks.length > 0) {
+      const targetTask = tasks.find((t) => t.id === initialSelectedTaskId);
+      if (targetTask) {
+        setSelectedDetailTask(targetTask);
+      }
+      if (onClearInitialSelectedTask) {
+        onClearInitialSelectedTask();
+      }
+    }
+  }, [initialSelectedTaskId, tasks, onClearInitialSelectedTask]);
 
-  const [activeTab, setActiveTab] =
-    useState<'active' | 'history'>('active');
+  // --- STATE CENTANG SINKRON FIREBASE PER NRP ---
+  const [completedTaskIds, setCompletedTaskIds] = useState<string[]>([]);
+  const currentUserNrp = localStorage.getItem('mymbud_user_nrp') || 'unknown';
 
-  const [selectedDetailTask, setSelectedDetailTask] =
-    useState<Task | null>(null);
+  useEffect(() => {
+    const unsub = subscribeUserTaskCompletions(currentUserNrp, (ids) => {
+      setCompletedTaskIds(ids);
+    });
+    return () => unsub();
+  }, [currentUserNrp]);
 
-  const [previewAttachment, setPreviewAttachment] =
-    useState<AttachmentData | null>(null);
-  const [zoomLevel, setZoomLevel] = useState(1);
-
-  const [showModal, setShowModal] = useState(false);
-  const [editingTaskId, setEditingTaskId] =
-    useState<string | null>(null);
-
-  const [title, setTitle] = useState('');
-  const [course, setCourse] = useState('');
-  const [description, setDescription] = useState('');
-
-  const [type, setType] =
-    useState<'Individu' | 'Kelompok'>('Individu');
-
-  const [assigner, setAssigner] = useState('');
-  const [deadlineDate, setDeadlineDate] = useState('');
-  const [deadlineTime, setDeadlineTime] = useState('23:59');
-
-  const [priority, setPriority] =
-    useState<'High' | 'Medium' | 'Low'>('High');
-
-  const [classroomUrl, setClassroomUrl] = useState('');
-
-  const [selectedFile, setSelectedFile] =
-    useState<File | null>(null);
-
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-
-  const [existingAttachment, setExistingAttachment] =
-    useState<AttachmentData | null>(null);
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isDragOver, setIsDragOver] = useState(false);
-
-  const getContactCourse = (c: any) => c.course || c.courseName || '';
-  const getContactLecturer = (c: any) => c.lecturerName || c.lecturer || c.name || '';
-
-  const availableCourseOptions = Array.from(
-    new Set([
-      ...contacts.map((c) => getContactCourse(c)).filter((c) => c && c.trim() !== ''),
-      ...tasks.map((t) => t.course).filter((c) => c && c.trim() !== ''),
-    ])
-  ).sort();
-
-  const uniqueCourses = Array.from(
-    new Set(tasks.map((t) => t.course))
-  );
-
-  const handleCourseChange = (selectedCourseName: string) => {
-    setCourse(selectedCourseName);
-    const matchedContact = contacts.find(
-      (c) => getContactCourse(c).toLowerCase() === selectedCourseName.toLowerCase()
-    );
-
-    if (matchedContact) {
-      setAssigner(getContactLecturer(matchedContact));
+  const handleToggleComplete = async (e: React.MouseEvent, taskId: string) => {
+    e.stopPropagation(); // Mencegah membuka modal detail saat tombol centang diklik
+    const isDone = completedTaskIds.includes(taskId);
+    try {
+      await toggleTaskCompletion(currentUserNrp, taskId, !isDone);
+    } catch (err) {
+      console.error('Gagal memperbarui status tugas:', err);
     }
   };
 
-  const now = Date.now();
+  const [previewAttachment, setPreviewAttachment] = useState<AttachmentData | null>(null);[cite: 3]
+  const [zoomLevel, setZoomLevel] = useState(1);[cite: 3]
+  const [showModal, setShowModal] = useState(false);[cite: 3]
+  const [editingTaskId, setEditingTaskId] = useState<string | null>(null);[cite: 3]
 
-  const activeTaskCount = tasks.filter(
-    (t) => new Date(t.deadline).getTime() > now
-  ).length;
+  const [title, setTitle] = useState('');[cite: 3]
+  const [course, setCourse] = useState('');[cite: 3]
+  const [description, setDescription] = useState('');[cite: 3]
+  const [type, setType] = useState<'Individu' | 'Kelompok'>('Individu');[cite: 3]
+  const [assigner, setAssigner] = useState('');[cite: 3]
+  const [deadlineDate, setDeadlineDate] = useState('');[cite: 3]
+  const [deadlineTime, setDeadlineTime] = useState('23:59');[cite: 3]
+  const [priority, setPriority] = useState<'High' | 'Medium' | 'Low'>('High');[cite: 3]
+  const [classroomUrl, setClassroomUrl] = useState('');[cite: 3]
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);[cite: 3]
+  const [isUploading, setIsUploading] = useState(false);[cite: 3]
+  const [uploadProgress, setUploadProgress] = useState(0);[cite: 3]
+  const [existingAttachment, setExistingAttachment] = useState<AttachmentData | null>(null);[cite: 3]
 
-  const historyTaskCount = tasks.filter(
-    (t) => new Date(t.deadline).getTime() <= now
-  ).length;
+  const fileInputRef = useRef<HTMLInputElement>(null);[cite: 3]
+  const [isDragOver, setIsDragOver] = useState(false);[cite: 3]
+
+  const getContactCourse = (c: any) => c.course || c.courseName || '';[cite: 3]
+  const getContactLecturer = (c: any) => c.lecturerName || c.lecturer || c.name || '';[cite: 3]
+
+  const availableCourseOptions = Array.from(
+    new Set([
+      ...contacts.map((c) => getContactCourse(c)).filter((c) => c && c.trim() !== ''),[cite: 3]
+      ...tasks.map((t) => t.course).filter((c) => c && c.trim() !== ''),[cite: 3]
+    ])
+  ).sort();[cite: 3]
+
+  const uniqueCourses = Array.from(new Set(tasks.map((t) => t.course)));[cite: 3]
+
+  const handleCourseChange = (selectedCourseName: string) => {
+    setCourse(selectedCourseName);[cite: 3]
+    const matchedContact = contacts.find(
+      (c) => getContactCourse(c).toLowerCase() === selectedCourseName.toLowerCase()
+    );[cite: 3]
+
+    if (matchedContact) {
+      setAssigner(getContactLecturer(matchedContact));[cite: 3]
+    }
+  };
+
+  const activeTaskCount = tasks.filter((t) => !completedTaskIds.includes(t.id)).length;
+  const historyTaskCount = tasks.filter((t) => completedTaskIds.includes(t.id)).length;
 
   const filteredTasks = tasks.filter((t) => {
-    const isPast =
-      new Date(t.deadline).getTime() <= now;
+    const isDone = completedTaskIds.includes(t.id);
 
-    if (activeTab === 'active' && isPast) return false;
-    if (activeTab === 'history' && !isPast) return false;
+    if (activeTab === 'active' && isDone) return false;
+    if (activeTab === 'history' && !isDone) return false;
 
-    const searchLower = search.toLowerCase();
-
+    const searchLower = search.toLowerCase();[cite: 3]
     const matchSearch =
       t.title.toLowerCase().includes(searchLower) ||
       t.course.toLowerCase().includes(searchLower) ||
-      t.assigner.toLowerCase().includes(searchLower);
+      t.assigner.toLowerCase().includes(searchLower);[cite: 3]
 
-    const matchCourse =
-      filterCourse === 'ALL' ||
-      t.course === filterCourse;
+    const matchCourse = filterCourse === 'ALL' || t.course === filterCourse;[cite: 3]
+    const matchType = filterType === 'ALL' || t.type === filterType;[cite: 3]
 
-    const matchType =
-      filterType === 'ALL' ||
-      t.type === filterType;
-
-    return (
-      matchSearch &&
-      matchCourse &&
-      matchType
-    );
+    return matchSearch && matchCourse && matchType;[cite: 3]
   });
 
   const getDeadlineBadge = (deadlineStr: string) => {
-    const nowDate = new Date();
-    const deadline = new Date(deadlineStr);
+    const nowDate = new Date();[cite: 3]
+    const deadline = new Date(deadlineStr);[cite: 3]
 
-    const todayStart = new Date(
-      nowDate.getFullYear(),
-      nowDate.getMonth(),
-      nowDate.getDate()
-    ).getTime();
+    const todayStart = new Date(nowDate.getFullYear(), nowDate.getMonth(), nowDate.getDate()).getTime();[cite: 3]
+    const deadlineStart = new Date(deadline.getFullYear(), deadline.getMonth(), deadline.getDate()).getTime();[cite: 3]
 
-    const deadlineStart = new Date(
-      deadline.getFullYear(),
-      deadline.getMonth(),
-      deadline.getDate()
-    ).getTime();
-
-    const diffDays = Math.round(
-      (deadlineStart - todayStart) / (1000 * 3600 * 24)
-    );
+    const diffDays = Math.round((deadlineStart - todayStart) / (1000 * 3600 * 24));[cite: 3]
 
     if (diffDays < 0) {
       return {
         label: 'Tenggat Lewat',
-        bg: 'bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 border-slate-200 dark:border-zinc-700',
+        bg: 'bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 border-slate-200 dark:border-zinc-700',[cite: 3]
       };
     }
 
     if (diffDays <= 2) {
-      const dayText = diffDays <= 0 ? 'H-0' : `H-${diffDays}`;
+      const dayText = diffDays <= 0 ? 'H-0' : `H-${diffDays}`;[cite: 3]
       return {
         label: `URGENT ${dayText}`,
-        bg: 'bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-900/50 animate-pulse',
+        bg: 'bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-900/50 animate-pulse',[cite: 3]
       };
     }
 
     if (diffDays <= 5) {
       return {
         label: `Mepet H-${diffDays}`,
-        bg: 'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-900/50',
+        bg: 'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-900/50',[cite: 3]
       };
     }
 
     return {
       label: `Masih H-${diffDays}`,
-      bg: 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/50',
+      bg: 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/50',[cite: 3]
     };
   };
 
   const formatDeadlineDetails = (dateStr: string) => {
-    const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return dateStr;
+    const d = new Date(dateStr);[cite: 3]
+    if (isNaN(d.getTime())) return dateStr;[cite: 3]
 
     return (
       d.toLocaleString('id-ID', {
@@ -221,249 +210,192 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
         hour: '2-digit',
         minute: '2-digit',
       }) + ' WIB'
-    );
+    );[cite: 3]
   };
 
   const getAttachmentData = (attachment: any): AttachmentData | null => {
-    if (!attachment) return null;
+    if (!attachment) return null;[cite: 3]
 
     if (typeof attachment === 'string') {
       return {
-        fileName:
-          attachment.split('/').pop()?.split('?')[0] || 'Dokumen Lampiran',
-        fileUrl: attachment,
+        fileName: attachment.split('/').pop()?.split('?')[0] || 'Dokumen Lampiran',[cite: 3]
+        fileUrl: attachment,[cite: 3]
       };
     }
 
-    const fileUrl = attachment.fileUrl || attachment.url || '';
-    if (!fileUrl) return null;
+    const fileUrl = attachment.fileUrl || attachment.url || '';[cite: 3]
+    if (!fileUrl) return null;[cite: 3]
 
     return {
-      fileName: attachment.fileName || 'Dokumen Lampiran',
+      fileName: attachment.fileName || 'Dokumen Lampiran',[cite: 3]
       fileUrl,
     };
   };
 
-  const getFileExtension = (fileName: string) => {
-    return fileName.split('.').pop()?.toLowerCase() || '';
-  };
-
-  const isImageFile = (fileName: string) => {
-    return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg', 'avif'].includes(
-      getFileExtension(fileName)
-    );
-  };
-
-  const isPdfFile = (fileName: string) => {
-    return getFileExtension(fileName) === 'pdf';
-  };
+  const getFileExtension = (fileName: string) => fileName.split('.').pop()?.toLowerCase() || '';[cite: 3]
+  const isImageFile = (fileName: string) => ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg', 'avif'].includes(getFileExtension(fileName));[cite: 3]
+  const isPdfFile = (fileName: string) => getFileExtension(fileName) === 'pdf';[cite: 3]
 
   const handleOpenAddModal = () => {
-    setEditingTaskId(null);
-    setTitle('');
-
-    const defaultCourse = availableCourseOptions[0] || '';
-    setCourse(defaultCourse);
+    setEditingTaskId(null);[cite: 3]
+    setTitle('');[cite: 3]
+    const defaultCourse = availableCourseOptions[0] || '';[cite: 3]
+    setCourse(defaultCourse);[cite: 3]
 
     if (defaultCourse) {
       const matchedContact = contacts.find(
         (c) => getContactCourse(c).toLowerCase() === defaultCourse.toLowerCase()
-      );
-      setAssigner(matchedContact ? getContactLecturer(matchedContact) : '');
+      );[cite: 3]
+      setAssigner(matchedContact ? getContactLecturer(matchedContact) : '');[cite: 3]
     } else {
-      setAssigner('');
+      setAssigner('');[cite: 3]
     }
 
-    setDescription('');
-    setType('Individu');
-    setDeadlineDate('');
-    setDeadlineTime('23:59');
-    setPriority('High');
-    setClassroomUrl('');
-    setSelectedFile(null);
-    setExistingAttachment(null);
-    setUploadProgress(0);
-    setShowModal(true);
+    setDescription('');[cite: 3]
+    setType('Individu');[cite: 3]
+    setDeadlineDate('');[cite: 3]
+    setDeadlineTime('23:59');[cite: 3]
+    setPriority('High');[cite: 3]
+    setClassroomUrl('');[cite: 3]
+    setSelectedFile(null);[cite: 3]
+    setExistingAttachment(null);[cite: 3]
+    setUploadProgress(0);[cite: 3]
+    setShowModal(true);[cite: 3]
   };
 
   const handleOpenEditModal = (t: Task) => {
-    setEditingTaskId(t.id);
-    setTitle(t.title);
-    setCourse(t.course);
-    setDescription(t.description || '');
-    setType(t.type);
-    setAssigner(t.assigner || '');
+    setEditingTaskId(t.id);[cite: 3]
+    setTitle(t.title);[cite: 3]
+    setCourse(t.course);[cite: 3]
+    setDescription(t.description || '');[cite: 3]
+    setType(t.type);[cite: 3]
+    setAssigner(t.assigner || '');[cite: 3]
 
     if (t.deadline) {
-      const d = new Date(t.deadline);
+      const d = new Date(t.deadline);[cite: 3]
       if (!isNaN(d.getTime())) {
-        const yyyy = d.getFullYear();
-        const mm = String(d.getMonth() + 1).padStart(2, '0');
-        const dd = String(d.getDate()).padStart(2, '0');
-        setDeadlineDate(`${yyyy}-${mm}-${dd}`);
+        const yyyy = d.getFullYear();[cite: 3]
+        const mm = String(d.getMonth() + 1).padStart(2, '0');[cite: 3]
+        const dd = String(d.getDate()).padStart(2, '0');[cite: 3]
+        setDeadlineDate(`${yyyy}-${mm}-${dd}`);[cite: 3]
 
-        const hh = String(d.getHours()).padStart(2, '0');
-        const min = String(d.getMinutes()).padStart(2, '0');
-        setDeadlineTime(`${hh}:${min}`);
+        const hh = String(d.getHours()).padStart(2, '0');[cite: 3]
+        const min = String(d.getMinutes()).padStart(2, '0');[cite: 3]
+        setDeadlineTime(`${hh}:${min}`);[cite: 3]
       }
     }
 
-    setPriority(t.priority || 'High');
-    setClassroomUrl(t.classroomUrl || '');
-    setSelectedFile(null);
-    setExistingAttachment(getAttachmentData(t.attachment));
-    setUploadProgress(0);
-    setShowModal(true);
+    setPriority(t.priority || 'High');[cite: 3]
+    setClassroomUrl(t.classroomUrl || '');[cite: 3]
+    setSelectedFile(null);[cite: 3]
+    setExistingAttachment(getAttachmentData(t.attachment));[cite: 3]
+    setUploadProgress(0);[cite: 3]
+    setShowModal(true);[cite: 3]
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(false);
-  };
-
+  const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); setIsDragOver(true); };[cite: 3]
+  const handleDragLeave = (e: React.DragEvent) => { e.preventDefault(); setIsDragOver(false); };[cite: 3]
   const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(false);
+    e.preventDefault();[cite: 3]
+    setIsDragOver(false);[cite: 3]
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      setSelectedFile(e.dataTransfer.files[0]);
-      setExistingAttachment(null);
+      setSelectedFile(e.dataTransfer.files[0]);[cite: 3]
+      setExistingAttachment(null);[cite: 3]
     }
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      setSelectedFile(e.target.files[0]);
-      setExistingAttachment(null);
+      setSelectedFile(e.target.files[0]);[cite: 3]
+      setExistingAttachment(null);[cite: 3]
     }
   };
 
   const fileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        const base64String = (reader.result as string).split(',')[1];
-        resolve(base64String);
-      };
-      reader.onerror = (error) => reject(error);
+      const reader = new FileReader();[cite: 3]
+      reader.readAsDataURL(file);[cite: 3]
+      reader.onload = () => resolve((reader.result as string).split(',')[1]);[cite: 3]
+      reader.onerror = (error) => reject(error);[cite: 3]
     });
   };
 
   const uploadTaskAttachmentToDrive = async (file: File): Promise<string> => {
-    const GAS_URL =
-      'https://script.google.com/macros/s/AKfycbyce8cTZ2F25PwyfISpmVJJDMiIunl8G8lCyzkPKQaiuUl-nxKNM5i9b72MMo4M_xis/exec';
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbyce8cTZ2F25PwyfISpmVJJDMiIunl8G8lCyzkPKQaiuUl-nxKNM5i9b72MMo4M_xis/exec';[cite: 3]
 
-    setUploadProgress(10);
-    const base64Data = await fileToBase64(file);
-    setUploadProgress(40);
+    setUploadProgress(10);[cite: 3]
+    const base64Data = await fileToBase64(file);[cite: 3]
+    setUploadProgress(40);[cite: 3]
 
     const payload = {
-      fileName: file.name,
-      mimeType: file.type,
-      base64: base64Data,
-      folderName: 'myMbud Task Attachments',
+      fileName: file.name,[cite: 3]
+      mimeType: file.type,[cite: 3]
+      base64: base64Data,[cite: 3]
+      folderName: 'myMbud Task Attachments',[cite: 3]
     };
 
     const response = await fetch(GAS_URL, {
-      method: 'POST',
-      body: JSON.stringify(payload),
+      method: 'POST',[cite: 3]
+      body: JSON.stringify(payload),[cite: 3]
     });
-    setUploadProgress(80);
+    setUploadProgress(80);[cite: 3]
 
-    if (!response.ok) {
-      throw new Error(`Upload Lampiran Tugas gagal (${response.status}).`);
-    }
+    if (!response.ok) throw new Error(`Upload Lampiran Tugas gagal (${response.status}).`);[cite: 3]
 
-    const data = await response.json();
-    setUploadProgress(100);
+    const data = await response.json();[cite: 3]
+    setUploadProgress(100);[cite: 3]
 
-    if (data.status !== 'success') {
-      throw new Error(data.message);
-    }
+    if (data.status !== 'success') throw new Error(data.message);[cite: 3]
 
-    return data.url;
+    return data.url;[cite: 3]
   };
 
   const handleTaskFormSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault();[cite: 3]
+    if (!title.trim() || !course.trim() || !deadlineDate) return;[cite: 3]
 
-    if (!title.trim() || !course.trim() || !deadlineDate) {
-      return;
-    }
+    setIsUploading(true);[cite: 3]
+    setUploadProgress(0);[cite: 3]
 
-    setIsUploading(true);
-    setUploadProgress(0);
-
-    let finalAttachment: AttachmentData | undefined =
-      existingAttachment || undefined;
+    let finalAttachment: AttachmentData | undefined = existingAttachment || undefined;[cite: 3]
 
     try {
       if (selectedFile) {
-        const fileUrl = await uploadTaskAttachmentToDrive(selectedFile);
-        finalAttachment = {
-          fileName: selectedFile.name,
-          fileUrl,
-        };
+        const fileUrl = await uploadTaskAttachmentToDrive(selectedFile);[cite: 3]
+        finalAttachment = { fileName: selectedFile.name, fileUrl };[cite: 3]
       }
 
-      const fullIsoDeadline = new Date(
-        `${deadlineDate}T${deadlineTime || '23:59'}:00`
-      ).toISOString();
+      const fullIsoDeadline = new Date(`${deadlineDate}T${deadlineTime || '23:59'}:00`).toISOString();[cite: 3]
 
       const taskData: Omit<Task, 'id'> = {
-        title: title.trim(),
-        course: course.trim(),
-        description: description.trim(),
-        type,
-        assigner: assigner.trim() || 'Dosen Pengampu',
-        deadline: fullIsoDeadline,
-        status: 'todo',
-        priority,
-
-        ...(classroomUrl.trim() ? { classroomUrl: classroomUrl.trim() } : {}),
-        ...(finalAttachment ? { attachment: finalAttachment } : {}),
+        title: title.trim(),[cite: 3]
+        course: course.trim(),[cite: 3]
+        description: description.trim(),[cite: 3]
+        type,[cite: 3]
+        assigner: assigner.trim() || 'Dosen Pengampu',[cite: 3]
+        deadline: fullIsoDeadline,[cite: 3]
+        status: 'todo',[cite: 3]
+        priority,[cite: 3]
+        ...(classroomUrl.trim() ? { classroomUrl: classroomUrl.trim() } : {}),[cite: 3]
+        ...(finalAttachment ? { attachment: finalAttachment } : {}),[cite: 3]
       };
 
       if (editingTaskId && onUpdateTask) {
-        const updateData: Partial<Task> = {
-          title: taskData.title,
-          course: taskData.course,
-          description: taskData.description,
-          type: taskData.type,
-          assigner: taskData.assigner,
-          deadline: taskData.deadline,
-          priority: taskData.priority,
-
-          ...(taskData.classroomUrl
-            ? { classroomUrl: taskData.classroomUrl }
-            : {}),
-          ...(taskData.attachment ? { attachment: taskData.attachment } : {}),
-        };
-
-        onUpdateTask(editingTaskId, updateData);
+        onUpdateTask(editingTaskId, taskData);[cite: 3]
       } else {
-        onAddTask(taskData);
+        onAddTask(taskData);[cite: 3]
       }
 
-      setEditingTaskId(null);
-      setShowModal(false);
-      setSelectedFile(null);
-      setExistingAttachment(null);
-      setUploadProgress(0);
+      setEditingTaskId(null);[cite: 3]
+      setShowModal(false);[cite: 3]
+      setSelectedFile(null);[cite: 3]
+      setExistingAttachment(null);[cite: 3]
+      setUploadProgress(0);[cite: 3]
     } catch (error) {
-      console.error('Gagal menyimpan tugas:', error);
-      const message =
-        error instanceof Error
-          ? error.message
-          : 'Terjadi kesalahan saat menyimpan tugas.';
-      alert(`Gagal menyimpan tugas.\n\n${message}`);
+      console.error('Gagal menyimpan tugas:', error);[cite: 3]
+      alert(`Gagal menyimpan tugas.`);[cite: 3]
     } finally {
-      setIsUploading(false);
+      setIsUploading(false);[cite: 3]
     }
   };
 
@@ -472,7 +404,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="space-y-6 pb-12"
+      className="space-y-6 pb-32 sm:pb-36" // EXTRA PADDING BOTTOM LEGA
     >
       {/* HEADER BANNER */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 p-6 sm:p-8 rounded-3xl shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none transition-colors">
@@ -526,9 +458,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
           >
             <option value="ALL">Semua Mata Kuliah</option>
             {uniqueCourses.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
+              <option key={c} value={c}>{c}</option>
             ))}
           </select>
 
@@ -615,23 +545,21 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
         {filteredTasks.length === 0 ? (
           <div className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl p-12 text-center text-slate-400 dark:text-zinc-500 text-xs shadow-sm">
             {activeTab === 'active'
-              ? 'Tidak ada tugas aktif yang sesuai.'
-              : 'Belum ada riwayat tugas yang telah berlalu.'}
+              ? 'Tidak ada tugas aktif. Semua tugas sudah dicentang selesai! 🎉'
+              : 'Belum ada riwayat tugas yang dicentang selesai.'}
           </div>
         ) : activeTab === 'active' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             <AnimatePresence mode="popLayout">
               {filteredTasks.map((t) => {
                 const badge = getDeadlineBadge(t.deadline);
-                const formattedDate = new Date(t.deadline).toLocaleString(
-                  'id-ID',
-                  {
-                    day: 'numeric',
-                    month: 'short',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  }
-                );
+                const isDone = completedTaskIds.includes(t.id);
+                const formattedDate = new Date(t.deadline).toLocaleString('id-ID', {
+                  day: 'numeric',
+                  month: 'short',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                });
 
                 return (
                   <motion.div
@@ -652,9 +580,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                         </span>
 
                         {badge && (
-                          <span
-                            className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${badge.bg}`}
-                          >
+                          <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${badge.bg}`}>
                             {badge.label}
                           </span>
                         )}
@@ -671,8 +597,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                       </div>
 
                       <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed bg-slate-50/70 dark:bg-zinc-800/60 p-3 rounded-2xl line-clamp-2">
-                        {t.description ||
-                          'Klik untuk melihat rincian instruksi tugas lengkap.'}
+                        {t.description || 'Klik untuk melihat rincian instruksi tugas lengkap.'}
                       </p>
 
                       <div className="space-y-1 pt-1 text-xs text-slate-500 dark:text-zinc-400 border-t border-slate-50 dark:border-zinc-800">
@@ -691,9 +616,33 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                       </div>
                     </div>
 
-                    <div className="pt-3 flex items-center justify-between text-xs font-semibold text-blue-600 dark:text-blue-400 border-t border-slate-100/60 dark:border-zinc-800">
-                      <span className="group-hover:underline">Detail Tugas</span>
-                      <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    {/* FOOTER CARD: DETAIL & TOMBOL CENTANG SELESAI */}
+                    <div className="pt-3 flex items-center justify-between text-xs font-semibold border-t border-slate-100/60 dark:border-zinc-800 gap-2">
+                      <span className="text-blue-600 dark:text-blue-400 group-hover:underline flex items-center gap-1">
+                        Detail Tugas <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                      </span>
+
+                      {/* TOMBOL TANDAI SELESAI */}
+                      <button
+                        onClick={(e) => handleToggleComplete(e, t.id)}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 ${
+                          isDone
+                            ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50'
+                            : 'bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300'
+                        }`}
+                      >
+                        {isDone ? (
+                          <>
+                            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                            <span>Selesai</span>
+                          </>
+                        ) : (
+                          <>
+                            <Circle className="w-4 h-4 text-slate-400 dark:text-zinc-500" />
+                            <span>Tandai Selesai</span>
+                          </>
+                        )}
+                      </button>
                     </div>
                   </motion.div>
                 );
@@ -704,15 +653,12 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <AnimatePresence mode="popLayout">
               {filteredTasks.map((t) => {
-                const formattedDate = new Date(t.deadline).toLocaleString(
-                  'id-ID',
-                  {
-                    day: 'numeric',
-                    month: 'short',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  }
-                );
+                const formattedDate = new Date(t.deadline).toLocaleString('id-ID', {
+                  day: 'numeric',
+                  month: 'short',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                });
 
                 return (
                   <motion.div
@@ -731,9 +677,14 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                         {t.course}
                       </span>
 
-                      <span className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-800 px-2 py-0.5 rounded-md border border-slate-200/60 dark:border-zinc-700/60">
-                        Selesai
-                      </span>
+                      {/* TOMBOL BATAL SELESAI DI TAB RIWAYAT */}
+                      <button
+                        onClick={(e) => handleToggleComplete(e, t.id)}
+                        className="flex items-center gap-1 px-2.5 py-1 rounded-xl text-[11px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-all"
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>Selesai</span>
+                      </button>
                     </div>
 
                     <div className="space-y-1">
