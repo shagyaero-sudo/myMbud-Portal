@@ -25,14 +25,14 @@ export type TabType = 'dashboard' | 'contacts' | 'materials' | 'tasks' | 'spinwh
 interface SidebarProps {
   activeTab: TabType;
   setActiveTab: (tab: TabType) => void;
-  urgentTaskCount: number;
+  hasActiveTasks: boolean; // Diubah jadi boolean (true/false) buat red dot
   onOpenGpaModal: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   activeTab,
   setActiveTab,
-  urgentTaskCount,
+  hasActiveTasks,
   onOpenGpaModal
 }) => {
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
@@ -47,14 +47,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const menuItems = [
-    { id: 'dashboard' as TabType, label: 'Jadwal Perkuliahan', icon: CalendarDays, badge: null, isModal: false },
-    { id: 'tasks' as TabType, label: 'Manajemen Tugas', icon: FolderKanban, badge: urgentTaskCount > 0 ? urgentTaskCount : null, isModal: false },
-    { id: 'contacts' as TabType, label: 'Direktori Kontak', icon: Users, badge: null, isModal: false },
-    { id: 'materials' as TabType, label: 'Bank Materi PDF', icon: FileText, badge: null, isModal: false },
-    { id: 'spinwheel' as TabType, label: 'Spinwheel', icon: Dices, badge: null, isModal: false },
-    { id: 'calculator' as TabType, label: 'Kalkulator Nilai', icon: Calculator, badge: null, isModal: false },
-    { id: 'letter' as TabType, label: 'Ajukan Surat Turlap', icon: FileEdit, badge: null, isModal: false },
-    { id: 'gpacalculator' as any, label: 'Hitung IP Semester', icon: Award, badge: null, isModal: true },
+    { id: 'dashboard' as TabType, label: 'Jadwal Perkuliahan', icon: CalendarDays, showDot: false, isModal: false },
+    // Menu Tugas pake indikator dot merah kalau hasActiveTasks bernilai true
+    { id: 'tasks' as TabType, label: 'Manajemen Tugas', icon: FolderKanban, showDot: hasActiveTasks, isModal: false },
+    { id: 'contacts' as TabType, label: 'Direktori Kontak', icon: Users, showDot: false, isModal: false },
+    { id: 'materials' as TabType, label: 'Bank Materi PDF', icon: FileText, showDot: false, isModal: false },
+    { id: 'spinwheel' as TabType, label: 'Spinwheel', icon: Dices, showDot: false, isModal: false },
+    { id: 'calculator' as TabType, label: 'Kalkulator Nilai', icon: Calculator, showDot: false, isModal: false },
+    { id: 'letter' as TabType, label: 'Ajukan Surat Turlap', icon: FileEdit, showDot: false, isModal: false },
+    { id: 'gpacalculator' as any, label: 'Hitung IP Semester', icon: Award, showDot: false, isModal: true },
   ];
 
   const navigateFromSheet = (tab: TabType) => {
@@ -107,10 +108,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <Icon className={`w-4 h-4 ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-zinc-500'}`} />
                   <span>{item.label}</span>
                 </div>
-                {item.badge ? (
-                  <span className={`relative z-10 text-[10px] font-bold px-2 py-0.5 rounded-full ${isActive ? 'bg-blue-600 text-white' : 'bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300'}`}>
-                    {item.badge}
-                  </span>
+
+                {/* Indikator Red Dot di Desktop Sidebar */}
+                {item.showDot ? (
+                  <span className="relative z-10 w-2.5 h-2.5 bg-rose-500 rounded-full shadow-sm animate-pulse" />
                 ) : (
                   isActive && <ChevronRight className="relative z-10 w-4 h-4 text-blue-600 dark:text-blue-400" />
                 )}
@@ -170,7 +171,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <nav className="pointer-events-auto mx-4 mb-5 bg-white/80 dark:bg-zinc-900/85 backdrop-blur-2xl border border-white/50 dark:border-white/10 px-2.5 py-2.5 flex items-center justify-between shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] rounded-[2rem] transition-colors relative">
           
           <BottomTabItem id="dashboard" label="Jadwal" icon={CalendarDays} activeTab={activeTab} onClick={setActiveTab} />
-          <BottomTabItem id="tasks" label="Tugas" icon={FolderKanban} activeTab={activeTab} onClick={setActiveTab} badge={urgentTaskCount > 0 ? urgentTaskCount : null} />
+          
+          {/* Menu Tugas dengan Red Dot */}
+          <BottomTabItem id="tasks" label="Tugas" icon={FolderKanban} activeTab={activeTab} onClick={setActiveTab} showDot={hasActiveTasks} />
 
           {/* TOMBOL SAKTI / APP DRAWER TRIGGER */}
           <div className="relative flex flex-col items-center justify-center -top-2.5 z-50">
@@ -270,7 +273,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     </button>
                   </div>
 
-                  {/* Grid 3x1 Ekstra (GDocs, GSheets, Canva) - Dengan Panah Chevron Presisi */}
+                  {/* Grid 3x1 Ekstra (GDocs, GSheets, Canva) */}
                   <div className="grid grid-cols-3 gap-2 pt-1 lg:hidden">
                     <a href="https://docs.google.com" target="_blank" rel="noreferrer" className="flex items-center justify-between p-2 sm:p-2.5 rounded-2xl text-[10px] font-semibold transition-all bg-blue-50/70 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 active:bg-blue-100">
                       <div className="flex items-center gap-1.5 truncate">
@@ -326,7 +329,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 };
 
 /* --- HELPER COMPONENT UNTUK BOTTOM NAV BUTTONS --- */
-const BottomTabItem = ({ id, label, icon: Icon, activeTab, onClick, badge }: any) => {
+const BottomTabItem = ({ id, label, icon: Icon, activeTab, onClick, showDot }: any) => {
   const isActive = activeTab === id;
   return (
     <button
@@ -344,10 +347,10 @@ const BottomTabItem = ({ id, label, icon: Icon, activeTab, onClick, badge }: any
       )}
       <Icon className={`relative z-10 w-5 h-5 mb-0.5 ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-zinc-500'}`} />
       <span className="relative z-10 text-[10px] tracking-tight">{label}</span>
-      {badge ? (
-        <span className="absolute -top-1 right-2 bg-rose-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-xs z-20">
-          {badge}
-        </span>
+      
+      {/* Indikator Red Dot Pengganti Angka */}
+      {showDot ? (
+        <span className="absolute top-1.5 right-4 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-white dark:ring-zinc-900 z-20 animate-pulse" />
       ) : null}
     </button>
   );
