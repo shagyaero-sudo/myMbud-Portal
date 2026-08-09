@@ -52,7 +52,6 @@ interface AttachmentData {
   fileUrl: string;
 }
 
-// --- KOMPONEN WIDGET KALENDER MINI (MINIMALIS & CLEAN) ---
 const FlipCalendarWidget: React.FC = () => {
   const now = new Date();
   const dayNumber = now.getDate();
@@ -74,7 +73,6 @@ const FlipCalendarWidget: React.FC = () => {
   );
 };
 
-// --- LOGIKA KALKULASI MINGGU AKADEMIK + STYLE DINAMIS ---
 const getCurrentAcademicWeek = () => {
   const startDate = new Date('2026-08-31T00:00:00+07:00');
   const now = new Date();
@@ -105,7 +103,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [editingAnnId, setEditingAnnId] = useState<string | null>(null);
   const [isSubmittingAnn, setIsSubmittingAnn] = useState(false);
 
-  // --- STATE REAL-TIME UNTUK PENGUMUMAN DARI FIRESTORE ---
   const [realAnnouncements, setRealAnnouncements] = useState<Announcement[]>(state.announcements || []);
 
   const [newAnnTitle, setNewAnnTitle] = useState('');
@@ -116,8 +113,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [newAnnPinned, setNewAnnPinned] = useState(true);
 
   const [selectedAnnModal, setSelectedAnnModal] = useState<Announcement | null>(null);
-  const [previewAttachment, setPreviewAttachment] = useState<AttachmentData | null>(null);
-  const [zoomLevel, setZoomLevel] = useState(1);
 
   const [mobileAnnIndex, setMobileAnnIndex] = useState(0);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
@@ -674,10 +669,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   const deadlineFormatted = formatDeadlineDetails(task.deadline);
                   return (
                     <motion.div
+                      layoutId={`task-card-${task.id}`}
                       whileHover={{ scale: 1.005 }}
                       whileTap={{ scale: 0.995 }}
                       key={task.id}
-                      /* DI SINI PERUBAHAN UTAMANYA: Pindah ke Tab 'tasks' dan Bawa ID Tugas */
                       onClick={() => onNavigateTab('tasks', undefined, task.id)}
                       className="p-4 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/60 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-transparent hover:border-blue-100 dark:hover:border-zinc-700 group"
                     >

@@ -61,7 +61,6 @@ import {
 
 // ============================================================
 // MAINTENANCE GATE FLAG
-// Ubah ke `true` untuk mengunci web, ubah ke `false` jika sudah siap dibuka
 // ============================================================
 const IS_MAINTENANCE = false;
 
@@ -84,9 +83,6 @@ const AppSkeleton = () => (
 );
 
 export default function App() {
-  // ============================================================
-  // MAINTENANCE SCREEN GATE
-  // ============================================================
   if (IS_MAINTENANCE) {
     return (
       <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col items-center justify-center p-6 text-center font-sans">
@@ -111,16 +107,10 @@ export default function App() {
     );
   }
 
-  // ============================================================
-  // LOGIKA AUTENTIKASI
-  // ============================================================
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     return localStorage.getItem('mymbud_auth') === 'true';
   });
 
-  // ============================================================
-  // ONESIGNAL INITIALIZATION & USER LINKING (SEQUENTIAL)
-  // ============================================================
   useEffect(() => {
     const setupOneSignal = async () => {
       await initOneSignal();
@@ -140,9 +130,6 @@ export default function App() {
     setupOneSignal();
   }, [isAuthenticated]);
 
-  // ============================================================
-  // ONESIGNAL REDIRECT & NAVIGATION LISTENER
-  // ============================================================
   useEffect(() => {
     const handleOneSignalRedirect = (e: any) => {
       const targetTab = e?.detail?.tab || localStorage.getItem('mbud_target_tab') || 'mbudiary';
@@ -167,9 +154,6 @@ export default function App() {
     };
   }, []);
 
-  // ============================================================
-  // LOGOUT
-  // ============================================================
   const handleLogout = async () => {
     await logoutOneSignal();
 
@@ -180,9 +164,6 @@ export default function App() {
     setIsAuthenticated(false);
   };
 
-  // ============================================================
-  // DEVICE CHECK
-  // ============================================================
   const isDesktop = window.innerWidth >= 1024;
 
   const isStandalone =
@@ -192,9 +173,7 @@ export default function App() {
   const requiresLogin =
     !isAuthenticated && (isDesktop || isStandalone);
 
-  // ============================================================
   // STATE APLIKASI & NAVIGASI
-  // ============================================================
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
   const [selectedContactCourse, setSelectedContactCourse] = useState<string>('ALL');
   const [selectedTaskIdForModal, setSelectedTaskIdForModal] = useState<string | null>(null);
@@ -202,21 +181,23 @@ export default function App() {
   const [isOfficer, setIsOfficer] = useState<boolean>(false);
   const [isGpaModalOpen, setIsGpaModalOpen] = useState<boolean>(false);
 
+  // NAVIGASI DENGAN DELAY SMOOTH UNTUK SEAMLESS MODAL TRIGGER
   const handleNavigateTab = useCallback(
     (tab: TabType, courseFilterOrTaskId?: string, taskId?: string) => {
       if (tab === 'contacts' && courseFilterOrTaskId) {
         setSelectedContactCourse(courseFilterOrTaskId);
       }
 
-      // Jika berpindah ke tab 'tasks' dan membawa taskId dari Dashboard
-      if (tab === 'tasks' && (taskId || courseFilterOrTaskId)) {
-        const targetId = taskId || courseFilterOrTaskId;
-        if (targetId) {
-          setSelectedTaskIdForModal(targetId);
-        }
-      }
+      const targetId = taskId || courseFilterOrTaskId;
 
-      setActiveTab(tab);
+      if (tab === 'tasks' && targetId) {
+        setActiveTab('tasks');
+        setTimeout(() => {
+          setSelectedTaskIdForModal(targetId);
+        }, 80);
+      } else {
+        setActiveTab(tab);
+      }
     },
     []
   );
@@ -232,9 +213,6 @@ export default function App() {
   const [isInitialLoad, setIsInitialLoad] = useState<boolean>(true);
   const [previewMaterial, setPreviewMaterial] = useState<MaterialFile | null>(null);
 
-  // ============================================================
-  // THEME SWITCHER
-  // ============================================================
   const [theme, setTheme] = useState<
     'light' | 'dark' | 'pink' | 'purple' | 'green'
   >(() => {
@@ -282,9 +260,6 @@ export default function App() {
     }
   }, [theme]);
 
-  // ============================================================
-  // FIREBASE REALTIME ANNOUNCEMENTS
-  // ============================================================
   useEffect(() => {
     const unsubscribe = subscribeAnnouncements((announcementsData) => {
       setAppState((prev) => ({
@@ -296,9 +271,6 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  // ============================================================
-  // FIREBASE SYNC
-  // ============================================================
   const syncState = useCallback(async () => {
     setIsSyncing(true);
 
@@ -414,7 +386,6 @@ export default function App() {
         });
       });
 
-      // UPDATE STATE
       setAppState((previousState) => {
         const baseData = data || previousState;
 
@@ -451,7 +422,6 @@ export default function App() {
     };
   }, [syncState]);
 
-  // URGENT TASK COUNT
   const urgentTaskCount = appState.tasks.filter((task) => {
     if (task.status === 'done') return false;
 
@@ -462,14 +432,13 @@ export default function App() {
     return diffHours >= 0 && diffHours < 48;
   }).length;
 
-  // CONTACT HANDLERS
   const handleAddContact = async (contact: Omit<Contact, 'id'>) => {
     try {
       await addContactApi(contact);
       await syncState();
     } catch (error) {
       console.error('Gagal menambahkan mata kuliah:', error);
-      alert('Gagal menyimpan data mata kuliah. Cek koneksi Firebase.');
+      alert('Gagal menyimpan data mata kuliah.');
     }
   };
 
@@ -479,7 +448,7 @@ export default function App() {
       await syncState();
     } catch (error) {
       console.error('Gagal mengubah mata kuliah:', error);
-      alert('Gagal mengubah data mata kuliah. Cek koneksi Firebase.');
+      alert('Gagal mengubah data mata kuliah.');
     }
   };
 
@@ -489,11 +458,10 @@ export default function App() {
       await syncState();
     } catch (error) {
       console.error('Gagal menghapus mata kuliah:', error);
-      alert('Gagal menghapus data mata kuliah. Cek koneksi Firebase.');
+      alert('Gagal menghapus data mata kuliah.');
     }
   };
 
-  // BANK MATERI
   const handleAddMaterial = async (
     material: Omit<MaterialFile, 'id' | 'uploadDate'>
   ) => {
@@ -505,7 +473,7 @@ export default function App() {
       });
       await syncState();
     } catch (error) {
-      console.error('Gagal menambahkan materi ke Firestore:', error);
+      console.error('Gagal menambahkan materi:', error);
       alert('Gagal menyimpan berkas ke Firebase.');
     }
   };
@@ -517,19 +485,18 @@ export default function App() {
       await deleteDoc(doc(db, 'materials', id));
       await syncState();
     } catch (error) {
-      console.error('Gagal menghapus materi dari Firestore:', error);
-      alert('Gagal menghapus berkas dari Firebase.');
+      console.error('Gagal menghapus materi:', error);
+      alert('Gagal menghapus berkas.');
     }
   };
 
-  // TASK HANDLERS
   const handleAddTask = async (task: Omit<Task, 'id'>) => {
     try {
       await addTaskApi(task);
       await syncState();
     } catch (error) {
       console.error('[Task] Gagal menambahkan tugas:', error);
-      alert('Tugas gagal disimpan ke Firebase.');
+      alert('Tugas gagal disimpan.');
     }
   };
 
@@ -565,7 +532,6 @@ export default function App() {
     }
   };
 
-  // GROUP RESULT
   const handleSaveGroupResult = async (
     result: Omit<GroupResult, 'id' | 'createdAt'>
   ) => {
@@ -581,12 +547,10 @@ export default function App() {
     }
   };
 
-  // CEK LOGIN
   if (requiresLogin) {
     return <LoginScreen onLoginSuccess={() => setIsAuthenticated(true)} />;
   }
 
-  // RENDER UTAMA
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-200">
       <Header
@@ -616,7 +580,6 @@ export default function App() {
             <AppSkeleton />
           ) : (
             <>
-              {/* DASHBOARD */}
               {activeTab === 'dashboard' && (
                 <DashboardView
                   state={appState}
@@ -627,7 +590,6 @@ export default function App() {
                 />
               )}
 
-              {/* CONTACTS */}
               {activeTab === 'contacts' && (
                 <ContactsView
                   contacts={appState.contacts}
@@ -639,7 +601,6 @@ export default function App() {
                 />
               )}
 
-              {/* MATERIALS */}
               {activeTab === 'materials' && (
                 <KnowledgeBaseView
                   materials={appState.materials}
@@ -651,7 +612,6 @@ export default function App() {
                 />
               )}
 
-              {/* TASKS */}
               {activeTab === 'tasks' && (
                 <TaskTrackerView
                   tasks={appState.tasks}
@@ -666,7 +626,6 @@ export default function App() {
                 />
               )}
 
-              {/* SPINWHEEL */}
               {activeTab === 'spinwheel' && (
                 <SpinwheelView
                   onSaveGroupResult={handleSaveGroupResult}
@@ -675,18 +634,14 @@ export default function App() {
                 />
               )}
 
-              {/* GRADE CALCULATOR */}
               {activeTab === 'calculator' && (
                 <GradeCalculatorView courseGrades={appState.courseGrades} />
               )}
 
-              {/* LETTER GENERATOR */}
               {activeTab === 'letter' && <LetterGeneratorView />}
 
-              {/* BLOCKBLAST */}
               {activeTab === 'blockblast' && <BlockBlastView />}
 
-              {/* MBUDIARY */}
               {activeTab === 'mbudiary' && <MbudiaryView />}
             </>
           )}

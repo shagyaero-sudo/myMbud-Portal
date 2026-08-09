@@ -60,7 +60,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
   const [activeTab, setActiveTab] = useState<'active' | 'history'>('active');
   const [selectedDetailTask, setSelectedDetailTask] = useState<Task | null>(null);
 
-  // --- EFFECT UNTUK OTOMATIS MEMBUKA MODAL TUGAS SAAT DILINK DARI DASHBOARD ---
+  // EFFECT UNTUK OTOMATIS MEMBUKA MODAL TUGAS SAAT DILINK DARI DASHBOARD
   useEffect(() => {
     if (initialSelectedTaskId && tasks.length > 0) {
       const targetTask = tasks.find((t) => t.id === initialSelectedTaskId);
@@ -73,7 +73,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
     }
   }, [initialSelectedTaskId, tasks, onClearInitialSelectedTask]);
 
-  // --- STATE CENTANG SINKRON FIREBASE PER NRP ---
+  // STATE CENTANG SINKRON FIREBASE PER NRP
   const [completedTaskIds, setCompletedTaskIds] = useState<string[]>([]);
   const currentUserNrp = localStorage.getItem('mymbud_user_nrp') || 'unknown';
 
@@ -139,14 +139,22 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
     }
   };
 
-  const activeTaskCount = tasks.filter((t) => !completedTaskIds.includes(t.id)).length;
-  const historyTaskCount = tasks.filter((t) => completedTaskIds.includes(t.id)).length;
+  const nowTime = Date.now();
+
+  const isTaskHistory = (task: Task) => {
+    const isExplicitlyDone = completedTaskIds.includes(task.id);
+    const isDeadlinePassed = new Date(task.deadline).getTime() <= nowTime;
+    return isExplicitlyDone || isDeadlinePassed;
+  };
+
+  const activeTaskCount = tasks.filter((t) => !isTaskHistory(t)).length;
+  const historyTaskCount = tasks.filter((t) => isTaskHistory(t)).length;
 
   const filteredTasks = tasks.filter((t) => {
-    const isDone = completedTaskIds.includes(t.id);
+    const isHistory = isTaskHistory(t);
 
-    if (activeTab === 'active' && isDone) return false;
-    if (activeTab === 'history' && !isDone) return false;
+    if (activeTab === 'active' && isHistory) return false;
+    if (activeTab === 'history' && !isHistory) return false;
 
     const searchLower = search.toLowerCase();
     const matchSearch =
@@ -545,8 +553,8 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
         {filteredTasks.length === 0 ? (
           <div className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl p-12 text-center text-slate-400 dark:text-zinc-500 text-xs shadow-sm">
             {activeTab === 'active'
-              ? 'Tidak ada tugas aktif. Semua tugas sudah dicentang selesai! 🎉'
-              : 'Belum ada riwayat tugas yang dicentang selesai.'}
+              ? 'Tidak ada tugas aktif mendatang. Semua tugas sudah dicentang atau telah berlalu! 🎉'
+              : 'Belum ada riwayat tugas yang selesai/berlalu.'}
           </div>
         ) : activeTab === 'active' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -563,6 +571,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
 
                 return (
                   <motion.div
+                    layoutId={`task-card-${t.id}`}
                     layout
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -616,13 +625,11 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                       </div>
                     </div>
 
-                    {/* FOOTER CARD: DETAIL & TOMBOL CENTANG SELESAI */}
                     <div className="pt-3 flex items-center justify-between text-xs font-semibold border-t border-slate-100/60 dark:border-zinc-800 gap-2">
                       <span className="text-blue-600 dark:text-blue-400 group-hover:underline flex items-center gap-1">
                         Detail Tugas <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                       </span>
 
-                      {/* TOMBOL TANDAI SELESAI */}
                       <button
                         onClick={(e) => handleToggleComplete(e, t.id)}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 ${
@@ -653,6 +660,8 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <AnimatePresence mode="popLayout">
               {filteredTasks.map((t) => {
+                const isExplicitDone = completedTaskIds.includes(t.id);
+                const isDeadlinePassed = new Date(t.deadline).getTime() <= nowTime;
                 const formattedDate = new Date(t.deadline).toLocaleString('id-ID', {
                   day: 'numeric',
                   month: 'short',
@@ -662,6 +671,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
 
                 return (
                   <motion.div
+                    layoutId={`task-card-${t.id}`}
                     layout
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -677,14 +687,19 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                         {t.course}
                       </span>
 
-                      {/* TOMBOL BATAL SELESAI DI TAB RIWAYAT */}
-                      <button
-                        onClick={(e) => handleToggleComplete(e, t.id)}
-                        className="flex items-center gap-1 px-2.5 py-1 rounded-xl text-[11px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-all"
-                      >
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        <span>Selesai</span>
-                      </button>
+                      {isDeadlinePassed && !isExplicitDone ? (
+                        <span className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-800 px-2 py-0.5 rounded-md border border-slate-200/60 dark:border-zinc-700/60">
+                          Tenggat Lewat
+                        </span>
+                      ) : (
+                        <button
+                          onClick={(e) => handleToggleComplete(e, t.id)}
+                          className="flex items-center gap-1 px-2.5 py-1 rounded-xl text-[11px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-all"
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>Selesai</span>
+                        </button>
+                      )}
                     </div>
 
                     <div className="space-y-1">
@@ -715,21 +730,25 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
         )}
       </div>
 
-      {/* DETAIL MODAL */}
+      {/* DETAIL MODAL DENGAN SEAMLESS MORPHING TRANSITION */}
       <AnimatePresence>
         {selectedDetailTask && (
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
             className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4"
+            onClick={() => setSelectedDetailTask(null)}
           >
             <motion.div 
-              initial={{ scale: 0.92, opacity: 0, y: 15 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.92, opacity: 0, y: 15 }}
-              transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+              layoutId={`task-card-${selectedDetailTask.id}`}
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
               className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
             >
               <div className="px-6 py-5 border-b border-slate-100 dark:border-zinc-800 flex justify-between items-start gap-4">
                 <div className="space-y-1.5">
@@ -944,7 +963,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
 
               <div className="flex-1 min-h-0 bg-slate-100 dark:bg-zinc-900 flex items-center justify-center overflow-hidden relative">
                 
-                {/* Floating Zoom Control (Mobile & Tablet) */}
                 {(isImageFile(previewAttachment.fileName) || isPdfFile(previewAttachment.fileName)) && (
                   <div className="absolute top-4 right-4 z-20 flex md:hidden items-center gap-1 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-md p-1.5 rounded-2xl shadow-xl border border-slate-200/80 dark:border-zinc-700/80">
                     <button
