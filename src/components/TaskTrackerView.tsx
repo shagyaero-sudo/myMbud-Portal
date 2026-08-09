@@ -401,7 +401,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 p-6 sm:p-8 rounded-3xl shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none transition-colors">
         <div>
           <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
-            Daftar Tugas
+           Tracker Tugas 
           </h2>
 
           <a
