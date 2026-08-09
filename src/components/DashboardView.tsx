@@ -114,25 +114,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [editingAnnId, setEditingAnnId] = useState<string | null>(null);
   const [isSubmittingAnn, setIsSubmittingAnn] = useState(false);
 
-  // --- SCROLL-AWARE FLOATING BUTTON STATE (KHUSUS MOBILE) ---
-  const [isScrollDown, setIsScrollDown] = useState(false);
-  const [lastScrollY, setLastScrollY] = useState(0);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      if (currentScrollY > lastScrollY && currentScrollY > 80) {
-        setIsScrollDown(true);
-      } else {
-        setIsScrollDown(false);
-      }
-      setLastScrollY(currentScrollY);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [lastScrollY]);
-
   // --- STATE KALENDER BUILD-IN ---
   const [currentMonthDate, setCurrentMonthDate] = useState<Date>(new Date());
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date>(new Date());
@@ -208,7 +189,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const daysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
   const firstDayOfMonth = (year: number, month: number) => {
     const day = new Date(year, month, 1).getDay();
-    return day === 0 ? 6 : day - 1; // Senin = 0, Minggu = 6
+    return day === 0 ? 6 : day - 1;
   };
 
   const currentYear = currentMonthDate.getFullYear();
@@ -518,6 +499,27 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
+
+          {/* MBUDIARY ACTION BAR — DI LUAR KARTU JADWAL */}
+          <motion.button
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            whileHover={{ scale: 1.01, y: -1 }}
+            whileTap={{ scale: 0.985 }}
+            transition={{ duration: 0.2 }}
+            onClick={() => onNavigateTab('mbudiary' as any)}
+            className="w-full flex items-center justify-center gap-2.5 px-5 py-3 rounded-2xl bg-gradient-to-r from-fuchsia-500 via-purple-500 to-indigo-500 text-white shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 transition-all cursor-pointer"
+            title="mbudiary. #Ruangamanbersama"
+          >
+            <Pencil className="w-4 h-4 shrink-0" />
+            <span className="text-sm font-black tracking-tight">
+              mbudiary.
+            </span>
+            <span className="text-xs font-semibold text-white/80">
+              #Ruangamanbersama
+            </span>
+          </motion.button>
+
           {/* 1. JADWAL PERKULIAHAN */}
           <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-4 transition-colors">
             
@@ -1107,32 +1109,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         )}
       </AnimatePresence>
 
-      {/* FLOATING BUTTON MBUDIARY (RESPONSIVE: CIRCLE ICON ON MOBILE + SCROLL-AWARE, STIFF ON PC) */}
-      <motion.button
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        whileHover={{ scale: 1.04, y: -2 }}
-        whileTap={{ scale: 0.96 }}
-        style={{
-          // Di PC (lg) selalu muncul (stiff), di HP mengikuti state scroll
-          transform: isScrollDown ? 'scale(0) translateY(20px)' : 'scale(1) translateY(0px)',
-          opacity: isScrollDown ? 0 : 1,
-        }}
-        transition={{ duration: 0.2 }}
-        onClick={() => onNavigateTab('mbudiary' as any)}
-        className="fixed bottom-28 lg:bottom-10 right-4 lg:right-10 z-40 flex items-center justify-center lg:justify-start gap-3.5 w-14 h-14 lg:w-auto lg:h-auto lg:px-5 lg:py-3.5 rounded-full lg:rounded-2xl bg-zinc-900 dark:bg-zinc-100 text-zinc-100 dark:text-zinc-900 border border-zinc-800 dark:border-zinc-200 shadow-2xl transition-all cursor-pointer group"
-        title="mbudiary #RuangAman"
-      >
-        <Pencil className="w-5 h-5 text-zinc-100 dark:text-zinc-900 shrink-0" />
-        <div className="hidden lg:flex text-left flex-col justify-center pr-1">
-          <span className="text-base font-black tracking-tight text-zinc-100 dark:text-zinc-900 leading-none">
-            mbudiary.
-          </span>
-          <span className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500 leading-tight mt-1">
-            #RuangAman
-          </span>
-        </div>
-      </motion.button>
     </motion.div>
   );
 };
