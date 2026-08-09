@@ -182,7 +182,7 @@ export const MbudiaryView: React.FC = () => {
                     mbudiary.
                   </h1>
                   <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 mt-0.5 font-medium">
-                    Ruang kecil untuk cerita besar! ✨
+                    Satu hari, sejuta cerita.
                   </p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">

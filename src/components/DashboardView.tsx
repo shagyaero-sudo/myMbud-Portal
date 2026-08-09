@@ -513,7 +513,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           >
             <Pencil className="w-4 h-4 shrink-0" />
             <span className="text-sm font-black tracking-tight">
-              Ceritakan harimu di mbudiary.
+              Ceritakan hari di mbudiary.
             </span>
 
           </motion.button>
