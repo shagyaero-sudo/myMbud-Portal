@@ -587,7 +587,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                         </p>
                       </div>
 
-                      <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed bg-slate-50/70 dark:bg-zinc-800/60 p-3 rounded-2xl line-clamp-2">
+                      <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed bg-slate-50/70 dark:bg-zinc-800/60 p-3 rounded-2xl line-clamp-2 overflow-hidden text-ellipsis">
                         {t.description || 'Klik untuk melihat rincian instruksi tugas lengkap.'}
                       </p>
 
@@ -711,7 +711,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
         )}
       </div>
 
-      {/* DETAIL MODAL (KEMBALI KE BIASA TANPA LAYOUT ID MORPHING) */}
+      {/* DETAIL MODAL */}
       <AnimatePresence>
         {selectedDetailTask && (
           <motion.div 
