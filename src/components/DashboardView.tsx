@@ -249,13 +249,56 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     return dateStr;
   };
 
+  // --- WHATSAPP FORMATTING SYNTAX PARSER ---
   const renderFormattedContent = (content: string) => {
     if (!content) return null;
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
-    const parts = content.split(urlRegex);
+
+    // Matches WhatsApp style formatting:
+    // *bold*, _italic_, ~strikethrough~, `monospace`, and URL links
+    const formattedRegex = /(`[^`]+`|\*[^*]+\*|_[^_]+_|~[^~]+~|https?:\/\/[^\s]+)/g;
+    const parts = content.split(formattedRegex);
 
     return parts.map((part, i) => {
-      if (part.match(urlRegex)) {
+      if (!part) return null;
+
+      // 1. Monospace (`teks`)
+      if (part.startsWith('`') && part.endsWith('`') && part.length > 2) {
+        return (
+          <code key={i} className="bg-slate-200 dark:bg-zinc-700 px-1.5 py-0.5 rounded text-[11px] font-mono text-pink-600 dark:text-pink-400">
+            {part.slice(1, -1)}
+          </code>
+        );
+      }
+
+      // 2. Bold (*teks*)
+      if (part.startsWith('*') && part.endsWith('*') && part.length > 2) {
+        return (
+          <strong key={i} className="font-extrabold text-slate-900 dark:text-zinc-100">
+            {part.slice(1, -1)}
+          </strong>
+        );
+      }
+
+      // 3. Italic (_teks_)
+      if (part.startsWith('_') && part.endsWith('_') && part.length > 2) {
+        return (
+          <em key={i} className="italic">
+            {part.slice(1, -1)}
+          </em>
+        );
+      }
+
+      // 4. Strikethrough (~teks~)
+      if (part.startsWith('~') && part.endsWith('~') && part.length > 2) {
+        return (
+          <del key={i} className="line-through opacity-75">
+            {part.slice(1, -1)}
+          </del>
+        );
+      }
+
+      // 5. URL Link
+      if (part.match(/^https?:\/\/[^\s]+$/)) {
         return (
           <a
             key={i}
@@ -269,6 +312,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </a>
         );
       }
+
       return part;
     });
   };
@@ -360,7 +404,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="space-y-6 pb-28 sm:pb-32" // EKSTRA PADDING BOTTOM AGAR TIDAK NABRAK FLOATING BAR
+      className="space-y-6 pb-28 sm:pb-32"
     >
       <div className="block lg:hidden px-2 pt-2 pb-0">
         <div className="flex items-center justify-between gap-3">
