@@ -1,7 +1,6 @@
 import OneSignal from 'react-onesignal';
 
-const ONE_SIGNAL_APP_ID =
-  'd5b7e852-4651-49dd-8123-41f1613e5169';
+const ONE_SIGNAL_APP_ID = 'd5b7e852-4651-49dd-8123-41f1613e5169';
 
 let initialized = false;
 
@@ -9,11 +8,6 @@ let initialized = false;
  * ============================================================
  * INITIALIZE ONESIGNAL
  * ============================================================
- *
- * PENTING:
- * Fungsi ini TIDAK meminta permission.
- *
- * Jadi aman dipanggil dari useEffect.
  */
 export async function initOneSignal() {
   if (initialized) return true;
@@ -27,17 +21,35 @@ export async function initOneSignal() {
 
     initialized = true;
 
-    console.log(
-      '[OneSignal] Initialized successfully.'
-    );
+    console.log('[OneSignal] Initialized successfully.');
+
+    // LISTEN EVENT KLIK NOTIFIKASI
+    OneSignal.Notifications.addEventListener('click', (event) => {
+      console.log('[OneSignal] Notification clicked:', event);
+
+      const data = event.notification.additionalData || {};
+
+      // Simpan konteks target navigasi ke localStorage
+      if (data.postId) {
+        localStorage.setItem('mbud_target_post_id', String(data.postId));
+      }
+      if (data.actorNrp) {
+        localStorage.setItem('mbud_target_actor_nrp', String(data.actorNrp));
+      }
+
+      // Tentukan tab tujuan (default ke mbudiary)
+      const targetTab = data.tab || 'mbudiary';
+      localStorage.setItem('mbud_target_tab', targetTab);
+
+      // Memicu event navigasi global di client
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('mbud_onesignal_redirect', { detail: { tab: targetTab } }));
+      }
+    });
 
     return true;
   } catch (error) {
-    console.error(
-      '[OneSignal] Failed to initialize:',
-      error
-    );
-
+    console.error('[OneSignal] Failed to initialize:', error);
     return false;
   }
 }
@@ -46,52 +58,27 @@ export async function initOneSignal() {
  * ============================================================
  * REQUEST NOTIFICATION PERMISSION
  * ============================================================
- *
- * Fungsi ini HARUS dipanggil dari user interaction.
- *
- * Contoh:
- *
- * onClick={() => requestOneSignalPermission()}
  */
 export async function requestOneSignalPermission() {
   try {
     if (!initialized) {
       const success = await initOneSignal();
-
-      if (!success) {
-        return false;
-      }
+      if (!success) return false;
     }
 
     if (OneSignal.Notifications.permission === true) {
-      console.log(
-        '[OneSignal] Notification permission already granted.'
-      );
-
+      console.log('[OneSignal] Notification permission already granted.');
       return true;
     }
 
-    console.log(
-      '[OneSignal] Requesting notification permission from user interaction...'
-    );
-
+    console.log('[OneSignal] Requesting notification permission from user interaction...');
     await OneSignal.Notifications.requestPermission();
 
-    const granted =
-      OneSignal.Notifications.permission === true;
-
-    console.log(
-      '[OneSignal] Permission result:',
-      granted
-    );
-
+    const granted = OneSignal.Notifications.permission === true;
+    console.log('[OneSignal] Permission result:', granted);
     return granted;
   } catch (error) {
-    console.error(
-      '[OneSignal] Permission request failed:',
-      error
-    );
-
+    console.error('[OneSignal] Permission request failed:', error);
     return false;
   }
 }
@@ -107,21 +94,13 @@ export async function loginOneSignal(nrp: string) {
 
     if (!initialized) {
       const success = await initOneSignal();
-
       if (!success) return;
     }
 
     await OneSignal.login(nrp);
-
-    console.log(
-      '[OneSignal] User linked:',
-      nrp
-    );
+    console.log('[OneSignal] User linked:', nrp);
   } catch (error) {
-    console.error(
-      '[OneSignal] Failed to link user:',
-      error
-    );
+    console.error('[OneSignal] Failed to link user:', error);
   }
 }
 
@@ -135,14 +114,8 @@ export async function logoutOneSignal() {
     if (!initialized) return;
 
     await OneSignal.logout();
-
-    console.log(
-      '[OneSignal] User disconnected.'
-    );
+    console.log('[OneSignal] User disconnected.');
   } catch (error) {
-    console.error(
-      '[OneSignal] Failed to disconnect user:',
-      error
-    );
+    console.error('[OneSignal] Failed to disconnect user:', error);
   }
 }

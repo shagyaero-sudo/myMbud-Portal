@@ -143,6 +143,34 @@ export default function App() {
   }, [isAuthenticated]);
 
   // ============================================================
+  // ONESIGNAL REDIRECT & NAVIGATION LISTENER
+  // ============================================================
+  useEffect(() => {
+    const handleOneSignalRedirect = (e: any) => {
+      const targetTab = e?.detail?.tab || localStorage.getItem('mbud_target_tab') || 'mbudiary';
+      
+      console.log('[App Router] Redirecting to tab:', targetTab);
+      setActiveTab(targetTab as TabType);
+
+      // Trigger event navigasi internal mbudiary agar postingan/profil langsung terbuka
+      window.dispatchEvent(new Event('mbud_notification_navigate'));
+    };
+
+    window.addEventListener('mbud_onesignal_redirect', handleOneSignalRedirect);
+    window.addEventListener('mbud_notification_navigate', () => {
+      const targetTab = localStorage.getItem('mbud_target_tab');
+      if (targetTab) {
+        setActiveTab(targetTab as TabType);
+        localStorage.removeItem('mbud_target_tab');
+      }
+    });
+
+    return () => {
+      window.removeEventListener('mbud_onesignal_redirect', handleOneSignalRedirect);
+    };
+  }, []);
+
+  // ============================================================
   // LOGOUT
   // ============================================================
   const handleLogout = async () => {
