@@ -37,6 +37,31 @@ interface DashboardViewProps {
   ) => void;
 }
 
+interface AttachmentData {
+  fileName: string;
+  fileUrl: string;
+}
+
+// --- DAFTAR LIBUR NASIONAL / TANGGAL MERAH INDONESIA 2026 ---
+const NATIONAL_HOLIDAYS_2026: Record<string, string> = {
+  '2026-01-01': 'Tahun Baru 2026 Masehi',
+  '2026-01-16': 'Isra Mikraj Nabi Muhammad SAW',
+  '2026-02-17': 'Tahun Baru Imlek 2577 Kongzili',
+  '2026-03-19': 'Hari Suci Nyepi (Tahun Baru Saka 1948)',
+  '2026-03-21': 'Hari Raya Idul Fitri 1447 H',
+  '2026-03-22': 'Hari Raya Idul Fitri 1447 H',
+  '2026-04-03': 'Wafat Jesus Kristus (Jumat Agung)',
+  '2026-04-05': 'Kebangkitan Yesus Kristus (Paskah)',
+  '2026-05-01': 'Hari Buruh Internasional',
+  '2026-05-14': 'Kenaikan Yesus Kristus',
+  '2026-05-27': 'Hari Raya Idul Adha 1447 H',
+  '2026-05-31': 'Hari Raya Waisak 2570 BE',
+  '2026-06-16': 'Tahun Baru Islam 1448 H',
+  '2026-08-17': 'Hari Kemerdekaan Republik Indonesia',
+  '2026-08-24': 'Maulid Nabi Muhammad SAW',
+  '2026-12-25': 'Hari Raya Natal',
+};
+
 // --- WIDGET KALENDER MINI HEADER ---
 const FlipCalendarWidget: React.FC = () => {
   const now = new Date();
@@ -59,7 +84,6 @@ const FlipCalendarWidget: React.FC = () => {
   );
 };
 
-// --- LOGIKA MINGGU AKADEMIK ---
 const getCurrentAcademicWeek = () => {
   const startDate = new Date('2026-08-31T00:00:00+07:00');
   const now = new Date();
@@ -89,6 +113,25 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [showAnnModal, setShowAnnModal] = useState(false);
   const [editingAnnId, setEditingAnnId] = useState<string | null>(null);
   const [isSubmittingAnn, setIsSubmittingAnn] = useState(false);
+
+  // --- SCROLL-AWARE FLOATING BUTTON STATE ---
+  const [isScrollDown, setIsScrollDown] = useState(false);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY > lastScrollY && currentScrollY > 80) {
+        setIsScrollDown(true); // Scroll ke bawah -> Sembunyi
+      } else {
+        setIsScrollDown(false); // Scroll ke atas -> Muncul
+      }
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY]);
 
   // --- STATE KALENDER BUILD-IN ---
   const [currentMonthDate, setCurrentMonthDate] = useState<Date>(new Date());
@@ -166,7 +209,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const daysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
   const firstDayOfMonth = (year: number, month: number) => {
     const day = new Date(year, month, 1).getDay();
-    return day === 0 ? 6 : day - 1; // Sesuaikan agar Senin = 0, Minggu = 6
+    return day === 0 ? 6 : day - 1; // Senin = 0, Minggu = 6
   };
 
   const currentYear = currentMonthDate.getFullYear();
@@ -180,13 +223,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     setSelectedCalendarDate(today);
   };
 
-  // Helper Pembanding Tanggal Sama
   const isSameDay = (d1: Date, d2: Date) =>
     d1.getFullYear() === d2.getFullYear() &&
     d1.getMonth() === d2.getMonth() &&
     d1.getDate() === d2.getDate();
 
-  // Helper Mendapatkan Daftar Tugas & Kuliah Pada Tanggal Tertentu
+  const formatDateKey = (dateObj: Date) => {
+    const yyyy = dateObj.getFullYear();
+    const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const dd = String(dateObj.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  };
+
   const getTasksForDate = (targetDate: Date) => {
     return state.tasks.filter((task) => {
       const taskDate = new Date(task.deadline);
@@ -201,7 +249,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   const selectedDateTasks = getTasksForDate(selectedCalendarDate);
   const selectedDateDayName = getDayNameFromDate(selectedCalendarDate);
-  const selectedDateSchedules = state.schedules.filter((s) => s.day === selectedDateDayName);
+  
+  // Batas akhir perkuliahan 18 Desember 2026
+  const endOfSemesterLimit = new Date('2026-12-18T23:59:59');
+  const isPastSemesterLimit = selectedCalendarDate.getTime() > endOfSemesterLimit.getTime();
+
+  const selectedDateSchedules = isPastSemesterLimit
+    ? []
+    : state.schedules.filter((s) => s.day === selectedDateDayName);
 
   const formatAnnouncementDate = (dateStr: string) => {
     if (!dateStr) return '';
@@ -581,7 +636,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
           </div>
 
-          {/* 2. NEW: WIDGET KALENDER BUILD-IN (MENGGANTIKAN DAFTAR TUGAS LAMA) */}
+          {/* 2. WIDGET KALENDER BUILD-IN (DENGAN TANGGAL MERAH & BATAS 18 DES) */}
           <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-6 transition-colors">
             {/* Header Kalender */}
             <div className="flex items-center justify-between gap-2 flex-wrap">
@@ -624,10 +679,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
             {/* Grid Kalender Bulanan */}
             <div className="space-y-2">
-              {/* Nama Hari (Senin-Minggu) */}
+              {/* Nama Hari (SEN - MIN, MIN berwarna merah) */}
               <div className="grid grid-cols-7 gap-1 text-center border-b border-slate-100 dark:border-zinc-800 pb-2">
-                {['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'].map((dayName) => (
-                  <span key={dayName} className="text-[11px] font-bold text-slate-400 dark:text-zinc-500 uppercase">
+                {['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'].map((dayName, idx) => (
+                  <span 
+                    key={dayName} 
+                    className={`text-[11px] font-bold uppercase ${idx === 6 ? 'text-rose-600 dark:text-rose-500' : 'text-slate-400 dark:text-zinc-500'}`}
+                  >
                     {dayName}
                   </span>
                 ))}
@@ -635,40 +693,53 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
               {/* Tanggal Grid */}
               <div className="grid grid-cols-7 gap-1 sm:gap-2">
-                {/* Empty Offset Days */}
                 {Array.from({ length: firstDayOfMonth(currentYear, currentMonth) }).map((_, i) => (
                   <div key={`empty-${i}`} className="h-10 sm:h-12 rounded-2xl bg-transparent" />
                 ))}
 
-                {/* Days of Month */}
                 {Array.from({ length: daysInMonth(currentYear, currentMonth) }).map((_, i) => {
                   const dayNum = i + 1;
                   const dateObj = new Date(currentYear, currentMonth, dayNum);
                   const isToday = isSameDay(dateObj, new Date());
                   const isSelected = isSameDay(dateObj, selectedCalendarDate);
+                  
+                  const dateKey = formatDateKey(dateObj);
+                  const holidayName = NATIONAL_HOLIDAYS_2026[dateKey];
+                  const isHoliday = Boolean(holidayName);
 
                   const dayTasks = getTasksForDate(dateObj);
                   const hasTasks = dayTasks.length > 0;
-                  const hasSchedule = getDayNameFromDate(dateObj) !== ('Minggu' as any) && getDayNameFromDate(dateObj) !== ('Sabtu' as any);
+                  
+                  // Batas perkuliahan s/d 18 Desember 2026
+                  const isBeyondSemesterLimit = dateObj.getTime() > endOfSemesterLimit.getTime();
+                  const hasSchedule = !isBeyondSemesterLimit && getDayNameFromDate(dateObj) !== ('Minggu' as any) && getDayNameFromDate(dateObj) !== ('Sabtu' as any);
 
                   return (
                     <motion.button
                       whileTap={{ scale: 0.92 }}
                       key={dayNum}
+                      title={holidayName || undefined}
                       onClick={() => setSelectedCalendarDate(dateObj)}
                       className={`relative h-10 sm:h-12 rounded-2xl flex flex-col items-center justify-center transition-all select-none border ${
                         isSelected
                           ? 'bg-blue-600 text-white font-black border-blue-600 shadow-md shadow-blue-500/30'
                           : isToday
                           ? 'bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 font-bold border-blue-200 dark:border-blue-800'
+                          : isHoliday
+                          ? 'bg-rose-50/80 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 font-bold border-rose-200/60 dark:border-rose-900/40'
                           : 'bg-slate-50/60 dark:bg-zinc-800/40 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-800 dark:text-zinc-200 border-transparent'
                       }`}
                     >
-                      <span className="text-xs sm:text-sm leading-none">{dayNum}</span>
+                      <span className={`text-xs sm:text-sm leading-none ${isHoliday && !isSelected ? 'text-rose-600 dark:text-rose-400 font-bold' : ''}`}>
+                        {dayNum}
+                      </span>
 
-                      {/* Dot Indikator Agenda */}
+                      {/* Dot Indikator Agenda & Tanda Libur */}
                       <div className="flex items-center justify-center gap-1 mt-1">
-                        {hasSchedule && (
+                        {isHoliday && !isSelected && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" title={holidayName} />
+                        )}
+                        {hasSchedule && !isHoliday && (
                           <span className={`w-1 h-1 rounded-full ${isSelected ? 'bg-white' : 'bg-blue-500'}`} />
                         )}
                         {hasTasks && (
@@ -681,13 +752,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
             </div>
 
-            {/* Panel Ringkasan Agenda Tanggal Terpilih */}
+            {/* Panel Ringkasan Agenda Tanggal Terpilih (Header Diperbaiki) */}
             <div className="pt-4 border-t border-slate-100 dark:border-zinc-800 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-700 dark:text-zinc-300 flex items-center gap-1.5">
-                  <span>Agenda Tanggal:</span>
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <span className="text-xs font-bold text-slate-700 dark:text-zinc-300">
+                  <span>Agenda: </span>
                   <span className="text-blue-600 dark:text-blue-400 font-extrabold">
-                    {selectedCalendarDate.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                    {selectedCalendarDate.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', year: '2-digit' }).replace('.', '')}
                   </span>
                 </span>
 
@@ -695,14 +766,20 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   onClick={() => onNavigateTab('tasks')}
                   className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold flex items-center gap-1"
                 >
-                  <span>Lihat Semua Tugas</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
+                  <span>List Tugas &gt;</span>
                 </button>
               </div>
 
+              {/* Notifikasi Hari Libur Nasional */}
+              {NATIONAL_HOLIDAYS_2026[formatDateKey(selectedCalendarDate)] && (
+                <div className="p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 text-xs text-rose-700 dark:text-rose-300 font-bold flex items-center gap-2">
+                  <span>🎉 Libur Nasional: {NATIONAL_HOLIDAYS_2026[formatDateKey(selectedCalendarDate)]}</span>
+                </div>
+              )}
+
               {/* Items List */}
               <div className="space-y-2">
-                {selectedDateSchedules.length === 0 && selectedDateTasks.length === 0 ? (
+                {selectedDateSchedules.length === 0 && selectedDateTasks.length === 0 && !NATIONAL_HOLIDAYS_2026[formatDateKey(selectedCalendarDate)] ? (
                   <div className="p-4 text-center text-slate-400 dark:text-zinc-500 text-xs bg-slate-50/70 dark:bg-zinc-800/40 rounded-2xl">
                     Tidak ada jadwal kuliah maupun deadline tugas di tanggal ini.
                   </div>
@@ -1038,17 +1115,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         )}
       </AnimatePresence>
 
-      {/* FLOATING BUTTON MBUDIARY */}
+      {/* FLOATING BUTTON MBUDIARY (RESPONSIVE: CIRCLE ICON ON MOBILE, CAPSULE ON PC + SCROLL-AWARE) */}
       <motion.button
         initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
+        animate={{ scale: isScrollDown ? 0 : 1, opacity: isScrollDown ? 0 : 1 }}
         whileHover={{ scale: 1.04, y: -2 }}
         whileTap={{ scale: 0.96 }}
+        transition={{ duration: 0.2 }}
         onClick={() => onNavigateTab('mbudiary' as any)}
-        className="fixed bottom-28 lg:bottom-10 right-4 lg:right-10 z-40 flex items-center gap-3.5 px-5 py-3.5 rounded-2xl bg-zinc-900 dark:bg-zinc-100 text-zinc-100 dark:text-zinc-900 border border-zinc-800 dark:border-zinc-200 shadow-2xl transition-all cursor-pointer group"
+        className="fixed bottom-28 lg:bottom-10 right-4 lg:right-10 z-40 flex items-center justify-center lg:justify-start gap-3.5 w-14 h-14 lg:w-auto lg:h-auto lg:px-5 lg:py-3.5 rounded-full lg:rounded-2xl bg-zinc-900 dark:bg-zinc-100 text-zinc-100 dark:text-zinc-900 border border-zinc-800 dark:border-zinc-200 shadow-2xl transition-all cursor-pointer group"
+        title="mbudiary #RuangAman"
       >
         <Pencil className="w-5 h-5 text-zinc-100 dark:text-zinc-900 shrink-0" />
-        <div className="text-left flex flex-col justify-center pr-1">
+        <div className="hidden lg:flex text-left flex-col justify-center pr-1">
           <span className="text-base font-black tracking-tight text-zinc-100 dark:text-zinc-900 leading-none">
             mbudiary.
           </span>
