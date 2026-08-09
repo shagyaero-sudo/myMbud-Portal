@@ -509,7 +509,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             transition={{ duration: 0.2 }}
             onClick={() => onNavigateTab('mbudiary' as any)}
             className="w-full flex items-center justify-center gap-2.5 px-5 py-3 rounded-2xl bg-gradient-to-r from-fuchsia-500 via-purple-500 to-indigo-500 text-white shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 transition-all cursor-pointer"
-            title="mbudiary. #Ruangamanbersama"
+            title="Ceritakan harimu di mbudiary!"
           >
             <Pencil className="w-4 h-4 shrink-0" />
             <span className="text-sm font-black tracking-tight">
