@@ -367,7 +367,6 @@ export async function processMentionsInContent({
 }) {
   if (!content) return;
 
-  // FIX REGEX DI SINI: a-zA-Z0-9_
   const matches = content.match(/@([a-zA-Z0-9_.]+)/g);
   if (!matches || matches.length === 0) return;
 
@@ -396,6 +395,26 @@ export async function processMentionsInContent({
       console.error('[mbudiary] Gagal memproses mention untuk @' + username, err);
     }
   }
+}
+
+/**
+ * HELPER: Mencari daftar user untuk autocomplete mention berdasarkan kueri teks
+ */
+export function searchUsersForMention(queryText: string): MbudiaryUser[] {
+  const q = queryText.trim().toLowerCase();
+  const allUsers = Object.values(usersCache);
+
+  if (!q) {
+    return allUsers.slice(0, 5);
+  }
+
+  return allUsers
+    .filter(
+      (user) =>
+        user.username.toLowerCase().includes(q) ||
+        user.nickname.toLowerCase().includes(q)
+    )
+    .slice(0, 5);
 }
 
 export function subscribeNotifications(userNrp: string, callback: (notifs: MbudiaryNotification[]) => void) {

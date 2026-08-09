@@ -1,8 +1,9 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { UserProfile } from './types';
-import { savePost, processMentionsInContent } from './lib/storage';
+import { UserProfile, MbudiaryUser } from './types';
+import { savePost, processMentionsInContent, searchUsersForMention } from './lib/storage';
 import { uploadImagesToCloudinary } from './lib/cloudinary';
+import { getOptimizedImageUrl } from './lib/utils';
 import {
   Send,
   X,
@@ -11,6 +12,7 @@ import {
   Camera,
   Images,
   Loader2,
+  AtSign,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -44,6 +46,10 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isUploadMenuOpen, setIsUploadMenuOpen] = useState(false);
 
+  // AUTOCOMPLETE MENTION STATE
+  const [mentionSuggestions, setMentionSuggestions] = useState<MbudiaryUser[]>([]);
+  const [mentionQuery, setMentionQuery] = useState<string | null>(null);
+
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -64,6 +70,39 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
     if (isModalOpen) document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isModalOpen]);
+
+  // DETEKSI AUTOCOMPLETE `@` PADA INPUT
+  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    setContent(value);
+
+    const cursorPos = e.target.selectionStart;
+    const textBeforeCursor = value.slice(0, cursorPos);
+    const lastAtMatch = textBeforeCursor.match(/@([a-zA-Z0-9_.]*)$/);
+
+    if (lastAtMatch) {
+      const q = lastAtMatch[1];
+      setMentionQuery(q);
+      setMentionSuggestions(searchUsersForMention(q));
+    } else {
+      setMentionQuery(null);
+      setMentionSuggestions([]);
+    }
+  };
+
+  const selectMentionUser = (username: string) => {
+    if (!textareaRef.current) return;
+    const cursorPos = textareaRef.current.selectionStart;
+    const textBeforeCursor = content.slice(0, cursorPos);
+    const textAfterCursor = content.slice(cursorPos);
+
+    const updatedBefore = textBeforeCursor.replace(/@([a-zA-Z0-9_.]*)$/, `@${username} `);
+    setContent(updatedBefore + textAfterCursor);
+
+    setMentionQuery(null);
+    setMentionSuggestions([]);
+    textareaRef.current.focus();
+  };
 
   const clearSelectedImages = () => {
     previewUrls.forEach((url) => URL.revokeObjectURL(url));
@@ -264,7 +303,7 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
                   </div>
                 </div>
 
-                <div className="p-4 sm:p-5 overflow-y-auto custom-scrollbar flex-1 min-h-[120px]">
+                <div className="p-4 sm:p-5 overflow-y-auto custom-scrollbar flex-1 min-h-[120px] relative">
                   <div className="flex items-start gap-3">
                     <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-2xl bg-slate-50 dark:bg-zinc-800 shrink-0 flex items-center justify-center overflow-hidden border border-slate-200/60 dark:border-zinc-700/60">
                       {userProfile.photoUrl ? (
@@ -274,17 +313,46 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
                       )}
                     </div>
                     
-                    <div className="flex-1 min-w-0 pt-0.5">
+                    <div className="flex-1 min-w-0 pt-0.5 relative">
                       <textarea
                         autoFocus
                         ref={textareaRef}
                         value={content}
-                        onChange={(e) => setContent(e.target.value)}
+                        onChange={handleContentChange}
                         placeholder="Ada cerita apa hari ini?..."
                         rows={1}
                         maxLength={MAX_CHARS}
                         className="w-full text-xs sm:text-[13px] bg-transparent text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none resize-none leading-relaxed min-h-[24px] max-h-[300px] overflow-y-auto"
                       />
+
+                      {/* DROPDOWN SUGGESTIONS MENTION */}
+                      {mentionQuery !== null && mentionSuggestions.length > 0 && (
+                        <div className="absolute left-0 top-full mt-1 z-50 w-64 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-2xl p-1.5 shadow-xl max-h-48 overflow-y-auto">
+                          <div className="text-[10px] font-bold text-slate-400 px-2 py-1 flex items-center gap-1">
+                            <AtSign className="w-3 h-3 text-indigo-500" />
+                            <span>Pilih User</span>
+                          </div>
+                          {mentionSuggestions.map((u) => (
+                            <div
+                              key={u.nrp}
+                              onClick={() => selectMentionUser(u.username)}
+                              className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-zinc-700/60 cursor-pointer transition-colors"
+                            >
+                              <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-zinc-700 flex items-center justify-center shrink-0 overflow-hidden">
+                                {u.photoUrl ? (
+                                  <img src={getOptimizedImageUrl(u.photoUrl)} alt={u.nickname} className="w-full h-full object-cover" />
+                                ) : (
+                                  <span className="text-sm leading-none">{u.emoji}</span>
+                                )}
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <div className="text-xs font-bold text-slate-800 dark:text-zinc-100 truncate">{u.nickname}</div>
+                                <div className="text-[10px] text-slate-400 dark:text-zinc-400 truncate">@{u.username}</div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
 

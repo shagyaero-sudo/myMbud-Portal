@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { MbudiaryPost, MbudiaryReply, UserProfile } from '../types';
+import { MbudiaryPost, MbudiaryReply, UserProfile, MbudiaryUser } from '../types';
 import {
   toggleLikePost,
   getReplies,
@@ -13,6 +13,7 @@ import {
   getBookmarkedPostIds,
   getUserByUsername,
   processMentionsInContent,
+  searchUsersForMention,
 } from './lib/storage';
 import {
   formatDateFormatted,
@@ -31,6 +32,7 @@ import {
   Repeat2,
   Quote,
   Bookmark,
+  AtSign,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -54,7 +56,6 @@ const FormattedPostContent: React.FC<{
 }> = ({ content, onSelectAuthor }) => {
   if (!content) return null;
 
-  // FIX REGEX DI SINI: a-zA-Z0-9_
   const parts = content.split(/(@[a-zA-Z0-9_.]+)/g);
 
   return (
@@ -100,6 +101,11 @@ export const PostCard: React.FC<PostCardProps> = ({
   const [likeCount, setLikeCount] = useState(post.likes.length);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
+
+  // AUTOCOMPLETE MENTION STATE (REPLY)
+  const [commentMentionSuggestions, setCommentMentionSuggestions] = useState<MbudiaryUser[]>([]);
+  const [commentMentionQuery, setCommentMentionQuery] = useState<string | null>(null);
+  const commentInputRef = useRef<HTMLInputElement>(null);
 
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -170,6 +176,38 @@ export const PostCard: React.FC<PostCardProps> = ({
       window.removeEventListener('mbud_bookmarks_change', syncData);
     };
   }, [post, currentUser, isDetailPage]);
+
+  const handleCommentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setReplyContent(val);
+
+    const cursorPos = e.target.selectionStart || val.length;
+    const textBeforeCursor = val.slice(0, cursorPos);
+    const lastAtMatch = textBeforeCursor.match(/@([a-zA-Z0-9_.]*)$/);
+
+    if (lastAtMatch) {
+      const q = lastAtMatch[1];
+      setCommentMentionQuery(q);
+      setCommentMentionSuggestions(searchUsersForMention(q));
+    } else {
+      setCommentMentionQuery(null);
+      setCommentMentionSuggestions([]);
+    }
+  };
+
+  const selectCommentMentionUser = (username: string) => {
+    if (!commentInputRef.current) return;
+    const cursorPos = commentInputRef.current.selectionStart || replyContent.length;
+    const textBeforeCursor = replyContent.slice(0, cursorPos);
+    const textAfterCursor = replyContent.slice(cursorPos);
+
+    const updatedBefore = textBeforeCursor.replace(/@([a-zA-Z0-9_.]*)$/, `@${username} `);
+    setReplyContent(updatedBefore + textAfterCursor);
+
+    setCommentMentionQuery(null);
+    setCommentMentionSuggestions([]);
+    commentInputRef.current.focus();
+  };
 
   const authorName = authorProfile?.nickname || authorProfile?.username || 'Mbuders';
   const authorEmoji = authorProfile?.emoji || '😊';
@@ -608,14 +646,46 @@ export const PostCard: React.FC<PostCardProps> = ({
                 )}
               </div>
 
-              <form onSubmit={handleAddReply} className="flex items-center gap-2 pt-2">
-                <input
-                  type="text"
-                  value={replyContent}
-                  onChange={(e) => setReplyContent(e.target.value)}
-                  placeholder={`Tulis komen sebagai ${currentUser.nickname}...`}
-                  className="flex-1 px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-xs sm:text-[13px] border border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
+              <form onSubmit={handleAddReply} className="flex items-center gap-2 pt-2 relative">
+                <div className="relative flex-1">
+                  <input
+                    ref={commentInputRef}
+                    type="text"
+                    value={replyContent}
+                    onChange={handleCommentChange}
+                    placeholder={`Tulis komen sebagai ${currentUser.nickname}...`}
+                    className="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-xs sm:text-[13px] border border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+
+                  {/* AUTOCOMPLETE DROPDOWN UNTUK KOMENTAR */}
+                  {commentMentionQuery !== null && commentMentionSuggestions.length > 0 && (
+                    <div className="absolute left-0 bottom-full mb-1 z-50 w-64 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-2xl p-1.5 shadow-xl max-h-48 overflow-y-auto">
+                      <div className="text-[10px] font-bold text-slate-400 px-2 py-1 flex items-center gap-1">
+                        <AtSign className="w-3 h-3 text-indigo-500" />
+                        <span>Pilih User</span>
+                      </div>
+                      {commentMentionSuggestions.map((u) => (
+                        <div
+                          key={u.nrp}
+                          onClick={() => selectCommentMentionUser(u.username)}
+                          className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-zinc-700/60 cursor-pointer transition-colors"
+                        >
+                          <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-zinc-700 flex items-center justify-center shrink-0 overflow-hidden">
+                            {u.photoUrl ? (
+                              <img src={getOptimizedImageUrl(u.photoUrl)} alt={u.nickname} className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="text-sm leading-none">{u.emoji}</span>
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="text-xs font-bold text-slate-800 dark:text-zinc-100 truncate">{u.nickname}</div>
+                            <div className="text-[10px] text-slate-400 dark:text-zinc-400 truncate">@{u.username}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
 
                 <button
                   type="submit"
