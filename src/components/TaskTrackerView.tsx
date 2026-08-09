@@ -28,8 +28,6 @@ interface TaskTrackerViewProps {
   tasks: Task[];
   contacts?: Contact[];
   isOfficer: boolean;
-  initialSelectedTaskId?: string | null;
-  onClearInitialSelectedTask?: () => void;
   onAddTask: (task: Omit<Task, 'id'>) => void;
   onUpdateTask?: (id: string, updatedTask: Partial<Task>) => void;
   onUpdateTaskStatus: (
@@ -48,8 +46,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
   tasks,
   contacts = [],
   isOfficer,
-  initialSelectedTaskId,
-  onClearInitialSelectedTask,
   onAddTask,
   onUpdateTask,
   onDeleteTask,
@@ -59,19 +55,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
   const [filterType, setFilterType] = useState<'ALL' | 'Individu' | 'Kelompok'>('ALL');
   const [activeTab, setActiveTab] = useState<'active' | 'history'>('active');
   const [selectedDetailTask, setSelectedDetailTask] = useState<Task | null>(null);
-
-  // EFFECT UNTUK OTOMATIS MEMBUKA MODAL TUGAS SAAT DILINK DARI DASHBOARD
-  useEffect(() => {
-    if (initialSelectedTaskId && tasks.length > 0) {
-      const targetTask = tasks.find((t) => t.id === initialSelectedTaskId);
-      if (targetTask) {
-        setSelectedDetailTask(targetTask);
-      }
-      if (onClearInitialSelectedTask) {
-        onClearInitialSelectedTask();
-      }
-    }
-  }, [initialSelectedTaskId, tasks, onClearInitialSelectedTask]);
 
   // STATE CENTANG SINKRON FIREBASE PER NRP
   const [completedTaskIds, setCompletedTaskIds] = useState<string[]>([]);
@@ -571,7 +554,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
 
                 return (
                   <motion.div
-                    layoutId={`task-card-${t.id}`}
                     layout
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -671,7 +653,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
 
                 return (
                   <motion.div
-                    layoutId={`task-card-${t.id}`}
                     layout
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -730,25 +711,21 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
         )}
       </div>
 
-      {/* DETAIL MODAL DENGAN SEAMLESS MORPHING TRANSITION */}
+      {/* DETAIL MODAL (KEMBALI KE BIASA TANPA LAYOUT ID MORPHING) */}
       <AnimatePresence>
         {selectedDetailTask && (
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
             className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4"
-            onClick={() => setSelectedDetailTask(null)}
           >
             <motion.div 
-              layoutId={`task-card-${selectedDetailTask.id}`}
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              initial={{ scale: 0.92, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.92, opacity: 0, y: 15 }}
+              transition={{ type: 'spring', stiffness: 350, damping: 28 }}
               className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"
-              onClick={(e) => e.stopPropagation()}
             >
               <div className="px-6 py-5 border-b border-slate-100 dark:border-zinc-800 flex justify-between items-start gap-4">
                 <div className="space-y-1.5">

@@ -59,14 +59,8 @@ import {
   saveGroupResultApi,
 } from './services/api';
 
-// ============================================================
-// MAINTENANCE GATE FLAG
-// ============================================================
 const IS_MAINTENANCE = false;
 
-// ============================================================
-// KOMPONEN SKELETON LOADER
-// ============================================================
 const AppSkeleton = () => (
   <div className="animate-pulse space-y-6">
     <div className="h-40 bg-slate-200/60 dark:bg-zinc-800/60 rounded-3xl w-full border border-slate-200 dark:border-zinc-800"></div>
@@ -173,31 +167,18 @@ export default function App() {
   const requiresLogin =
     !isAuthenticated && (isDesktop || isStandalone);
 
-  // STATE APLIKASI & NAVIGASI
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
   const [selectedContactCourse, setSelectedContactCourse] = useState<string>('ALL');
-  const [selectedTaskIdForModal, setSelectedTaskIdForModal] = useState<string | null>(null);
 
   const [isOfficer, setIsOfficer] = useState<boolean>(false);
   const [isGpaModalOpen, setIsGpaModalOpen] = useState<boolean>(false);
 
-  // NAVIGASI DENGAN DELAY SMOOTH UNTUK SEAMLESS MODAL TRIGGER
   const handleNavigateTab = useCallback(
-    (tab: TabType, courseFilterOrTaskId?: string, taskId?: string) => {
-      if (tab === 'contacts' && courseFilterOrTaskId) {
-        setSelectedContactCourse(courseFilterOrTaskId);
+    (tab: TabType, courseFilter?: string) => {
+      if (tab === 'contacts' && courseFilter) {
+        setSelectedContactCourse(courseFilter);
       }
-
-      const targetId = taskId || courseFilterOrTaskId;
-
-      if (tab === 'tasks' && targetId) {
-        setActiveTab('tasks');
-        setTimeout(() => {
-          setSelectedTaskIdForModal(targetId);
-        }, 80);
-      } else {
-        setActiveTab(tab);
-      }
+      setActiveTab(tab);
     },
     []
   );
@@ -277,7 +258,6 @@ export default function App() {
     try {
       const data = await fetchAppState();
 
-      // FETCH COURSES
       const querySnapshotCourses = await getDocs(collection(db, 'courses'));
 
       const firebaseSchedules: AppState['schedules'] = [];
@@ -327,7 +307,6 @@ export default function App() {
         });
       });
 
-      // FETCH TASKS
       const querySnapshotTasks = await getDocs(collection(db, 'tasks'));
       const firebaseTasks: Task[] = [];
 
@@ -364,7 +343,6 @@ export default function App() {
         });
       });
 
-      // FETCH MATERIALS
       const querySnapshotMaterials = await getDocs(collection(db, 'materials'));
       const firebaseMaterials: MaterialFile[] = [];
 
@@ -617,8 +595,6 @@ export default function App() {
                   tasks={appState.tasks}
                   contacts={appState.contacts}
                   isOfficer={isOfficer}
-                  initialSelectedTaskId={selectedTaskIdForModal}
-                  onClearInitialSelectedTask={() => setSelectedTaskIdForModal(null)}
                   onAddTask={handleAddTask}
                   onUpdateTask={handleUpdateTask}
                   onUpdateTaskStatus={handleUpdateTaskStatus}
