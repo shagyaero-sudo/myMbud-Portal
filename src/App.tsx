@@ -433,7 +433,7 @@ export default function App() {
     } catch (error) {
       console.error('Gagal melakukan sinkronisasi:', error);
       setAppState((previousState) => previousState);
-    } fontally {
+    } finally {
       setIsSyncing(false);
       setIsInitialLoad(false);
     }
