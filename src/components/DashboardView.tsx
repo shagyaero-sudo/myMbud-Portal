@@ -197,11 +197,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   const handlePrevMonth = () => setCurrentMonthDate(new Date(currentYear, currentMonth - 1, 1));
   const handleNextMonth = () => setCurrentMonthDate(new Date(currentYear, currentMonth + 1, 1));
-  const handleResetToday = () => {
-    const today = new Date();
-    setCurrentMonthDate(today);
-    setSelectedCalendarDate(today);
-  };
 
   const isSameDay = (d1: Date, d2: Date) =>
     d1.getFullYear() === d2.getFullYear() &&
@@ -365,7 +360,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="space-y-6 pb-12"
+      className="space-y-6 pb-28 sm:pb-32" // EKSTRA PADDING BOTTOM AGAR TIDAK NABRAK FLOATING BAR
     >
       <div className="block lg:hidden px-2 pt-2 pb-0">
         <div className="flex items-center justify-between gap-3">
@@ -500,7 +495,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
 
-          {/* MBUDIARY ACTION BAR — DI LUAR KARTU JADWAL */}
+          {/* MBUDIARY ACTION BAR — TEMATIC ADAPTIVE GRADIENT */}
           <motion.button
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -508,14 +503,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             whileTap={{ scale: 0.985 }}
             transition={{ duration: 0.2 }}
             onClick={() => onNavigateTab('mbudiary' as any)}
-            className="w-full flex items-center justify-center gap-2.5 px-5 py-3 rounded-2xl bg-gradient-to-r from-fuchsia-500 via-purple-500 to-indigo-500 text-white shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 transition-all cursor-pointer"
+            className="w-full flex items-center justify-center gap-2.5 px-5 py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 pink:from-pink-500 pink:to-rose-500 purple:from-purple-600 purple:to-fuchsia-600 green:from-emerald-600 green:to-teal-600 text-white shadow-md hover:shadow-lg transition-all cursor-pointer"
             title="Ceritakan harimu di mbudiary!"
           >
             <Pencil className="w-4 h-4 shrink-0" />
             <span className="text-sm font-black tracking-tight">
               Ceritakan hari di mbudiary.
             </span>
-
           </motion.button>
 
           {/* 1. JADWAL PERKULIAHAN */}
@@ -634,10 +628,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
           </div>
 
-          {/* 2. WIDGET KALENDER BUILD-IN (TITLE "KALENDER", TANGGAL LENGKAP, HARI MINGGU MERAH) */}
+          {/* 2. WIDGET KALENDER BUILD-IN (SLIDER DI POJOK KANAN SEJAJAR DENGAN TITLE) */}
           <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-6 transition-colors">
-            {/* Header Kalender (Title Singkat, Tombol Sejajar Rapih) */}
-            <div className="flex items-center justify-between gap-2 flex-wrap">
+            {/* Header Kalender: Title & Slider Sejajar di Pojok Kanan */}
+            <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <CalendarIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 <h3 className="text-base font-bold text-slate-800 dark:text-zinc-100">
@@ -645,33 +639,25 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 </h3>
               </div>
 
-              <div className="flex items-center gap-2">
+              {/* Slider Bulan di Pojok Kanan */}
+              <div className="flex items-center bg-slate-100 dark:bg-zinc-800 rounded-xl p-0.5 shrink-0">
                 <button
-                  onClick={handleResetToday}
-                  className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 text-xs font-semibold flex items-center gap-1 transition-all"
-                  title="Kembali ke Hari Ini"
+                  onClick={handlePrevMonth}
+                  className="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
+                  aria-label="Bulan Sebelumnya"
                 >
-                  <RotateCcw className="w-3 h-3" />
-                  <span>Hari Ini</span>
+                  <ChevronLeft className="w-4 h-4" />
                 </button>
-
-                <div className="flex items-center bg-slate-100 dark:bg-zinc-800 rounded-xl p-0.5">
-                  <button
-                    onClick={handlePrevMonth}
-                    className="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-                  <span className="text-xs font-bold text-slate-800 dark:text-zinc-200 px-2 min-w-[100px] text-center select-none">
-                    {currentMonthDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
-                  </span>
-                  <button
-                    onClick={handleNextMonth}
-                    className="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
+                <span className="text-xs font-bold text-slate-800 dark:text-zinc-200 px-2 min-w-[90px] sm:min-w-[100px] text-center select-none">
+                  {currentMonthDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
+                </span>
+                <button
+                  onClick={handleNextMonth}
+                  className="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
+                  aria-label="Bulan Selanjutnya"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
               </div>
             </div>
 
@@ -748,7 +734,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
             </div>
 
-            {/* Panel Ringkasan Agenda Tanggal Terpilih (Format Tanggal Lengkap) */}
+            {/* Panel Ringkasan Agenda Tanggal Terpilih (Format Tanggal Lengkap: Sen, 17 Agu 2026) */}
             <div className="pt-4 border-t border-slate-100 dark:border-zinc-800 space-y-3">
               <div className="flex items-center justify-between gap-2 flex-wrap">
                 <span className="text-xs font-bold text-slate-700 dark:text-zinc-300">
