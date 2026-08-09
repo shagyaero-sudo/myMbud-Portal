@@ -54,7 +54,8 @@ const FormattedPostContent: React.FC<{
 }> = ({ content, onSelectAuthor }) => {
   if (!content) return null;
 
-  const parts = content.split(/(@[a-zA-10-9_.]+)/g);
+  // FIX REGEX DI SINI: a-zA-Z0-9_
+  const parts = content.split(/(@[a-zA-Z0-9_.]+)/g);
 
   return (
     <span>

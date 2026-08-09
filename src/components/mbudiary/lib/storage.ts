@@ -367,7 +367,8 @@ export async function processMentionsInContent({
 }) {
   if (!content) return;
 
-  const matches = content.match(/@([a-zA-10-9_.]+)/g);
+  // FIX REGEX DI SINI: a-zA-Z0-9_
+  const matches = content.match(/@([a-zA-Z0-9_.]+)/g);
   if (!matches || matches.length === 0) return;
 
   const uniqueUsernames = Array.from(new Set(matches.map((m) => m.substring(1).toLowerCase())));
