@@ -57,6 +57,7 @@ import {
   updateTaskApi,
   deleteTaskApi,
   saveGroupResultApi,
+  subscribeUserTaskCompletions,
 } from './services/api';
 
 const IS_MAINTENANCE = false;
@@ -104,6 +105,16 @@ export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     return localStorage.getItem('mymbud_auth') === 'true';
   });
+
+  const [completedTaskIds, setCompletedTaskIds] = useState<string[]>([]);
+  const currentUserNrp = localStorage.getItem('mymbud_user_nrp') || 'unknown';
+
+  useEffect(() => {
+    const unsub = subscribeUserTaskCompletions(currentUserNrp, (ids) => {
+      setCompletedTaskIds(ids);
+    });
+    return () => unsub();
+  }, [currentUserNrp]);
 
   useEffect(() => {
     const setupOneSignal = async () => {
@@ -161,21 +172,16 @@ export default function App() {
   // --- LOGIKA DETEKSI PERANGKAT & GATEKEEPING PWA ---
   const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera || '';
   
-  // Cek apakah perangkat tergolong Mobile/Tablet OS (Android, iOS, iPadOS)
   const isAndroid = /android/i.test(userAgent);
   const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream;
-  const isIPadOS = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1; // iPadOSSafari Desktop Mode
+  const isIPadOS = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
   
   const isMobileOrTabletOS = isAndroid || isIOS || isIPadOS;
 
-  // Cek apakah aplikasi dibuka melalui mode PWA Standalone (Add to Home Screen)
   const isStandalone =
     window.matchMedia('(display-mode: standalone)').matches ||
     ('standalone' in navigator && (navigator as any).standalone === true);
 
-  // LOGIKA IZIN AKSES LOGIN:
-  // 1. Jika PC / Laptop Murni (!isMobileOrTabletOS) -> Bebas Login langsung di browser tab.
-  // 2. Jika Perangkat Android / iOS / iPadOS -> WAJIB dibuka lewat PWA Standalone (isStandalone === true).
   const requiresLogin =
     !isAuthenticated && (!isMobileOrTabletOS || isStandalone);
 
@@ -412,6 +418,17 @@ export default function App() {
     };
   }, [syncState]);
 
+  // HITUNG SELURUH TUGAS AKTIF MENDATANG (BELUM DONE & DEADLINE BELUM LEWAT)
+  const activeTaskCount = appState.tasks.filter((task) => {
+    const isExplicitlyDone = completedTaskIds.includes(task.id);
+    if (task.status === 'done' || isExplicitlyDone) return false;
+
+    const deadlineTime = new Date(task.deadline).getTime();
+    if (Number.isNaN(deadlineTime)) return false;
+
+    return deadlineTime > Date.now();
+  }).length;
+
   const urgentTaskCount = appState.tasks.filter((task) => {
     if (task.status === 'done') return false;
 
@@ -561,7 +578,7 @@ export default function App() {
         <Sidebar
           activeTab={activeTab}
           setActiveTab={setActiveTab}
-          urgentTaskCount={urgentTaskCount}
+          activeTaskCount={activeTaskCount}
           onOpenGpaModal={() => setIsGpaModalOpen(true)}
         />
 

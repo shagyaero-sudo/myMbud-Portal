@@ -23,14 +23,14 @@ export type TabType = 'dashboard' | 'contacts' | 'materials' | 'tasks' | 'spinwh
 interface SidebarProps {
   activeTab: TabType;
   setActiveTab: (tab: TabType) => void;
-  hasActiveTasks: boolean; // Indikator red dot
+  activeTaskCount: number; // Jumlah total tugas aktif
   onOpenGpaModal: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   activeTab,
   setActiveTab,
-  hasActiveTasks,
+  activeTaskCount,
   onOpenGpaModal
 }) => {
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
@@ -45,14 +45,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const menuItems = [
-    { id: 'dashboard' as TabType, label: 'Jadwal Perkuliahan', icon: CalendarDays, showDot: false, isModal: false },
-    { id: 'tasks' as TabType, label: 'Manajemen Tugas', icon: FolderKanban, showDot: hasActiveTasks, isModal: false },
-    { id: 'contacts' as TabType, label: 'Direktori Kontak', icon: Users, showDot: false, isModal: false },
-    { id: 'materials' as TabType, label: 'Bank Materi PDF', icon: FileText, showDot: false, isModal: false },
-    { id: 'spinwheel' as TabType, label: 'Spinwheel', icon: Dices, showDot: false, isModal: false },
-    { id: 'calculator' as TabType, label: 'Kalkulator Nilai', icon: Calculator, showDot: false, isModal: false },
-    { id: 'letter' as TabType, label: 'Ajukan Surat Turlap', icon: FileEdit, showDot: false, isModal: false },
-    { id: 'gpacalculator' as any, label: 'Hitung IP Semester', icon: Award, showDot: false, isModal: true },
+    { id: 'dashboard' as TabType, label: 'Jadwal Perkuliahan', icon: CalendarDays, count: null, isModal: false },
+    { id: 'tasks' as TabType, label: 'Manajemen Tugas', icon: FolderKanban, count: activeTaskCount > 0 ? activeTaskCount : null, isModal: false },
+    { id: 'contacts' as TabType, label: 'Direktori Kontak', icon: Users, count: null, isModal: false },
+    { id: 'materials' as TabType, label: 'Bank Materi PDF', icon: FileText, count: null, isModal: false },
+    { id: 'spinwheel' as TabType, label: 'Spinwheel', icon: Dices, count: null, isModal: false },
+    { id: 'calculator' as TabType, label: 'Kalkulator Nilai', icon: Calculator, count: null, isModal: false },
+    { id: 'letter' as TabType, label: 'Ajukan Surat Turlap', icon: FileEdit, count: null, isModal: false },
+    { id: 'gpacalculator' as any, label: 'Hitung IP Semester', icon: Award, count: null, isModal: true },
   ];
 
   const navigateFromSheet = (tab: TabType) => {
@@ -106,9 +106,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <span>{item.label}</span>
                 </div>
 
-                {/* Indikator Red Dot di Desktop Sidebar */}
-                {item.showDot ? (
-                  <span className="relative z-10 w-2.5 h-2.5 bg-rose-500 rounded-full shadow-sm animate-pulse" />
+                {/* Badge Angka di Desktop Sidebar */}
+                {item.count !== null ? (
+                  <span className={`relative z-10 text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
+                    isActive 
+                      ? 'bg-blue-600 text-white' 
+                      : 'bg-rose-500 text-white shadow-xs'
+                  }`}>
+                    {item.count}
+                  </span>
                 ) : (
                   isActive && <ChevronRight className="relative z-10 w-4 h-4 text-blue-600 dark:text-blue-400" />
                 )}
@@ -169,8 +175,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
           
           <BottomTabItem id="dashboard" label="Jadwal" icon={CalendarDays} activeTab={activeTab} onClick={setActiveTab} />
           
-          {/* Menu Tugas dengan Red Dot */}
-          <BottomTabItem id="tasks" label="Tugas" icon={FolderKanban} activeTab={activeTab} onClick={setActiveTab} showDot={hasActiveTasks} />
+          {/* Menu Tugas dengan Badge Angka */}
+          <BottomTabItem id="tasks" label="Tugas" icon={FolderKanban} activeTab={activeTab} onClick={setActiveTab} count={activeTaskCount > 0 ? activeTaskCount : null} />
 
           {/* TOMBOL SAKTI / APP DRAWER TRIGGER */}
           <div className="relative flex flex-col items-center justify-center -top-2.5 z-50">
@@ -299,7 +305,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 };
 
 /* --- HELPER COMPONENT UNTUK BOTTOM NAV BUTTONS --- */
-const BottomTabItem = ({ id, label, icon: Icon, activeTab, onClick, showDot }: any) => {
+const BottomTabItem = ({ id, label, icon: Icon, activeTab, onClick, count }: any) => {
   const isActive = activeTab === id;
   return (
     <button
@@ -318,9 +324,11 @@ const BottomTabItem = ({ id, label, icon: Icon, activeTab, onClick, showDot }: a
       <Icon className={`relative z-10 w-5 h-5 mb-0.5 ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-zinc-500'}`} />
       <span className="relative z-10 text-[10px] tracking-tight">{label}</span>
       
-      {/* Indikator Red Dot Pengganti Angka */}
-      {showDot ? (
-        <span className="absolute top-1.5 right-4 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-white dark:ring-zinc-900 z-20 animate-pulse" />
+      {/* Badge Angka Pengganti Red Dot */}
+      {count !== null ? (
+        <span className="absolute -top-1 right-2 bg-rose-500 text-white text-[9px] font-extrabold px-1.5 py-0.2 rounded-full flex items-center justify-center min-w-[1.125rem] h-4 shadow-xs z-20">
+          {count}
+        </span>
       ) : null}
     </button>
   );
