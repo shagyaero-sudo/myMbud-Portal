@@ -545,7 +545,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             whileTap={{ scale: 0.985 }}
             transition={{ duration: 0.2 }}
             onClick={() => onNavigateTab('mbudiary' as any)}
-            className="block lg:hidden w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 pink:from-pink-500 pink:to-rose-500 purple:from-purple-600 purple:to-fuchsia-600 green:from-emerald-600 green:to-teal-600 text-white shadow-md hover:shadow-lg transition-all cursor-pointer"
+            className="block lg:hidden w-full flex items-center justify-center gap-1.5 px-4 py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 pink:from-pink-500 pink:to-rose-500 purple:from-purple-600 purple:to-fuchsia-600 green:from-emerald-600 green:to-teal-600 text-white shadow-md hover:shadow-lg transition-all cursor-pointer"
             title="Ceritakan di mbudiary. #SejutaCerita"
           >
             <Pencil className="w-4 h-4 shrink-0" />
@@ -553,7 +553,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               Ceritakan di mbudiary.
             </span>
             <span className="text-xs sm:text-sm font-normal opacity-90">
-          #SejutaCerita
+              #SejutaCerita
             </span>
           </motion.button>
 
