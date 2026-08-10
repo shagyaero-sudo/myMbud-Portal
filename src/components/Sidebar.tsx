@@ -106,7 +106,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <span>{item.label}</span>
                 </div>
 
-                {/* Badge Angka di Desktop Sidebar */}
+                {/* Badge Angka Khusus Tugas di Desktop Sidebar */}
                 {item.count !== null ? (
                   <span className={`relative z-10 text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
                     isActive 
@@ -324,8 +324,8 @@ const BottomTabItem = ({ id, label, icon: Icon, activeTab, onClick, count }: any
       <Icon className={`relative z-10 w-5 h-5 mb-0.5 ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-zinc-500'}`} />
       <span className="relative z-10 text-[10px] tracking-tight">{label}</span>
       
-      {/* Badge Angka Pengganti Red Dot */}
-      {count !== null ? (
+      {/* Badge Angka Khusus Menu Tugas */}
+      {count ? (
         <span className="absolute -top-1 right-2 bg-rose-500 text-white text-[9px] font-extrabold px-1.5 py-0.2 rounded-full flex items-center justify-center min-w-[1.125rem] h-4 shadow-xs z-20">
           {count}
         </span>
