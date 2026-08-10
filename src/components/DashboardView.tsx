@@ -553,7 +553,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               Ceritakan di mbudiary.
             </span>
             <span className="text-xs sm:text-sm font-normal opacity-90">
-              #SejutaCerita
+          #SejutaCerita
             </span>
           </motion.button>
 
