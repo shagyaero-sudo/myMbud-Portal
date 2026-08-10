@@ -373,7 +373,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           title: newAnnTitle.trim(),
           content: newAnnContent.trim(),
           category: newAnnCategory,
-          author: 'Pengurus Kelas A',
           pinned: newAnnPinned,
         });
       }
