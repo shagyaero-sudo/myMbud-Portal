@@ -225,7 +225,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const selectedDateTasks = getTasksForDate(selectedCalendarDate);
   const selectedDateDayName = getDayNameFromDate(selectedCalendarDate);
   
-  // RENTANG PERKULIAHAN SEMESTER (16 MINGGU: 31 AGUSTUS - 18 DESEMBER 2026)
+  // RENTANG PERKULIAHAN SEMESTER (31 AGUSTUS - 18 DESEMBER 2026)
   const startOfSemester = new Date('2026-08-31T00:00:00');
   const endOfSemesterLimit = new Date('2026-12-18T23:59:59');
 
@@ -538,7 +538,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
 
-          {/* MBUDIARY ACTION BAR — TEMATIC ADAPTIVE GRADIENT */}
+          {/* MBUDIARY BANNER — HANYA TAMPIL DI MOBILE (DESKTOP PAKAI FLOATING BUTTON DI POJOKAN) */}
           <motion.button
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -546,7 +546,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             whileTap={{ scale: 0.985 }}
             transition={{ duration: 0.2 }}
             onClick={() => onNavigateTab('mbudiary' as any)}
-            className="w-full flex items-center justify-center gap-2.5 px-5 py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 pink:from-pink-500 pink:to-rose-500 purple:from-purple-600 purple:to-fuchsia-600 green:from-emerald-600 green:to-teal-600 text-white shadow-md hover:shadow-lg transition-all cursor-pointer"
+            className="block lg:hidden w-full flex items-center justify-center gap-2.5 px-5 py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 pink:from-pink-500 pink:to-rose-500 purple:from-purple-600 purple:to-fuchsia-600 green:from-emerald-600 green:to-teal-600 text-white shadow-md hover:shadow-lg transition-all cursor-pointer"
             title="Ceritakan harimu di mbudiary!"
           >
             <Pencil className="w-4 h-4 shrink-0" />
@@ -1136,6 +1136,26 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         )}
       </AnimatePresence>
 
+      {/* FLOATING BUTTON MBUDIARY KHUSUS DESKTOP (POJOK KANAN BAWAH) */}
+      <motion.button
+        initial={{ scale: 0, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        whileHover={{ scale: 1.04, y: -2 }}
+        whileTap={{ scale: 0.96 }}
+        onClick={() => onNavigateTab('mbudiary' as any)}
+        className="hidden lg:flex fixed bottom-10 right-10 z-40 items-center gap-3.5 px-5 py-3.5 rounded-2xl bg-zinc-900 dark:bg-zinc-100 text-zinc-100 dark:text-zinc-900 border border-zinc-800 dark:border-zinc-200 shadow-2xl transition-all cursor-pointer group"
+        title="mbudiary #RuangAman"
+      >
+        <Pencil className="w-5 h-5 text-zinc-100 dark:text-zinc-900 shrink-0" />
+        <div className="text-left flex flex-col justify-center pr-1">
+          <span className="text-base font-black tracking-tight text-zinc-100 dark:text-zinc-900 leading-none">
+            mbudiary.
+          </span>
+          <span className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500 leading-tight mt-1">
+            #RuangAman
+          </span>
+        </div>
+      </motion.button>
     </motion.div>
   );
 };
