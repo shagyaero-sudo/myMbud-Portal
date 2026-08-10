@@ -225,12 +225,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const selectedDateTasks = getTasksForDate(selectedCalendarDate);
   const selectedDateDayName = getDayNameFromDate(selectedCalendarDate);
   
+  // RENTANG PERKULIAHAN SEMESTER (16 MINGGU: 31 AGUSTUS - 18 DESEMBER 2026)
+  const startOfSemester = new Date('2026-08-31T00:00:00');
   const endOfSemesterLimit = new Date('2026-12-18T23:59:59');
-  const isPastSemesterLimit = selectedCalendarDate.getTime() > endOfSemesterLimit.getTime();
 
-  const selectedDateSchedules = isPastSemesterLimit
-    ? []
-    : state.schedules.filter((s) => s.day === selectedDateDayName);
+  const isWithinSemesterPeriod = (dateObj: Date) => {
+    const time = dateObj.getTime();
+    return time >= startOfSemester.getTime() && time <= endOfSemesterLimit.getTime();
+  };
+
+  const selectedDateSchedules = isWithinSemesterPeriod(selectedCalendarDate)
+    ? state.schedules.filter((s) => s.day === selectedDateDayName)
+    : [];
 
   const formatAnnouncementDate = (dateStr: string) => {
     if (!dateStr) return '';
@@ -253,15 +259,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const renderFormattedContent = (content: string) => {
     if (!content) return null;
 
-    // Matches WhatsApp style formatting:
-    // *bold*, _italic_, ~strikethrough~, `monospace`, and URL links
     const formattedRegex = /(`[^`]+`|\*[^*]+\*|_[^_]+_|~[^~]+~|https?:\/\/[^\s]+)/g;
     const parts = content.split(formattedRegex);
 
     return parts.map((part, i) => {
       if (!part) return null;
 
-      // 1. Monospace (`teks`)
       if (part.startsWith('`') && part.endsWith('`') && part.length > 2) {
         return (
           <code key={i} className="bg-slate-200 dark:bg-zinc-700 px-1.5 py-0.5 rounded text-[11px] font-mono text-pink-600 dark:text-pink-400">
@@ -270,7 +273,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         );
       }
 
-      // 2. Bold (*teks*)
       if (part.startsWith('*') && part.endsWith('*') && part.length > 2) {
         return (
           <strong key={i} className="font-extrabold text-slate-900 dark:text-zinc-100">
@@ -279,7 +281,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         );
       }
 
-      // 3. Italic (_teks_)
       if (part.startsWith('_') && part.endsWith('_') && part.length > 2) {
         return (
           <em key={i} className="italic">
@@ -288,7 +289,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         );
       }
 
-      // 4. Strikethrough (~teks~)
       if (part.startsWith('~') && part.endsWith('~') && part.length > 2) {
         return (
           <del key={i} className="line-through opacity-75">
@@ -297,7 +297,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         );
       }
 
-      // 5. URL Link
       if (part.match(/^https?:\/\/[^\s]+$/)) {
         return (
           <a
@@ -672,7 +671,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
           </div>
 
-          {/* 2. WIDGET KALENDER BUILD-IN (SLIDER DI POJOK KANAN SEJAJAR DENGAN TITLE) */}
+          {/* 2. WIDGET KALENDER BUILD-IN */}
           <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-6 transition-colors">
             {/* Header Kalender: Title & Slider Sejajar di Pojok Kanan */}
             <div className="flex items-center justify-between gap-2">
@@ -738,8 +737,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   const dayTasks = getTasksForDate(dateObj);
                   const hasTasks = dayTasks.length > 0;
                   
-                  const isBeyondSemesterLimit = dateObj.getTime() > endOfSemesterLimit.getTime();
-                  const hasSchedule = !isBeyondSemesterLimit && getDayNameFromDate(dateObj) !== ('Minggu' as any) && getDayNameFromDate(dateObj) !== ('Sabtu' as any);
+                  // DOT HANYA MUNCUL JIKA DALAM PERIODE 31 AGUSTUS - 18 DESEMBER 2026 & BUKAN SABTU/MINGGU
+                  const isCourseActive = isWithinSemesterPeriod(dateObj) && getDayNameFromDate(dateObj) !== ('Minggu' as any) && getDayNameFromDate(dateObj) !== ('Sabtu' as any);
 
                   return (
                     <motion.button
@@ -765,7 +764,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         {isHoliday && !isSelected && (
                           <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" title={holidayName} />
                         )}
-                        {hasSchedule && !isHoliday && (
+                        {isCourseActive && !isHoliday && (
                           <span className={`w-1 h-1 rounded-full ${isSelected ? 'bg-white' : 'bg-blue-500'}`} />
                         )}
                         {hasTasks && (
@@ -778,7 +777,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
             </div>
 
-            {/* Panel Ringkasan Agenda Tanggal Terpilih (Format Tanggal Lengkap: Sen, 17 Agu 2026) */}
+            {/* Panel Ringkasan Agenda Tanggal Terpilih */}
             <div className="pt-4 border-t border-slate-100 dark:border-zinc-800 space-y-3">
               <div className="flex items-center justify-between gap-2 flex-wrap">
                 <span className="text-xs font-bold text-slate-700 dark:text-zinc-300">
