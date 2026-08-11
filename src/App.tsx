@@ -126,7 +126,7 @@ export default function App() {
             localStorage.removeItem('mymbud_user_nrp');
 
             setIsAuthenticated(false);
-            alert('Sesi berakhir, Silakan login kembali.');
+            alert('Untuk alasan keamanan sistem, Silakan lakukan login kembali.');
           }
         } catch (err) {
           console.error('Gagal memeriksa status sesi:', err);
