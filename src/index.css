@@ -5,6 +5,14 @@
 @custom-variant purple (&:where(.purple, .purple *));
 @custom-variant green (&:where(.green, .green *));
 
+@layer base {
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
 /* === PINK MODE OVERRIDES === */
 .pink {
   --color-slate-50: #fff0f3;
