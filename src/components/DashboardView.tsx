@@ -806,7 +806,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <div className="space-y-2">
                 {selectedDateSchedules.length === 0 && selectedDateTasks.length === 0 && !NATIONAL_HOLIDAYS_2026[formatDateKey(selectedCalendarDate)] ? (
                   <div className="p-4 text-center text-slate-400 dark:text-zinc-500 text-xs bg-slate-50/70 dark:bg-zinc-800/40 rounded-2xl">
-                    Tidak ada jadwal kuliah maupun deadline tugas di tanggal ini.
+                    Tiada jadwal kuliah atau deadline di tanggal ini.
                   </div>
                 ) : (
                   <>

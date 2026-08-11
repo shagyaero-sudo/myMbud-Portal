@@ -343,27 +343,19 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                         </div>
                       </div>
 
-                      <div className="hidden sm:flex items-center gap-2 shrink-0">
+                      <div className="flex items-center gap-2 shrink-0">
                         <span className="text-xs font-semibold text-slate-600 dark:text-zinc-300 bg-white dark:bg-zinc-800 px-3 py-1 rounded-full shadow-xs border border-slate-100 dark:border-zinc-700">
                           {mat.session}
                         </span>
-                      </div>
-
-                      <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
-                        <motion.button
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={() => onPreviewPdf(mat)}
-                          className="px-4 py-1.5 rounded-xl bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 hover:bg-slate-200 dark:hover:bg-zinc-700 text-[11px] font-bold transition-all"
-                        >
-                          Buka
-                        </motion.button>
 
                         {isOfficer && (
                           <motion.button
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
-                            onClick={() => onDeleteMaterial(mat.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onDeleteMaterial(mat.id);
+                            }}
                             className="p-2 rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-zinc-800 transition-all"
                             title="Hapus Berkas"
                           >
@@ -442,14 +434,14 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
-                        Sesi / Pertemuan
+                        Pertemuan ke-
                       </label>
                       <input
                         type="text"
                         required
                         value={formSession}
                         onChange={(e) => setFormSession(e.target.value)}
-                        placeholder="Misal: Pertemuan 14, UTS, UAS"
+                        placeholder="Misal: WEEK 14"
                         className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>

@@ -160,11 +160,11 @@ export const SpinwheelView: React.FC<SpinwheelViewProps> = ({ onSaveGroupResult,
         <div className="space-y-1">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 text-xs font-semibold">
             <Dices className="w-3.5 h-3.5" />
-            <span>Alat Interaktif Kelas A</span>
+            <span>Spin The Wheel!</span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-zinc-100">Pembagian Kelompok & Acak Nama</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-zinc-100">Spinwheel Individu/Kelompok</h2>
           <p className="text-xs text-slate-500 dark:text-zinc-400">
-            Sistem pengocokan nama mahasiswa secara acak dan transparan untuk kelompok maupun undian individu.
+            Sistem pengocokan nama secara acak dan transparan untuk kelompok atau individu.
           </p>
         </div>
       </div>
@@ -181,7 +181,7 @@ export const SpinwheelView: React.FC<SpinwheelViewProps> = ({ onSaveGroupResult,
               className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold flex items-center gap-1"
             >
               <RefreshCw className="w-3.5 h-3.5" />
-              <span>Reset Daftar (30 Orang)</span>
+              <span>Reset Daftar</span>
             </button>
           )}
         </div>
@@ -189,7 +189,7 @@ export const SpinwheelView: React.FC<SpinwheelViewProps> = ({ onSaveGroupResult,
         <div>
           <div className="flex items-center justify-between mb-1.5">
             <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300">
-              Masukkan Nama Mahasiswa (1 nama per baris):
+              Nama Mahasiswa:
             </label>
           </div>
           <textarea
@@ -207,7 +207,7 @@ export const SpinwheelView: React.FC<SpinwheelViewProps> = ({ onSaveGroupResult,
         </div>
 
         <div className="p-5 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 space-y-4">
-          <h4 className="text-xs font-bold text-slate-700 dark:text-zinc-300 uppercase tracking-wider">Metode Pembagian Kelompok</h4>
+          <h4 className="text-xs font-bold text-slate-700 dark:text-zinc-300 uppercase tracking-wider">Metode Pembagian:</h4>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <motion.button
@@ -370,13 +370,13 @@ export const SpinwheelView: React.FC<SpinwheelViewProps> = ({ onSaveGroupResult,
                     >
                       <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-sky-100 dark:bg-sky-900/60 text-sky-700 dark:text-sky-300 text-xs font-bold uppercase tracking-wider shadow-xs">
                         <Trophy className="w-4 h-4 text-sky-600 dark:text-sky-400" />
-                        <span>Mahasiswa Terpilih</span>
+                        <span>SELAMAT! 🥳</span>
                       </div>
                       <div className="text-2xl sm:text-4xl font-extrabold text-blue-600 dark:text-blue-400 tracking-tight px-4 animate-bounce">
                         {selectedIndividual}
                       </div>
                       <p className="text-xs text-slate-500 dark:text-zinc-400">
-                        Terpilih secara acak dari total {studentList.length} mahasiswa Kelas A
+                      
                       </p>
                     </motion.div>
                   ) : (
