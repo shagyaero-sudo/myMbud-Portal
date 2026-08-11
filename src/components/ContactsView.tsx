@@ -169,8 +169,8 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
         msg: `Selamat pagi/siang Yth. Bapak/Ibu ${templateTarget.name}. Saya [Nama Mahasiswa] (NRP: [NRP]) dari Kelas A mata kuliah ${templateTarget.course}. Izin menyampaikan bahwa pada perkuliahan hari ini saya berhalangan hadir dikarenakan [Alasan]. Surat izin resmi telah saya lampirkan di myITS Presensi. Terima kasih atas pengertiannya Bapak/Ibu.`,
       },
       {
-        title: 'Konfirmasi Jadwal Kuliah Pengganti / KP (PJ)',
-        msg: `Selamat pagi/siang Yth. Bapak/Ibu ${templateTarget.name}, mohon maaf mengganggu waktunya. Saya [Nama PJ], PJ Kelas A mata kuliah ${templateTarget.course}. Menindaklanjuti perkuliahan yang sebelumnya sempat tertunda, izin berkonsultasi mengenai opsi jadwal Kuliah Pengganti (KP). Dari hasil kesepakatan teman-teman kelas, berikut opsi waktu yang memungkinkan: [Opsi Hari & Jam]. Mohon arahan Bapak/Ibu mengenai opsi mana yang berkenan untuk digunakan. Terima kasih banyak Bapak/Ibu.`,
+        title: 'Konfirmasi Jadwal Kuliah Pengganti (PJ)',
+        msg: `Selamat pagi/siang Yth. Bapak/Ibu ${templateTarget.name}, mohon maaf mengganggu waktunya. Saya [Nama PJ], PJ Kelas A mata kuliah ${templateTarget.course}. Menindaklanjuti perkuliahan yang sebelumnya sempat tertunda, izin berkonsultasi mengenai opsi jadwal Kuliah Pengganti. Dari hasil kesepakatan teman-teman kelas, berikut opsi waktu yang memungkinkan: [Opsi Hari & Jam]. Mohon arahan Bapak/Ibu mengenai opsi mana yang berkenan untuk digunakan. Terima kasih banyak Bapak/Ibu.`,
       },
       {
         title: 'Permohonan Link Perkuliahan Daring (PJ)',
@@ -187,6 +187,10 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
       {
         title: 'Klarifikasi Nilai & Presensi Perkuliahan',
         msg: `Selamat pagi/siang Yth. Bapak/Ibu ${templateTarget.name}, mohon maaf mengganggu waktunya. Saya [Nama Mahasiswa] (NRP: [NRP]) dari Kelas A mata kuliah ${templateTarget.course}. Permisi Bapak/Ibu, izin bertanya/mengonfirmasi terkait nilai [Tugas/UTS/UAS] saya yang tercantum pada portal. Izin memastikan apakah ada berkas pendukung atau tugas tambahan yang perlu saya lengkapi kembali? Terima kasih banyak atas perhatian dan kesediaan Bapak/Ibu.`,
+      },
+      {
+        title: 'Lainnya... (Format Pesan Bebas & Sopan)',
+        msg: `Selamat pagi/siang Yth. Bapak/Ibu ${templateTarget.name}, mohon maaf mengganggu waktunya. Saya [Nama Mahasiswa] (NRP: [NRP]) dari Kelas A mata kuliah ${templateTarget.course}.\n\n[Tuliskan isi pesan atau keperluanmu di sini...]\n\nTerima kasih banyak atas perhatian dan arahan Bapak/Ibu.`,
       },
     ];
   };
@@ -309,22 +313,9 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                       </div>
 
                       <div className="flex items-center gap-2 pt-0.5">
-                        <motion.a
+                        <motion.button
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
-                          href={generateWaLink(
-                            c.lecturerPhone,
-                            `Selamat pagi/siang Bapak/Ibu ${c.lecturerName}, mohon maaf mengganggu waktunya. Saya mahasiswa Kelas A peserta mata kuliah ${c.course}...`
-                          )}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition-all shadow-md shadow-blue-500/20"
-                        >
-                          <MessageSquare className="w-3.5 h-3.5" />
-                          <span>Chat WA</span>
-                        </motion.a>
-
-                        <button
                           onClick={() =>
                             openTemplate(
                               c.lecturerName,
@@ -332,11 +323,11 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                               c.course
                             )
                           }
-                          className="px-3 py-2 rounded-xl bg-slate-200/60 dark:bg-zinc-700 hover:bg-slate-200 dark:hover:bg-zinc-600 text-slate-700 dark:text-zinc-200 text-xs font-semibold transition-all"
-                          title="Template Pesan Sopan"
+                          className="w-full flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition-all shadow-md shadow-blue-500/20"
                         >
-                          Template
-                        </button>
+                          <MessageSquare className="w-3.5 h-3.5" />
+                          <span>Chat WA Dosen (Pilih Opsi..)</span>
+                        </motion.button>
                       </div>
                     </div>
 
@@ -589,7 +580,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
             >
               <div className="px-6 sm:px-8 py-5 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between shrink-0 bg-white dark:bg-zinc-900">
                 <h3 className="text-base font-bold text-slate-900 dark:text-zinc-100">
-                  Pilih Template Pesan WhatsApp (Dosen)
+                  Pilih Opsi Pesan WhatsApp Dosen
                 </h3>
                 <button
                   type="button"
@@ -643,7 +634,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                             className="overflow-hidden"
                           >
                             <div className="p-4 pt-1 space-y-3 border-t border-slate-100/80 dark:border-zinc-800/80">
-                              <p className="text-xs text-slate-700 dark:text-zinc-300 leading-relaxed italic bg-white dark:bg-zinc-900 p-3 rounded-xl shadow-xs border border-slate-100 dark:border-zinc-800">
+                              <p className="text-xs text-slate-700 dark:text-zinc-300 leading-relaxed italic bg-white dark:bg-zinc-900 p-3 rounded-xl shadow-xs border border-slate-100 dark:border-zinc-800 whitespace-pre-line">
                                 "{tmpl.msg}"
                               </p>
 
