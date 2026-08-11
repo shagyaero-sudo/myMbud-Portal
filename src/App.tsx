@@ -10,6 +10,7 @@ import {
   addDoc,
   deleteDoc,
   doc,
+  getDoc,
   Timestamp,
 } from 'firebase/firestore';
 
@@ -108,6 +109,33 @@ export default function App() {
 
   const [completedTaskIds, setCompletedTaskIds] = useState<string[]>([]);
   const currentUserNrp = localStorage.getItem('mymbud_user_nrp') || 'unknown';
+
+  // --- CHECK INDIVIDUAL SESSION TERMINATION (KILL-SWITCH) ---
+  useEffect(() => {
+    const checkSessionStatus = async () => {
+      const userNrp = localStorage.getItem('mymbud_user_nrp');
+
+      if (userNrp && isAuthenticated) {
+        try {
+          const revokedRef = doc(db, 'revoked_sessions', userNrp);
+          const revokedDoc = await getDoc(revokedRef);
+
+          if (revokedDoc.exists()) {
+            localStorage.removeItem('mymbud_auth');
+            localStorage.removeItem('mymbud_user_name');
+            localStorage.removeItem('mymbud_user_nrp');
+
+            setIsAuthenticated(false);
+            alert('Sesi kamu telah diakhiri oleh sistem. Silakan login kembali.');
+          }
+        } catch (err) {
+          console.error('Gagal memeriksa status sesi:', err);
+        }
+      }
+    };
+
+    checkSessionStatus();
+  }, [isAuthenticated]);
 
   useEffect(() => {
     const unsub = subscribeUserTaskCompletions(currentUserNrp, (ids) => {

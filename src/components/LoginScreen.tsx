@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { doc, deleteDoc } from 'firebase/firestore';
+import { db } from '../services/firebase';
 import { STUDENTS_DATA } from '../data/studentsData';
 
 interface LoginScreenProps {
@@ -10,8 +12,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
   const [nrp, setNrp] = useState('');
   const [pin, setPin] = useState('');
   const [error, setError] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // 1. Validasi Prefix NRP (Harus diawali 5033251 dan total 10 digit)
@@ -28,6 +31,17 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
     // 3. Cocokkan dengan data mahasiswa dan PIN
     if (student && student.pin === pin) {
       setError(false);
+      setIsLoading(true);
+      
+      try {
+        // Hapus NRP dari daftar revoked_sessions (jika sebelumnya pernah ditendang)
+        await deleteDoc(doc(db, 'revoked_sessions', nrp));
+      } catch (err) {
+        console.error('Gagal membersihkan revoked session:', err);
+      } finally {
+        setIsLoading(false);
+      }
+
       localStorage.setItem('mymbud_auth', 'true');
       localStorage.setItem('mymbud_user_name', student.name); // Simpan nama panggilan
       localStorage.setItem('mymbud_user_nrp', nrp);
@@ -42,7 +56,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
     <div className="min-h-screen bg-white dark:bg-[#09090b] flex flex-col lg:flex-row font-sans selection:bg-blue-500 selection:text-white">
       
       {/* BAGIAN KIRI / ATAS: GAMBAR SCRAPBOOK */}
-      {/* Container dibuat memakan porsi besar di HP dan bg-white agar blending dgn gambar */}
       <div className="w-full lg:w-1/2 h-[58vh] lg:h-screen bg-white relative flex items-center justify-end overflow-hidden">
         <motion.img 
           initial={{ opacity: 0, scale: 0.98 }}
@@ -50,13 +63,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
           transition={{ duration: 0.6 }}
           src="/collase.png" 
           alt="Kolase Kelas A" 
-          // object-cover & object-right memastikan gambar NABRAK ke tepi kanan tanpa celah
           className="absolute inset-0 w-full h-full object-cover object-right"
         />
       </div>
 
       {/* BAGIAN KANAN / BAWAH: FORM LOGIN */}
-      {/* Padding dan margin dikurangi agar form lebih ramping/compact di HP */}
       <div className="w-full lg:w-1/2 flex-1 flex flex-col justify-center bg-white dark:bg-[#09090b] rounded-t-[2.5rem] lg:rounded-none -mt-10 lg:mt-0 relative z-20 px-6 py-8 sm:px-12 lg:px-24 shadow-[0_-10px_40px_rgba(0,0,0,0.08)] lg:shadow-none">
         <motion.div
           initial={{ opacity: 0, y: 15 }}
@@ -124,10 +135,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
 
             <button
               type="submit"
-              disabled={nrp.length !== 10 || pin.length !== 4}
+              disabled={nrp.length !== 10 || pin.length !== 4 || isLoading}
               className="w-full py-3.5 mt-2 rounded-xl bg-slate-800 dark:bg-[#cbd5e1] hover:bg-slate-900 dark:hover:bg-white disabled:bg-slate-300 disabled:dark:bg-zinc-800 disabled:text-slate-500 text-white dark:text-slate-900 text-xs sm:text-sm font-bold transition-all active:scale-[0.98]"
             >
-              Masuk
+              {isLoading ? 'Memverifikasi...' : 'Masuk'}
             </button>
           </form>
 
