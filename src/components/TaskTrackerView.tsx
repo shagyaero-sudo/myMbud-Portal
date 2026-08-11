@@ -536,8 +536,8 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
         {filteredTasks.length === 0 ? (
           <div className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl p-12 text-center text-slate-400 dark:text-zinc-500 text-xs shadow-sm">
             {activeTab === 'active'
-              ? 'Tidak ada tugas aktif mendatang. Semua tugas sudah dicentang atau telah berlalu! 🎉'
-              : 'Belum ada riwayat tugas yang selesai/berlalu.'}
+              ? 'Tidak ada tugas aktif mendatang.'
+              : 'Belum ada riwayat tugas yang selesai'}
           </div>
         ) : activeTab === 'active' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">

@@ -6,10 +6,34 @@
 @custom-variant green (&:where(.green, .green *));
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent; /* Hilangkan kotak abu-abu saat tap di Android */
+  }
+
   body {
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", "Helvetica Neue", Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Custom Soft Scrollbar Khas macOS/iOS */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(150, 150, 150, 0.25);
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(150, 150, 150, 0.45);
   }
 }
 
@@ -61,26 +85,23 @@
 
 /* === GREEN / MATCHA MODE OVERRIDES === */
 .green {
-  /* Backgrounds & Surfaces */
-  --color-slate-50: #f7fcf5;  /* Creamy Mint pastel lembut */
-  --color-slate-100: #e5f5e0; /* Hover & kartu */
-  --color-slate-200: #c7e9c0; /* Garis tepi / Border */
+  --color-slate-50: #f7fcf5;
+  --color-slate-100: #e5f5e0;
+  --color-slate-200: #c7e9c0;
   
-  /* Text Colors */
-  --color-slate-400: #74c476; /* Teks pudar / Ikon */
-  --color-slate-500: #41ab5d; /* Teks sekunder */
-  --color-slate-600: #238b45; /* Teks paragraf / label */
-  --color-slate-700: #006d2c; /* Teks tebal */
-  --color-slate-800: #00441b; /* Judul / Heading */
-  --color-slate-900: #002b11; /* Teks paling gelap */
+  --color-slate-400: #74c476;
+  --color-slate-500: #41ab5d;
+  --color-slate-600: #238b45;
+  --color-slate-700: #006d2c;
+  --color-slate-800: #00441b;
+  --color-slate-900: #002b11;
 
-  /* Primary Accents (Mengubah biru bawaan menjadi Hijau Emerald) */
   --color-blue-50: #e5f5e0;
   --color-blue-100: #c7e9c0;
   --color-blue-400: #74c476;
   --color-blue-500: #41ab5d;
-  --color-blue-600: #238b45; /* Tombol Utama (Forest Emerald) */
-  --color-blue-700: #006d2c; /* Hover Tombol Utama (Deep Emerald) */
+  --color-blue-600: #238b45;
+  --color-blue-700: #006d2c;
   --color-blue-900: #00441b;
   --color-blue-950: #002b11;
 }

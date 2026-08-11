@@ -496,11 +496,11 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                 {[
                   {
                     title: 'Izin Menanyakan Materi / Slide Presentasi',
-                    msg: `Selamat pagi/siang Yth. ${templateTarget.name}, mohon maaf mengganggu waktunya Bapak/Ibu. Saya mahasiswa Kelas A peserta mata kuliah ${templateTarget.course}. Izin bertanya mengenai file slide presentasi pertemuan minggu ini, apakah sudah dapat diakses via myITS Classroom? Terima kasih Bapak/Ibu.`,
+                    msg: `Selamat pagi/siang Yth. ${templateTarget.name}, mohon maaf mengganggu waktunya Bapak/Ibu. Saya mahasiswa Kelas A mata kuliah ${templateTarget.course}. Izin bertanya mengenai file slide presentasi pertemuan minggu ini, apakah sudah dapat diakses via myITS Classroom? Terima kasih Bapak/Ibu.`,
                   },
                   {
                     title: 'Permohonan Izin Berhalangan Hadir',
-                    msg: `Selamat pagi/siang Yth. ${templateTarget.name}. Saya [Nama Mahasiswa] (NIM: [NIM]) dari Kelas A mata kuliah ${templateTarget.course}. Izin menyampaikan bahwa pada perkuliahan hari ini saya berhalangan hadir dikarenakan [Alasan]. Surat izin resmi telah saya lampirkan. Terima kasih atas pengertiannya Bapak/Ibu.`,
+                    msg: `Selamat pagi/siang Yth. ${templateTarget.name}. Saya (Nama Mahasiswa) (NRP:) dari Kelas A mata kuliah ${templateTarget.course}. Izin menyampaikan bahwa pada perkuliahan hari ini saya berhalangan hadir dikarenakan [Alasan]. Surat izin resmi telah saya lampirkan di myITS Presensi. Terima kasih atas pengertiannya Bapak/Ibu.`,
                   },
                 ].map((tmpl, idx) => (
                   <div key={idx} className="p-4 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 space-y-2">
