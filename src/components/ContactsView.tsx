@@ -59,11 +59,10 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
   const [templateTarget, setTemplateTarget] = useState<{
     name: string;
     phone: string;
-    role: 'Lecturer' | 'PJ';
     course: string;
   } | null>(null);
 
-  // Accordion State untuk Modal Template
+  // Accordion State untuk Modal Template Dosen
   const [openTemplateIndex, setOpenTemplateIndex] = useState<number | null>(0);
 
   const formatWaNumber = (phoneStr: string) => {
@@ -141,14 +140,9 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
     setShowModal(false);
   };
 
-  const openTemplate = (
-    name: string,
-    phone: string,
-    role: 'Lecturer' | 'PJ',
-    course: string
-  ) => {
-    setTemplateTarget({ name, phone, role, course });
-    setOpenTemplateIndex(0); // Buka accordion pertama secara default
+  const openTemplate = (name: string, phone: string, course: string) => {
+    setTemplateTarget({ name, phone, course });
+    setOpenTemplateIndex(0);
     setShowTemplateModal(true);
   };
 
@@ -157,53 +151,44 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
     return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`;
   };
 
-  // DAFTAR TEMPLATE PERAN
-  const getTemplates = () => {
+  // DAFTAR TEMPLATE DOSEN
+  const getLecturerTemplates = () => {
     if (!templateTarget) return [];
 
-    if (templateTarget.role === 'Lecturer') {
-      return [
-        {
-          title: 'Pengingat & Konfirmasi Jadwal Perkuliahan (PJ)',
-          msg: `Selamat pagi/siang Yth. Bapak/Ibu ${templateTarget.name}, mohon maaf mengganggu waktunya. Saya [Nama PJ], Penanggung Jawab Kelas A mata kuliah ${templateTarget.course}. Permisi Bapak/Ibu, izin mengingatkan terkait jadwal perkuliahan kita yang akan dilaksanakan pada hari [Hari, Tanggal] pukul [Jam] WIB di ruang [Ruangan]. Mohon konfirmasinya apakah perkuliahan dapat dilaksanakan sesuai jadwal tersebut, atau ada arahan khusus dari Bapak/Ibu? Terima kasih banyak Bapak/Ibu.`,
-        },
-        {
-          title: 'Izin Menanyakan Materi / Slide Presentasi',
-          msg: `Selamat pagi/siang Yth. Bapak/Ibu ${templateTarget.name}, mohon maaf mengganggu waktunya. Saya mahasiswa Kelas A mata kuliah ${templateTarget.course}. Izin bertanya mengenai file slide presentasi pertemuan minggu ini, apakah sudah dapat diakses via myITS Classroom? Terima kasih Bapak/Ibu.`,
-        },
-        {
-          title: 'Permohonan Izin Berhalangan Hadir',
-          msg: `Selamat pagi/siang Yth. Bapak/Ibu ${templateTarget.name}. Saya [Nama Mahasiswa] (NRP: [NRP]) dari Kelas A mata kuliah ${templateTarget.course}. Izin menyampaikan bahwa pada perkuliahan hari ini saya berhalangan hadir dikarenakan [Alasan]. Surat izin resmi telah saya lampirkan di myITS Presensi. Terima kasih atas pengertiannya Bapak/Ibu.`,
-        },
-        {
-          title: 'Konfirmasi Jadwal Kuliah Pengganti / KP (PJ)',
-          msg: `Selamat pagi/siang Yth. Bapak/Ibu ${templateTarget.name}, mohon maaf mengganggu waktunya. Saya [Nama PJ], PJ Kelas A mata kuliah ${templateTarget.course}. Menindaklanjuti perkuliahan yang sebelumnya sempat tertunda, izin berkonsultasi mengenai opsi jadwal Kuliah Pengganti (KP). Dari hasil kesepakatan teman-teman kelas, berikut opsi waktu yang memungkinkan: [Opsi Hari & Jam]. Mohon arahan Bapak/Ibu mengenai opsi mana yang berkenan untuk digunakan. Terima kasih banyak Bapak/Ibu.`,
-        },
-        {
-          title: 'Permohonan Link Perkuliahan Daring (PJ)',
-          msg: `Selamat pagi/siang Yth. Bapak/Ibu ${templateTarget.name}, mohon maaf mengganggu waktunya. Saya [Nama PJ], PJ Kelas A mata kuliah ${templateTarget.course}. Menjelang perkuliahan daring kita pada [Hari, Jam], izin menanyakan apakah link platform perkuliahan (Zoom/Teams/GMeet) akan disediakan oleh Bapak/Ibu, atau dari pihak kelas yang memfasilitasi jalannya perkuliahan? Terima kasih banyak atas arahan Bapak/Ibu.`,
-        },
-        {
-          title: 'Permohonan Bimbingan / Konsultasi Tugas',
-          msg: `Selamat pagi/siang Yth. Bapak/Ibu ${templateTarget.name}, mohon maaf mengganggu waktunya. Saya [Nama Mahasiswa] (NRP: [NRP]) dari Kelas A mata kuliah ${templateTarget.course}. Permisi Bapak/Ibu, izin memohon waktu bimbingan/konsultasi terkait [Topik Tugas/Laporan Kelompok]. Apabila Bapak/Ibu berkenan, kira-kira kapan saya dapat menemui Bapak/Ibu di ruang dosen atau secara daring? Terima kasih banyak atas arahan Bapak/Ibu.`,
-        },
-        {
-          title: 'Konfirmasi Kendala Pengumpulan Tugas',
-          msg: `Selamat pagi/siang Yth. Bapak/Ibu ${templateTarget.name}, mohon maaf mengganggu waktunya. Saya [Nama Mahasiswa] (NRP: [NRP]) dari Kelas A mata kuliah ${templateTarget.course}. Izin menyampaikan bahwa saya mengalami kendala teknis saat mengunggah [Nama Tugas] di myITS Classroom. Berkas tugas telah saya lampirkan melalui pesan ini / [Link GDrive]. Mohon maaf atas ketidaknyamanannya dan terima kasih banyak Bapak/Ibu.`,
-        },
-        {
-          title: 'Klarifikasi Nilai & Presensi Perkuliahan',
-          msg: `Selamat pagi/siang Yth. Bapak/Ibu ${templateTarget.name}, mohon maaf mengganggu waktunya. Saya [Nama Mahasiswa] (NRP: [NRP]) dari Kelas A mata kuliah ${templateTarget.course}. Permisi Bapak/Ibu, izin bertanya/mengonfirmasi terkait nilai [Tugas/UTS/UAS] saya yang tercantum pada portal. Izin memastikan apakah ada berkas pendukung atau tugas tambahan yang perlu saya lengkapi kembali? Terima kasih banyak atas perhatian dan kesediaan Bapak/Ibu.`,
-        },
-      ];
-    } else {
-      return [
-        {
-          title: 'Menanyakan Informasi Perkuliahan ke PJ',
-          msg: `Halo ${templateTarget.name}! Aku [Nama Kamu] dari Kelas A ${templateTarget.course}. Mau tanya terkait [Tugas / Presensi / Pengumuman Matkul], apakah ada info terbaru dari dosen? Makasih ya!`,
-        },
-      ];
-    }
+    return [
+      {
+        title: 'Pengingat & Konfirmasi Jadwal Perkuliahan (PJ)',
+        msg: `Selamat pagi/siang Yth. Bapak/Ibu ${templateTarget.name}, mohon maaf mengganggu waktunya. Saya [Nama PJ], Penanggung Jawab Kelas A mata kuliah ${templateTarget.course}. Permisi Bapak/Ibu, izin mengingatkan terkait jadwal perkuliahan kita yang akan dilaksanakan pada hari [Hari, Tanggal] pukul [Jam] WIB di ruang [Ruangan]. Mohon konfirmasinya apakah perkuliahan dapat dilaksanakan sesuai jadwal tersebut, atau ada arahan khusus dari Bapak/Ibu? Terima kasih banyak Bapak/Ibu.`,
+      },
+      {
+        title: 'Izin Menanyakan Materi / Slide Presentasi',
+        msg: `Selamat pagi/siang Yth. Bapak/Ibu ${templateTarget.name}, mohon maaf mengganggu waktunya. Saya mahasiswa Kelas A mata kuliah ${templateTarget.course}. Izin bertanya mengenai file slide presentasi pertemuan minggu ini, apakah sudah dapat diakses via myITS Classroom? Terima kasih Bapak/Ibu.`,
+      },
+      {
+        title: 'Permohonan Izin Berhalangan Hadir',
+        msg: `Selamat pagi/siang Yth. Bapak/Ibu ${templateTarget.name}. Saya [Nama Mahasiswa] (NRP: [NRP]) dari Kelas A mata kuliah ${templateTarget.course}. Izin menyampaikan bahwa pada perkuliahan hari ini saya berhalangan hadir dikarenakan [Alasan]. Surat izin resmi telah saya lampirkan di myITS Presensi. Terima kasih atas pengertiannya Bapak/Ibu.`,
+      },
+      {
+        title: 'Konfirmasi Jadwal Kuliah Pengganti / KP (PJ)',
+        msg: `Selamat pagi/siang Yth. Bapak/Ibu ${templateTarget.name}, mohon maaf mengganggu waktunya. Saya [Nama PJ], PJ Kelas A mata kuliah ${templateTarget.course}. Menindaklanjuti perkuliahan yang sebelumnya sempat tertunda, izin berkonsultasi mengenai opsi jadwal Kuliah Pengganti (KP). Dari hasil kesepakatan teman-teman kelas, berikut opsi waktu yang memungkinkan: [Opsi Hari & Jam]. Mohon arahan Bapak/Ibu mengenai opsi mana yang berkenan untuk digunakan. Terima kasih banyak Bapak/Ibu.`,
+      },
+      {
+        title: 'Permohonan Link Perkuliahan Daring (PJ)',
+        msg: `Selamat pagi/siang Yth. Bapak/Ibu ${templateTarget.name}, mohon maaf mengganggu waktunya. Saya [Nama PJ], PJ Kelas A mata kuliah ${templateTarget.course}. Menjelang perkuliahan daring kita pada [Hari, Jam], izin menanyakan apakah link platform perkuliahan (Zoom/Teams/GMeet) akan disediakan oleh Bapak/Ibu, atau dari pihak kelas yang memfasilitasi jalannya perkuliahan? Terima kasih banyak atas arahan Bapak/Ibu.`,
+      },
+      {
+        title: 'Permohonan Bimbingan / Konsultasi Tugas',
+        msg: `Selamat pagi/siang Yth. Bapak/Ibu ${templateTarget.name}, mohon maaf mengganggu waktunya. Saya [Nama Mahasiswa] (NRP: [NRP]) dari Kelas A mata kuliah ${templateTarget.course}. Permisi Bapak/Ibu, izin memohon waktu bimbingan/konsultasi terkait [Topik Tugas/Laporan Kelompok]. Apabila Bapak/Ibu berkenan, kira-kira kapan saya dapat menemui Bapak/Ibu di ruang dosen atau secara daring? Terima kasih banyak atas arahan Bapak/Ibu.`,
+      },
+      {
+        title: 'Konfirmasi Kendala Pengumpulan Tugas',
+        msg: `Selamat pagi/siang Yth. Bapak/Ibu ${templateTarget.name}, mohon maaf mengganggu waktunya. Saya [Nama Mahasiswa] (NRP: [NRP]) dari Kelas A mata kuliah ${templateTarget.course}. Izin menyampaikan bahwa saya mengalami kendala teknis saat mengunggah [Nama Tugas] di myITS Classroom. Berkas tugas telah saya lampirkan melalui pesan ini / [Link GDrive]. Mohon maaf atas ketidaknyamanannya dan terima kasih banyak Bapak/Ibu.`,
+      },
+      {
+        title: 'Klarifikasi Nilai & Presensi Perkuliahan',
+        msg: `Selamat pagi/siang Yth. Bapak/Ibu ${templateTarget.name}, mohon maaf mengganggu waktunya. Saya [Nama Mahasiswa] (NRP: [NRP]) dari Kelas A mata kuliah ${templateTarget.course}. Permisi Bapak/Ibu, izin bertanya/mengonfirmasi terkait nilai [Tugas/UTS/UAS] saya yang tercantum pada portal. Izin memastikan apakah ada berkas pendukung atau tugas tambahan yang perlu saya lengkapi kembali? Terima kasih banyak atas perhatian dan kesediaan Bapak/Ibu.`,
+      },
+    ];
   };
 
   return (
@@ -344,7 +329,6 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                             openTemplate(
                               c.lecturerName,
                               c.lecturerPhone,
-                              'Lecturer',
                               c.course
                             )
                           }
@@ -378,26 +362,11 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                           }
                           target="_blank"
                           rel="noreferrer"
-                          className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-slate-100 dark:bg-zinc-700 hover:bg-slate-200 dark:hover:bg-zinc-600 text-slate-800 dark:text-zinc-200 font-semibold text-xs transition-all"
+                          className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-slate-100 dark:bg-zinc-700 hover:bg-slate-200 dark:hover:bg-zinc-600 text-slate-800 dark:text-zinc-200 font-semibold text-xs transition-all"
                         >
                           <MessageSquare className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                           <span>Chat WA PJ</span>
                         </motion.a>
-
-                        <button
-                          onClick={() =>
-                            openTemplate(
-                              c.pjName,
-                              c.pjPhone,
-                              'PJ',
-                              c.course
-                            )
-                          }
-                          className="px-3 py-2 rounded-xl bg-slate-200/60 dark:bg-zinc-700 hover:bg-slate-200 dark:hover:bg-zinc-600 text-slate-700 dark:text-zinc-200 text-xs font-semibold transition-all"
-                          title="Template Pesan Sopan"
-                        >
-                          Template
-                        </button>
                       </div>
                     </div>
                   </div>
@@ -602,7 +571,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
         )}
       </AnimatePresence>
 
-      {/* Modal: Accordion Template Pesan */}
+      {/* Modal: Accordion Template Pesan Dosen */}
       <AnimatePresence>
         {showTemplateModal && templateTarget && (
           <motion.div
@@ -620,8 +589,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
             >
               <div className="px-6 sm:px-8 py-5 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between shrink-0 bg-white dark:bg-zinc-900">
                 <h3 className="text-base font-bold text-slate-900 dark:text-zinc-100">
-                  Pilih Template Pesan WhatsApp (
-                  {templateTarget.role === 'Lecturer' ? 'Dosen' : 'PJ Matkul'})
+                  Pilih Template Pesan WhatsApp (Dosen)
                 </h3>
                 <button
                   type="button"
@@ -634,7 +602,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
 
               {/* Accordion List View */}
               <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-3">
-                {getTemplates().map((tmpl, idx) => {
+                {getLecturerTemplates().map((tmpl, idx) => {
                   const isOpen = openTemplateIndex === idx;
 
                   return (
