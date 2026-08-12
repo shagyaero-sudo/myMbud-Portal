@@ -429,11 +429,14 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
       className="space-y-6 pb-32 sm:pb-36"
     >
       {/* HEADER BANNER */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 p-6 sm:p-8 rounded-3xl shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none transition-colors">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1 py-1 mb-2">
         <div>
           <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
             Tracker Tugas Mata Kuliah
           </h2>
+          <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
+            Pantau dan kelola tenggat waktu tugas kuliah
+          </p>
         </div>
 
         {isOfficer && (
@@ -441,7 +444,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
             onClick={handleOpenAddModal}
-            className="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-all shadow-md shadow-blue-500/20 flex items-center gap-2 shrink-0"
+            className="px-4 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-all shadow-md shadow-blue-500/20 flex items-center gap-2 shrink-0"
           >
             <Plus className="w-4 h-4" />
             <span>Tambah Tugas Baru</span>
@@ -1067,7 +1070,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
               transition={{ type: 'spring', stiffness: 350, damping: 28 }}
               className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"
             >
-              <div className="px-6 sm:px-8 py-5 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between shrink-0">
+              <div className="px-6 sm:px-8 py-5 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between shrink-0 bg-white dark:bg-zinc-900">
                 <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-100">
                   {editingTaskId ? 'Edit Tugas' : 'Tambah Tugas Baru'}
                 </h3>
@@ -1075,7 +1078,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="p-2 rounded-2xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
+                  className="p-2 rounded-2xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors shrink-0"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -1232,14 +1235,19 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                       <input
                         type="file"
                         ref={fileInputRef}
-                        onChange={handleFileSelect}
+                        accept=".pdf"
+                        onChange={(e) => {
+                          if (e.target.files?.length) {
+                            setSelectedFile(e.target.files[0]);
+                          }
+                        }}
                         className="hidden"
                       />
 
                       {selectedFile ? (
                         <div className="flex flex-col items-center gap-2">
                           <div className="p-3 bg-blue-100 dark:bg-blue-900/40 rounded-full">
-                            <FileIcon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                            <Paperclip className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                           </div>
                           <p className="text-xs font-bold text-slate-700 dark:text-zinc-300 max-w-[200px] truncate">
                             {selectedFile.name}
@@ -1248,28 +1256,16 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                             {(selectedFile.size / 1024 / 1024).toFixed(2)} MB • Siap diunggah
                           </p>
                         </div>
-                      ) : existingAttachment ? (
-                        <div className="flex flex-col items-center gap-2">
-                          <div className="p-3 bg-slate-200 dark:bg-zinc-700 rounded-full">
-                            <Paperclip className="w-6 h-6 text-slate-600 dark:text-zinc-400" />
-                          </div>
-                          <p className="text-xs font-bold text-slate-700 dark:text-zinc-300 max-w-[200px] truncate">
-                            {existingAttachment.fileName}
-                          </p>
-                          <p className="text-[10px] text-slate-500 dark:text-zinc-400">
-                            File sudah tersimpan sebelumnya. Klik untuk mengganti.
-                          </p>
-                        </div>
                       ) : (
                         <div className="flex flex-col items-center gap-2">
                           <div className="p-3 bg-slate-200 dark:bg-zinc-700 rounded-full">
                             <UploadCloud className="w-6 h-6 text-slate-600 dark:text-zinc-400" />
                           </div>
                           <p className="text-xs font-bold text-slate-700 dark:text-zinc-300">
-                            Klik atau seret file ke sini
+                            Klik atau seret file PDF di sini
                           </p>
                           <p className="text-[10px] text-slate-500 dark:text-zinc-400">
-                            PDF, Word, Excel, Gambar
+                            File PDF maksimal 25 MB
                           </p>
                         </div>
                       )}
@@ -1281,7 +1277,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                           <span>Mengunggah ke Server...</span>
                           <span>{Math.round(uploadProgress)}%</span>
                         </div>
-
                         <div className="bg-slate-100 dark:bg-zinc-800 rounded-full h-2 w-full overflow-hidden">
                           <motion.div
                             className="h-full bg-blue-600"
@@ -1294,27 +1289,26 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                   </div>
                 </div>
 
-                <div className="px-6 py-4 border-t border-slate-100 dark:border-zinc-800 flex justify-end gap-3 bg-white dark:bg-zinc-900">
+                <div className="px-6 sm:px-8 py-4 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-end gap-3 shrink-0 bg-white dark:bg-zinc-900">
                   <button
                     type="button"
                     disabled={isUploading}
                     onClick={() => setShowModal(false)}
-                    className="px-5 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 font-semibold text-xs disabled:opacity-50 transition-colors"
+                    className="px-5 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 text-xs font-semibold hover:bg-slate-200 dark:hover:bg-zinc-700 transition-all disabled:opacity-50"
                   >
                     Batal
                   </button>
-
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     type="submit"
                     disabled={isUploading}
-                    className="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs flex items-center gap-2 disabled:opacity-70 transition-colors shadow-md shadow-blue-500/20"
+                    className="px-5 py-2.5 rounded-2xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 shadow-md shadow-blue-500/20 transition-all flex items-center gap-2 disabled:opacity-70"
                   >
                     {isUploading ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        Mengunggah...
+                        <span>Mengunggah...</span>
                       </>
                     ) : (
                       'Simpan Tugas'

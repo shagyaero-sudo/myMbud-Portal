@@ -156,14 +156,14 @@ export const SpinwheelView: React.FC<SpinwheelViewProps> = ({ onSaveGroupResult,
       transition={{ duration: 0.3 }}
       className="space-y-6 pb-12"
     >
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 p-6 sm:p-8 rounded-3xl shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none transition-colors">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1 py-1 mb-2">
         <div className="space-y-1">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 text-xs font-semibold">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 text-[10px] sm:text-xs font-semibold mb-1">
             <Dices className="w-3.5 h-3.5" />
             <span>Spin The Wheel!</span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-zinc-100">Spinwheel Individu/Kelompok</h2>
-          <p className="text-xs text-slate-500 dark:text-zinc-400">
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-zinc-100 tracking-tight">Spinwheel Individu/Kelompok</h2>
+          <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
             Sistem pengocokan nama secara acak dan transparan untuk kelompok atau individu.
           </p>
         </div>
