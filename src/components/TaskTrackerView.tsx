@@ -42,6 +42,16 @@ interface AttachmentData {
   fileUrl: string;
 }
 
+// FUNGSI UTILITY PENANGANAN LINK UNDUHAN DIRECT GOOGLE DRIVE
+const getDirectDownloadUrl = (url: string) => {
+  if (!url) return '';
+  const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
+  if (match && match[1]) {
+    return `https://drive.google.com/uc?export=download&id=${match[1]}`;
+  }
+  return url;
+};
+
 export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
   tasks,
   contacts = [],
@@ -913,12 +923,13 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
+                  {/* UNDUH UNTUK DESKTOP */}
                   <a
-                    href={previewAttachment.fileUrl}
+                    href={getDirectDownloadUrl(previewAttachment.fileUrl)}
                     target="_blank"
                     rel="noreferrer"
                     download={previewAttachment.fileName}
-                    className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 text-xs font-semibold transition-colors"
+                    className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 text-xs font-semibold transition-colors cursor-pointer"
                   >
                     <Download className="w-3.5 h-3.5" />
                     Unduh
@@ -1012,12 +1023,13 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                     <p className="mt-1 text-xs text-slate-500 dark:text-zinc-400 max-w-sm">
                       Format file ini tidak dapat ditampilkan langsung di dalam myMbud.
                     </p>
+                    {/* UNDUH DARI VIEW UNSUPPORTED */}
                     <a
-                      href={previewAttachment.fileUrl}
+                      href={getDirectDownloadUrl(previewAttachment.fileUrl)}
                       target="_blank"
                       rel="noreferrer"
                       download={previewAttachment.fileName}
-                      className="inline-flex items-center gap-2 mt-4 px-4 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-colors"
+                      className="inline-flex items-center gap-2 mt-4 px-4 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-colors cursor-pointer"
                     >
                       <Download className="w-4 h-4" />
                       Unduh File
@@ -1026,13 +1038,14 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                 )}
               </div>
 
+              {/* UNDUH UNTUK MOBILE FLOATING FOOTER */}
               <div className="sm:hidden shrink-0 border-t border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-3">
                 <a
-                  href={previewAttachment.fileUrl}
+                  href={getDirectDownloadUrl(previewAttachment.fileUrl)}
                   target="_blank"
                   rel="noreferrer"
                   download={previewAttachment.fileName}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 text-xs font-semibold transition-colors"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl bg-rose-100 dark:bg-rose-950/50 hover:bg-rose-200 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 text-xs font-bold transition-colors cursor-pointer"
                 >
                   <Download className="w-4 h-4" />
                   Unduh Lampiran
