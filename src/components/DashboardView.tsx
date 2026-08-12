@@ -546,15 +546,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             transition={{ duration: 0.2 }}
             onClick={() => onNavigateTab('mbudiary' as any)}
             className="block lg:hidden w-full flex items-center justify-center gap-1.5 px-4 py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 pink:from-pink-500 pink:to-rose-500 purple:from-purple-600 purple:to-fuchsia-600 green:from-emerald-600 green:to-teal-600 text-white shadow-md hover:shadow-lg transition-all cursor-pointer"
-            title="Ceritakan di mbudiary. #SejutaCerita"
+            title="Ada cerita apa hari ini?"
           >
-            <Pencil className="w-4 h-4 shrink-0" />
             <span className="text-xs sm:text-sm font-black tracking-tight">
-              Ceritakan di mbudiary.
+              Ada cerita apa hari ini?
             </span>
-            <span className="text-xs sm:text-sm font-normal opacity-90">
-              #SejutaCerita
-            </span>
+            <Pencil className="w-4 h-4 shrink-0" />
           </motion.button>
 
           {/* 1. JADWAL PERKULIAHAN */}
@@ -1146,7 +1143,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         whileTap={{ scale: 0.96 }}
         onClick={() => onNavigateTab('mbudiary' as any)}
         className="hidden lg:flex fixed bottom-10 right-10 z-40 items-center gap-3.5 px-5 py-3.5 rounded-2xl bg-zinc-900 dark:bg-zinc-100 text-zinc-100 dark:text-zinc-900 border border-zinc-800 dark:border-zinc-200 shadow-2xl transition-all cursor-pointer group"
-        title="mbudiary #RuangAman"
+        title="mbudiary #CeritainAja"
       >
         <Pencil className="w-5 h-5 text-zinc-100 dark:text-zinc-900 shrink-0" />
         <div className="text-left flex flex-col justify-center pr-1">
@@ -1154,7 +1151,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             mbudiary.
           </span>
           <span className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500 leading-tight mt-1">
-            #RuangAman
+            #CeritainAja
           </span>
         </div>
       </motion.button>
