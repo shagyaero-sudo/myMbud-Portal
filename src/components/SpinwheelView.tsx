@@ -370,7 +370,7 @@ export const SpinwheelView: React.FC<SpinwheelViewProps> = ({ onSaveGroupResult,
                     >
                       <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-sky-100 dark:bg-sky-900/60 text-sky-700 dark:text-sky-300 text-xs font-bold uppercase tracking-wider shadow-xs">
                         <Trophy className="w-4 h-4 text-sky-600 dark:text-sky-400" />
-                        <span>SELAMAT! 🥳</span>
+                        <span>Terpilih:</span>
                       </div>
                       <div className="text-2xl sm:text-4xl font-extrabold text-blue-600 dark:text-blue-400 tracking-tight px-4 animate-bounce">
                         {selectedIndividual}

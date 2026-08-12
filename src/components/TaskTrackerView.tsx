@@ -956,22 +956,15 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                     Unduh
                   </button>
 
-                  {/* UNTUK HP: TOMBOL KHUSUS BERGABAR LOGO DRIVE TANPA TEKS */}
+                  {/* UNTUK HP: TOMBOL IKON EXTERNAL LINK KHUSUS OPEN DRIVE */}
                   <a
                     href={previewAttachment.fileUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex sm:hidden p-2 rounded-xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 transition-colors items-center justify-center shrink-0"
+                    className="flex sm:hidden p-2 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 hover:bg-blue-100 transition-colors items-center justify-center shrink-0"
                     title="Buka di Google Drive"
                   >
-                    <svg className="w-4 h-4" viewBox="0 0 87.3 78" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M6.6 66.85L22.9 28.5H74.15L57.85 66.85H6.6Z" fill="#FFC107"/>
-                      <path d="M22.9 28.5L43.65 0H73.05L52.3 28.5H22.9Z" fill="#0066DA"/>
-                      <path d="M0 78L13.1 55.25L43.65 0L56.75 22.75L26.2 78H0Z" fill="#00AC47"/>
-                      <path d="M6.6 66.85L0 78H52.4L59 66.85H6.6Z" fill="#2684FC"/>
-                      <path d="M57.85 66.85L52.4 78L87.3 22.75L80.7 11.6L57.85 66.85Z" fill="#EA4335"/>
-                      <path d="M43.65 0L22.9 28.5L26.2 34.2L43.65 4L61.1 34.2L64.4 28.5L43.65 0Z" fill="#00832D"/>
-                    </svg>
+                    <ExternalLink className="w-4 h-4" />
                   </a>
 
                   <button
@@ -1068,7 +1061,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                       rel="noreferrer"
                       className="inline-flex items-center gap-2 mt-4 px-4 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-colors cursor-pointer"
                     >
-                      <Download className="w-4 h-4" />
+                      <ExternalLink className="w-4 h-4" />
                       Buka File
                     </a>
                   </div>
