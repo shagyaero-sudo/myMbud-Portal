@@ -641,7 +641,7 @@ export default function App() {
         onLogout={handleLogout}
       />
 
-      <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 flex flex-col lg:flex-row gap-6">
+      <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 flex flex-col lg:flex-row gap-6 pt-6">
         <Sidebar
           activeTab={activeTab}
           setActiveTab={setActiveTab}
@@ -649,7 +649,7 @@ export default function App() {
           onOpenGpaModal={() => setIsGpaModalOpen(true)}
         />
 
-        <main className="flex-1 py-6 lg:pt-2 lg:pb-8 overflow-y-auto space-y-6">
+        <main className="flex-1 pb-8 overflow-y-auto space-y-6">
           {isInitialLoad ? (
             <AppSkeleton />
           ) : (

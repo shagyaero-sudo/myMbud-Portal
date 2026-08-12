@@ -208,7 +208,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
             Kontak Dosen & PJ Matkul
           </h2>
           <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1">
-            Direktori komunikasi akademis kelas
+            Pusat Komunikasi Dosen dan PJ
           </p>
         </div>
 

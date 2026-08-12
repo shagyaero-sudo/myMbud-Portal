@@ -435,7 +435,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
             Tracker Tugas Mata Kuliah
           </h2>
           <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1">
-            Pantau dan kelola tenggat waktu tugas kuliah
+            Pantau dan kelola deadline tugas
           </p>
         </div>
 
