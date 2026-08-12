@@ -429,7 +429,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
       className="space-y-6 pb-32 sm:pb-36"
     >
       {/* HEADER BANNER */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1 pt-1 pb-3 sm:pb-4 mb-3 sm:mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1 pt-4 sm:pt-6 pb-4 sm:pb-6 mb-2 sm:mb-3">
         <div>
           <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
             Tracker Tugas Mata Kuliah

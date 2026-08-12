@@ -156,7 +156,7 @@ export const SpinwheelView: React.FC<SpinwheelViewProps> = ({ onSaveGroupResult,
       transition={{ duration: 0.3 }}
       className="space-y-6 pb-12"
     >
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1 pt-1 pb-3 sm:pb-4 mb-3 sm:mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1 pt-4 sm:pt-6 pb-4 sm:pb-6 mb-2 sm:mb-3">
         <div className="space-y-1">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 text-[10px] sm:text-xs font-semibold mb-1">
             <Dices className="w-3.5 h-3.5" />

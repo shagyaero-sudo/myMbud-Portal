@@ -130,7 +130,7 @@ export const LetterGeneratorView: React.FC = () => {
       transition={{ duration: 0.3 }}
       className="space-y-6 pb-28 sm:pb-32"
     >
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1 pt-1 pb-3 sm:pb-4 mb-3 sm:mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1 pt-4 sm:pt-6 pb-4 sm:pb-6 mb-2 sm:mb-3">
         <div className="flex items-start sm:items-center gap-4">
           <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
             <FileText className="w-5 h-5 sm:w-6 sm:h-6" />
