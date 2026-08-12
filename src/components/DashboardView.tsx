@@ -1135,14 +1135,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         )}
       </AnimatePresence>
 
-      {/* FLOATING BUTTON MBUDIARY KHUSUS DESKTOP (POJOK KANAN BAWAH) */}
+      {/* FLOATING BUTTON MBUDIARY KHUSUS PC (LITERALLY DI POJOKAN KANAN BAWAH) */}
       <motion.button
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         whileHover={{ scale: 1.04, y: -2 }}
         whileTap={{ scale: 0.96 }}
         onClick={() => onNavigateTab('mbudiary' as any)}
-        className="hidden lg:flex fixed bottom-10 right-10 z-40 items-center gap-3.5 px-5 py-3.5 rounded-2xl bg-zinc-900 dark:bg-zinc-100 text-zinc-100 dark:text-zinc-900 border border-zinc-800 dark:border-zinc-200 shadow-2xl transition-all cursor-pointer group"
+        className="hidden lg:flex fixed bottom-6 right-6 z-50 items-center gap-3.5 px-5 py-3.5 rounded-2xl bg-zinc-900 dark:bg-zinc-100 text-zinc-100 dark:text-zinc-900 border border-zinc-800 dark:border-zinc-200 shadow-2xl transition-all cursor-pointer group"
         title="mbudiary #CeritainAja"
       >
         <Pencil className="w-5 h-5 text-zinc-100 dark:text-zinc-900 shrink-0" />
