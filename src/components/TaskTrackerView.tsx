@@ -432,10 +432,10 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1 pt-4 sm:pt-6 pb-4 sm:pb-6 mb-2 sm:mb-3">
         <div>
           <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
-            Tracker Tugas Mata Kuliah
+            Tracker Tugas Matkul
           </h2>
           <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1">
-            Pantau dan kelola deadline tugas
+            Pantau dan Kelola Deadline Tugas
           </p>
         </div>
 

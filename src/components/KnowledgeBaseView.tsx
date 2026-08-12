@@ -172,7 +172,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
             Bank PDF Matkul
           </h2>
           <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1">
-            Arsip PPT & Materi Perkuliahan
+            Perpustakaan Materi Perkuliahan
           </p>
         </div>
 
