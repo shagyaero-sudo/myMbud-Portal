@@ -195,7 +195,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
 
     if (diffDays < 0) {
       return {
-        label: 'Tenggat Lewat',
+        label: 'Selesai',
         bg: 'bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 border-slate-200 dark:border-zinc-700',
       };
     }
@@ -703,7 +703,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
 
                       {isDeadlinePassed && !isExplicitDone ? (
                         <span className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-800 px-2 py-0.5 rounded-md border border-slate-200/60 dark:border-zinc-700/60">
-                          Tenggat Lewat
+                          Selesai
                         </span>
                       ) : (
                         <button
