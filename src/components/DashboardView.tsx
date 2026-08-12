@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Clock,
@@ -1135,26 +1136,30 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         )}
       </AnimatePresence>
 
-      {/* FLOATING BUTTON MBUDIARY KHUSUS PC (LITERALLY DI POJOKAN KANAN BAWAH) */}
-      <motion.button
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        whileHover={{ scale: 1.04, y: -2 }}
-        whileTap={{ scale: 0.96 }}
-        onClick={() => onNavigateTab('mbudiary' as any)}
-        className="hidden lg:flex fixed bottom-6 right-6 z-50 items-center gap-3.5 px-5 py-3.5 rounded-2xl bg-zinc-900 dark:bg-zinc-100 text-zinc-100 dark:text-zinc-900 border border-zinc-800 dark:border-zinc-200 shadow-2xl transition-all cursor-pointer group"
-        title="mbudiary #CeritainAja"
-      >
-        <Pencil className="w-5 h-5 text-zinc-100 dark:text-zinc-900 shrink-0" />
-        <div className="text-left flex flex-col justify-center pr-1">
-          <span className="text-base font-black tracking-tight text-zinc-100 dark:text-zinc-900 leading-none">
-            mbudiary.
-          </span>
-          <span className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500 leading-tight mt-1">
-            #CeritainAja
-          </span>
-        </div>
-      </motion.button>
+      {/* FLOATING BUTTON MBUDIARY KHUSUS PC — DITEMPEL KE ROOT DOCUMENT (BODY) LEWAT PORTAL */}
+      {typeof document !== 'undefined' &&
+        createPortal(
+          <motion.button
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            whileHover={{ scale: 1.04, y: -2 }}
+            whileTap={{ scale: 0.96 }}
+            onClick={() => onNavigateTab('mbudiary' as any)}
+            className="hidden lg:flex fixed bottom-6 right-6 z-[9999] items-center gap-3.5 px-5 py-3.5 rounded-2xl bg-zinc-900 dark:bg-zinc-100 text-zinc-100 dark:text-zinc-900 border border-zinc-800 dark:border-zinc-200 shadow-2xl transition-all cursor-pointer group"
+            title="mbudiary #CeritainAja"
+          >
+            <Pencil className="w-5 h-5 text-zinc-100 dark:text-zinc-900 shrink-0" />
+            <div className="text-left flex flex-col justify-center pr-1">
+              <span className="text-base font-black tracking-tight text-zinc-100 dark:text-zinc-900 leading-none">
+                mbudiary.
+              </span>
+              <span className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500 leading-tight mt-1">
+                #CeritainAja
+              </span>
+            </div>
+          </motion.button>,
+          document.body
+        )}
     </motion.div>
   );
 };
