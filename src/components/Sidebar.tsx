@@ -69,7 +69,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {getGreeting()}
           </h2>
           <p className="text-xs font-medium text-slate-500 dark:text-zinc-400 mt-1 leading-relaxed">
-            Siap untuk produktif dan mengecek perkuliahan hari ini?
+            Siap untuk produktif hari ini?
           </p>
         </div>
 

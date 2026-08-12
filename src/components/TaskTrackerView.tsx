@@ -164,7 +164,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
   };
 
   const activeTaskCount = tasks.filter((t) => !isTaskHistory(t)).length;
-  const historyTaskCount = tasks.filter((t) => isTaskHistory(t)).length;
 
   const filteredTasks = tasks.filter((t) => {
     const isHistory = isTaskHistory(t);
@@ -553,15 +552,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                 />
               )}
               <span className="relative z-10">Riwayat</span>
-              <span
-                className={`relative z-10 px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
-                  activeTab === 'history'
-                    ? 'bg-white/20 text-white dark:bg-zinc-800 dark:text-zinc-200'
-                    : 'bg-slate-200 dark:bg-zinc-700 text-slate-700 dark:text-zinc-300'
-                }`}
-              >
-                {historyTaskCount}
-              </span>
             </button>
           </div>
         </div>
