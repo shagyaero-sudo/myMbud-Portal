@@ -42,12 +42,13 @@ interface AttachmentData {
   fileUrl: string;
 }
 
-// FUNGSI UTILITY PENANGANAN LINK UNDUHAN DIRECT GOOGLE DRIVE
+// FUNGSI UTILITY PENANGANAN LINK UNDUHAN DIRECT TANPA BUKA APP DRIVE DI HP/MOBILE
 const getDirectDownloadUrl = (url: string) => {
   if (!url) return '';
   const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
   if (match && match[1]) {
-    return `https://drive.google.com/uc?export=download&id=${match[1]}`;
+    // Menggunakan CDN Googleusercontent agar tidak memicu Deep Link ke App Drive di HP
+    return `https://lh3.googleusercontent.com/d/${match[1]}`;
   }
   return url;
 };
