@@ -99,7 +99,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
 
-  // FUNGSI PAKSA DOWNLOAD LANGSUNG KE FILE SYSTEM
+  // FUNGSI FORCE DOWNLOAD (WORK 100% UNTUK PC)
   const handleForceDownload = async (e: React.MouseEvent, url: string, fileName: string) => {
     e.preventDefault();
     e.stopPropagation();
@@ -936,7 +936,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                   </div>
 
                   <div className="min-w-0">
-                    <p className="text-xs sm:text-sm font-bold text-slate-800 dark:text-zinc-100 truncate max-w-[55vw] sm:max-w-[700px]">
+                    <p className="text-xs sm:text-sm font-bold text-slate-800 dark:text-zinc-100 truncate max-w-[45vw] sm:max-w-[700px]">
                       {previewAttachment.fileName}
                     </p>
                     <p className="text-[10px] text-slate-400 dark:text-zinc-500">
@@ -946,7 +946,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
-                  {/* UNDUH UNTUK DESKTOP — LANGSUNG TRIGGER DOWNLOAD VIA BLOB */}
+                  {/* UNTUK LAPTOP/DESKTOP: TOMBOL "UNDUH" LENGKAP BERSAMA TEKS */}
                   <button
                     type="button"
                     onClick={(e) => handleForceDownload(e, previewAttachment.fileUrl, previewAttachment.fileName)}
@@ -955,6 +955,24 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                     <Download className="w-3.5 h-3.5" />
                     Unduh
                   </button>
+
+                  {/* UNTUK HP: TOMBOL KHUSUS BERGABAR LOGO DRIVE TANPA TEKS */}
+                  <a
+                    href={previewAttachment.fileUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex sm:hidden p-2 rounded-xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 transition-colors items-center justify-center shrink-0"
+                    title="Buka di Google Drive"
+                  >
+                    <svg className="w-4 h-4" viewBox="0 0 87.3 78" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M6.6 66.85L22.9 28.5H74.15L57.85 66.85H6.6Z" fill="#FFC107"/>
+                      <path d="M22.9 28.5L43.65 0H73.05L52.3 28.5H22.9Z" fill="#0066DA"/>
+                      <path d="M0 78L13.1 55.25L43.65 0L56.75 22.75L26.2 78H0Z" fill="#00AC47"/>
+                      <path d="M6.6 66.85L0 78H52.4L59 66.85H6.6Z" fill="#2684FC"/>
+                      <path d="M57.85 66.85L52.4 78L87.3 22.75L80.7 11.6L57.85 66.85Z" fill="#EA4335"/>
+                      <path d="M43.65 0L22.9 28.5L26.2 34.2L43.65 4L61.1 34.2L64.4 28.5L43.65 0Z" fill="#00832D"/>
+                    </svg>
+                  </a>
 
                   <button
                     type="button"
@@ -1044,29 +1062,17 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                     <p className="mt-1 text-xs text-slate-500 dark:text-zinc-400 max-w-sm">
                       Format file ini tidak dapat ditampilkan langsung di dalam myMbud.
                     </p>
-                    {/* UNDUH DARI VIEW UNSUPPORTED */}
-                    <button
-                      type="button"
-                      onClick={(e) => handleForceDownload(e, previewAttachment.fileUrl, previewAttachment.fileName)}
+                    <a
+                      href={previewAttachment.fileUrl}
+                      target="_blank"
+                      rel="noreferrer"
                       className="inline-flex items-center gap-2 mt-4 px-4 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-colors cursor-pointer"
                     >
                       <Download className="w-4 h-4" />
-                      Unduh File
-                    </button>
+                      Buka File
+                    </a>
                   </div>
                 )}
-              </div>
-
-              {/* UNDUH UNTUK MOBILE FLOATING FOOTER — LANGSUNG TRIGGER DOWNLOAD VIA BLOB */}
-              <div className="sm:hidden shrink-0 border-t border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-3">
-                <button
-                  type="button"
-                  onClick={(e) => handleForceDownload(e, previewAttachment.fileUrl, previewAttachment.fileName)}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl bg-rose-100 dark:bg-rose-950/50 hover:bg-rose-200 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 text-xs font-bold transition-colors cursor-pointer"
-                >
-                  <Download className="w-4 h-4" />
-                  Unduh Lampiran
-                </button>
               </div>
             </motion.div>
           </motion.div>
