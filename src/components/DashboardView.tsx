@@ -439,7 +439,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         ) : (
           <div className="relative">
-            {/* FLOATING PREV / NEXT NAVIGATION BUTTONS */}
+            {/* FLOATING PREV / NEXT NAVIGATION BUTTONS (MURNI TRANSPARAN TANPA BULATAN / CARD) */}
             {totalAnn > 1 && (
               <>
                 <button
@@ -447,10 +447,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     e.stopPropagation();
                     handlePrevAnn();
                   }}
-                  className="absolute -left-1 top-1/2 -translate-y-1/2 z-20 p-1.5 rounded-full bg-white/70 dark:bg-zinc-900/70 text-slate-700 dark:text-zinc-200 hover:bg-white dark:hover:bg-zinc-800 backdrop-blur-md shadow-sm border border-slate-200/50 dark:border-zinc-700/50 transition-all active:scale-90"
+                  className="absolute left-1 top-1/2 -translate-y-1/2 z-20 text-slate-400 dark:text-zinc-500 hover:text-slate-800 dark:hover:text-zinc-100 opacity-70 hover:opacity-100 transition-all active:scale-90 p-1"
                   aria-label="Pengumuman Sebelumnya"
                 >
-                  <ChevronLeft className="w-4 h-4" />
+                  <ChevronLeft className="w-5 h-5" />
                 </button>
 
                 <button
@@ -458,10 +458,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     e.stopPropagation();
                     handleNextAnn();
                   }}
-                  className="absolute -right-1 top-1/2 -translate-y-1/2 z-20 p-1.5 rounded-full bg-white/70 dark:bg-zinc-900/70 text-slate-700 dark:text-zinc-200 hover:bg-white dark:hover:bg-zinc-800 backdrop-blur-md shadow-sm border border-slate-200/50 dark:border-zinc-700/50 transition-all active:scale-90"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 z-20 text-slate-400 dark:text-zinc-500 hover:text-slate-800 dark:hover:text-zinc-100 opacity-70 hover:opacity-100 transition-all active:scale-90 p-1"
                   aria-label="Pengumuman Selanjutnya"
                 >
-                  <ChevronRight className="w-4 h-4" />
+                  <ChevronRight className="w-5 h-5" />
                 </button>
               </>
             )}
@@ -477,7 +477,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               onMouseLeave={() => setIsPaused(false)}
               onTouchStart={handleTouchStart}
               onTouchEnd={handleTouchEnd}
-              className="p-4 sm:p-5 rounded-2xl bg-slate-50/90 dark:bg-zinc-800/70 border border-slate-100 dark:border-zinc-800/80 space-y-2 transition-all select-none cursor-pointer hover:bg-slate-100/80 dark:hover:bg-zinc-800 active:scale-[0.99] relative pb-8"
+              className="p-4 sm:p-5 rounded-2xl bg-slate-50/90 dark:bg-zinc-800/70 border border-slate-100 dark:border-zinc-800/80 space-y-2 transition-all select-none cursor-pointer hover:bg-slate-100/80 dark:hover:bg-zinc-800 active:scale-[0.99]"
             >
               <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-zinc-400">
                 <span className="font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2.5 py-0.5 rounded-full text-[10px]">
@@ -518,22 +518,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <p className="text-xs text-slate-600 dark:text-zinc-300 leading-relaxed line-clamp-2">
                 {renderFormattedContent(currentMobileAnn?.content)}
               </p>
-
-              {/* FLOATING DOTS INDICATOR */}
-              {totalAnn > 1 && (
-                <div className="absolute bottom-2 left-0 right-0 flex items-center justify-center gap-1.5 z-10 pointer-events-none">
-                  {realAnnouncements.map((_, idx) => (
-                    <span
-                      key={idx}
-                      className={`h-1.5 rounded-full transition-all duration-300 ${
-                        idx === activeAnnIndex
-                          ? 'w-5 bg-blue-600 dark:bg-blue-400'
-                          : 'w-1.5 bg-slate-300/80 dark:bg-zinc-600/80'
-                      }`}
-                    />
-                  ))}
-                </div>
-              )}
             </motion.div>
           </div>
         )}
