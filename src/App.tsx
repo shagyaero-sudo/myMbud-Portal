@@ -615,18 +615,14 @@ export default function App() {
           {isInitialLoad ? (
             <AppSkeleton />
           ) : (
-            <AnimatePresence mode="wait">
+            <AnimatePresence mode="popLayout" initial={false}>
               <motion.div
                 key={activeTab}
-                initial={{ opacity: 0, y: 8, scale: 0.995 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -8, scale: 0.995 }}
-                transition={{
-                  type: 'spring',
-                  stiffness: 380,
-                  damping: 30,
-                  mass: 0.8,
-                }}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15, ease: 'easeOut' }}
+                style={{ willChange: 'opacity, transform' }}
               >
                 {activeTab === 'dashboard' && (
                   <DashboardView
