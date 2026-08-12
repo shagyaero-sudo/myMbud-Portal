@@ -405,13 +405,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       transition={{ duration: 0.3 }}
       className="space-y-6 pb-28 sm:pb-32"
     >
-      <div className="block lg:hidden px-2 pt-2 pb-0">
+      <div className="block lg:hidden px-1 pt-1 pb-0">
         <div className="flex items-center justify-between gap-3">
           <div>
             <h2 className="text-xl font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
               {getGreeting()}
             </h2>
-            <p className="text-xs font-medium text-slate-500 dark:text-zinc-400 mt-1 leading-relaxed">
+            <p className="text-xs font-medium text-slate-500 dark:text-zinc-400 mt-0.5 leading-relaxed">
               Siap untuk produktif hari ini?
             </p>
           </div>
@@ -420,9 +420,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       </div>
 
       {/* Mobile Announcements Carousel */}
-      <div className="block lg:hidden bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-4 sm:p-5 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-2.5 transition-colors">
+      <div className="block lg:hidden bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-4 sm:p-5 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none transition-colors relative">
         {isOfficer && (
-          <div className="flex justify-end pb-1">
+          <div className="flex justify-end pb-2">
             <button
               onClick={handleOpenAddAnn}
               className="px-2.5 py-1 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-all text-xs font-semibold flex items-center gap-1 shadow-xs"
@@ -438,7 +438,34 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             Belum ada pengumuman kelas.
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="relative">
+            {/* FLOATING PREV / NEXT NAVIGATION BUTTONS */}
+            {totalAnn > 1 && (
+              <>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handlePrevAnn();
+                  }}
+                  className="absolute -left-1 top-1/2 -translate-y-1/2 z-20 p-1.5 rounded-full bg-white/70 dark:bg-zinc-900/70 text-slate-700 dark:text-zinc-200 hover:bg-white dark:hover:bg-zinc-800 backdrop-blur-md shadow-sm border border-slate-200/50 dark:border-zinc-700/50 transition-all active:scale-90"
+                  aria-label="Pengumuman Sebelumnya"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleNextAnn();
+                  }}
+                  className="absolute -right-1 top-1/2 -translate-y-1/2 z-20 p-1.5 rounded-full bg-white/70 dark:bg-zinc-900/70 text-slate-700 dark:text-zinc-200 hover:bg-white dark:hover:bg-zinc-800 backdrop-blur-md shadow-sm border border-slate-200/50 dark:border-zinc-700/50 transition-all active:scale-90"
+                  aria-label="Pengumuman Selanjutnya"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </>
+            )}
+
             <motion.div
               layout
               key={currentMobileAnn?.id}
@@ -450,7 +477,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               onMouseLeave={() => setIsPaused(false)}
               onTouchStart={handleTouchStart}
               onTouchEnd={handleTouchEnd}
-              className="p-3.5 sm:p-4 rounded-2xl bg-slate-50/90 dark:bg-zinc-800/70 border border-slate-100 dark:border-zinc-800/80 space-y-1.5 transition-all select-none cursor-pointer hover:bg-slate-100/80 dark:hover:bg-zinc-800 active:scale-[0.99]"
+              className="p-4 sm:p-5 rounded-2xl bg-slate-50/90 dark:bg-zinc-800/70 border border-slate-100 dark:border-zinc-800/80 space-y-2 transition-all select-none cursor-pointer hover:bg-slate-100/80 dark:hover:bg-zinc-800 active:scale-[0.99] relative pb-8"
             >
               <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-zinc-400">
                 <span className="font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2.5 py-0.5 rounded-full text-[10px]">
@@ -491,45 +518,23 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <p className="text-xs text-slate-600 dark:text-zinc-300 leading-relaxed line-clamp-2">
                 {renderFormattedContent(currentMobileAnn?.content)}
               </p>
-            </motion.div>
 
-            {totalAnn > 1 && (
-              <div className="flex items-center justify-center gap-2.5 pt-0.5">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handlePrevAnn();
-                  }}
-                  className="p-1 rounded-xl text-slate-500 hover:text-slate-800 dark:hover:text-zinc-100"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-
-                <div className="flex items-center justify-center gap-1.5">
+              {/* FLOATING DOTS INDICATOR */}
+              {totalAnn > 1 && (
+                <div className="absolute bottom-2 left-0 right-0 flex items-center justify-center gap-1.5 z-10 pointer-events-none">
                   {realAnnouncements.map((_, idx) => (
-                    <button
+                    <span
                       key={idx}
-                      onClick={() => setMobileAnnIndex(idx)}
-                      className={`h-1.5 rounded-full transition-all duration-200 ${
+                      className={`h-1.5 rounded-full transition-all duration-300 ${
                         idx === activeAnnIndex
                           ? 'w-5 bg-blue-600 dark:bg-blue-400'
-                          : 'w-1.5 bg-slate-300 dark:bg-zinc-700'
+                          : 'w-1.5 bg-slate-300/80 dark:bg-zinc-600/80'
                       }`}
                     />
                   ))}
                 </div>
-
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleNextAnn();
-                  }}
-                  className="p-1 rounded-xl text-slate-500 hover:text-slate-800 dark:hover:text-zinc-100"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            )}
+              )}
+            </motion.div>
           </div>
         )}
       </div>
