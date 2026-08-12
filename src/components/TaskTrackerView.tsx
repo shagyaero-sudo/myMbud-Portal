@@ -9,7 +9,6 @@ import {
   ExternalLink,
   X,
   ChevronRight,
-  BookOpenCheck,
   Paperclip,
   UploadCloud,
   File as FileIcon,
@@ -433,18 +432,8 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 p-6 sm:p-8 rounded-3xl shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none transition-colors">
         <div>
           <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
-           Tracker Tugas 
+            Tracker Tugas Mata Kuliah
           </h2>
-
-          <a
-            href="https://classroom.its.ac.id/auth/oidc"
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 hover:text-blue-600 dark:hover:text-blue-400 text-xs font-semibold border border-slate-200/80 dark:border-zinc-700 transition-all mt-2.5"
-          >
-            <BookOpenCheck className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-            <span>myITS Classroom</span>
-          </a>
         </div>
 
         {isOfficer && (
