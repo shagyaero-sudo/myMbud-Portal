@@ -202,12 +202,12 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
       transition={{ duration: 0.3 }}
       className="space-y-6 pb-12"
     >
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1 py-1 mb-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1 pt-1 pb-3 sm:pb-4 mb-3 sm:mb-4">
         <div>
           <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
             Kontak Dosen & PJ Matkul
           </h2>
-          <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1">
             Direktori komunikasi akademis kelas
           </p>
         </div>
