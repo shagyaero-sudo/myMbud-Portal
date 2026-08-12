@@ -548,10 +548,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             className="block lg:hidden w-full flex items-center justify-center gap-1.5 px-4 py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 pink:from-pink-500 pink:to-rose-500 purple:from-purple-600 purple:to-fuchsia-600 green:from-emerald-600 green:to-teal-600 text-white shadow-md hover:shadow-lg transition-all cursor-pointer"
             title="Ada cerita apa hari ini?"
           >
-            <span className="text-xs sm:text-sm font-black tracking-tight">
-              Ada cerita apa hari ini?
-            </span>
             <Pencil className="w-4 h-4 shrink-0" />
+            <span className="text-xs sm:text-sm font-black tracking-tight">
+              Ada cerita apa hari ini? #mbudiary.
+            </span>
           </motion.button>
 
           {/* 1. JADWAL PERKULIAHAN */}

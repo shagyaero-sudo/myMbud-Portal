@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Edit3 } from 'lucide-react'; // <-- PASTIKAN Edit3 DI-IMPORT DI SINI
 import {
   collection,
   getDocs,
@@ -690,6 +691,20 @@ export default function App() {
           )}
         </main>
       </div>
+
+      {/* Floating Button mbudiary */}
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={() => setActiveTab('mbudiary')}
+        className="fixed bottom-6 right-6 z-50 px-5 py-3 rounded-2xl bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-2xl flex items-center gap-3 border border-zinc-800 dark:border-zinc-200 transition-all"
+      >
+        <Edit3 className="w-4 h-4" />
+        <div className="text-left">
+          <p className="text-xs font-bold leading-none">mbudiary.</p>
+          <p className="text-[10px] opacity-70 leading-tight">#CeritainAja</p>
+        </div>
+      </motion.button>
 
       <PdfViewerModal
         material={previewMaterial}
