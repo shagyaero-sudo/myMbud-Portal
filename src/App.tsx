@@ -7,12 +7,13 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   collection,
-  getDocs,
   addDoc,
   deleteDoc,
   doc,
   getDoc,
   Timestamp,
+  onSnapshot,
+  query,
 } from 'firebase/firestore';
 
 import { db } from './services/firebase';
@@ -299,153 +300,201 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  const syncState = useCallback(async () => {
+  // --- REAL-TIME LISTENERS (EFISIEN KONTRA POLLING) ---
+  useEffect(() => {
     setIsSyncing(true);
 
-    try {
-      const data = await fetchAppState();
+    const qCourses = query(collection(db, 'courses'));
+    const qTasks = query(collection(db, 'tasks'));
+    const qMaterials = query(collection(db, 'materials'));
 
-      const querySnapshotCourses = await getDocs(collection(db, 'courses'));
+    // 1. Real-time Listener: Courses (Schedules & Contacts)
+    const unsubCourses = onSnapshot(
+      qCourses,
+      (snapshot) => {
+        const firebaseSchedules: AppState['schedules'] = [];
+        const firebaseContacts: AppState['contacts'] = [];
 
-      const firebaseSchedules: AppState['schedules'] = [];
-      const firebaseContacts: AppState['contacts'] = [];
+        snapshot.forEach((courseDoc) => {
+          const d = courseDoc.data();
 
-      querySnapshotCourses.forEach((courseDoc) => {
-        const d = courseDoc.data();
+          const scheduleDay =
+            d.scheduleDay ||
+            (d.scheduleDayTime
+              ? String(d.scheduleDayTime).split(',')[0]?.trim()
+              : 'Senin');
 
-        const scheduleDay =
-          d.scheduleDay ||
-          (d.scheduleDayTime
-            ? String(d.scheduleDayTime).split(',')[0]?.trim()
-            : 'Senin');
+          const scheduleTime =
+            d.scheduleTime ||
+            (d.scheduleDayTime
+              ? String(d.scheduleDayTime).split(',').slice(1).join(',').trim()
+              : '');
 
-        const scheduleTime =
-          d.scheduleTime ||
-          (d.scheduleDayTime
-            ? String(d.scheduleDayTime).split(',').slice(1).join(',').trim()
-            : '');
+          const courseName = d.name || d.course || '';
 
-        const courseName = d.name || d.course || '';
+          firebaseSchedules.push({
+            id: courseDoc.id,
+            day: scheduleDay,
+            course: courseName,
+            code: d.code || '',
+            time: scheduleTime,
+            room: d.room || '',
+            lecturer: d.lecturerName || '',
+            pjMatkul: d.pjName ? String(d.pjName).trim() : '',
+            sks: Number(d.sks) || 0,
+          });
 
-        firebaseSchedules.push({
-          id: courseDoc.id,
-          day: scheduleDay,
-          course: courseName,
-          code: d.code || '',
-          time: scheduleTime,
-          room: d.room || '',
-          lecturer: d.lecturerName || '',
-          pjMatkul: d.pjName ? String(d.pjName).trim() : '',
-          sks: Number(d.sks) || 0,
+          firebaseContacts.push({
+            id: courseDoc.id,
+            code: d.code || '',
+            course: courseName,
+            sks: Number(d.sks) || 0,
+            lecturerName: d.lecturerName || '',
+            lecturerPhone: d.lecturerPhone || '',
+            pjName: d.pjName || '',
+            pjPhone: d.pjPhone || '',
+            room: d.room || '',
+            scheduleDayTime:
+              d.scheduleDayTime || scheduleDay + ', ' + scheduleTime,
+          });
         });
 
-        firebaseContacts.push({
-          id: courseDoc.id,
-          code: d.code || '',
-          course: courseName,
-          sks: Number(d.sks) || 0,
-          lecturerName: d.lecturerName || '',
-          lecturerPhone: d.lecturerPhone || '',
-          pjName: d.pjName || '',
-          pjPhone: d.pjPhone || '',
-          room: d.room || '',
-          scheduleDayTime:
-            d.scheduleDayTime || scheduleDay + ', ' + scheduleTime,
-        });
-      });
-
-      const querySnapshotTasks = await getDocs(collection(db, 'tasks'));
-      const firebaseTasks: Task[] = [];
-
-      querySnapshotTasks.forEach((taskDoc) => {
-        const d = taskDoc.data();
-
-        firebaseTasks.push({
-          id: taskDoc.id,
-          title: d.title || '',
-          course: d.course || '',
-          description: d.description || '',
-          type: d.type === 'Kelompok' ? 'Kelompok' : 'Individu',
-          assigner: d.assigner || '',
-          deadline: d.deadline || '',
-          status:
-            d.status === 'done'
-              ? 'done'
-              : d.status === 'in_progress'
-              ? 'in_progress'
-              : 'todo',
-          priority:
-            d.priority === 'Low'
-              ? 'Low'
-              : d.priority === 'Medium'
-              ? 'Medium'
-              : 'High',
-          classroomUrl: d.classroomUrl || undefined,
-          attachment: d.attachment
-            ? {
-                fileName: d.attachment.fileName || '',
-                fileUrl: d.attachment.fileUrl || '',
-              }
-            : undefined,
-        });
-      });
-
-      const querySnapshotMaterials = await getDocs(collection(db, 'materials'));
-      const firebaseMaterials: MaterialFile[] = [];
-
-      querySnapshotMaterials.forEach((matDoc) => {
-        const d = matDoc.data();
-
-        firebaseMaterials.push({
-          id: matDoc.id,
-          courseId: d.courseId || '',
-          courseName: d.courseName || '',
-          session: d.session || '',
-          title: d.title || '',
-          fileUrl: d.fileUrl || '',
-          fileType: 'pdf',
-          fileSize: d.fileSize || '3.0 MB',
-          uploadDate: d.uploadDate || new Date().toISOString(),
-          uploader: d.uploader || 'Pengurus Kelas A',
-          description: d.description || '',
-        });
-      });
-
-      setAppState((previousState) => {
-        const baseData = data || previousState;
-
-        return {
-          ...baseData,
+        setAppState((prev) => ({
+          ...prev,
           schedules: firebaseSchedules,
           contacts:
-            firebaseContacts.length > 0
-              ? firebaseContacts
-              : baseData.contacts,
+            firebaseContacts.length > 0 ? firebaseContacts : prev.contacts,
+          lastUpdated: new Date().toISOString(),
+        }));
+        setIsSyncing(false);
+        setIsInitialLoad(false);
+      },
+      (error) => {
+        console.error('Error listening to courses:', error);
+        setIsSyncing(false);
+        setIsInitialLoad(false);
+      }
+    );
+
+    // 2. Real-time Listener: Tasks
+    const unsubTasks = onSnapshot(
+      qTasks,
+      (snapshot) => {
+        const firebaseTasks: Task[] = [];
+
+        snapshot.forEach((taskDoc) => {
+          const d = taskDoc.data();
+
+          firebaseTasks.push({
+            id: taskDoc.id,
+            title: d.title || '',
+            course: d.course || '',
+            description: d.description || '',
+            type: d.type === 'Kelompok' ? 'Kelompok' : 'Individu',
+            assigner: d.assigner || '',
+            deadline: d.deadline || '',
+            status:
+              d.status === 'done'
+                ? 'done'
+                : d.status === 'in_progress'
+                ? 'in_progress'
+                : 'todo',
+            priority:
+              d.priority === 'Low'
+                ? 'Low'
+                : d.priority === 'Medium'
+                ? 'Medium'
+                : 'High',
+            classroomUrl: d.classroomUrl || undefined,
+            attachment: d.attachment
+              ? {
+                  fileName: d.attachment.fileName || '',
+                  fileUrl: d.attachment.fileUrl || '',
+                }
+              : undefined,
+          });
+        });
+
+        setAppState((prev) => ({
+          ...prev,
           tasks: firebaseTasks,
+          lastUpdated: new Date().toISOString(),
+        }));
+      },
+      (error) => {
+        console.error('Error listening to tasks:', error);
+      }
+    );
+
+    // 3. Real-time Listener: Materials
+    const unsubMaterials = onSnapshot(
+      qMaterials,
+      (snapshot) => {
+        const firebaseMaterials: MaterialFile[] = [];
+
+        snapshot.forEach((matDoc) => {
+          const d = matDoc.data();
+
+          firebaseMaterials.push({
+            id: matDoc.id,
+            courseId: d.courseId || '',
+            courseName: d.courseName || '',
+            session: d.session || '',
+            title: d.title || '',
+            fileUrl: d.fileUrl || '',
+            fileType: 'pdf',
+            fileSize: d.fileSize || '3.0 MB',
+            uploadDate: d.uploadDate || new Date().toISOString(),
+            uploader: d.uploader || 'Pengurus Kelas A',
+            description: d.description || '',
+          });
+        });
+
+        setAppState((prev) => ({
+          ...prev,
           materials: firebaseMaterials,
           lastUpdated: new Date().toISOString(),
-        };
-      });
-    } catch (error) {
-      console.error('Gagal melakukan sinkronisasi:', error);
-      setAppState((previousState) => previousState);
-    } finally {
-      setIsSyncing(false);
-      setIsInitialLoad(false);
-    }
-  }, []);
+        }));
+      },
+      (error) => {
+        console.error('Error listening to materials:', error);
+      }
+    );
 
-  useEffect(() => {
-    syncState();
-
-    const interval = window.setInterval(() => {
-      syncState();
-    }, 5000);
+    // Initial State Fetch Fallback dari API
+    fetchAppState().then((data) => {
+      if (data) {
+        setAppState((prev) => ({
+          ...data,
+          schedules: prev.schedules.length > 0 ? prev.schedules : data.schedules,
+          contacts: prev.contacts.length > 0 ? prev.contacts : data.contacts,
+          tasks: prev.tasks.length > 0 ? prev.tasks : data.tasks,
+          materials: prev.materials.length > 0 ? prev.materials : data.materials,
+        }));
+      }
+    });
 
     return () => {
-      window.clearInterval(interval);
+      unsubCourses();
+      unsubTasks();
+      unsubMaterials();
     };
-  }, [syncState]);
+  }, []);
+
+  const syncState = useCallback(async () => {
+    // Dipakai jika user memicu tombol refresh manual di Header
+    setIsSyncing(true);
+    try {
+      const data = await fetchAppState();
+      if (data) {
+        setAppState((prev) => ({ ...prev, ...data }));
+      }
+    } catch (error) {
+      console.error('Gagal sinkronisasi manual:', error);
+    } finally {
+      setIsSyncing(false);
+    }
+  }, []);
 
   // HITUNG SELURUH TUGAS AKTIF MENDATANG (BELUM DONE & DEADLINE BELUM LEWAT)
   const activeTaskCount = appState.tasks.filter((task) => {
@@ -471,7 +520,6 @@ export default function App() {
   const handleAddContact = async (contact: Omit<Contact, 'id'>) => {
     try {
       await addContactApi(contact);
-      await syncState();
     } catch (error) {
       console.error('Gagal menambahkan mata kuliah:', error);
       alert('Gagal menyimpan data mata kuliah.');
@@ -481,7 +529,6 @@ export default function App() {
   const handleUpdateContact = async (id: string, contact: Partial<Contact>) => {
     try {
       await updateContactApi(id, contact);
-      await syncState();
     } catch (error) {
       console.error('Gagal mengubah mata kuliah:', error);
       alert('Gagal mengubah data mata kuliah.');
@@ -491,7 +538,6 @@ export default function App() {
   const handleDeleteContact = async (id: string) => {
     try {
       await deleteContactApi(id);
-      await syncState();
     } catch (error) {
       console.error('Gagal menghapus mata kuliah:', error);
       alert('Gagal menghapus data mata kuliah.');
@@ -507,7 +553,6 @@ export default function App() {
         uploadDate: new Date().toISOString(),
         createdAt: Timestamp.now(),
       });
-      await syncState();
     } catch (error) {
       console.error('Gagal menambahkan materi:', error);
       alert('Gagal menyimpan berkas ke Firebase.');
@@ -519,7 +564,6 @@ export default function App() {
 
     try {
       await deleteDoc(doc(db, 'materials', id));
-      await syncState();
     } catch (error) {
       console.error('Gagal menghapus materi:', error);
       alert('Gagal menghapus berkas.');
@@ -529,7 +573,6 @@ export default function App() {
   const handleAddTask = async (task: Omit<Task, 'id'>) => {
     try {
       await addTaskApi(task);
-      await syncState();
     } catch (error) {
       console.error('[Task] Gagal menambahkan tugas:', error);
       alert('Tugas gagal disimpan.');
@@ -539,7 +582,6 @@ export default function App() {
   const handleUpdateTask = async (id: string, updates: Partial<Task>) => {
     try {
       await updateTaskApi(id, updates);
-      await syncState();
     } catch (error) {
       console.error('[Task] Gagal mengubah tugas:', error);
       alert('Tugas gagal diperbarui.');
@@ -552,7 +594,6 @@ export default function App() {
   ) => {
     try {
       await updateTaskApi(id, { status });
-      await syncState();
     } catch (error) {
       console.error('[Task] Gagal mengubah status tugas:', error);
     }
@@ -561,7 +602,6 @@ export default function App() {
   const handleDeleteTask = async (id: string) => {
     try {
       await deleteTaskApi(id);
-      await syncState();
     } catch (error) {
       console.error('[Task] Gagal menghapus tugas:', error);
       alert('Tugas gagal dihapus.');
@@ -575,8 +615,6 @@ export default function App() {
       const updated = await saveGroupResultApi(result);
       if (updated) {
         setAppState(updated);
-      } else {
-        await syncState();
       }
     } catch (error) {
       console.error('Gagal menyimpan hasil kelompok:', error);
