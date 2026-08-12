@@ -42,17 +42,6 @@ interface AttachmentData {
   fileUrl: string;
 }
 
-// FUNGSI UTILITY PENANGANAN LINK UNDUHAN DIRECT TANPA BUKA APP DRIVE DI HP/MOBILE
-const getDirectDownloadUrl = (url: string) => {
-  if (!url) return '';
-  const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
-  if (match && match[1]) {
-    // Menggunakan CDN Googleusercontent agar tidak memicu Deep Link ke App Drive di HP
-    return `https://lh3.googleusercontent.com/d/${match[1]}`;
-  }
-  return url;
-};
-
 export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
   tasks,
   contacts = [],
@@ -109,6 +98,39 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
+
+  // FUNGSI PAKSA DOWNLOAD LANGSUNG KE FILE SYSTEM
+  const handleForceDownload = async (e: React.MouseEvent, url: string, fileName: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
+    const fileId = match ? match[1] : null;
+
+    if (!fileId) {
+      window.open(url, '_blank');
+      return;
+    }
+
+    const downloadUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
+
+    try {
+      const response = await fetch(downloadUrl);
+      const blob = await response.blob();
+      
+      const blobUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = fileName.endsWith('.pdf') ? fileName : `${fileName}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      
+      window.URL.revokeObjectURL(blobUrl);
+      document.body.removeChild(a);
+    } catch (error) {
+      window.open(downloadUrl, '_blank');
+    }
+  };
 
   const getContactCourse = (c: any) => c.course || c.courseName || '';
   const getContactLecturer = (c: any) => c.lecturerName || c.lecturer || c.name || '';
@@ -924,17 +946,15 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
-                  {/* UNDUH UNTUK DESKTOP */}
-                  <a
-                    href={getDirectDownloadUrl(previewAttachment.fileUrl)}
-                    target="_blank"
-                    rel="noreferrer"
-                    download={previewAttachment.fileName}
+                  {/* UNDUH UNTUK DESKTOP — LANGSUNG TRIGGER DOWNLOAD VIA BLOB */}
+                  <button
+                    type="button"
+                    onClick={(e) => handleForceDownload(e, previewAttachment.fileUrl, previewAttachment.fileName)}
                     className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 text-xs font-semibold transition-colors cursor-pointer"
                   >
                     <Download className="w-3.5 h-3.5" />
                     Unduh
-                  </a>
+                  </button>
 
                   <button
                     type="button"
@@ -1025,32 +1045,28 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                       Format file ini tidak dapat ditampilkan langsung di dalam myMbud.
                     </p>
                     {/* UNDUH DARI VIEW UNSUPPORTED */}
-                    <a
-                      href={getDirectDownloadUrl(previewAttachment.fileUrl)}
-                      target="_blank"
-                      rel="noreferrer"
-                      download={previewAttachment.fileName}
+                    <button
+                      type="button"
+                      onClick={(e) => handleForceDownload(e, previewAttachment.fileUrl, previewAttachment.fileName)}
                       className="inline-flex items-center gap-2 mt-4 px-4 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-colors cursor-pointer"
                     >
                       <Download className="w-4 h-4" />
                       Unduh File
-                    </a>
+                    </button>
                   </div>
                 )}
               </div>
 
-              {/* UNDUH UNTUK MOBILE FLOATING FOOTER */}
+              {/* UNDUH UNTUK MOBILE FLOATING FOOTER — LANGSUNG TRIGGER DOWNLOAD VIA BLOB */}
               <div className="sm:hidden shrink-0 border-t border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-3">
-                <a
-                  href={getDirectDownloadUrl(previewAttachment.fileUrl)}
-                  target="_blank"
-                  rel="noreferrer"
-                  download={previewAttachment.fileName}
+                <button
+                  type="button"
+                  onClick={(e) => handleForceDownload(e, previewAttachment.fileUrl, previewAttachment.fileName)}
                   className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl bg-rose-100 dark:bg-rose-950/50 hover:bg-rose-200 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 text-xs font-bold transition-colors cursor-pointer"
                 >
                   <Download className="w-4 h-4" />
                   Unduh Lampiran
-                </a>
+                </button>
               </div>
             </motion.div>
           </motion.div>
