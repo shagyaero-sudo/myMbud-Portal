@@ -29,7 +29,7 @@ import {
 } from '../services/announcements';
 
 // --- CONFIG FRS WAR MODE ---
-const IS_FRS_WAR_ACTIVE = true; // Ubah ke 'false' jika periode War FRS sudah selesai
+const IS_FRS_WAR_ACTIVE = false; // Ubah ke 'false' jika periode War FRS sudah selesai
 const FRS_DIRECT_URL = 'https://akademik.its.ac.id/list_frs.php';
 
 interface DashboardViewProps {
