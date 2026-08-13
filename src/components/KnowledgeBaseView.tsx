@@ -282,12 +282,12 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
               onChange={(e) => setSelectedCourse(e.target.value)}
               className="w-full px-4 py-3 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none"
             >
-              <option value="ALL">Semua Mata Kuliah ({materials.length} berkas)</option>
+              <option value="ALL">Semua Mata Kuliah ({materials.length} PDF)</option>
               {dynamicCoursesList.map((course) => {
                 const count = materials.filter((m) => m.courseName === course).length;
                 return (
                   <option key={course} value={course}>
-                    {course} ({count} berkas)
+                    {course} ({count} PDF)
                   </option>
                 );
               })}
