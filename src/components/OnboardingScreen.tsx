@@ -7,8 +7,7 @@ import {
   MessageSquareText,
   FileText,
   BellRing,
-  ArrowRight,
-  Sparkles
+  ArrowRight
 } from 'lucide-react';
 import { initOneSignal } from '../services/oneSignal';
 
@@ -27,8 +26,8 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
     {
       id: 1,
       title: `Selamat Datang, ${userName}! ✨`,
-      desc: 'myMbud Portal siap menemani perjalanan akademik kamu! Sudah siap memulai petualangan? Yuk mulai!',
-      isLogo: true, // Marker khusus untuk menggunakan /logombud.png
+      desc: 'myMbud Portal siap menemani perjalanan akademik kamu! Sudah siap memulai petualangan?',
+      isLogo: true, // Menggunakan /logombud.png
       gradient: 'from-indigo-400 via-blue-500 to-cyan-400',
       shadow: 'shadow-blue-500/60',
       glow: 'bg-blue-500/30',
@@ -36,8 +35,8 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
     },
     {
       id: 2,
-      title: 'Semua Jadi Satu!',
-      desc: 'Hal yang kamu butuhkan selama perkuliahan ada di myMbud Portal, udah ga usah nengok ke tempat lain!.',
+      title: '#AllInOne!',
+      desc: 'Hal yang kamu butuhkan selama perkuliahan ada di myMbud Portal, say goodbye to myITS karena di myMbud sudah terintegrasi!',
       icon: CalendarDays,
       gradient: 'from-cyan-400 to-blue-600',
       shadow: 'shadow-cyan-500/50',
@@ -47,7 +46,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
     {
       id: 3,
       title: 'Tracker Tugas #AntiDeadliner!',
-      desc: 'Kelewat tugas? No Way! sekarang kamu bisa memantau tugas secara real-time. Tugas Beres, No Overthinking!',
+      desc: 'Kelewat tugas? No Way! sekarang kamu bisa memantau tugas secara real-time dan nandain #SELESAI. Tugas Beres, No Overthinking!',
       icon: CheckCircle2,
       gradient: 'from-emerald-400 to-teal-500',
       shadow: 'shadow-emerald-500/50',
@@ -56,8 +55,8 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
     },
     {
       id: 4,
-      title: 'Menu Tools Sakti!',
-      desc: 'Mulai dari bikin surat turlap otomatis, penghitung prediksi IP, sampai main minigame Blockblast buat melepas penat.',
+      title: 'Menu dan Tools Sakti!',
+      desc: 'Mulai dari bikin surat turlap otomatis, ngitung prediksi Nilai matkul dan IP Semester, Spinwheel buat nentuin kelompok, sampai main minigame seru.',
       icon: Blocks,
       gradient: 'from-fuchsia-500 to-purple-600',
       shadow: 'shadow-purple-500/50',
@@ -66,8 +65,8 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
     },
     {
       id: 5,
-      title: 'Chat Dosen Anti Ribet',
-      desc: 'Udah ga perlu lagi minta-minta temen nomer WA Dosen, tinggal pakai fitur chat pintar biar chat ke Dosen selalu rapi dan sopan.',
+      title: 'Chat Dosen? Anti Ribet & Belibet!',
+      desc: 'Udah ga perlu lagi minta-minta temen nomer WA Dosen karena di myMbud ada solusinya, tinggal pakai fitur template biar chat ke Dosen rapi dan sopan.',
       icon: MessageSquareText,
       gradient: 'from-amber-400 to-orange-500',
       shadow: 'shadow-amber-500/50',
@@ -205,17 +204,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
             </div>
 
             {/* TYPOGRAPHY */}
-            <div className="space-y-4">
-              {currentSlide === 0 && (
-                <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="inline-flex items-center gap-1.5 mb-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm text-[10px] uppercase tracking-widest text-slate-300 font-bold"
-                >
-                  <Sparkles className="w-3 h-3 text-indigo-400" />
-                  <span>myMbud Portal</span>
-                </motion.div>
-              )}
+            <div className="space-y-3">
               <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white leading-tight">
                 {current.title}
               </h2>
