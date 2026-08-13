@@ -429,13 +429,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-500/20 border border-red-500/30 text-red-400 text-[10px] sm:text-xs font-black uppercase tracking-wider animate-pulse">
                 <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
                 <Zap className="w-3 h-3 text-amber-400 fill-amber-400" />
-                <span>WAR FRS MODE ACTIVE</span>
+                <span>WAR FRS: 18 - 21 AGUSTUS</span>
               </div>
               <h3 className="text-lg sm:text-xl font-extrabold text-white tracking-tight">
-                Bypass Langsung Web FRS SIAKAD ITS ⚡
+                Bypass Web FRS SIAKAD ⚡
               </h3>
               <p className="text-xs text-slate-300 max-w-md leading-relaxed">
-                Penyelamat pas portal lemot. Klik tombol buat langsung <span className="text-amber-300 font-bold">direct</span> ke formulir FRS tanpa lewatin Dashboard myITS!
+                Penyelamat dari portal lemot. Klik buat langsung <span className="text-amber-300 font-bold">direct</span> ke FRS tanpa lewat myITS Portal!
               </p>
             </div>
 
