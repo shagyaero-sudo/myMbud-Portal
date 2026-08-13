@@ -276,15 +276,9 @@ export default function App() {
 
     if (metaThemeColor) {
       if (theme === 'dark') {
-        metaThemeColor.setAttribute('content', '#09090b');
-      } else if (theme === 'pink') {
-        metaThemeColor.setAttribute('content', '#fff0f3');
-      } else if (theme === 'purple') {
-        metaThemeColor.setAttribute('content', '#f8f0fe');
-      } else if (theme === 'green') {
-        metaThemeColor.setAttribute('content', '#f7fcf5');
+        metaThemeColor.setAttribute('content', '#18181b');
       } else {
-        metaThemeColor.setAttribute('content', '#f8fafc');
+        metaThemeColor.setAttribute('content', '#ffffff');
       }
     }
   }, [theme]);
@@ -482,7 +476,6 @@ export default function App() {
   }, []);
 
   const syncState = useCallback(async () => {
-    // Dipakai jika user memicu tombol refresh manual di Header
     setIsSyncing(true);
     try {
       const data = await fetchAppState();
@@ -496,7 +489,6 @@ export default function App() {
     }
   }, []);
 
-  // HITUNG SELURUH TUGAS AKTIF MENDATANG (BELUM DONE & DEADLINE BELUM LEWAT)
   const activeTaskCount = appState.tasks.filter((task) => {
     const isExplicitlyDone = completedTaskIds.includes(task.id);
     if (task.status === 'done' || isExplicitlyDone) return false;
