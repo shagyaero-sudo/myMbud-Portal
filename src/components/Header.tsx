@@ -226,7 +226,7 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <>
-      <header className="sticky top-0 z-30 w-full bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] dark:shadow-none dark:border-b dark:border-zinc-800 transition-colors pt-[env(safe-area-inset-top)]">
+      <header className="sticky top-0 z-30 w-full bg-white/85 dark:bg-zinc-900/85 backdrop-blur-md text-slate-800 dark:text-zinc-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] dark:shadow-none dark:border-b dark:border-zinc-800/80 transition-colors pt-[env(safe-area-inset-top)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 py-2.5 sm:py-3.5 flex items-center justify-between">
           {/* LOGO */}
           <motion.button
@@ -261,7 +261,7 @@ export const Header: React.FC<HeaderProps> = ({
                   setIsNotificationOpen((prev) => !prev);
                   setIsThemeDropdownOpen(false);
                 }}
-                className="relative p-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 transition-all flex items-center justify-center"
+                className="relative p-2.5 rounded-2xl bg-slate-100/80 dark:bg-zinc-800/80 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 transition-all flex items-center justify-center"
               >
                 {unreadCount > 0 ? <BellRing className="w-5 h-5" /> : <Bell className="w-5 h-5" />}
                 {unreadCount > 0 && (
@@ -282,7 +282,7 @@ export const Header: React.FC<HeaderProps> = ({
                     setIsThemeDropdownOpen(!isThemeDropdownOpen);
                     setIsNotificationOpen(false);
                   }}
-                  className="p-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 transition-all flex items-center justify-center text-xs font-bold cursor-pointer"
+                  className="p-2.5 rounded-2xl bg-slate-100/80 dark:bg-zinc-800/80 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 transition-all flex items-center justify-center text-xs font-bold cursor-pointer"
                 >
                   {theme === 'green' ? <Leaf className="w-5 h-5 text-emerald-600" /> :
                    theme === 'purple' ? <Palette className="w-5 h-5 text-purple-500" /> :
