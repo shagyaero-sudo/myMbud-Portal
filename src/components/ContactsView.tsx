@@ -36,10 +36,15 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
     initialCourseFilter || 'ALL'
   );
 
-  // RESET STATE SETIAP KALI HALAMAN DIKELOLA / RE-ENTER VIA NAVIGASI
+  // FORCE RESET STATE SETIAP KALI TAMPILAN DIMUAT / DITUTUP
   useEffect(() => {
     setSearch('');
     setSelectedCourseFilter(initialCourseFilter || 'ALL');
+
+    return () => {
+      setSearch('');
+      setSelectedCourseFilter('ALL');
+    };
   }, [initialCourseFilter]);
 
   const [showModal, setShowModal] = useState(false);
@@ -62,7 +67,6 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
     course: string;
   } | null>(null);
 
-  // Accordion State untuk Modal Template Dosen
   const [openTemplateIndex, setOpenTemplateIndex] = useState<number | null>(0);
 
   const formatWaNumber = (phoneStr: string) => {
@@ -73,7 +77,6 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
     return clean;
   };
 
-  // HELPER MENGAMBIL HARI DAN JAM
   const parseSchedule = (scheduleStr: string = '') => {
     const dayMap: Record<string, number> = {
       senin: 1,
@@ -95,7 +98,6 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
     return { dayOrder, startTime };
   };
 
-  // FILTER & SORTING CHRONOLOGICAL (HARI & JAM)
   const filteredContacts = contacts
     .filter((c) => {
       const matchSearch =
@@ -184,7 +186,6 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
     return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`;
   };
 
-  // DAFTAR TEMPLATE DOSEN
   const getLecturerTemplates = () => {
     if (!templateTarget) return [];
 
@@ -627,7 +628,6 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                 </button>
               </div>
 
-              {/* Accordion List View */}
               <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-3">
                 {getLecturerTemplates().map((tmpl, idx) => {
                   const isOpen = openTemplateIndex === idx;
@@ -637,7 +637,6 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                       key={idx}
                       className="rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 overflow-hidden transition-all"
                     >
-                      {/* Accordion Header */}
                       <button
                         onClick={() =>
                           setOpenTemplateIndex(isOpen ? null : idx)
@@ -656,7 +655,6 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                         </motion.div>
                       </button>
 
-                      {/* Accordion Body */}
                       <AnimatePresence initial={false}>
                         {isOpen && (
                           <motion.div
