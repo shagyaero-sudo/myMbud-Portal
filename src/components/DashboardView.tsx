@@ -17,7 +17,8 @@ import {
   CheckCircle2,
   FolderKanban,
   RotateCcw,
-  Loader2
+  Loader2,
+  Zap
 } from 'lucide-react';
 import { AppState, DayOfWeek, Task, Announcement } from '../types';
 import {
@@ -26,6 +27,10 @@ import {
   deleteAnnouncement,
   subscribeAnnouncements
 } from '../services/announcements';
+
+// --- CONFIG FRS WAR MODE ---
+const IS_FRS_WAR_ACTIVE = true; // Ubah ke 'false' jika periode War FRS sudah selesai
+const FRS_DIRECT_URL = 'https://akademik.its.ac.id/list_frs.php';
 
 interface DashboardViewProps {
   state: AppState;
@@ -405,6 +410,50 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       transition={{ duration: 0.3 }}
       className="space-y-6 pb-28 sm:pb-32"
     >
+      {/* ========================================================================= */}
+      {/* BANNER WAR FRS DIRECT BYPASS (TAMPIL DI TERATAS MOBILE & PC) */}
+      {/* ========================================================================= */}
+      {IS_FRS_WAR_ACTIVE && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: -10 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.3, ease: 'easeOut' }}
+          className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-red-600 via-rose-600 to-amber-500 p-0.5 shadow-xl shadow-red-500/20"
+        >
+          {/* Animasi Glow & Pulse di Background */}
+          <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-white/20 blur-2xl animate-pulse" />
+          <div className="absolute -left-10 -bottom-10 h-32 w-32 rounded-full bg-amber-400/20 blur-2xl animate-pulse" />
+
+          <div className="relative rounded-[22px] bg-slate-950/90 backdrop-blur-xl p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="space-y-1.5 text-center sm:text-left">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-500/20 border border-red-500/30 text-red-400 text-[10px] sm:text-xs font-black uppercase tracking-wider animate-pulse">
+                <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+                <Zap className="w-3 h-3 text-amber-400 fill-amber-400" />
+                <span>WAR FRS MODE ACTIVE</span>
+              </div>
+              <h3 className="text-lg sm:text-xl font-extrabold text-white tracking-tight">
+                Bypass Langsung Web FRS SIAKAD ITS ⚡
+              </h3>
+              <p className="text-xs text-slate-300 max-w-md leading-relaxed">
+                Penyelamat pas portal lemot. Klik tombol buat langsung <span className="text-amber-300 font-bold">direct</span> ke formulir FRS tanpa lewatin Dashboard myITS!
+              </p>
+            </div>
+
+            <motion.a
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.96 }}
+              href={FRS_DIRECT_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="w-full sm:w-auto px-6 py-3.5 sm:py-4 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:from-amber-300 hover:to-amber-500 text-slate-950 font-black text-xs sm:text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-amber-500/30 transition-all shrink-0 cursor-pointer border border-amber-300/60 active:scale-95"
+            >
+              <span className="text-lg">🚀</span>
+              <span>GAS WAR FRS SEKARANG!</span>
+            </motion.a>
+          </div>
+        </motion.div>
+      )}
+
       <div className="block lg:hidden px-1 pt-1 pb-0">
         <div className="flex items-center justify-between gap-3">
           <div>
@@ -439,7 +488,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         ) : (
           <div className="relative">
-            {/* FLOATING PREV / NEXT NAVIGATION BUTTONS (MURNI TRANSPARAN TANPA BULATAN / CARD) */}
+            {/* FLOATING PREV / NEXT NAVIGATION BUTTONS */}
             {totalAnn > 1 && (
               <>
                 <button
@@ -726,7 +775,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   const dayTasks = getTasksForDate(dateObj);
                   const hasTasks = dayTasks.length > 0;
                   
-                  // DOT HANYA MUNCUL JIKA DALAM PERIODE 31 AGUSTUS - 18 DESEMBER 2026 & BUKAN SABTU/MINGGU
                   const isCourseActive = isWithinSemesterPeriod(dateObj) && getDayNameFromDate(dateObj) !== ('Minggu' as any) && getDayNameFromDate(dateObj) !== ('Sabtu' as any);
 
                   return (
