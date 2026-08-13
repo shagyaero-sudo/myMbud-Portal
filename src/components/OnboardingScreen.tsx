@@ -26,7 +26,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
     {
       id: 1,
       title: `Selamat Datang, ${userName}! ✨`,
-      desc: 'myMbud Portal siap menemani perjalanan akademik kamu! Sudah siap memulai petualangan?',
+      desc: 'myMbud Portal siap menemani perjalanan akademik kamu! Siap memulai petualangan?',
       isLogo: true, // Menggunakan /logombud.png
       gradient: 'from-indigo-400 via-blue-500 to-cyan-400',
       shadow: 'shadow-blue-500/60',
@@ -35,8 +35,8 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
     },
     {
       id: 2,
-      title: '#AllInOne!',
-      desc: 'Hal yang kamu butuhkan selama perkuliahan ada di myMbud Portal, say goodbye to myITS karena di myMbud sudah terintegrasi!',
+      title: '#EverythingAtOnce!',
+      desc: 'Hal yang kamu butuhkan selama perkuliahan ada di myMbud Portal, put myITS aside karena di myMbud sudah terintegrasi!',
       icon: CalendarDays,
       gradient: 'from-cyan-400 to-blue-600',
       shadow: 'shadow-cyan-500/50',
@@ -46,7 +46,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
     {
       id: 3,
       title: 'Tracker Tugas #AntiDeadliner!',
-      desc: 'Kelewat tugas? No Way! sekarang kamu bisa memantau tugas secara real-time dan nandain #SELESAI. Tugas Beres, No Overthinking!',
+      desc: 'Kelewat tugas? Say No More! sekarang kamu bisa memantau tugas secara real-time dan nandain #SELESAI. Tugas Beres, No Overthinking!',
       icon: CheckCircle2,
       gradient: 'from-emerald-400 to-teal-500',
       shadow: 'shadow-emerald-500/50',
@@ -56,7 +56,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
     {
       id: 4,
       title: 'Menu dan Tools Sakti!',
-      desc: 'Mulai dari bikin surat turlap otomatis, ngitung prediksi Nilai matkul dan IP Semester, Spinwheel buat nentuin kelompok, sampai main minigame seru.',
+      desc: 'Mulai dari bikin surat turlap otomatis, ngitung prediksi nilai matkul dan IP Semester, spinwheel buat nentuin kelompok, sampai main minigame seru ada di myMbud.',
       icon: Blocks,
       gradient: 'from-fuchsia-500 to-purple-600',
       shadow: 'shadow-purple-500/50',
@@ -65,8 +65,8 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
     },
     {
       id: 5,
-      title: 'Chat Dosen? Anti Ribet & Belibet!',
-      desc: 'Udah ga perlu lagi minta-minta temen nomer WA Dosen karena di myMbud ada solusinya, tinggal pakai fitur template biar chat ke Dosen rapi dan sopan.',
+      title: 'Chat Dosen? Anti Belibet!',
+      desc: 'Udah ga perlu lagi minta-minta temen nomer WA Dosen karena di myMbud ada yellowpages, sekaligus pakai fitur template biar chat ke Dosen rapi dan sopan.',
       icon: MessageSquareText,
       gradient: 'from-amber-400 to-orange-500',
       shadow: 'shadow-amber-500/50',
@@ -76,7 +76,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
     {
       id: 6,
       title: 'Bank Materi PDF Terintegrasi',
-      desc: 'H-1 Kuis/ETS/EAS belum belajar? Tinggal Buka, baca, beres! Akses arsip PPT dan materi kuliah langsung di myMbud tanpa perlu download.',
+      desc: 'H-1 Kuis/ETS/EAS belum belajar? Tenang, tinggal Buka, baca, beres! Akses arsip PPT dan materi kuliah langsung di myMbud tanpa perlu download.',
       icon: FileText,
       gradient: 'from-green-400 to-emerald-600',
       shadow: 'shadow-green-500/50',
@@ -86,7 +86,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
     {
       id: 7,
       title: 'Jangan Ketinggalan Info!',
-      desc: 'Dapatkan notifikasi real-time tentang tugas dan info penting lainya di HP-mu meskipun myMbud sedang tidak dibuka.',
+      desc: 'Dapatkan notifikasi real-time tentang tugas dan info penting lainya di HP mu meski myMbud sedang tidak dibuka.',
       icon: BellRing,
       gradient: 'from-rose-400 to-red-600',
       shadow: 'shadow-rose-500/50',

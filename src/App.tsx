@@ -131,9 +131,11 @@ export default function App() {
             localStorage.removeItem('mymbud_auth');
             localStorage.removeItem('mymbud_user_name');
             localStorage.removeItem('mymbud_user_nrp');
+            localStorage.removeItem('mymbud_onboarded'); // HAPUS ONBOARDING AGAR MUNCUL LAGI SAAT LOGIN RE-ENTRY
 
+            setHasCompletedOnboarding(false);
             setIsAuthenticated(false);
-            alert('Untuk alasan keamanan sistem, Silakan login kembali.');
+            alert('Ada Pembaruan Sistem, Silakan login kembali yaa! ✨');
           }
         } catch (err) {
           console.error('Gagal memeriksa status sesi:', err);
@@ -666,7 +668,7 @@ export default function App() {
           ) : (
             <AnimatePresence mode="popLayout" initial={false}>
               <motion.div
-                key={activeTab} // KUNCI UTAMA: MEMAKSA RE-MOUNT BERSIH UNTUK SEMUA HALAMAN TIAP PERPINDAHAN TAB
+                key={activeTab}
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
