@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   CalendarDays,
@@ -7,7 +7,9 @@ import {
   MessageSquareText,
   FileText,
   BellRing,
-  ArrowRight
+  ArrowRight,
+  Volume2,
+  VolumeX
 } from 'lucide-react';
 import { initOneSignal } from '../services/oneSignal';
 
@@ -21,13 +23,48 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
   onComplete,
 }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [isMuted, setIsMuted] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Inisialisasi & Langsung Play Audio
+  useEffect(() => {
+    const audio = new Audio('/backsound.mp3');
+    audio.loop = true;
+    audio.volume = 0.4;
+    audioRef.current = audio;
+
+    const promise = audio.play();
+    if (promise !== undefined) {
+      promise.catch((error) => {
+        console.log('Autoplay fallback:', error);
+      });
+    }
+
+    return () => {
+      audio.pause();
+      audioRef.current = null;
+    };
+  }, []);
+
+  const toggleMute = () => {
+    if (audioRef.current) {
+      if (isMuted) {
+        audioRef.current.play().catch(() => {});
+        audioRef.current.muted = false;
+        setIsMuted(false);
+      } else {
+        audioRef.current.muted = true;
+        setIsMuted(true);
+      }
+    }
+  };
 
   const slides = [
     {
       id: 1,
       title: `Selamat Datang, ${userName}! ✨`,
-      desc: 'myMbud Portal siap menemani perjalanan akademik kamu! Siap memulai petualangan?',
-      isLogo: true, // Menggunakan /logombud.png
+      desc: 'myMbud Portal siap menemani perjalanan akademik kamu! Sudah siap memulai petualangan?',
+      isLogo: true,
       gradient: 'from-indigo-400 via-blue-500 to-cyan-400',
       shadow: 'shadow-blue-500/60',
       glow: 'bg-blue-500/30',
@@ -35,8 +72,8 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
     },
     {
       id: 2,
-      title: '#EverythingAtOnce!',
-      desc: 'Hal yang kamu butuhkan selama perkuliahan ada di myMbud Portal, put myITS aside karena di myMbud sudah terintegrasi!',
+      title: '#EverythingAtOnce',
+      desc: 'Hal yang kamu butuhkan selama perkuliahan ada di myMbud Portal, say goodbye to myITS!',
       icon: CalendarDays,
       gradient: 'from-cyan-400 to-blue-600',
       shadow: 'shadow-cyan-500/50',
@@ -46,7 +83,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
     {
       id: 3,
       title: 'Tracker Tugas #AntiDeadliner!',
-      desc: 'Kelewat tugas? Say No More! sekarang kamu bisa memantau tugas secara real-time dan nandain #SELESAI. Tugas Beres, No Overthinking!',
+      desc: 'Kelewat tugas? No Way! sekarang kamu bisa memantau tugas secara real-time dan menandai #SELESAI. Tugas Beres, No Overthinking!',
       icon: CheckCircle2,
       gradient: 'from-emerald-400 to-teal-500',
       shadow: 'shadow-emerald-500/50',
@@ -55,8 +92,8 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
     },
     {
       id: 4,
-      title: 'Menu dan Tools Sakti!',
-      desc: 'Mulai dari bikin surat turlap otomatis, ngitung prediksi nilai matkul dan IP Semester, spinwheel buat nentuin kelompok, sampai main minigame seru ada di myMbud.',
+      title: 'Menu Tools Sakti!',
+      desc: 'Mulai dari bikin surat turlap otomatis, penghitung nilai matkul atau IP Semester, spinwheel buat ngacak nama, sampai main minigame yang seru di myMbud.',
       icon: Blocks,
       gradient: 'from-fuchsia-500 to-purple-600',
       shadow: 'shadow-purple-500/50',
@@ -65,8 +102,8 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
     },
     {
       id: 5,
-      title: 'Chat Dosen? Anti Belibet!',
-      desc: 'Udah ga perlu lagi minta-minta temen nomer WA Dosen karena di myMbud ada yellowpages, sekaligus pakai fitur template biar chat ke Dosen rapi dan sopan.',
+      title: 'Chat Dosen Anti Ribet',
+      desc: 'Udah ga perlu lagi minta-minta temen nomer WA Dosen karena di myMbud ada fiturnya, sekaligus pakai fitur template biar chat ke Dosen selalu rapi dan sopan.',
       icon: MessageSquareText,
       gradient: 'from-amber-400 to-orange-500',
       shadow: 'shadow-amber-500/50',
@@ -86,7 +123,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
     {
       id: 7,
       title: 'Jangan Ketinggalan Info!',
-      desc: 'Dapatkan notifikasi real-time tentang tugas dan info penting lainya di HP mu meski myMbud sedang tidak dibuka.',
+      desc: 'Dapatkan notifikasi real-time tentang tugas dan info penting lainya di HP-mu meskipun myMbud sedang tidak dibuka.',
       icon: BellRing,
       gradient: 'from-rose-400 to-red-600',
       shadow: 'shadow-rose-500/50',
@@ -104,6 +141,10 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
   };
 
   const finishOnboarding = async () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+
     localStorage.setItem('mymbud_onboarded', 'true');
 
     try {
@@ -141,17 +182,16 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
         </motion.div>
       </AnimatePresence>
 
-      {/* --- HEADER (SKIP BUTTON) --- */}
-      <div className="relative z-20 flex justify-end p-6 sm:p-8">
-        {currentSlide < slides.length - 1 && (
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={finishOnboarding}
-            className="text-xs font-bold tracking-widest text-slate-400 hover:text-white uppercase transition-colors px-4 py-2 rounded-full border border-white/5 hover:bg-white/10 backdrop-blur-md cursor-pointer"
-          >
-            Skip
-          </motion.button>
-        )}
+      {/* --- HEADER (AUDIO CONTROL ONLY) --- */}
+      <div className="relative z-20 flex justify-start items-center p-6 sm:p-8">
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          onClick={toggleMute}
+          className="p-2.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-md text-slate-300 hover:text-white transition-colors cursor-pointer"
+          title={isMuted ? "Unmute Backsound" : "Mute Backsound"}
+        >
+          {isMuted ? <VolumeX className="w-4 h-4 text-rose-400" /> : <Volume2 className="w-4 h-4 text-emerald-400 animate-pulse" />}
+        </motion.button>
       </div>
 
       {/* --- MAIN CONTENT (ILLUSTRATION & TEXT) --- */}
