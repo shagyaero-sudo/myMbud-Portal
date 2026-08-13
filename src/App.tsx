@@ -40,7 +40,7 @@ import { BlockBlastView } from './components/blockblast/BlockBlastView';
 import { MbudiaryView } from './components/MbudiaryView';
 import { GpaCalculatorModal } from './components/GpaCalculatorModal';
 import { LoginScreen } from './components/LoginScreen';
-import { OnboardingScreen } from './components/OnboardingScreen'; // <-- IMPORT ONBOARDING SCREEN
+import { OnboardingScreen } from './components/OnboardingScreen';
 
 import {
   AppState,
@@ -110,7 +110,6 @@ export default function App() {
     return localStorage.getItem('mymbud_auth') === 'true';
   });
 
-  // --- STATE ONBOARDING ---
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState<boolean>(() => {
     return localStorage.getItem('mymbud_onboarded') === 'true';
   });
@@ -201,7 +200,9 @@ export default function App() {
     localStorage.removeItem('mymbud_auth');
     localStorage.removeItem('mymbud_user_name');
     localStorage.removeItem('mymbud_user_nrp');
+    localStorage.removeItem('mymbud_onboarded');
 
+    setHasCompletedOnboarding(false);
     setIsAuthenticated(false);
   };
 
@@ -618,13 +619,13 @@ export default function App() {
     }
   };
 
-  // --- GATEKEEPER 1: Cek Login ---
+  // --- GATEKEEPER 1: WAJIB LOGIN DULU ---
   if (requiresLogin) {
     return <LoginScreen onLoginSuccess={() => setIsAuthenticated(true)} />;
   }
 
-  // --- GATEKEEPER 2: Cek Onboarding (Tampil setelah Login, jika belum pernah) ---
-  if (!hasCompletedOnboarding) {
+  // --- GATEKEEPER 2: ONBOARDING HANYA BISA DIBUKA JIKA SUDAH AUTHENTICATED ---
+  if (isAuthenticated && !hasCompletedOnboarding) {
     const currentUserName = localStorage.getItem('mymbud_user_name') || 'Mbuders';
     return (
       <OnboardingScreen
