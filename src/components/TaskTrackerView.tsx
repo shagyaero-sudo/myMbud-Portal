@@ -1254,7 +1254,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                             Klik atau seret file PDF di sini
                           </p>
                           <p className="text-[10px] text-slate-500 dark:text-zinc-400">
-                            File PDF maksimal 25 MB
+                            File PDF maksimal 10 MB
                           </p>
                         </div>
                       )}
