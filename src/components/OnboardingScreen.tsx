@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Rocket,
   CalendarDays,
   CheckCircle2,
   Blocks,
@@ -29,11 +28,11 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
       id: 1,
       title: `Selamat Datang, ${userName}! ✨`,
       desc: 'myMbud Portal siap menemani perjalanan akademik kamu! Sudah siap memulai petualangan? Yuk mulai!',
-      icon: Rocket,
-      gradient: 'from-indigo-400 to-blue-600',
-      shadow: 'shadow-blue-500/50',
-      glow: 'bg-blue-600/20',
-      elements: ['bg-indigo-500/20', 'bg-blue-600/20']
+      isLogo: true, // Marker khusus untuk menggunakan /logombud.png
+      gradient: 'from-indigo-400 via-blue-500 to-cyan-400',
+      shadow: 'shadow-blue-500/60',
+      glow: 'bg-blue-500/30',
+      elements: ['bg-indigo-500/30', 'bg-blue-600/30']
     },
     {
       id: 2,
@@ -185,12 +184,23 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
               {/* Main Glass Centerpiece */}
               <motion.div
                 whileHover={{ scale: 1.05, rotateY: 10, rotateX: -10 }}
-                className={`relative z-10 w-48 h-48 sm:w-56 sm:h-56 rounded-[2rem] bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-2xl border border-white/20 shadow-2xl ${current.shadow} flex items-center justify-center transform perspective-1000`}
+                className={`relative z-10 w-48 h-48 sm:w-56 sm:h-56 rounded-[2rem] bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-2xl border border-white/20 shadow-2xl ${current.shadow} flex items-center justify-center transform perspective-1000 p-6`}
               >
                 {/* Inner Glow */}
-                <div className={`absolute inset-0 rounded-[2rem] ${current.glow} blur-2xl opacity-50`} />
+                <div className={`absolute inset-0 rounded-[2rem] ${current.glow} blur-2xl opacity-60`} />
                 
-                <Icon className="w-24 h-24 sm:w-28 sm:h-28 text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.5)] z-10" />
+                {current.isLogo ? (
+                  <motion.img
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.5 }}
+                    src="/logombud.png"
+                    alt="myMbud Logo"
+                    className="w-28 h-28 sm:w-32 sm:h-32 object-contain drop-shadow-[0_0_20px_rgba(59,130,246,0.8)] z-10"
+                  />
+                ) : (
+                  Icon && <Icon className="w-24 h-24 sm:w-28 sm:h-28 text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.5)] z-10" />
+                )}
               </motion.div>
             </div>
 
