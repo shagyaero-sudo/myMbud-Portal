@@ -221,11 +221,10 @@ export default function App() {
   const [isOfficer, setIsOfficer] = useState<boolean>(false);
   const [isGpaModalOpen, setIsGpaModalOpen] = useState<boolean>(false);
 
+  // LOGIKA NAVIGASI TAB: OTOMATIS RESET FILTER SAAT BERPINDAH TAB
   const handleNavigateTab = useCallback(
     (tab: TabType, courseFilter?: string) => {
-      if (tab === 'contacts' && courseFilter) {
-        setSelectedContactCourse(courseFilter);
-      }
+      setSelectedContactCourse(courseFilter || 'ALL');
       setActiveTab(tab);
     },
     []
@@ -623,7 +622,7 @@ export default function App() {
         isOfficer={isOfficer}
         setIsOfficer={setIsOfficer}
         activeTab={activeTab}
-        setActiveTab={setActiveTab}
+        setActiveTab={(tab) => handleNavigateTab(tab)}
         isSyncing={isSyncing}
         lastUpdated={appState.lastUpdated}
         onRefresh={syncState}
@@ -636,7 +635,7 @@ export default function App() {
       <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 flex flex-col lg:flex-row gap-6 pt-6">
         <Sidebar
           activeTab={activeTab}
-          setActiveTab={setActiveTab}
+          setActiveTab={(tab) => handleNavigateTab(tab)}
           activeTaskCount={activeTaskCount}
           onOpenGpaModal={() => setIsGpaModalOpen(true)}
         />
@@ -647,7 +646,7 @@ export default function App() {
           ) : (
             <AnimatePresence mode="popLayout" initial={false}>
               <motion.div
-                key={activeTab}
+                key={activeTab} // KUNCI UTAMA: MEMAKSA RE-MOUNT BERSIH UNTUK SEMUA HALAMAN TIAP PERPINDAHAN TAB
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
@@ -665,6 +664,7 @@ export default function App() {
 
                 {activeTab === 'contacts' && (
                   <ContactsView
+                    key={`contacts-${selectedContactCourse}`}
                     contacts={appState.contacts}
                     isOfficer={isOfficer}
                     initialCourseFilter={selectedContactCourse}
