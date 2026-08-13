@@ -1149,19 +1149,8 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
-                      Dosen Pengampu
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={assigner}
-                      onChange={(e) => setAssigner(e.target.value)}
-                      placeholder="Nama Dosen Pengampu"
-                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:ring-2 focus:ring-blue-500 outline-none"
-                    />
-                  </div>
+                  {/* FIELD DOSEN PENGAMPU DISEMBUNYIKAN SECARA SILUMAN AGAR OTOMASI TETAP BERJALAN DENGAN AMAN */}
+                  <input type="hidden" value={assigner} readOnly />
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
