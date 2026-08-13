@@ -36,10 +36,10 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
     initialCourseFilter || 'ALL'
   );
 
+  // RESET STATE SETIAP KALI HALAMAN DIKELOLA / RE-ENTER VIA NAVIGASI
   useEffect(() => {
-    if (initialCourseFilter) {
-      setSelectedCourseFilter(initialCourseFilter);
-    }
+    setSearch('');
+    setSelectedCourseFilter(initialCourseFilter || 'ALL');
   }, [initialCourseFilter]);
 
   const [showModal, setShowModal] = useState(false);
@@ -73,17 +73,50 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
     return clean;
   };
 
-  const filteredContacts = contacts.filter((c) => {
-    const matchSearch =
-      c.course.toLowerCase().includes(search.toLowerCase()) ||
-      (c.code && c.code.toLowerCase().includes(search.toLowerCase())) ||
-      (c.lecturerName &&
-        c.lecturerName.toLowerCase().includes(search.toLowerCase())) ||
-      c.pjName.toLowerCase().includes(search.toLowerCase());
-    const matchCourse =
-      selectedCourseFilter === 'ALL' || c.course === selectedCourseFilter;
-    return matchSearch && matchCourse;
-  });
+  // HELPER MENGAMBIL HARI DAN JAM
+  const parseSchedule = (scheduleStr: string = '') => {
+    const dayMap: Record<string, number> = {
+      senin: 1,
+      selasa: 2,
+      rabu: 3,
+      kamis: 4,
+      jumat: 5,
+      sabtu: 6,
+      minggu: 7,
+    };
+
+    const parts = scheduleStr.split(',');
+    const dayName = parts[0]?.trim().toLowerCase() || '';
+    const dayOrder = dayMap[dayName] || 99;
+
+    const timePart = parts[1]?.trim() || '';
+    const startTime = timePart.split('-')[0]?.trim() || '23:59';
+
+    return { dayOrder, startTime };
+  };
+
+  // FILTER & SORTING CHRONOLOGICAL (HARI & JAM)
+  const filteredContacts = contacts
+    .filter((c) => {
+      const matchSearch =
+        c.course.toLowerCase().includes(search.toLowerCase()) ||
+        (c.code && c.code.toLowerCase().includes(search.toLowerCase())) ||
+        (c.lecturerName &&
+          c.lecturerName.toLowerCase().includes(search.toLowerCase())) ||
+        c.pjName.toLowerCase().includes(search.toLowerCase());
+      const matchCourse =
+        selectedCourseFilter === 'ALL' || c.course === selectedCourseFilter;
+      return matchSearch && matchCourse;
+    })
+    .sort((a, b) => {
+      const schedA = parseSchedule(a.scheduleDayTime);
+      const schedB = parseSchedule(b.scheduleDayTime);
+
+      if (schedA.dayOrder !== schedB.dayOrder) {
+        return schedA.dayOrder - schedB.dayOrder;
+      }
+      return schedA.startTime.localeCompare(schedB.startTime);
+    });
 
   const uniqueCourses = Array.from(new Set(contacts.map((c) => c.course)));
 
