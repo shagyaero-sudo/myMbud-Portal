@@ -40,6 +40,7 @@ import { BlockBlastView } from './components/blockblast/BlockBlastView';
 import { MbudiaryView } from './components/MbudiaryView';
 import { GpaCalculatorModal } from './components/GpaCalculatorModal';
 import { LoginScreen } from './components/LoginScreen';
+import { OnboardingScreen } from './components/OnboardingScreen'; // <-- IMPORT ONBOARDING SCREEN
 
 import {
   AppState,
@@ -107,6 +108,11 @@ export default function App() {
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     return localStorage.getItem('mymbud_auth') === 'true';
+  });
+
+  // --- STATE ONBOARDING ---
+  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState<boolean>(() => {
+    return localStorage.getItem('mymbud_onboarded') === 'true';
   });
 
   const [completedTaskIds, setCompletedTaskIds] = useState<string[]>([]);
@@ -612,10 +618,23 @@ export default function App() {
     }
   };
 
+  // --- GATEKEEPER 1: Cek Login ---
   if (requiresLogin) {
     return <LoginScreen onLoginSuccess={() => setIsAuthenticated(true)} />;
   }
 
+  // --- GATEKEEPER 2: Cek Onboarding (Tampil setelah Login, jika belum pernah) ---
+  if (!hasCompletedOnboarding) {
+    const currentUserName = localStorage.getItem('mymbud_user_name') || 'Mbuders';
+    return (
+      <OnboardingScreen
+        userName={currentUserName}
+        onComplete={() => setHasCompletedOnboarding(true)}
+      />
+    );
+  }
+
+  // --- MAIN PORTAL ---
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-200">
       <Header
