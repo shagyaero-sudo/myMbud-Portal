@@ -166,7 +166,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
   const Icon = current.icon;
 
   return (
-    <div className="fixed inset-0 z-[99999] bg-[#0a0a0a] text-slate-100 flex flex-col font-sans overflow-hidden">
+    <div className="fixed inset-0 h-[100dvh] w-screen z-[99999] bg-[#0a0a0a] text-slate-100 flex flex-col font-sans overflow-hidden">
       {/* --- BACKGROUND GLOW MESH --- */}
       <AnimatePresence mode="popLayout">
         <motion.div
@@ -258,7 +258,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
       </div>
 
       {/* --- FOOTER (PAGINATION & BUTTON) --- */}
-      <div className="relative z-20 px-6 pb-12 sm:pb-16 w-full max-w-md mx-auto flex flex-col items-center gap-8">
+      <div className="relative z-20 px-6 pb-[calc(2rem+env(safe-area-inset-bottom))] sm:pb-16 w-full max-w-md mx-auto flex flex-col items-center gap-8">
         
         {/* Dot Indicators */}
         <div className="flex items-center gap-2">
