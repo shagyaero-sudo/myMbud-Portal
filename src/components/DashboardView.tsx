@@ -20,6 +20,8 @@ import {
   Zap,
   Send
 } from 'lucide-react';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { db } from '../services/firebase';
 import { AppState, DayOfWeek, Task, Announcement } from '../types';
 import {
   addAnnouncement,
@@ -136,6 +138,31 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [mobileAnnIndex, setMobileAnnIndex] = useState(0);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [isPaused, setIsPaused] = useState(false);
+
+  // --- STATE FOTO PROFIL MBUDIARY USER ---
+  const [userAvatarUrl, setUserAvatarUrl] = useState<string | null>(null);
+
+  const currentUserNrp = typeof window !== 'undefined' ? localStorage.getItem('mymbud_user_nrp') || '' : '';
+  const userName = typeof window !== 'undefined' ? localStorage.getItem('mymbud_user_name') || 'Mbuders' : 'Mbuders';
+
+  useEffect(() => {
+    if (!currentUserNrp) return;
+
+    // Ambil data avatar real-time dari collection users di Firestore
+    const userDocRef = doc(db, 'users', currentUserNrp);
+    const unsub = onSnapshot(userDocRef, (snap) => {
+      if (snap.exists()) {
+        const data = snap.data();
+        if (data.photoUrl) {
+          setUserAvatarUrl(data.photoUrl);
+        }
+      }
+    }, (err) => {
+      console.warn('[DashboardView] Gagal memuat avatar profil:', err);
+    });
+
+    return () => unsub();
+  }, [currentUserNrp]);
 
   const totalAnn = realAnnouncements.length;
   const activeAnnIndex = Math.min(mobileAnnIndex, Math.max(0, totalAnn - 1));
@@ -394,8 +421,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }
   };
 
-  const userName = localStorage.getItem('mymbud_user_name') || 'Mbuders';
-
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour >= 4 && hour < 11) return `Selamat Pagi, ${userName}!`;
@@ -575,7 +600,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         <div className="lg:col-span-2 space-y-6">
 
           {/* ========================================================================= */}
-          {/* MBUDIARY INPUT BAR (IDENTIK DENGAN TOMBOL ASLI DI MBUDIARY VIEW) */}
+          {/* MBUDIARY INPUT BAR (DENGAN AVATAR PROFIL ASLI + TOMBOL KIRIM BULAT) */}
           {/* ========================================================================= */}
           <motion.div
             whileHover={{ scale: 1.006 }}
@@ -584,6 +609,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             className="group relative overflow-hidden rounded-3xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 p-2.5 sm:p-3 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.03)] dark:shadow-none cursor-pointer transition-all hover:border-blue-500/40 dark:hover:border-blue-500/40"
           >
             <div className="flex items-center gap-3">
+              {/* Foto Profil Pengguna yang Tersinkron dari Mbudiary */}
+              <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-slate-200/60 dark:border-zinc-700/60 shrink-0">
+                {userAvatarUrl ? (
+                  <img src={userAvatarUrl} alt="Profil Saya" className="w-full h-full object-cover rounded-full" />
+                ) : (
+                  <span className="text-xs font-bold text-slate-700 dark:text-zinc-200">
+                    {userName.charAt(0).toUpperCase()}
+                  </span>
+                )}
+              </div>
+
               {/* Fake Interactive Input Box */}
               <div className="flex-1 px-4 py-2 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 flex items-center gap-2.5 text-slate-400 dark:text-zinc-500 group-hover:border-blue-500/20 transition-all">
                 <Pencil className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500 shrink-0" />
