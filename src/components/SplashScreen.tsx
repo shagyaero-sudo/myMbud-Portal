@@ -96,6 +96,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
             className="absolute -inset-1 rounded-[2.5rem] bg-gradient-to-r from-blue-500 to-indigo-600 blur-xl group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-pulse" 
           />
 
+          {/* --- NEW: CINEMATIC RIM LIGHT FLASH (BACKLIGHT) --- */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.4 }}
+            animate={{ opacity: [0, 0.9, 0], scale: [0.8, 1.7] }}
+            transition={{ duration: 0.95, delay: 0.15, ease: 'easeOut' }}
+            className="absolute inset-0 bg-white rounded-[2.5rem] blur-[35px] pointer-events-none"
+          />
+
           {/* Frosted Glass Container */}
           <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-[2rem] bg-white/[0.08] backdrop-blur-2xl border border-white/25 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] flex items-center justify-center p-5 overflow-hidden">
             {/* Shimmer Reflection */}
