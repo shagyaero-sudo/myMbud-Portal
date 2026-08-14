@@ -61,7 +61,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
             opacity: { duration: 0.8, ease: 'easeOut' },
             scale: { duration: 4, repeat: Infinity, ease: 'easeInOut' },
           }}
-          className="absolute -top-[10%] -left-[10%] w-[65vw] h-[65vw] rounded-full bg-gradient-to-tr from-blue-600/40 via-indigo-500/30 to-cyan-400/20 blur-[110px] mix-blend-screen"
+          className="absolute -top-[10%] -left-[10%] w-[65vw] h-[65vw] rounded-full bg-gradient-to-tr from-blue-600/40 via-indigo-500/30 to-cyan-400/20 blur-[110px]"
         />
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
@@ -73,7 +73,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
             opacity: { duration: 0.8, ease: 'easeOut', delay: 0.1 },
             scale: { duration: 4.5, repeat: Infinity, ease: 'easeInOut' },
           }}
-          className="absolute -bottom-[15%] -right-[15%] w-[70vw] h-[70vw] rounded-full bg-gradient-to-br from-indigo-600/40 via-purple-600/30 to-blue-500/20 blur-[130px] mix-blend-screen"
+          className="absolute -bottom-[15%] -right-[15%] w-[70vw] h-[70vw] rounded-full bg-gradient-to-br from-indigo-600/40 via-purple-600/30 to-blue-500/20 blur-[130px]"
         />
       </div>
 
@@ -84,7 +84,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
           animate={{ scale: 1, opacity: 1, y: 0, filter: 'blur(0px)' }}
           transition={{
             duration: 0.85,
-            ease: [0.16, 1, 0.3, 1], // Smooth Cinema Easing
+            ease: [0.16, 1, 0.3, 1],
           }}
           className="relative group"
         >
@@ -105,20 +105,26 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
           />
 
           {/* Frosted Glass Container */}
-          <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-[2rem] bg-white/[0.08] backdrop-blur-2xl border border-white/25 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] flex items-center justify-center p-5 overflow-hidden">
+          <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-[2rem] bg-white/[0.08] backdrop-blur-2xl border border-white/25 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] flex items-center justify-center p-5 overflow-hidden isolate">
             
-            {/* --- FIX: PERFECT DIAGONAL SHIMMER SWEEP --- */}
+            {/* --- GUARANTEED ULTRA-VISIBLE DIAGONAL SHIMMER --- */}
             <motion.div
-              initial={{ left: '-150%' }}
-              animate={{ left: '150%' }}
+              initial={{ x: -160, y: 160 }}
+              animate={{ x: 160, y: -160 }}
               transition={{
                 repeat: Infinity,
                 duration: 2.2,
                 ease: 'easeInOut',
-                repeatDelay: 0.8,
-                delay: 0.4,
+                repeatDelay: 0.6,
+                delay: 0.3,
               }}
-              className="absolute top-[-50%] w-[75%] h-[200%] bg-gradient-to-r from-transparent via-white/30 to-transparent -rotate-45 pointer-events-none"
+              style={{
+                width: '70px',
+                height: '350px',
+                transform: 'rotate(-45deg)',
+                background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.65) 50%, transparent 100%)',
+              }}
+              className="absolute pointer-events-none z-20"
             />
 
             {/* Logo myMbud */}
