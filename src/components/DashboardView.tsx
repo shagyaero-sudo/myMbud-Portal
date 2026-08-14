@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Clock,
@@ -18,7 +17,8 @@ import {
   FolderKanban,
   RotateCcw,
   Loader2,
-  Zap
+  Zap,
+  Sparkles
 } from 'lucide-react';
 import { AppState, DayOfWeek, Task, Announcement } from '../types';
 import {
@@ -394,9 +394,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }
   };
 
+  const userName = localStorage.getItem('mymbud_user_name') || 'Mbuders';
+
   const getGreeting = () => {
     const hour = new Date().getHours();
-    const userName = localStorage.getItem('mymbud_user_name') || 'Mbuders'; 
     if (hour >= 4 && hour < 11) return `Selamat Pagi, ${userName}!`;
     if (hour >= 11 && hour < 15) return `Selamat Siang, ${userName}!`;
     if (hour >= 15 && hour < 18) return `Selamat Sore, ${userName}!`;
@@ -420,7 +421,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           transition={{ duration: 0.3, ease: 'easeOut' }}
           className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-red-600 via-rose-600 to-amber-500 p-0.5 shadow-xl shadow-red-500/20"
         >
-          {/* Animasi Glow & Pulse di Background */}
           <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-white/20 blur-2xl animate-pulse" />
           <div className="absolute -left-10 -bottom-10 h-32 w-32 rounded-full bg-amber-400/20 blur-2xl animate-pulse" />
 
@@ -454,6 +454,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </motion.div>
       )}
 
+      {/* MOBILE GREETING & FLIP CALENDAR */}
       <div className="block lg:hidden px-1 pt-1 pb-0">
         <div className="flex items-center justify-between gap-3">
           <div>
@@ -488,7 +489,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         ) : (
           <div className="relative">
-            {/* FLOATING PREV / NEXT NAVIGATION BUTTONS */}
             {totalAnn > 1 && (
               <>
                 <button
@@ -576,22 +576,39 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
 
-          {/* MBUDIARY BANNER — HANYA TAMPIL DI MOBILE/TAB */}
-          <motion.button
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            whileHover={{ scale: 1.01, y: -1 }}
+          {/* ========================================================================= */}
+          {/* OPSI 3: MBUDIARY SOCIAL MICRO-INPUT BAR (RESPONSIF MOBILE & DESKTOP) */}
+          {/* ========================================================================= */}
+          <motion.div
+            whileHover={{ scale: 1.008 }}
             whileTap={{ scale: 0.985 }}
-            transition={{ duration: 0.2 }}
             onClick={() => onNavigateTab('mbudiary' as any)}
-            className="block lg:hidden w-full flex items-center justify-center gap-1.5 px-4 py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 pink:from-pink-500 pink:to-rose-500 purple:from-purple-600 purple:to-fuchsia-600 green:from-emerald-600 green:to-teal-600 text-white shadow-md hover:shadow-lg transition-all cursor-pointer"
-            title="Ada cerita apa hari ini?"
+            className="group relative overflow-hidden rounded-3xl bg-white/90 dark:bg-zinc-900/90 border border-slate-200/80 dark:border-zinc-800/80 p-3 sm:p-4 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.03)] dark:shadow-none cursor-pointer backdrop-blur-md transition-all hover:border-blue-500/40 dark:hover:border-blue-500/40"
           >
-            <Pencil className="w-4 h-4 shrink-0" />
-            <span className="text-xs sm:text-sm font-black tracking-tight">
-              Ada cerita apa hari ini? #mbudiary.
-            </span>
-          </motion.button>
+            {/* Subtle Gradient Hover Backdrop */}
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-indigo-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+            <div className="relative flex items-center gap-3">
+              {/* User Avatar Circle / Icon */}
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center text-xs sm:text-sm font-bold shadow-md shadow-blue-500/20 shrink-0">
+                {userName.charAt(0).toUpperCase()}
+              </div>
+
+              {/* Fake Interactive Input Box */}
+              <div className="flex-1 px-4 py-2.5 rounded-2xl bg-slate-100/70 dark:bg-zinc-800/60 border border-slate-200/50 dark:border-zinc-700/50 flex items-center justify-between text-slate-500 dark:text-zinc-400 group-hover:border-blue-500/30 transition-all">
+                <span className="text-xs sm:text-sm truncate">
+                  Ada cerita atau unek-unek apa hari ini, {userName.split(' ')[0]}?...
+                </span>
+                <Pencil className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:rotate-12 transition-all shrink-0 ml-2" />
+              </div>
+
+              {/* Hashtag Tag */}
+              <div className="hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 text-xs font-bold shrink-0">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>#mbudiary</span>
+              </div>
+            </div>
+          </motion.div>
 
           {/* 1. JADWAL PERKULIAHAN */}
           <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-4 transition-colors">
@@ -711,7 +728,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
           {/* 2. WIDGET KALENDER BUILD-IN */}
           <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-6 transition-colors">
-            {/* Header Kalender: Title & Slider Sejajar di Pojok Kanan */}
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <CalendarIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
@@ -720,7 +736,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 </h3>
               </div>
 
-              {/* Slider Bulan di Pojok Kanan */}
               <div className="flex items-center bg-slate-100 dark:bg-zinc-800 rounded-xl p-0.5 shrink-0">
                 <button
                   onClick={handlePrevMonth}
@@ -744,7 +759,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
             {/* Grid Kalender Bulanan */}
             <div className="space-y-2">
-              {/* Nama Hari (SEN - MIN, MIN berwarna merah) */}
               <div className="grid grid-cols-7 gap-1 text-center border-b border-slate-100 dark:border-zinc-800 pb-2">
                 {['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'].map((dayName, idx) => (
                   <span 
@@ -756,7 +770,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 ))}
               </div>
 
-              {/* Tanggal Grid */}
               <div className="grid grid-cols-7 gap-1 sm:gap-2">
                 {Array.from({ length: firstDayOfMonth(currentYear, currentMonth) }).map((_, i) => (
                   <div key={`empty-${i}`} className="h-10 sm:h-12 rounded-2xl bg-transparent" />
@@ -1172,31 +1185,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* FLOATING BUTTON MBUDIARY KHUSUS PC — DITEMPEL KE ROOT DOCUMENT (BODY) LEWAT PORTAL */}
-      {typeof document !== 'undefined' &&
-        createPortal(
-          <motion.button
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            whileHover={{ scale: 1.04, y: -2 }}
-            whileTap={{ scale: 0.96 }}
-            onClick={() => onNavigateTab('mbudiary' as any)}
-            className="hidden lg:flex fixed bottom-6 right-6 z-[9999] items-center gap-3.5 px-5 py-3.5 rounded-2xl bg-zinc-900 dark:bg-zinc-100 text-zinc-100 dark:text-zinc-900 border border-zinc-800 dark:border-zinc-200 shadow-2xl transition-all cursor-pointer group"
-            title="mbudiary #CeritainAja"
-          >
-            <Pencil className="w-5 h-5 text-zinc-100 dark:text-zinc-900 shrink-0" />
-            <div className="text-left flex flex-col justify-center pr-1">
-              <span className="text-base font-black tracking-tight text-zinc-100 dark:text-zinc-900 leading-none">
-                mbudiary.
-              </span>
-              <span className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500 leading-tight mt-1">
-                #CeritainAja
-              </span>
-            </div>
-          </motion.button>,
-          document.body
-        )}
     </motion.div>
   );
 };
