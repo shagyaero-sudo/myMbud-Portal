@@ -595,7 +595,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               {/* Tombol Kirim Ramping & Identik (Outline Paper Plane Icon) */}
               <div className="px-4 py-1.5 rounded-full bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm shadow-blue-500/30 transition-all shrink-0">
                 <Send className="w-3.5 h-3.5 stroke-[2.2] -rotate-12 translate-y-[-0.5px]" />
-                <span>Kirim</span>
+                <span></span>
               </div>
             </div>
           </motion.div>
