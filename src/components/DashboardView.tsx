@@ -411,9 +411,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       transition={{ duration: 0.3 }}
       className="space-y-6 pb-28 sm:pb-32"
     >
-      {/* ========================================================================= */}
-      {/* BANNER WAR FRS DIRECT BYPASS (TAMPIL DI TERATAS MOBILE & PC) */}
-      {/* ========================================================================= */}
+      {/* BANNER WAR FRS DIRECT BYPASS */}
       {IS_FRS_WAR_ACTIVE && (
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: -10 }}
@@ -577,7 +575,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         <div className="lg:col-span-2 space-y-6">
 
           {/* ========================================================================= */}
-          {/* MBUDIARY INPUT BAR (MINIMALIS TANPA AVATAR + TOMBOL KIRIM PERSIS MBUDIARY) */}
+          {/* MBUDIARY INPUT BAR (IDENTIK DENGAN TOMBOL ASLI DI MBUDIARY VIEW) */}
           {/* ========================================================================= */}
           <motion.div
             whileHover={{ scale: 1.006 }}
@@ -587,21 +585,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           >
             <div className="flex items-center gap-3">
               {/* Fake Interactive Input Box */}
-              <div className="flex-1 px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 flex items-center gap-2.5 text-slate-400 dark:text-zinc-500 group-hover:border-blue-500/20 transition-all">
+              <div className="flex-1 px-4 py-2 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 flex items-center gap-2.5 text-slate-400 dark:text-zinc-500 group-hover:border-blue-500/20 transition-all">
                 <Pencil className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500 shrink-0" />
                 <span className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 truncate">
-                  Ada cerita apa hari ini?...
+                  Ada cerita apa hari ini, {userName.split(' ')[0]}?...
                 </span>
               </div>
 
-              {/* Tombol Kirim Biru Identik dengan Fitur Mbudiary */}
-              <button
-                type="button"
-                className="px-5 py-2.5 rounded-full bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-blue-500/20 transition-all shrink-0"
-              >
-                <Send className="w-3.5 h-3.5 fill-white" />
+              {/* Tombol Kirim Ramping & Identik (Outline Paper Plane Icon) */}
+              <div className="px-4 py-1.5 rounded-full bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm shadow-blue-500/30 transition-all shrink-0">
+                <Send className="w-3.5 h-3.5 stroke-[2.2] -rotate-12 translate-y-[-0.5px]" />
                 <span>Kirim</span>
-              </button>
+              </div>
             </div>
           </motion.div>
 
