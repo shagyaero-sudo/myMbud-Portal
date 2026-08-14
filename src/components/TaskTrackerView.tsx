@@ -954,7 +954,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
               {/* Judul & Sapaan */}
               <div className="space-y-1">
                 <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-zinc-100 pt-1 tracking-tight">
-                  Kerja Bagus, {currentUserName}! 🎉
+                  Tugas Telah Selesai, {currentUserName}! 🎉
                 </h3>
               </div>
 
@@ -970,7 +970,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
 
               {/* Pesan Relaksasi */}
               <p className="mt-3.5 text-xs sm:text-sm text-slate-500 dark:text-zinc-400 leading-relaxed">
-                Satu beban tugas berhasil terhempas. Selamat istirahat dan luangkan waktu buat rehat sejenak ya! ☕✨
+                Selamat istirahat dan jangan lupa self reward! 😋🍦
               </p>
 
               {/* Tombol Aksi */}
@@ -980,7 +980,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                 onClick={() => setCelebrationTask(null)}
                 className="mt-6 w-full py-2.5 sm:py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm shadow-md shadow-blue-500/20 transition-all cursor-pointer"
               >
-                Mantap, Lanjut Rehat!
+                Terima kasih
               </motion.button>
             </motion.div>
           </motion.div>
