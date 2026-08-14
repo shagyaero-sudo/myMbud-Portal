@@ -140,28 +140,49 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [isPaused, setIsPaused] = useState(false);
 
   // --- STATE FOTO PROFIL MBUDIARY USER ---
-  const [userAvatarUrl, setUserAvatarUrl] = useState<string | null>(null);
+  const [userAvatarUrl, setUserAvatarUrl] = useState<string | null>(() => {
+    return typeof window !== 'undefined' ? localStorage.getItem('mymbud_user_photo_url') || null : null;
+  });
 
-  const currentUserNrp = typeof window !== 'undefined' ? localStorage.getItem('mymbud_user_nrp') || '' : '';
+  const currentUserNrp = typeof window !== 'undefined' ? (localStorage.getItem('mymbud_user_nrp') || '').trim().toLowerCase() : '';
   const userName = typeof window !== 'undefined' ? localStorage.getItem('mymbud_user_name') || 'Mbuders' : 'Mbuders';
 
   useEffect(() => {
-    if (!currentUserNrp) return;
+    // Sinkronisasi dari Event lokal Mbudiary
+    const handleProfileChange = () => {
+      const storedUrl = localStorage.getItem('mymbud_user_photo_url');
+      if (storedUrl) setUserAvatarUrl(storedUrl);
+    };
 
-    // Ambil data avatar real-time dari collection users di Firestore
-    const userDocRef = doc(db, 'users', currentUserNrp);
-    const unsub = onSnapshot(userDocRef, (snap) => {
-      if (snap.exists()) {
-        const data = snap.data();
-        if (data.photoUrl) {
-          setUserAvatarUrl(data.photoUrl);
+    window.addEventListener('mbud_user_change', handleProfileChange);
+    window.addEventListener('mbud_users_change', handleProfileChange);
+
+    // Ambil data avatar real-time dari collection mbudiary_users
+    if (currentUserNrp && currentUserNrp !== 'unknown') {
+      const userDocRef = doc(db, 'mbudiary_users', currentUserNrp);
+      const unsub = onSnapshot(userDocRef, (snap) => {
+        if (snap.exists()) {
+          const data = snap.data();
+          if (data.photoUrl) {
+            setUserAvatarUrl(data.photoUrl);
+            localStorage.setItem('mymbud_user_photo_url', data.photoUrl);
+          }
         }
-      }
-    }, (err) => {
-      console.warn('[DashboardView] Gagal memuat avatar profil:', err);
-    });
+      }, (err) => {
+        console.warn('[DashboardView] Gagal sync avatar:', err);
+      });
 
-    return () => unsub();
+      return () => {
+        unsub();
+        window.removeEventListener('mbud_user_change', handleProfileChange);
+        window.removeEventListener('mbud_users_change', handleProfileChange);
+      };
+    }
+
+    return () => {
+      window.removeEventListener('mbud_user_change', handleProfileChange);
+      window.removeEventListener('mbud_users_change', handleProfileChange);
+    };
   }, [currentUserNrp]);
 
   const totalAnn = realAnnouncements.length;
@@ -609,7 +630,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             className="group relative overflow-hidden rounded-3xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 p-2.5 sm:p-3 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.03)] dark:shadow-none cursor-pointer transition-all hover:border-blue-500/40 dark:hover:border-blue-500/40"
           >
             <div className="flex items-center gap-3">
-              {/* Foto Profil Pengguna yang Tersinkron dari Mbudiary */}
+              {/* Foto Profil Pengguna Asli Mbudiary */}
               <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-slate-200/60 dark:border-zinc-700/60 shrink-0">
                 {userAvatarUrl ? (
                   <img src={userAvatarUrl} alt="Profil Saya" className="w-full h-full object-cover rounded-full" />
