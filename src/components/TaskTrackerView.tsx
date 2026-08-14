@@ -19,6 +19,7 @@ import {
   RotateCcw,
   CheckCircle2,
   Circle,
+  Sparkles,
 } from 'lucide-react';
 import { Task, Contact } from '../types';
 import { subscribeUserTaskCompletions, toggleTaskCompletion } from '../services/api';
@@ -34,6 +35,7 @@ interface TaskTrackerViewProps {
     newStatus: 'todo' | 'in_progress' | 'done'
   ) => void;
   onDeleteTask: (id: string) => void;
+  completionSoundUrl?: string;
 }
 
 interface AttachmentData {
@@ -48,6 +50,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
   onAddTask,
   onUpdateTask,
   onDeleteTask,
+  completionSoundUrl = '/task-complete.mp3',
 }) => {
   const [search, setSearch] = useState('');
   const [filterCourse, setFilterCourse] = useState('ALL');
@@ -58,6 +61,29 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
   // STATE CENTANG SINKRON FIREBASE PER NRP
   const [completedTaskIds, setCompletedTaskIds] = useState<string[]>([]);
   const currentUserNrp = localStorage.getItem('mymbud_user_nrp') || 'unknown';
+  const currentUserName = localStorage.getItem('mymbud_user_name') || 'Aero';
+
+  // STATE CELEBRATION MODAL
+  const [celebrationTask, setCelebrationTask] = useState<Task | null>(null);
+  const audioCelebrationRef = useRef<HTMLAudioElement | null>(null);
+
+  const playCelebrationSound = () => {
+    if (completionSoundUrl) {
+      try {
+        const audio = new Audio(completionSoundUrl);
+        audioCelebrationRef.current = audio;
+        audio.volume = 0.85;
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          playPromise.catch((err) => {
+            console.warn('[TaskComplete] SFX autoplay dicegah browser:', err);
+          });
+        }
+      } catch (e) {
+        console.warn('[TaskComplete] Gagal memuat audio SFX:', e);
+      }
+    }
+  };
 
   useEffect(() => {
     const unsub = subscribeUserTaskCompletions(currentUserNrp, (ids) => {
@@ -66,11 +92,19 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
     return () => unsub();
   }, [currentUserNrp]);
 
-  const handleToggleComplete = async (e: React.MouseEvent, taskId: string) => {
+  const handleToggleComplete = async (e: React.MouseEvent, task: Task) => {
     e.stopPropagation();
-    const isDone = completedTaskIds.includes(taskId);
+    const isDone = completedTaskIds.includes(task.id);
+    const nextState = !isDone;
+
     try {
-      await toggleTaskCompletion(currentUserNrp, taskId, !isDone);
+      await toggleTaskCompletion(currentUserNrp, task.id, nextState);
+      
+      // Jika baru saja ditandai SELESAI, trigger modal dan putar SFX
+      if (nextState) {
+        setCelebrationTask(task);
+        playCelebrationSound();
+      }
     } catch (err) {
       console.error('Gagal memperbarui status tugas:', err);
     }
@@ -628,7 +662,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                       </span>
 
                       <button
-                        onClick={(e) => handleToggleComplete(e, t.id)}
+                        onClick={(e) => handleToggleComplete(e, t)}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 ${
                           isDone
                             ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50'
@@ -689,7 +723,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                         </span>
                       ) : (
                         <button
-                          onClick={(e) => handleToggleComplete(e, t.id)}
+                          onClick={(e) => handleToggleComplete(e, t)}
                           className="flex items-center gap-1 px-2.5 py-1 rounded-xl text-[11px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-all"
                         >
                           <CheckCircle2 className="w-3.5 h-3.5" />
@@ -886,6 +920,75 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
         )}
       </AnimatePresence>
 
+      {/* CELEBRATION REWARD POPUP (WEB3 GLASSMORPHISM) */}
+      <AnimatePresence>
+        {celebrationTask && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-md flex items-center justify-center p-4 select-none"
+            onClick={() => setCelebrationTask(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.85, opacity: 0, y: 15 }}
+              transition={{ type: 'spring', stiffness: 320, damping: 24 }}
+              className="relative max-w-sm sm:max-w-md w-full rounded-[2.5rem] bg-gradient-to-b from-white/[0.12] to-white/[0.04] dark:from-zinc-900/90 dark:to-zinc-950/95 border border-white/20 dark:border-white/10 shadow-[0_16px_48px_0_rgba(0,0,0,0.45)] backdrop-blur-2xl p-6 sm:p-8 text-center overflow-hidden flex flex-col items-center"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Background Ambient Glow */}
+              <div className="absolute -top-12 -left-12 w-40 h-40 bg-emerald-500/25 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute -bottom-12 -right-12 w-40 h-40 bg-blue-500/25 rounded-full blur-3xl pointer-events-none" />
+
+              {/* Glowing Icon Badge */}
+              <div className="relative mb-5">
+                <div className="absolute -inset-2 rounded-full bg-gradient-to-r from-emerald-400 to-blue-500 opacity-60 blur-lg animate-pulse" />
+                <div className="relative w-18 h-18 sm:w-20 sm:h-20 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-400 p-0.5 shadow-xl flex items-center justify-center">
+                  <div className="w-full h-full rounded-full bg-[#08080c] flex items-center justify-center">
+                    <Sparkles className="w-8 h-8 sm:w-9 sm:h-9 text-emerald-400 animate-bounce" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Heading */}
+              <h3 className="text-xl sm:text-2xl font-black tracking-tight text-white">
+                Kerja Bagus, {currentUserName}! 🎉
+              </h3>
+
+              {/* Task Details Info */}
+              <div className="mt-3 px-4 py-2.5 rounded-2xl bg-white/[0.06] border border-white/10 backdrop-blur-md w-full">
+                <p className="text-xs text-slate-300 line-clamp-1">
+                  Kamu telah menyelesaikan:
+                </p>
+                <p className="text-sm font-bold text-emerald-400 truncate mt-0.5">
+                  {celebrationTask.title}
+                </p>
+                <span className="inline-block text-[10px] font-semibold text-slate-400 mt-0.5">
+                  Matkul {celebrationTask.course}
+                </span>
+              </div>
+
+              {/* Relaxing Encouragement */}
+              <p className="mt-4 text-xs sm:text-sm text-slate-300/90 leading-relaxed">
+                Satu beban kuliah berhasil terhempas! Selamat istirahat dan rehat sejenak ya! ☕✨
+              </p>
+
+              {/* Action Button */}
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => setCelebrationTask(null)}
+                className="mt-6 w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-blue-600 text-white font-bold text-xs sm:text-sm shadow-lg shadow-emerald-500/25 transition-all cursor-pointer"
+              >
+                Mantap, Istirahat Dulu! 🚀
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* ATTACHMENT VIEWER MODAL */}
       <AnimatePresence>
         {previewAttachment && (
@@ -928,7 +1031,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
-                  {/* UNTUK LAPTOP/DESKTOP: TOMBOL "UNDUH" LENGKAP BERSAMA TEKS */}
                   <button
                     type="button"
                     onClick={(e) => handleForceDownload(e, previewAttachment.fileUrl, previewAttachment.fileName)}
@@ -938,7 +1040,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                     Unduh
                   </button>
 
-                  {/* UNTUK HP: TOMBOL IKON EXTERNAL LINK KHUSUS OPEN DRIVE */}
                   <a
                     href={previewAttachment.fileUrl}
                     target="_blank"
@@ -1149,7 +1250,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                     </div>
                   </div>
 
-                  {/* FIELD DOSEN PENGAMPU DISEMBUNYIKAN SECARA SILUMAN AGAR OTOMASI TETAP BERJALAN DENGAN AMAN */}
                   <input type="hidden" value={assigner} readOnly />
 
                   <div className="grid grid-cols-2 gap-4">
