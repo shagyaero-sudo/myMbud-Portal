@@ -39,7 +39,7 @@ import { SoftForceModal } from './components/SoftForceModal';
 import { BlockBlastView } from './components/blockblast/BlockBlastView';
 import { MbudiaryView } from './components/MbudiaryView';
 import { GpaCalculatorModal } from './components/GpaCalculatorModal';
-import { LoginScreen } from './components/LoginScreen';
+import LoginScreen from './components/LoginScreen';
 import { OnboardingScreen } from './components/OnboardingScreen';
 import { SplashScreen } from './components/SplashScreen';
 
