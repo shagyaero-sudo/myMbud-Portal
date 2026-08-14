@@ -106,10 +106,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
 
           {/* Frosted Glass Container */}
           <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-[2rem] bg-white/[0.08] backdrop-blur-2xl border border-white/25 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] flex items-center justify-center p-5 overflow-hidden">
-            {/* Shimmer Reflection */}
+            
+            {/* Shimmer Reflection (Diagonal Bottom-Left to Top-Right) */}
             <motion.div
-              initial={{ x: '-150%' }}
-              animate={{ x: '150%' }}
+              initial={{ x: '-150%', y: '150%', rotate: -45 }}
+              animate={{ x: '150%', y: '-150%', rotate: -45 }}
               transition={{
                 repeat: Infinity,
                 duration: 2.4,
@@ -117,7 +118,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
                 repeatDelay: 0.6,
                 delay: 0.4,
               }}
-              className="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 pointer-events-none"
+              className="absolute inset-0 w-[150%] h-[150%] -left-[25%] -top-[25%] bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none"
             />
 
             {/* Logo myMbud */}
