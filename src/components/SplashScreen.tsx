@@ -107,10 +107,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
           {/* Frosted Glass Container */}
           <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-[2rem] bg-white/[0.08] backdrop-blur-2xl border border-white/25 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] flex items-center justify-center p-5 overflow-hidden isolate">
             
-            {/* --- GUARANTEED ULTRA-VISIBLE DIAGONAL SHIMMER --- */}
+            {/* --- TRUE DIAGONAL SHIMMER (POJOK KIRI BAWAH KE KANAN ATAS) --- */}
             <motion.div
-              initial={{ x: -160, y: 160 }}
-              animate={{ x: 160, y: -160 }}
+              initial={{ x: -170, y: 170, rotate: -45 }}
+              animate={{ x: 170, y: -170, rotate: -45 }}
               transition={{
                 repeat: Infinity,
                 duration: 2.2,
@@ -119,12 +119,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
                 delay: 0.3,
               }}
               style={{
-                width: '70px',
+                width: '65px',
                 height: '350px',
-                transform: 'rotate(-45deg)',
                 background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.65) 50%, transparent 100%)',
               }}
-              className="absolute pointer-events-none z-20"
+              className="absolute pointer-events-none z-20 origin-center"
             />
 
             {/* Logo myMbud */}
