@@ -41,6 +41,7 @@ import { MbudiaryView } from './components/MbudiaryView';
 import { GpaCalculatorModal } from './components/GpaCalculatorModal';
 import { LoginScreen } from './components/LoginScreen';
 import { OnboardingScreen } from './components/OnboardingScreen';
+import { SplashScreen } from './components/SplashScreen';
 
 import {
   AppState,
@@ -106,6 +107,17 @@ export default function App() {
     );
   }
 
+  // --- STATE SPLASH SCREEN DENGAN DURASI 3 DETIK ---
+  const [showSplash, setShowSplash] = useState<boolean>(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     return localStorage.getItem('mymbud_auth') === 'true';
   });
@@ -131,7 +143,7 @@ export default function App() {
             localStorage.removeItem('mymbud_auth');
             localStorage.removeItem('mymbud_user_name');
             localStorage.removeItem('mymbud_user_nrp');
-            localStorage.removeItem('mymbud_onboarded'); // HAPUS ONBOARDING AGAR MUNCUL LAGI SAAT LOGIN RE-ENTRY
+            localStorage.removeItem('mymbud_onboarded');
 
             setHasCompletedOnboarding(false);
             setIsAuthenticated(false);
@@ -230,7 +242,6 @@ export default function App() {
   const [isOfficer, setIsOfficer] = useState<boolean>(false);
   const [isGpaModalOpen, setIsGpaModalOpen] = useState<boolean>(false);
 
-  // LOGIKA NAVIGASI TAB: OTOMATIS RESET FILTER SAAT BERPINDAH TAB
   const handleNavigateTab = useCallback(
     (tab: TabType, courseFilter?: string) => {
       setSelectedContactCourse(courseFilter || 'ALL');
@@ -302,7 +313,7 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  // --- REAL-TIME LISTENERS (EFISIEN KONTRA POLLING) ---
+  // --- REAL-TIME LISTENERS ---
   useEffect(() => {
     setIsSyncing(true);
 
@@ -310,7 +321,6 @@ export default function App() {
     const qTasks = query(collection(db, 'tasks'));
     const qMaterials = query(collection(db, 'materials'));
 
-    // 1. Real-time Listener: Courses (Schedules & Contacts)
     const unsubCourses = onSnapshot(
       qCourses,
       (snapshot) => {
@@ -378,7 +388,6 @@ export default function App() {
       }
     );
 
-    // 2. Real-time Listener: Tasks
     const unsubTasks = onSnapshot(
       qTasks,
       (snapshot) => {
@@ -428,7 +437,6 @@ export default function App() {
       }
     );
 
-    // 3. Real-time Listener: Materials
     const unsubMaterials = onSnapshot(
       qMaterials,
       (snapshot) => {
@@ -463,7 +471,6 @@ export default function App() {
       }
     );
 
-    // Initial State Fetch Fallback dari API
     fetchAppState().then((data) => {
       if (data) {
         setAppState((prev) => ({
@@ -639,120 +646,127 @@ export default function App() {
 
   // --- MAIN PORTAL ---
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-200">
-      <Header
-        isOfficer={isOfficer}
-        setIsOfficer={setIsOfficer}
-        activeTab={activeTab}
-        setActiveTab={(tab) => handleNavigateTab(tab)}
-        isSyncing={isSyncing}
-        lastUpdated={appState.lastUpdated}
-        onRefresh={syncState}
-        urgentTaskCount={urgentTaskCount}
-        theme={theme}
-        setTheme={setTheme}
-        onLogout={handleLogout}
-      />
+    <>
+      {/* IN-APP SPLASH SCREEN (3 DETIK DENGAN SOUND EFFECT) */}
+      <AnimatePresence>
+        {showSplash && <SplashScreen key="splash" soundUrl="/splash-sound.mp3" />}
+      </AnimatePresence>
 
-      <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 flex flex-col lg:flex-row gap-6 pt-6">
-        <Sidebar
+      <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-200">
+        <Header
+          isOfficer={isOfficer}
+          setIsOfficer={setIsOfficer}
           activeTab={activeTab}
           setActiveTab={(tab) => handleNavigateTab(tab)}
-          activeTaskCount={activeTaskCount}
-          onOpenGpaModal={() => setIsGpaModalOpen(true)}
+          isSyncing={isSyncing}
+          lastUpdated={appState.lastUpdated}
+          onRefresh={syncState}
+          urgentTaskCount={urgentTaskCount}
+          theme={theme}
+          setTheme={setTheme}
+          onLogout={handleLogout}
         />
 
-        <main className="flex-1 pb-8 overflow-y-auto space-y-6">
-          {isInitialLoad ? (
-            <AppSkeleton />
-          ) : (
-            <AnimatePresence mode="popLayout" initial={false}>
-              <motion.div
-                key={activeTab}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.15, ease: 'easeOut' }}
-              >
-                {activeTab === 'dashboard' && (
-                  <DashboardView
-                    state={appState}
-                    isOfficer={isOfficer}
-                    onAddAnnouncement={() => {}}
-                    onDeleteAnnouncement={() => {}}
-                    onNavigateTab={handleNavigateTab}
-                  />
-                )}
+        <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 flex flex-col lg:flex-row gap-6 pt-6">
+          <Sidebar
+            activeTab={activeTab}
+            setActiveTab={(tab) => handleNavigateTab(tab)}
+            activeTaskCount={activeTaskCount}
+            onOpenGpaModal={() => setIsGpaModalOpen(true)}
+          />
 
-                {activeTab === 'contacts' && (
-                  <ContactsView
-                    key={`contacts-${selectedContactCourse}`}
-                    contacts={appState.contacts}
-                    isOfficer={isOfficer}
-                    initialCourseFilter={selectedContactCourse}
-                    onAddContact={handleAddContact}
-                    onUpdateContact={handleUpdateContact}
-                    onDeleteContact={handleDeleteContact}
-                  />
-                )}
+          <main className="flex-1 pb-8 overflow-y-auto space-y-6">
+            {isInitialLoad ? (
+              <AppSkeleton />
+            ) : (
+              <AnimatePresence mode="popLayout" initial={false}>
+                <motion.div
+                  key={activeTab}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15, ease: 'easeOut' }}
+                >
+                  {activeTab === 'dashboard' && (
+                    <DashboardView
+                      state={appState}
+                      isOfficer={isOfficer}
+                      onAddAnnouncement={() => {}}
+                      onDeleteAnnouncement={() => {}}
+                      onNavigateTab={handleNavigateTab}
+                    />
+                  )}
 
-                {activeTab === 'materials' && (
-                  <KnowledgeBaseView
-                    materials={appState.materials}
-                    isOfficer={isOfficer}
-                    availableCourses={appState.schedules.map((s) => s.course)}
-                    onAddMaterial={handleAddMaterial}
-                    onDeleteMaterial={handleDeleteMaterial}
-                    onPreviewPdf={(material) => setPreviewMaterial(material)}
-                  />
-                )}
+                  {activeTab === 'contacts' && (
+                    <ContactsView
+                      key={`contacts-${selectedContactCourse}`}
+                      contacts={appState.contacts}
+                      isOfficer={isOfficer}
+                      initialCourseFilter={selectedContactCourse}
+                      onAddContact={handleAddContact}
+                      onUpdateContact={handleUpdateContact}
+                      onDeleteContact={handleDeleteContact}
+                    />
+                  )}
 
-                {activeTab === 'tasks' && (
-                  <TaskTrackerView
-                    tasks={appState.tasks}
-                    contacts={appState.contacts}
-                    isOfficer={isOfficer}
-                    onAddTask={handleAddTask}
-                    onUpdateTask={handleUpdateTask}
-                    onUpdateTaskStatus={handleUpdateTaskStatus}
-                    onDeleteTask={handleDeleteTask}
-                  />
-                )}
+                  {activeTab === 'materials' && (
+                    <KnowledgeBaseView
+                      materials={appState.materials}
+                      isOfficer={isOfficer}
+                      availableCourses={appState.schedules.map((s) => s.course)}
+                      onAddMaterial={handleAddMaterial}
+                      onDeleteMaterial={handleDeleteMaterial}
+                      onPreviewPdf={(material) => setPreviewMaterial(material)}
+                    />
+                  )}
 
-                {activeTab === 'spinwheel' && (
-                  <SpinwheelView
-                    onSaveGroupResult={handleSaveGroupResult}
-                    savedResults={appState.groupResults}
-                    isOfficer={isOfficer}
-                  />
-                )}
+                  {activeTab === 'tasks' && (
+                    <TaskTrackerView
+                      tasks={appState.tasks}
+                      contacts={appState.contacts}
+                      isOfficer={isOfficer}
+                      onAddTask={handleAddTask}
+                      onUpdateTask={handleUpdateTask}
+                      onUpdateTaskStatus={handleUpdateTaskStatus}
+                      onDeleteTask={handleDeleteTask}
+                    />
+                  )}
 
-                {activeTab === 'calculator' && (
-                  <GradeCalculatorView courseGrades={appState.courseGrades} />
-                )}
+                  {activeTab === 'spinwheel' && (
+                    <SpinwheelView
+                      onSaveGroupResult={handleSaveGroupResult}
+                      savedResults={appState.groupResults}
+                      isOfficer={isOfficer}
+                    />
+                  )}
 
-                {activeTab === 'letter' && <LetterGeneratorView />}
+                  {activeTab === 'calculator' && (
+                    <GradeCalculatorView courseGrades={appState.courseGrades} />
+                  )}
 
-                {activeTab === 'blockblast' && <BlockBlastView />}
+                  {activeTab === 'letter' && <LetterGeneratorView />}
 
-                {activeTab === 'mbudiary' && <MbudiaryView />}
-              </motion.div>
-            </AnimatePresence>
-          )}
-        </main>
+                  {activeTab === 'blockblast' && <BlockBlastView />}
+
+                  {activeTab === 'mbudiary' && <MbudiaryView />}
+                </motion.div>
+              </AnimatePresence>
+            )}
+          </main>
+        </div>
+
+        <PdfViewerModal
+          material={previewMaterial}
+          onClose={() => setPreviewMaterial(null)}
+        />
+
+        <SoftForceModal />
+
+        <GpaCalculatorModal
+          isOpen={isGpaModalOpen}
+          onClose={() => setIsGpaModalOpen(false)}
+        />
       </div>
-
-      <PdfViewerModal
-        material={previewMaterial}
-        onClose={() => setPreviewMaterial(null)}
-      />
-
-      <SoftForceModal />
-
-      <GpaCalculatorModal
-        isOpen={isGpaModalOpen}
-        onClose={() => setIsGpaModalOpen(false)}
-      />
-    </div>
+    </>
   );
 }

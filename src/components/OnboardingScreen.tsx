@@ -285,7 +285,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
         >
           {currentSlide === slides.length - 1 ? (
             <>
-              <span>Aktifkan Notifikasi & Masuk</span>
+              <span>Aktifkan Notifikasi</span>
               <BellRing className="w-4 h-4 animate-bounce" />
             </>
           ) : (
