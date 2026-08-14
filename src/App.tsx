@@ -39,9 +39,16 @@ import { SoftForceModal } from './components/SoftForceModal';
 import { BlockBlastView } from './components/blockblast/BlockBlastView';
 import { MbudiaryView } from './components/MbudiaryView';
 import { GpaCalculatorModal } from './components/GpaCalculatorModal';
-import LoginScreen from './components/LoginScreen';
+import * as LoginModule from './components/LoginScreen';
 import { OnboardingScreen } from './components/OnboardingScreen';
 import { SplashScreen } from './components/SplashScreen';
+
+// Universal Resolver untuk LoginScreen
+const LoginScreen: React.ComponentType<{ onLoginSuccess: () => void }> =
+  (LoginModule as any).LoginScreen ||
+  (LoginModule as any).default ||
+  (LoginModule as any).LoginPage ||
+  Object.values(LoginModule)[0];
 
 import {
   AppState,
