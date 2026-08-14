@@ -21,7 +21,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
         const playPromise = audio.play();
         if (playPromise !== undefined) {
           playPromise.catch((err) => {
-            // Autoplay policy fallback (misal browser memblokir audio otomatis tanpa interaksi)
             console.warn('[SplashScreen] Audio autoplay dicegah browser:', err);
           });
         }
@@ -120,39 +119,19 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
           </div>
         </motion.div>
 
-        {/* --- BRAND TITLE & TYPOGRAPHY --- */}
+        {/* --- BRAND TITLE & TYPOGRAPHY SENADA --- */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25, duration: 0.5 }}
-          className="mt-6 text-center space-y-1.5"
+          className="mt-6 text-center space-y-1"
         >
-          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center justify-center gap-1">
-            <span className="font-light text-slate-300">my</span>Mbud
-            <span className="font-light text-blue-400">Portal</span>
+          <h1 className="text-xl sm:text-2xl font-normal tracking-tight text-white">
+            my<strong className="font-black">Mbud</strong> Portal
           </h1>
-          <p className="text-[11px] sm:text-xs font-semibold tracking-widest text-slate-400 uppercase">
-            Everything At Once
+          <p className="text-xs sm:text-sm font-light tracking-wide text-slate-400">
+            #SemakinMudah
           </p>
-        </motion.div>
-
-        {/* --- MINIMALIST LOADING BAR (3 DETIK) --- */}
-        <motion.div
-          initial={{ opacity: 0, width: 0 }}
-          animate={{ opacity: 1, width: 120 }}
-          transition={{ delay: 0.3, duration: 0.4 }}
-          className="mt-8 h-1 rounded-full bg-white/10 overflow-hidden relative"
-        >
-          <motion.div
-            initial={{ x: '-100%' }}
-            animate={{ x: '100%' }}
-            transition={{
-              repeat: Infinity,
-              duration: 1.5,
-              ease: 'easeInOut',
-            }}
-            className="w-full h-full bg-gradient-to-r from-blue-500 via-indigo-400 to-cyan-400 rounded-full"
-          />
         </motion.div>
       </div>
 
@@ -160,10 +139,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.4, duration: 0.4 }}
+        transition={{ delay: 0.35, duration: 0.4 }}
         className="absolute bottom-6 sm:bottom-8 text-[11px] font-mono text-slate-400 tracking-wider"
       >
-        v2.5 • AER046
+        v2.5
       </motion.div>
     </motion.div>
   );
