@@ -43,6 +43,56 @@ interface AttachmentData {
   fileUrl: string;
 }
 
+// KOMPONEN CONFETTI PARTICLES (PURE FRAMER MOTION)
+const ConfettiParticles: React.FC = () => {
+  const colors = ['#10B981', '#3B82F6', '#F59E0B', '#EC4899', '#8B5CF6', '#06B6D4'];
+  const particles = Array.from({ length: 40 });
+
+  return (
+    <div className="absolute inset-0 pointer-events-none overflow-hidden z-20">
+      {particles.map((_, i) => {
+        const randomColor = colors[i % colors.length];
+        const randomX = Math.random() * 100 - 50; // -50vw to 50vw
+        const randomRotate = Math.random() * 360;
+        const randomScale = 0.5 + Math.random() * 0.8;
+        const randomDuration = 1.8 + Math.random() * 1.2;
+        const randomDelay = Math.random() * 0.3;
+
+        return (
+          <motion.div
+            key={i}
+            initial={{
+              x: '50vw',
+              y: '30vh',
+              opacity: 1,
+              scale: randomScale,
+              rotate: 0,
+            }}
+            animate={{
+              x: `calc(50vw + ${randomX}vw)`,
+              y: '100vh',
+              opacity: [1, 1, 0],
+              rotate: randomRotate + 360,
+            }}
+            transition={{
+              duration: randomDuration,
+              delay: randomDelay,
+              ease: [0.25, 1, 0.5, 1],
+            }}
+            style={{
+              position: 'absolute',
+              width: i % 2 === 0 ? '10px' : '6px',
+              height: i % 3 === 0 ? '10px' : '14px',
+              backgroundColor: randomColor,
+              borderRadius: i % 2 === 0 ? '50%' : '2px',
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+};
+
 export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
   tasks,
   contacts = [],
@@ -132,7 +182,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
 
-  // FUNGSI FORCE DOWNLOAD (WORK 100% UNTUK PC)
+  // FUNGSI FORCE DOWNLOAD
   const handleForceDownload = async (e: React.MouseEvent, url: string, fileName: string) => {
     e.preventDefault();
     e.stopPropagation();
@@ -920,69 +970,75 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
         )}
       </AnimatePresence>
 
-      {/* CELEBRATION REWARD POPUP (WEB3 GLASSMORPHISM) */}
+      {/* CELEBRATION REWARD POPUP (THEMED NATIVE MYMBUD WITH CONFETTI) */}
       <AnimatePresence>
         {celebrationTask && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-md flex items-center justify-center p-4 select-none"
+            className="fixed inset-0 z-[100] bg-slate-900/60 dark:bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 select-none overflow-hidden"
             onClick={() => setCelebrationTask(null)}
           >
+            {/* Hujan Partikel Confetti */}
+            <ConfettiParticles />
+
             <motion.div
-              initial={{ scale: 0.8, opacity: 0, y: 20 }}
+              initial={{ scale: 0.92, opacity: 0, y: 15 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.85, opacity: 0, y: 15 }}
-              transition={{ type: 'spring', stiffness: 320, damping: 24 }}
-              className="relative max-w-sm sm:max-w-md w-full rounded-[2.5rem] bg-gradient-to-b from-white/[0.12] to-white/[0.04] dark:from-zinc-900/90 dark:to-zinc-950/95 border border-white/20 dark:border-white/10 shadow-[0_16px_48px_0_rgba(0,0,0,0.45)] backdrop-blur-2xl p-6 sm:p-8 text-center overflow-hidden flex flex-col items-center"
+              exit={{ scale: 0.92, opacity: 0, y: 15 }}
+              transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+              className="relative max-w-sm sm:max-w-md w-full rounded-3xl bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 shadow-2xl p-6 sm:p-8 text-center overflow-hidden flex flex-col items-center z-30"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Background Ambient Glow */}
-              <div className="absolute -top-12 -left-12 w-40 h-40 bg-emerald-500/25 rounded-full blur-3xl pointer-events-none" />
-              <div className="absolute -bottom-12 -right-12 w-40 h-40 bg-blue-500/25 rounded-full blur-3xl pointer-events-none" />
+              {/* Tombol Tutup X di Kanan Atas */}
+              <button
+                type="button"
+                onClick={() => setCelebrationTask(null)}
+                className="absolute top-4 right-4 p-2 rounded-2xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
 
-              {/* Glowing Icon Badge */}
-              <div className="relative mb-5">
-                <div className="absolute -inset-2 rounded-full bg-gradient-to-r from-emerald-400 to-blue-500 opacity-60 blur-lg animate-pulse" />
-                <div className="relative w-18 h-18 sm:w-20 sm:h-20 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-400 p-0.5 shadow-xl flex items-center justify-center">
-                  <div className="w-full h-full rounded-full bg-[#08080c] flex items-center justify-center">
-                    <Sparkles className="w-8 h-8 sm:w-9 sm:h-9 text-emerald-400 animate-bounce" />
-                  </div>
-                </div>
+              {/* Badge Ikon Perayaan Khas myMbud */}
+              <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400 mb-4 shadow-sm">
+                <CheckCircle2 className="w-8 h-8 sm:w-9 sm:h-9" />
               </div>
 
-              {/* Heading */}
-              <h3 className="text-xl sm:text-2xl font-black tracking-tight text-white">
-                Kerja Bagus, {currentUserName}! 🎉
-              </h3>
+              {/* Judul & Sapaan */}
+              <div className="space-y-1">
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-3 py-1 rounded-full">
+                  <Sparkles className="w-3 h-3" />
+                  <span>Tugas Selesai!</span>
+                </span>
+                <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-zinc-100 pt-1 tracking-tight">
+                  Kerja Bagus, {currentUserName}! 🎉
+                </h3>
+              </div>
 
-              {/* Task Details Info */}
-              <div className="mt-3 px-4 py-2.5 rounded-2xl bg-white/[0.06] border border-white/10 backdrop-blur-md w-full">
-                <p className="text-xs text-slate-300 line-clamp-1">
-                  Kamu telah menyelesaikan:
-                </p>
-                <p className="text-sm font-bold text-emerald-400 truncate mt-0.5">
+              {/* Info Detail Tugas yang Diselesaikan */}
+              <div className="mt-4 p-3.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/70 border border-slate-100 dark:border-zinc-800 w-full text-left space-y-1">
+                <span className="text-[10px] font-semibold text-slate-400 dark:text-zinc-500 uppercase tracking-wider block">
+                  Mata Kuliah: {celebrationTask.course}
+                </span>
+                <p className="text-xs sm:text-sm font-bold text-slate-800 dark:text-zinc-200 truncate">
                   {celebrationTask.title}
                 </p>
-                <span className="inline-block text-[10px] font-semibold text-slate-400 mt-0.5">
-                  Matkul {celebrationTask.course}
-                </span>
               </div>
 
-              {/* Relaxing Encouragement */}
-              <p className="mt-4 text-xs sm:text-sm text-slate-300/90 leading-relaxed">
-                Satu beban kuliah berhasil terhempas! Selamat istirahat dan rehat sejenak ya! ☕✨
+              {/* Pesan Relaksasi */}
+              <p className="mt-3.5 text-xs sm:text-sm text-slate-500 dark:text-zinc-400 leading-relaxed">
+                Satu beban tugas berhasil terhempas. Selamat istirahat dan luangkan waktu buat rehat sejenak ya! ☕✨
               </p>
 
-              {/* Action Button */}
+              {/* Tombol Aksi Bersih & Senada */}
               <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => setCelebrationTask(null)}
-                className="mt-6 w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-blue-600 text-white font-bold text-xs sm:text-sm shadow-lg shadow-emerald-500/25 transition-all cursor-pointer"
+                className="mt-6 w-full py-2.5 sm:py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm shadow-md shadow-blue-500/20 transition-all cursor-pointer"
               >
-                Mantap, Istirahat Dulu! 🚀
+                Mantap, Lanjut Rehat!
               </motion.button>
             </motion.div>
           </motion.div>
