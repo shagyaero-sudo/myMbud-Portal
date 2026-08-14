@@ -46,7 +46,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
         filter: 'blur(12px)',
         transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
       }}
-      className="fixed inset-0 z-[9999999] h-[100dvh] w-screen bg-[#070709] text-white flex flex-col items-center justify-center font-sans overflow-hidden select-none"
+      className="fixed inset-0 top-0 left-0 right-0 bottom-0 z-[9999999] min-h-[100dvh] h-screen w-screen bg-[#070709] text-white flex flex-col items-center justify-center font-sans overflow-hidden select-none overscroll-none touch-none"
     >
       {/* --- AMBIENT WEB3 GLOW MESH --- */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -135,12 +135,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
         </motion.div>
       </div>
 
-      {/* --- FOOTER VERSION LABEL --- */}
+      {/* --- FOOTER VERSION LABEL (SAFE AREA ADJUSTED) --- */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.35, duration: 0.4 }}
-        className="absolute bottom-6 sm:bottom-8 text-[11px] font-mono text-slate-400 tracking-wider"
+        className="absolute bottom-6 sm:bottom-8 mb-[env(safe-area-inset-bottom)] text-[11px] font-mono text-slate-400 tracking-wider"
       >
         v2.5
       </motion.div>
