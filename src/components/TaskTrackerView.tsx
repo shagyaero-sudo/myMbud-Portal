@@ -954,7 +954,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
               {/* Judul & Sapaan */}
               <div className="space-y-1">
                 <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-zinc-100 pt-1 tracking-tight">
-                  Tugas Telah Selesai, {currentUserName}! 🎉
+                  Tugas Selesai, {currentUserName}! 🎉
                 </h3>
               </div>
 
@@ -970,7 +970,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
 
               {/* Pesan Relaksasi */}
               <p className="mt-3.5 text-xs sm:text-sm text-slate-500 dark:text-zinc-400 leading-relaxed">
-                Selamat istirahat dan jangan lupa self reward! 😋🍦
+                Selamat istirahat dan jangan lupa self reward ya! 😋🍦
               </p>
 
               {/* Tombol Aksi */}
