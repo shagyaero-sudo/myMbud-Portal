@@ -18,7 +18,7 @@ import {
   RotateCcw,
   Loader2,
   Zap,
-  Sparkles
+  Send
 } from 'lucide-react';
 import { AppState, DayOfWeek, Task, Announcement } from '../types';
 import {
@@ -577,36 +577,31 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         <div className="lg:col-span-2 space-y-6">
 
           {/* ========================================================================= */}
-          {/* OPSI 3: MBUDIARY SOCIAL MICRO-INPUT BAR (RESPONSIF MOBILE & DESKTOP) */}
+          {/* MBUDIARY INPUT BAR (MINIMALIS TANPA AVATAR + TOMBOL KIRIM PERSIS MBUDIARY) */}
           {/* ========================================================================= */}
           <motion.div
-            whileHover={{ scale: 1.008 }}
-            whileTap={{ scale: 0.985 }}
+            whileHover={{ scale: 1.006 }}
+            whileTap={{ scale: 0.99 }}
             onClick={() => onNavigateTab('mbudiary' as any)}
-            className="group relative overflow-hidden rounded-3xl bg-white/90 dark:bg-zinc-900/90 border border-slate-200/80 dark:border-zinc-800/80 p-3 sm:p-4 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.03)] dark:shadow-none cursor-pointer backdrop-blur-md transition-all hover:border-blue-500/40 dark:hover:border-blue-500/40"
+            className="group relative overflow-hidden rounded-3xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 p-2.5 sm:p-3 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.03)] dark:shadow-none cursor-pointer transition-all hover:border-blue-500/40 dark:hover:border-blue-500/40"
           >
-            {/* Subtle Gradient Hover Backdrop */}
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-indigo-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-
-            <div className="relative flex items-center gap-3">
-              {/* User Avatar Circle / Icon */}
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center text-xs sm:text-sm font-bold shadow-md shadow-blue-500/20 shrink-0">
-                {userName.charAt(0).toUpperCase()}
-              </div>
-
+            <div className="flex items-center gap-3">
               {/* Fake Interactive Input Box */}
-              <div className="flex-1 px-4 py-2.5 rounded-2xl bg-slate-100/70 dark:bg-zinc-800/60 border border-slate-200/50 dark:border-zinc-700/50 flex items-center justify-between text-slate-500 dark:text-zinc-400 group-hover:border-blue-500/30 transition-all">
-                <span className="text-xs sm:text-sm truncate">
-                  Ada cerita atau unek-unek apa hari ini, {userName.split(' ')[0]}?...
+              <div className="flex-1 px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 flex items-center gap-2.5 text-slate-400 dark:text-zinc-500 group-hover:border-blue-500/20 transition-all">
+                <Pencil className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500 shrink-0" />
+                <span className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 truncate">
+                  Ada cerita apa hari ini?...
                 </span>
-                <Pencil className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:rotate-12 transition-all shrink-0 ml-2" />
               </div>
 
-              {/* Hashtag Tag */}
-              <div className="hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 text-xs font-bold shrink-0">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>#mbudiary</span>
-              </div>
+              {/* Tombol Kirim Biru Identik dengan Fitur Mbudiary */}
+              <button
+                type="button"
+                className="px-5 py-2.5 rounded-full bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-blue-500/20 transition-all shrink-0"
+              >
+                <Send className="w-3.5 h-3.5 fill-white" />
+                <span>Kirim</span>
+              </button>
             </div>
           </motion.div>
 
