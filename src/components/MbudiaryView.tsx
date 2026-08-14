@@ -17,6 +17,8 @@ const EMOJI_OPTIONS = [
   '🍟', '🍦', '🍲', '🍱', '🧋', '🛵', '🏎️', '✈️', '🏕️',
 ];
 
+const ONBOARDING_PROFILE_KEY = 'mbud_onboarded_mbudiary_profile';
+
 export const MbudiaryView: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<UserProfile>(getUserProfile());
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
@@ -29,6 +31,21 @@ export const MbudiaryView: React.FC = () => {
   const [editPhotoUrl, setEditPhotoUrl] = useState<string | undefined>(currentUser.photoUrl);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const avatarInputRef = React.useRef<HTMLInputElement>(null);
+
+  // AUTO PROMPT MODAL PROFIL PADA FIRST VISIT
+  useEffect(() => {
+    const hasPrompted = localStorage.getItem(ONBOARDING_PROFILE_KEY);
+    const isDefaultUsername = !currentUser.username || currentUser.username.startsWith('mbuder_') || currentUser.username === 'mbuders';
+    const isNoCustomPhoto = !currentUser.photoUrl;
+
+    if (!hasPrompted && (isDefaultUsername || isNoCustomPhoto)) {
+      setEditUsername(currentUser.username || '');
+      setEditEmoji(currentUser.emoji || '😊');
+      setEditPhotoUrl(currentUser.photoUrl);
+      setIsEditModalOpen(true);
+      localStorage.setItem(ONBOARDING_PROFILE_KEY, 'true');
+    }
+  }, []);
 
   useEffect(() => {
     const unsubscribe = initializeMbudiary();
@@ -120,6 +137,7 @@ export const MbudiaryView: React.FC = () => {
         emoji: editEmoji,
         photoUrl: editPhotoUrl,
       });
+      localStorage.setItem(ONBOARDING_PROFILE_KEY, 'true');
       setIsEditModalOpen(false);
     } catch (error) {
       console.error('[mbudiary] Gagal menyimpan profil:', error);

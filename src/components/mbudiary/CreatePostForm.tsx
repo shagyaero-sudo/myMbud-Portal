@@ -237,7 +237,7 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
               </span>
             </div>
             <div className="w-full text-xs text-slate-400 dark:text-zinc-500 pt-0.5 group-hover:text-slate-500 transition-colors">
-              Ada cerita apa hari ini?...
+              Tuliskan ceritamu di sini...
             </div>
           </div>
         </div>

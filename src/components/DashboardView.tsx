@@ -645,7 +645,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <div className="flex-1 px-4 py-2 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 flex items-center gap-2.5 text-slate-400 dark:text-zinc-500 group-hover:border-blue-500/20 transition-all">
                 <Pencil className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500 shrink-0" />
                 <span className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 truncate">
-                  Ada cerita apa hari ini, {userName.split(' ')[0]}?...
+                  Ada cerita apa hari ini, {userName.split(' ')[0]}?
                 </span>
               </div>
 
