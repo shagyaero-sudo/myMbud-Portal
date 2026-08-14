@@ -19,7 +19,6 @@ import {
   RotateCcw,
   CheckCircle2,
   Circle,
-  Sparkles,
 } from 'lucide-react';
 import { Task, Contact } from '../types';
 import { subscribeUserTaskCompletions, toggleTaskCompletion } from '../services/api';
@@ -43,48 +42,57 @@ interface AttachmentData {
   fileUrl: string;
 }
 
-// KOMPONEN CONFETTI PARTICLES (PURE FRAMER MOTION)
+// FESTIVE CONFETTI PARTICLES (SUPER LAYER TOP)
 const ConfettiParticles: React.FC = () => {
-  const colors = ['#10B981', '#3B82F6', '#F59E0B', '#EC4899', '#8B5CF6', '#06B6D4'];
-  const particles = Array.from({ length: 40 });
+  const colors = [
+    '#10B981', '#3B82F6', '#F59E0B', '#EC4899', 
+    '#8B5CF6', '#06B6D4', '#EF4444', '#FACC15', '#A855F7'
+  ];
+  const particles = Array.from({ length: 85 });
 
   return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden z-20">
+    <div className="fixed inset-0 pointer-events-none overflow-hidden z-[999999]">
       {particles.map((_, i) => {
         const randomColor = colors[i % colors.length];
-        const randomX = Math.random() * 100 - 50; // -50vw to 50vw
-        const randomRotate = Math.random() * 360;
-        const randomScale = 0.5 + Math.random() * 0.8;
-        const randomDuration = 1.8 + Math.random() * 1.2;
-        const randomDelay = Math.random() * 0.3;
+        const startX = 50 + (Math.random() * 40 - 20); // burst near center top
+        const endX = startX + (Math.random() * 80 - 40); // spread wide left/right
+        const randomY = 110 + Math.random() * 20; // fall past bottom
+        const randomRotateX = Math.random() * 720;
+        const randomRotateY = Math.random() * 720;
+        const randomScale = 0.6 + Math.random() * 0.9;
+        const randomDuration = 2.2 + Math.random() * 1.5;
+        const randomDelay = Math.random() * 0.25;
 
         return (
           <motion.div
             key={i}
             initial={{
-              x: '50vw',
-              y: '30vh',
+              left: `${startX}%`,
+              top: '-5%',
               opacity: 1,
               scale: randomScale,
-              rotate: 0,
+              rotateX: 0,
+              rotateY: 0,
             }}
             animate={{
-              x: `calc(50vw + ${randomX}vw)`,
-              y: '100vh',
-              opacity: [1, 1, 0],
-              rotate: randomRotate + 360,
+              left: `${endX}%`,
+              top: `${randomY}%`,
+              opacity: [1, 1, 0.8, 0],
+              rotateX: randomRotateX,
+              rotateY: randomRotateY,
             }}
             transition={{
               duration: randomDuration,
               delay: randomDelay,
-              ease: [0.25, 1, 0.5, 1],
+              ease: [0.15, 0.85, 0.35, 1],
             }}
             style={{
               position: 'absolute',
-              width: i % 2 === 0 ? '10px' : '6px',
-              height: i % 3 === 0 ? '10px' : '14px',
+              width: i % 3 === 0 ? '12px' : i % 2 === 0 ? '8px' : '10px',
+              height: i % 3 === 0 ? '6px' : i % 2 === 0 ? '14px' : '10px',
               backgroundColor: randomColor,
-              borderRadius: i % 2 === 0 ? '50%' : '2px',
+              borderRadius: i % 4 === 0 ? '50%' : '2px',
+              boxShadow: `0 0 8px ${randomColor}80`,
             }}
           />
         );
@@ -970,78 +978,76 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
         )}
       </AnimatePresence>
 
-      {/* CELEBRATION REWARD POPUP (THEMED NATIVE MYMBUD WITH CONFETTI) */}
+      {/* CELEBRATION REWARD POPUP (THEMED NATIVE MYMBUD WITH FESTIVE TOP CONFETTI) */}
       <AnimatePresence>
         {celebrationTask && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-slate-900/60 dark:bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 select-none overflow-hidden"
-            onClick={() => setCelebrationTask(null)}
-          >
-            {/* Hujan Partikel Confetti */}
+          <>
+            {/* Hujan Partikel Confetti di Top Layer */}
             <ConfettiParticles />
 
             <motion.div
-              initial={{ scale: 0.92, opacity: 0, y: 15 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.92, opacity: 0, y: 15 }}
-              transition={{ type: 'spring', stiffness: 350, damping: 28 }}
-              className="relative max-w-sm sm:max-w-md w-full rounded-3xl bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 shadow-2xl p-6 sm:p-8 text-center overflow-hidden flex flex-col items-center z-30"
-              onClick={(e) => e.stopPropagation()}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[100] bg-slate-900/60 dark:bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 select-none overflow-hidden"
+              onClick={() => setCelebrationTask(null)}
             >
-              {/* Tombol Tutup X di Kanan Atas */}
-              <button
-                type="button"
-                onClick={() => setCelebrationTask(null)}
-                className="absolute top-4 right-4 p-2 rounded-2xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
+              <motion.div
+                initial={{ scale: 0.92, opacity: 0, y: 15 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.92, opacity: 0, y: 15 }}
+                transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+                className="relative max-w-sm sm:max-w-md w-full rounded-3xl bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 shadow-2xl p-6 sm:p-8 text-center overflow-hidden flex flex-col items-center z-30"
+                onClick={(e) => e.stopPropagation()}
               >
-                <X className="w-4 h-4" />
-              </button>
+                {/* Tombol Tutup X di Kanan Atas */}
+                <button
+                  type="button"
+                  onClick={() => setCelebrationTask(null)}
+                  className="absolute top-4 right-4 p-2 rounded-2xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
 
-              {/* Badge Ikon Perayaan Khas myMbud */}
-              <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400 mb-4 shadow-sm">
-                <CheckCircle2 className="w-8 h-8 sm:w-9 sm:h-9" />
-              </div>
+                {/* Badge Ikon Perayaan Khas myMbud */}
+                <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400 mb-4 shadow-sm">
+                  <CheckCircle2 className="w-8 h-8 sm:w-9 sm:h-9" />
+                </div>
 
-              {/* Judul & Sapaan */}
-              <div className="space-y-1">
-                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-3 py-1 rounded-full">
-                  <Sparkles className="w-3 h-3" />
-                  <span>Tugas Selesai!</span>
-                </span>
-                <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-zinc-100 pt-1 tracking-tight">
-                  Kerja Bagus, {currentUserName}! 🎉
-                </h3>
-              </div>
+                {/* Judul & Sapaan */}
+                <div className="space-y-1">
+                  <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-zinc-100 pt-1 tracking-tight">
+                    Tugas Selesai, {currentUserName}! 🎉
+                  </h3>
+                </div>
 
-              {/* Info Detail Tugas yang Diselesaikan */}
-              <div className="mt-4 p-3.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/70 border border-slate-100 dark:border-zinc-800 w-full text-left space-y-1">
-                <span className="text-[10px] font-semibold text-slate-400 dark:text-zinc-500 uppercase tracking-wider block">
-                  Mata Kuliah: {celebrationTask.course}
-                </span>
-                <p className="text-xs sm:text-sm font-bold text-slate-800 dark:text-zinc-200 truncate">
-                  {celebrationTask.title}
+                {/* Info Detail Tugas yang Diselesaikan */}
+                <div className="mt-4 p-3.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/70 border border-slate-100 dark:border-zinc-800 w-full text-left space-y-1">
+                  <span className="text-[10px] font-semibold text-slate-400 dark:text-zinc-500 uppercase tracking-wider block">
+                    Mata Kuliah: {celebrationTask.course}
+                  </span>
+                  <p className="text-xs sm:text-sm font-bold text-slate-800 dark:text-zinc-200 truncate">
+                    {celebrationTask.title}
+                  </p>
+                </div>
+
+                {/* Pesan Relaksasi */}
+                <p className="mt-3.5 text-xs sm:text-sm text-slate-500 dark:text-zinc-400 leading-relaxed">
+                  Kerja bagus, Selamat istirahat ya! ✨
                 </p>
-              </div>
 
-              {/* Pesan Relaksasi */}
-              <p className="mt-3.5 text-xs sm:text-sm text-slate-500 dark:text-zinc-400 leading-relaxed">
-                Satu beban tugas berhasil terhempas. Selamat istirahat dan luangkan waktu buat rehat sejenak ya! ☕✨
-              </p>
-
-              {/* Tombol Aksi Bersih & Senada */}
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setCelebrationTask(null)}
-                className="mt-6 w-full py-2.5 sm:py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm shadow-md shadow-blue-500/20 transition-all cursor-pointer"
-              >
-                Mantap, Lanjut Rehat!
-              </motion.button>
+                {/* Tombol Aksi Bersih & Senada */}
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setCelebrationTask(null)}
+                  className="mt-6 w-full py-2.5 sm:py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm shadow-md shadow-blue-500/20 transition-all cursor-pointer"
+                >
+                  Terimakasih
+                </motion.button>
+              </motion.div>
             </motion.div>
-          </motion.div>
+          </>
         )}
       </AnimatePresence>
 
