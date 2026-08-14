@@ -594,8 +594,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
               {/* Tombol Kirim Icon-Only Bulat Ramping */}
               <div className="w-8 h-8 rounded-full bg-blue-600 hover:bg-blue-700 active:scale-95 text-white flex items-center justify-center shadow-sm shadow-blue-500/30 transition-all shrink-0">
-              <Send className="w-3.5 h-3.5 stroke-[2.2] -rotate-12 translate-y-[-0.5px] -translate-x-[0.5px]" />
+                <Send className="w-3.5 h-3.5 stroke-[2.2] -rotate-12 translate-y-[-0.5px] -translate-x-[0.5px]" />
               </div>
+            </div>
+          </motion.div>
 
           {/* 1. JADWAL PERKULIAHAN */}
           <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-4 transition-colors">
