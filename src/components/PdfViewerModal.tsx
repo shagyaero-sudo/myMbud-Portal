@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, FileText, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
+import { X, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { MaterialFile } from '../types';
 
 interface PdfViewerModalProps {
@@ -30,74 +30,69 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          // FIXED: We change this from 'flex items-center justify-center p-X' to 'inset-0' to make it fullscreen
-          // and allow it to cover the entire screen.
           className="fixed inset-0 z-50 overflow-hidden pointer-events-auto touch-none"
         >
-          {/* We remove the rounded corners entirely to make it feel like a "Fullscreen Mode" */}
           <motion.div 
-            initial={{ opacity: 0, filter: 'blur(10px)' }}
-            animate={{ opacity: 1, filter: 'blur(0px)' }}
-            exit={{ opacity: 0, filter: 'blur(10px)' }}
-            className="w-full h-full bg-slate-900 dark:bg-black rounded-none flex flex-col shadow-none overflow-hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="w-full h-full bg-slate-950 dark:bg-black rounded-none flex flex-col shadow-none overflow-hidden"
           >
-            {/* 
-              Immersive Header Modal: 
-              Instead of a surface-colored block (bg-white/dark), we make this a 
-              frosted glass overlay sitting *on top* of the reader area.
-            */}
-            <div className="absolute top-0 left-0 right-0 z-30 flex items-center justify-between px-6 sm:px-8 py-3 bg-zinc-950/85 backdrop-blur-md border-b border-zinc-800/60 shrink-0">
-              <div className="flex items-center gap-3 min-w-0 pr-2">
-                {/* Icons are restyled to blend with the dark immersive header */}
-                <div className="p-2.5 rounded-xl bg-zinc-800/70 text-blue-400 shrink-0 border border-zinc-700/50">
-                  <FileText className="w-5 h-5 sm:w-6 sm:h-6" />
+            {/* Header Modal Imersif (Tanpa Logo Document) */}
+            <div className="absolute top-0 left-0 right-0 z-30 flex items-center justify-between px-4 sm:px-6 py-3 bg-zinc-950/90 backdrop-blur-md border-b border-zinc-800/80 shrink-0">
+              <div className="min-w-0 pr-3">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-zinc-800 text-blue-400 shrink-0 border border-zinc-700/60">
+                    {material.session}
+                  </span>
+                  <span className="text-xs font-medium text-zinc-400 truncate">
+                    {material.courseName}
+                  </span>
                 </div>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-zinc-800/80 text-blue-400 shrink-0 border border-zinc-700/50">
-                      {material.session}
-                    </span>
-                    <span className="text-xs font-medium text-zinc-400 truncate">{material.courseName}</span>
-                  </div>
-                  {/* Title text is now white/zinc-100 by default in this mode */}
-                  <h3 className="text-base sm:text-lg font-bold text-zinc-100 mt-0.5 truncate">{material.title}</h3>
-                </div>
+                <h3 className="text-sm sm:text-base font-bold text-zinc-100 mt-0.5 truncate">
+                  {material.title}
+                </h3>
               </div>
+
               <button
                 onClick={onClose}
-                className="p-2 rounded-xl text-zinc-500 hover:text-white hover:bg-zinc-800/80 transition-all shrink-0 cursor-pointer"
+                className="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all shrink-0 cursor-pointer"
                 title="Tutup Preview"
+                aria-label="Tutup Preview"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Immersive Iframe PDF Container */}
-            <div className="flex-1 w-full h-full bg-slate-900 dark:bg-black flex flex-col min-h-0 overflow-hidden relative">
+            {/* Container Iframe PDF */}
+            <div className="flex-1 w-full h-full bg-slate-950 dark:bg-black flex flex-col min-h-0 overflow-hidden relative">
               
-              {/* Floating Zoom Control di Pojok Kanan Atas (MD breakpoint is sufficient) */}
-              <div className="absolute top-24 right-6 z-20 flex md:hidden items-center gap-1 bg-zinc-950/90 backdrop-blur-md p-1.5 rounded-2xl shadow-xl border border-zinc-800/70">
+              {/* Floating Zoom Control - Diposisikan Presisi Menutupi Tombol Pop-Out Google Drive */}
+              <div className="absolute top-[68px] right-2 sm:right-3 z-30 flex items-center gap-1 bg-zinc-950/95 backdrop-blur-md p-1 rounded-xl shadow-2xl border border-zinc-800">
                 <button
                   onClick={handleZoomOut}
-                  className="p-2 rounded-xl text-zinc-300 hover:bg-zinc-800 transition-all active:scale-95"
+                  className="p-1.5 rounded-lg text-zinc-300 hover:text-white hover:bg-zinc-800 transition-all active:scale-95 cursor-pointer"
                   title="Perkecil"
                 >
                   <ZoomOut className="w-4 h-4" />
                 </button>
-                <span className="text-xs font-bold text-zinc-200 px-1.5 min-w-[42px] text-center select-none tabular-nums">
+                
+                <span className="text-xs font-bold text-zinc-200 px-1 min-w-[40px] text-center select-none tabular-nums">
                   {Math.round(zoomLevel * 100)}%
                 </span>
+                
                 <button
                   onClick={handleZoomIn}
-                  className="p-2 rounded-xl text-zinc-300 hover:bg-zinc-800 transition-all active:scale-95"
+                  className="p-1.5 rounded-lg text-zinc-300 hover:text-white hover:bg-zinc-800 transition-all active:scale-95 cursor-pointer"
                   title="Perbesar"
                 >
                   <ZoomIn className="w-4 h-4" />
                 </button>
+
                 {zoomLevel !== 1 && (
                   <button
                     onClick={handleResetZoom}
-                    className="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all border-l border-zinc-700 ml-0.5"
+                    className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all border-l border-zinc-800 ml-0.5 cursor-pointer"
                     title="Reset Zoom"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
@@ -105,8 +100,8 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
                 )}
               </div>
 
-              {/* Area Viewport PDF (Internal borders/padding removed for expansion) */}
-              <div className="flex-1 rounded-none bg-slate-900 dark:bg-black overflow-auto shadow-none flex relative isolate z-10 pt-[75px]">
+              {/* Viewport PDF Fullscreen */}
+              <div className="flex-1 rounded-none bg-slate-950 dark:bg-black overflow-auto shadow-none flex relative isolate z-10 pt-[60px]">
                 <div 
                   className="w-full h-full min-w-full min-h-full transition-transform duration-200 ease-out origin-top-left"
                   style={{
