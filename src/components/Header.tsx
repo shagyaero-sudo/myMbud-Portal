@@ -121,7 +121,7 @@ export const Header: React.FC<HeaderProps> = ({
   const [officerMessage, setOfficerMessage] = useState('');
   const [isSendingOfficerNotif, setIsSendingOfficerNotif] = useState(false);
 
-  // --- SEAMLESS POMODORO STATE (2 MODES ONLY: FOCUS & BREAK) ---
+  // --- SEAMLESS POMODORO STATE ---
   const [pomoMode, setPomoMode] = useState<SimplePomodoroMode>('focus');
   const [focusDuration, setFocusDuration] = useState<number>(25); // dalam menit
   const [breakDuration, setBreakDuration] = useState<number>(5);   // dalam menit
@@ -371,7 +371,7 @@ export const Header: React.FC<HeaderProps> = ({
               </motion.button>
             </div>
 
-            {/* ADAPTIVE POMODORO & THEME BUTTON (MATCHING SHAPE WITH BELL) */}
+            {/* ADAPTIVE POMODORO & THEME BUTTON */}
             <motion.button
               layout
               whileTap={{ scale: 0.92 }}
@@ -400,11 +400,11 @@ export const Header: React.FC<HeaderProps> = ({
                 </>
               ) : (
                 <>
-                  {theme === 'green' ? <Leaf className="w-5 h-5 text-emerald-600" /> :
-                   theme === 'purple' ? <Palette className="w-5 h-5 text-purple-500" /> :
-                   theme === 'pink' ? <Sparkles className="w-5 h-5 text-pink-500" /> :
-                   theme === 'dark' ? <Moon className="w-5 h-5 text-indigo-400" /> :
-                   <Sun className="w-5 h-5 text-amber-400" />}
+                  {theme === 'green' ? <Leaf className="w-4.5 h-4.5 text-emerald-600" /> :
+                   theme === 'purple' ? <Palette className="w-4.5 h-4.5 text-purple-500" /> :
+                   theme === 'pink' ? <Sparkles className="w-4.5 h-4.5 text-pink-500" /> :
+                   theme === 'dark' ? <Moon className="w-4.5 h-4.5 text-indigo-400" /> :
+                   <Sun className="w-4.5 h-4.5 text-amber-500" />}
                 </>
               )}
             </motion.button>
@@ -412,7 +412,7 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </header>
 
-      {/* QUICK DRAWER SIDEBAR (SEAMLESS POMODORO & COMPACT 1-ROW THEMES) */}
+      {/* QUICK DRAWER SIDEBAR */}
       {typeof document !== 'undefined' &&
         createPortal(
           <AnimatePresence>
@@ -440,7 +440,7 @@ export const Header: React.FC<HeaderProps> = ({
                         <Timer className="w-4 h-4" />
                       </div>
                       <h3 className="text-xs font-bold text-slate-800 dark:text-zinc-200 uppercase tracking-wider">
-                        Fokus & Preferensi
+                        POMODORO TIMER
                       </h3>
                     </div>
                     <button
@@ -461,7 +461,7 @@ export const Header: React.FC<HeaderProps> = ({
                         <div className="flex p-1 bg-slate-100 dark:bg-zinc-900 rounded-xl">
                           <button
                             onClick={() => handleSwitchMode('focus')}
-                            className={`px-3 py-1 text-[11px] font-bold rounded-lg transition-all ${
+                            className={`px-3 py-1 text-[11px] font-bold rounded-lg transition-all cursor-pointer ${
                               pomoMode === 'focus'
                                 ? 'bg-rose-500 text-white shadow-xs'
                                 : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900'
@@ -471,7 +471,7 @@ export const Header: React.FC<HeaderProps> = ({
                           </button>
                           <button
                             onClick={() => handleSwitchMode('break')}
-                            className={`px-3 py-1 text-[11px] font-bold rounded-lg transition-all ${
+                            className={`px-3 py-1 text-[11px] font-bold rounded-lg transition-all cursor-pointer ${
                               pomoMode === 'break'
                                 ? 'bg-emerald-500 text-white shadow-xs'
                                 : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900'
@@ -484,7 +484,7 @@ export const Header: React.FC<HeaderProps> = ({
                         {/* Sound Toggle */}
                         <button
                           onClick={() => setSoundEnabled(!soundEnabled)}
-                          className={`p-1.5 rounded-lg text-xs transition-colors ${
+                          className={`p-1.5 rounded-lg text-xs transition-colors cursor-pointer ${
                             soundEnabled
                               ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50'
                               : 'text-slate-400 dark:text-zinc-600 bg-slate-100 dark:bg-zinc-800'
@@ -506,33 +506,38 @@ export const Header: React.FC<HeaderProps> = ({
                           <span>{pomoMode === 'focus' ? 'Sesi Belajar' : 'Istirahat'}</span>
                         </div>
 
-                        {/* Digit Countdown */}
-                        <div className="text-4xl font-black font-mono tracking-tight my-1 tabular-nums">
-                          {formattedTimer}
-                        </div>
-
-                        {/* Custom Time Stepper (Jika tidak running) */}
-                        {!isRunning && (
-                          <div className="flex items-center gap-2 mt-1 mb-2">
-                            <button
+                        {/* Digit Countdown dengan Tombol Plus/Minus di Sampingnya */}
+                        <div className="flex items-center justify-center gap-3 my-2 w-full">
+                          {!isRunning ? (
+                            <motion.button
+                              whileTap={{ scale: 0.85 }}
                               onClick={() => handleAdjustDuration(-1)}
-                              className="p-1 rounded-lg bg-black/5 dark:bg-white/5 hover:bg-black/10 transition-colors"
-                              title="Kurang 1 Menit"
+                              className="w-8 h-8 rounded-xl bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 flex items-center justify-center transition-all cursor-pointer text-inherit"
+                              title="Kurangi 1 Menit"
                             >
-                              <Minus className="w-3 h-3" />
-                            </button>
-                            <span className="text-[10px] font-semibold opacity-70">
-                              {pomoMode === 'focus' ? focusDuration : breakDuration} Menit
-                            </span>
-                            <button
+                              <Minus className="w-4 h-4" />
+                            </motion.button>
+                          ) : (
+                            <div className="w-8 h-8" />
+                          )}
+
+                          <div className="text-4xl font-black font-mono tracking-tight tabular-nums min-w-[130px] text-center">
+                            {formattedTimer}
+                          </div>
+
+                          {!isRunning ? (
+                            <motion.button
+                              whileTap={{ scale: 0.85 }}
                               onClick={() => handleAdjustDuration(1)}
-                              className="p-1 rounded-lg bg-black/5 dark:bg-white/5 hover:bg-black/10 transition-colors"
+                              className="w-8 h-8 rounded-xl bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 flex items-center justify-center transition-all cursor-pointer text-inherit"
                               title="Tambah 1 Menit"
                             >
-                              <Plus className="w-3 h-3" />
-                            </button>
-                          </div>
-                        )}
+                              <Plus className="w-4 h-4" />
+                            </motion.button>
+                          ) : (
+                            <div className="w-8 h-8" />
+                          )}
+                        </div>
 
                         {/* Action Buttons */}
                         <div className="flex items-center gap-2 mt-2 w-full">
@@ -559,73 +564,83 @@ export const Header: React.FC<HeaderProps> = ({
                       </div>
                     </div>
 
-                    {/* SECTION 2: 1-ROW COMPACT THEME PICKER */}
+                    {/* SECTION 2: 1-ROW VIBRANT THEME PICKER */}
                     {setTheme && (
-                      <div className="space-y-2 pt-3 border-t border-slate-100 dark:border-zinc-800">
+                      <div className="space-y-2.5 pt-3 border-t border-slate-100 dark:border-zinc-800">
                         <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-zinc-500 block text-center">
                           Tema Warna
                         </span>
 
-                        <div className="flex items-center justify-between gap-1 p-1 bg-slate-100/70 dark:bg-zinc-900 rounded-2xl">
-                          <button
+                        <div className="flex items-center justify-between gap-1.5 p-1.5 bg-slate-100 dark:bg-zinc-900 rounded-2xl">
+                          {/* Light (Amber) */}
+                          <motion.button
+                            whileTap={{ scale: 0.9 }}
                             onClick={() => setTheme('light')}
-                            className={`p-2.5 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
+                            className={`flex-1 py-2.5 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
                               theme === 'light'
-                                ? 'bg-white dark:bg-zinc-800 text-amber-500 shadow-xs ring-1 ring-amber-400'
-                                : 'text-slate-400 hover:text-amber-500'
+                                ? 'bg-amber-500/20 ring-2 ring-amber-500 shadow-xs'
+                                : 'hover:bg-amber-500/10'
                             }`}
                             title="Light Mode"
                           >
-                            <Sun className="w-4 h-4" />
-                          </button>
+                            <Sun className="w-4.5 h-4.5 text-amber-500" />
+                          </motion.button>
 
-                          <button
+                          {/* Dark (Indigo) */}
+                          <motion.button
+                            whileTap={{ scale: 0.9 }}
                             onClick={() => setTheme('dark')}
-                            className={`p-2.5 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
+                            className={`flex-1 py-2.5 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
                               theme === 'dark'
-                                ? 'bg-white dark:bg-zinc-800 text-indigo-400 shadow-xs ring-1 ring-indigo-400'
-                                : 'text-slate-400 hover:text-indigo-400'
+                                ? 'bg-indigo-500/20 ring-2 ring-indigo-500 shadow-xs'
+                                : 'hover:bg-indigo-500/10'
                             }`}
                             title="Dark Mode"
                           >
-                            <Moon className="w-4 h-4" />
-                          </button>
+                            <Moon className="w-4.5 h-4.5 text-indigo-400" />
+                          </motion.button>
 
-                          <button
+                          {/* Pink */}
+                          <motion.button
+                            whileTap={{ scale: 0.9 }}
                             onClick={() => setTheme('pink')}
-                            className={`p-2.5 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
+                            className={`flex-1 py-2.5 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
                               theme === 'pink'
-                                ? 'bg-white dark:bg-zinc-800 text-pink-500 shadow-xs ring-1 ring-pink-400'
-                                : 'text-slate-400 hover:text-pink-500'
+                                ? 'bg-pink-500/20 ring-2 ring-pink-500 shadow-xs'
+                                : 'hover:bg-pink-500/10'
                             }`}
                             title="Pink Theme"
                           >
-                            <Sparkles className="w-4 h-4" />
-                          </button>
+                            <Sparkles className="w-4.5 h-4.5 text-pink-500" />
+                          </motion.button>
 
-                          <button
+                          {/* Purple */}
+                          <motion.button
+                            whileTap={{ scale: 0.9 }}
                             onClick={() => setTheme('purple')}
-                            className={`p-2.5 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
+                            className={`flex-1 py-2.5 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
                               theme === 'purple'
-                                ? 'bg-white dark:bg-zinc-800 text-purple-500 shadow-xs ring-1 ring-purple-400'
-                                : 'text-slate-400 hover:text-purple-500'
+                                ? 'bg-purple-500/20 ring-2 ring-purple-500 shadow-xs'
+                                : 'hover:bg-purple-500/10'
                             }`}
                             title="Purple Theme"
                           >
-                            <Palette className="w-4 h-4" />
-                          </button>
+                            <Palette className="w-4.5 h-4.5 text-purple-500" />
+                          </motion.button>
 
-                          <button
+                          {/* Green */}
+                          <motion.button
+                            whileTap={{ scale: 0.9 }}
                             onClick={() => setTheme('green')}
-                            className={`p-2.5 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
+                            className={`flex-1 py-2.5 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
                               theme === 'green'
-                                ? 'bg-white dark:bg-zinc-800 text-emerald-600 shadow-xs ring-1 ring-emerald-500'
-                                : 'text-slate-400 hover:text-emerald-500'
+                                ? 'bg-emerald-500/20 ring-2 ring-emerald-500 shadow-xs'
+                                : 'hover:bg-emerald-500/10'
                             }`}
                             title="Green Theme"
                           >
-                            <Leaf className="w-4 h-4" />
-                          </button>
+                            <Leaf className="w-4.5 h-4.5 text-emerald-600" />
+                          </motion.button>
                         </div>
                       </div>
                     )}
