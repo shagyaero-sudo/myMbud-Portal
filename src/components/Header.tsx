@@ -436,7 +436,7 @@ export const Header: React.FC<HeaderProps> = ({
                         <Timer className="w-4 h-4" />
                       </div>
                       <h3 className="text-xs font-bold text-slate-800 dark:text-zinc-200 uppercase tracking-wider">
-                        Fokus & Preferensi
+                        POMODORO TIMER
                       </h3>
                     </div>
                     <button
