@@ -196,10 +196,10 @@ export const MbudiaryView: React.FC = () => {
                   <button
                     onClick={handleOpenEditModal}
                     className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-xs font-bold text-slate-700 dark:text-zinc-200 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-200 dark:hover:border-indigo-900 hover:bg-indigo-50/50 dark:hover:bg-zinc-800 transition-all shadow-sm active:scale-95"
-                    title="Edit Profil"
+                    title="Kustomisasi Profilmu"
                   >
                     <Edit3 className="w-3.5 h-3.5 text-indigo-500" />
-                    <span className="hidden xs:inline">Edit Profil</span>
+                    <span className="hidden xs:inline">Kustomisasi Profilmu</span>
                   </button>
 
                   <button
