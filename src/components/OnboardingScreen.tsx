@@ -8,8 +8,6 @@ import {
   FileText,
   BellRing,
   ArrowRight,
-  Volume2,
-  VolumeX
 } from 'lucide-react';
 import { initOneSignal } from '../services/oneSignal';
 
@@ -23,10 +21,9 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
   onComplete,
 }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [isMuted, setIsMuted] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Inisialisasi & Langsung Play Audio
+  // Inisialisasi & Wajib Play Audio Backsound
   useEffect(() => {
     const audio = new Audio('/backsound.mp3');
     audio.loop = true;
@@ -45,19 +42,6 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
       audioRef.current = null;
     };
   }, []);
-
-  const toggleMute = () => {
-    if (audioRef.current) {
-      if (isMuted) {
-        audioRef.current.play().catch(() => {});
-        audioRef.current.muted = false;
-        setIsMuted(false);
-      } else {
-        audioRef.current.muted = true;
-        setIsMuted(true);
-      }
-    }
-  };
 
   const slides = [
     {
@@ -183,20 +167,8 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
         </motion.div>
       </AnimatePresence>
 
-      {/* --- HEADER (AUDIO CONTROL ONLY - SHRINK-0) --- */}
-      <div className="relative z-20 w-full max-w-md flex justify-start items-center shrink-0 pt-2">
-        <motion.button
-          whileTap={{ scale: 0.9 }}
-          onClick={toggleMute}
-          className="p-2.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-md text-slate-300 hover:text-white transition-colors cursor-pointer"
-          title={isMuted ? "Unmute Backsound" : "Mute Backsound"}
-        >
-          {isMuted ? <VolumeX className="w-4 h-4 text-rose-400" /> : <Volume2 className="w-4 h-4 text-emerald-400 animate-pulse" />}
-        </motion.button>
-      </div>
-
       {/* --- MAIN CONTENT (ADAPTIVE SHRINK & SCROLL FRIENDLY) --- */}
-      <div className="relative z-10 my-auto py-4 w-full max-w-md flex flex-col items-center justify-center">
+      <div className="relative z-10 my-auto py-6 w-full max-w-md flex flex-col items-center justify-center">
         
         <AnimatePresence mode="wait">
           <motion.div
