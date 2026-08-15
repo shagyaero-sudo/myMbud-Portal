@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { MaterialFile } from '../types';
@@ -10,6 +10,42 @@ interface PdfViewerModalProps {
 
 export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClose }) => {
   const [zoomLevel, setZoomLevel] = useState(1);
+
+  // Real-time Pomodoro Sync State
+  const [pomoState, setPomoState] = useState<{
+    timeLeft: number;
+    isRunning: boolean;
+    pomoMode: 'focus' | 'break';
+  }>({
+    timeLeft: 0,
+    isRunning: false,
+    pomoMode: 'focus',
+  });
+
+  // Listen to pomodoro tick from Header.tsx
+  useEffect(() => {
+    const handlePomoSync = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent.detail) {
+        setPomoState(customEvent.detail);
+      }
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('mymbud_pomodoro_sync', handlePomoSync);
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('mymbud_pomodoro_sync', handlePomoSync);
+      }
+    };
+  }, []);
+
+  const formatPomoTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  };
 
   const getEmbedUrl = (url: string) => {
     if (url.includes('drive.google.com') && url.includes('/view')) {
@@ -41,6 +77,32 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
             <div className="absolute top-0 left-0 right-0 z-30 flex items-center justify-between px-4 sm:px-6 py-3 bg-zinc-950/90 backdrop-blur-md border-b border-zinc-800/80 shrink-0">
               <div className="min-w-0 pr-3">
                 <div className="flex items-center gap-2 flex-wrap">
+                  {/* COUNTDOWN POMODORO DI SEBELAH KIRI BADGE (HANYA AKTIF SAAT RUNNING) */}
+                  {pomoState.isRunning && (
+                    <div
+                      className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-mono text-[11px] font-bold border shadow-xs transition-all ${
+                        pomoState.pomoMode === 'focus'
+                          ? 'bg-rose-500/15 border-rose-500/40 text-rose-400'
+                          : 'bg-emerald-500/15 border-emerald-500/40 text-emerald-400'
+                      }`}
+                    >
+                      <span className="relative flex h-1.5 w-1.5">
+                        <span
+                          className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                            pomoState.pomoMode === 'focus' ? 'bg-rose-400' : 'bg-emerald-400'
+                          }`}
+                        />
+                        <span
+                          className={`relative inline-flex rounded-full h-1.5 w-1.5 ${
+                            pomoState.pomoMode === 'focus' ? 'bg-rose-500' : 'bg-emerald-500'
+                          }`}
+                        />
+                      </span>
+                      <span>{formatPomoTime(pomoState.timeLeft)}</span>
+                    </div>
+                  )}
+
+                  {/* Badge & Info Dokumen */}
                   <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-zinc-800 text-blue-400 shrink-0 border border-zinc-700/60">
                     {material.session}
                   </span>
@@ -48,6 +110,7 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
                     {material.courseName}
                   </span>
                 </div>
+                
                 <h3 className="text-sm sm:text-base font-bold text-zinc-100 mt-0.5 truncate">
                   {material.title}
                 </h3>
@@ -66,7 +129,7 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
             {/* Container Iframe PDF */}
             <div className="flex-1 w-full h-full bg-slate-950 dark:bg-black flex flex-col min-h-0 overflow-hidden relative">
               
-              {/* Floating Zoom Control: Lebih Besar & Diturunkan Pas Menutup Tombol Pop-Out */}
+              {/* Floating Zoom Control Menutupi Tombol Pop-Out */}
               <div className="absolute top-[78px] right-2 sm:right-3 z-30 flex items-center gap-1.5 bg-zinc-950 border border-zinc-800/90 shadow-[0_8px_30px_rgba(0,0,0,0.8)] px-2.5 py-1.5 rounded-2xl">
                 <button
                   onClick={handleZoomOut}

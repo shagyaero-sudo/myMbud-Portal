@@ -170,27 +170,53 @@ export const Header: React.FC<HeaderProps> = ({
     }
   };
 
-  // Timer Tick Interval
+  // Timer Tick Interval & Real-time Global Event Broadcast
   useEffect(() => {
     if (isRunning) {
       timerRef.current = setInterval(() => {
         setTimeLeft((prev) => {
+          const nextTime = prev <= 1 ? 0 : prev - 1;
+
+          // Broadcast state Pomodoro ke komponen modal/komponen lain
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(
+              new CustomEvent('mymbud_pomodoro_sync', {
+                detail: {
+                  timeLeft: nextTime,
+                  isRunning: nextTime > 0,
+                  pomoMode,
+                },
+              })
+            );
+          }
+
           if (prev <= 1) {
             clearInterval(timerRef.current!);
             setIsRunning(false);
             playAlarmSound();
             return 0;
           }
-          return prev - 1;
+          return nextTime;
         });
       }, 1000);
     } else {
       if (timerRef.current) clearInterval(timerRef.current);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('mymbud_pomodoro_sync', {
+            detail: {
+              timeLeft,
+              isRunning: false,
+              pomoMode,
+            },
+          })
+        );
+      }
     }
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [isRunning, soundEnabled]);
+  }, [isRunning, soundEnabled, pomoMode, timeLeft]);
 
   // Sync document title
   useEffect(() => {
@@ -209,7 +235,20 @@ export const Header: React.FC<HeaderProps> = ({
   const handleSwitchMode = (mode: SimplePomodoroMode) => {
     setPomoMode(mode);
     setIsRunning(false);
-    setTimeLeft((mode === 'focus' ? focusDuration : breakDuration) * 60);
+    const initialTime = (mode === 'focus' ? focusDuration : breakDuration) * 60;
+    setTimeLeft(initialTime);
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('mymbud_pomodoro_sync', {
+          detail: {
+            timeLeft: initialTime,
+            isRunning: false,
+            pomoMode: mode,
+          },
+        })
+      );
+    }
   };
 
   const handleAdjustDuration = (deltaMinutes: number) => {
@@ -227,7 +266,20 @@ export const Header: React.FC<HeaderProps> = ({
 
   const handleResetTimer = () => {
     setIsRunning(false);
-    setTimeLeft((pomoMode === 'focus' ? focusDuration : breakDuration) * 60);
+    const resetTime = (pomoMode === 'focus' ? focusDuration : breakDuration) * 60;
+    setTimeLeft(resetTime);
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('mymbud_pomodoro_sync', {
+          detail: {
+            timeLeft: resetTime,
+            isRunning: false,
+            pomoMode,
+          },
+        })
+      );
+    }
   };
 
   const formattedTimer = useMemo(() => {
@@ -564,7 +616,7 @@ export const Header: React.FC<HeaderProps> = ({
                     {setTheme && (
                       <div className="space-y-2.5 pt-3 border-t border-slate-100 dark:border-zinc-800">
                         <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-zinc-500 block text-center">
-                          Tema Warna
+                          TEMA
                         </span>
 
                         <div className="flex items-center justify-between gap-1.5 p-1.5 bg-slate-100 dark:bg-zinc-900 rounded-2xl">
