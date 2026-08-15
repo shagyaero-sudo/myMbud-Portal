@@ -57,16 +57,30 @@ export default async function handler(req: any, res: any) {
       .json({ success: false, error: 'targetNrp, title, dan message wajib diisi' });
   }
 
+  // Deteksi apakah target adalah broadcast ke semua user
+  const isBroadcast = targetNrp.trim().toUpperCase() === 'ALL' || targetNrp.trim() === '*';
+
+  // Susun payload target yang sesuai
+  const targetPayload = isBroadcast
+    ? {
+        // Broadcast ke seluruh subscriber push notification aktif
+        included_segments: ['Total Subscriptions'],
+      }
+    : {
+        // Target spesifik 1 user berdasarkan external_id (NRP)
+        target_channel: 'push',
+        include_aliases: {
+          external_id: [targetNrp.trim()],
+        },
+      };
+
   const payload = {
     app_id: appId,
-    target_channel: 'push',
-    include_aliases: {
-      external_id: [targetNrp],
-    },
     contents: { en: message },
     headings: { en: title },
     ...(url && { url }),
     ...(data && { data }),
+    ...targetPayload,
   };
 
   try {

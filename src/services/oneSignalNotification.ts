@@ -228,8 +228,10 @@ export async function sendOfficerNotification({
     return results;
   }
 
+  const finalTarget = isBroadcast ? 'ALL' : targetNrp.trim();
+
   return sendMbudiaryNotification({
-    targetNrp: targetNrp.trim(),
+    targetNrp: finalTarget,
     title: `📢 ${title}`,
     message,
     type: 'officer_announcement',

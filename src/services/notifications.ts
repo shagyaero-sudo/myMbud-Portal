@@ -43,9 +43,10 @@ export function subscribeNotifications(
     return () => {};
   }
 
+  // Mengambil notifikasi user bersangkutan DAN notifikasi global 'ALL'
   const q = query(
     collection(db, NOTIFICATIONS_COLLECTION),
-    where('targetNrp', '==', targetNrp)
+    where('targetNrp', 'in', [targetNrp, 'ALL'])
   );
 
   return onSnapshot(
@@ -70,9 +71,7 @@ export function subscribeNotifications(
 
       /*
        * Sorting dilakukan di client.
-       *
-       * Jadi kita tidak membutuhkan Composite Index
-       * Firestore untuk where + orderBy.
+       * Jadi tidak membutuhkan Composite Index Firestore untuk where + orderBy.
        */
       notifications.sort((a, b) => {
         const aTime = a.createdAt?.toMillis?.() || 0;
@@ -167,7 +166,7 @@ export async function markAllNotificationsAsRead(
 
   const q = query(
     collection(db, NOTIFICATIONS_COLLECTION),
-    where('targetNrp', '==', targetNrp),
+    where('targetNrp', 'in', [targetNrp, 'ALL']),
     where('isRead', '==', false)
   );
 
