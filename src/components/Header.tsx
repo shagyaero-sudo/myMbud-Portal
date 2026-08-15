@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -19,6 +19,14 @@ import {
   Megaphone,
   Send,
   Users,
+  Timer,
+  Play,
+  Pause,
+  RotateCcw,
+  Coffee,
+  Flame,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
 
 import { TabType } from './Sidebar';
@@ -57,6 +65,14 @@ interface HeaderProps {
   onLogout?: () => void;
 }
 
+type PomodoroMode = 'work' | 'shortBreak' | 'longBreak';
+
+const POMODORO_TIMES: Record<PomodoroMode, number> = {
+  work: 25 * 60,
+  shortBreak: 5 * 60,
+  longBreak: 15 * 60,
+};
+
 function formatNotificationTime(
   timestamp: AppNotification['createdAt']
 ) {
@@ -94,7 +110,10 @@ export const Header: React.FC<HeaderProps> = ({
   const [showPinModal, setShowPinModal] = useState(false);
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState(false);
-  const [isThemeDropdownOpen, setIsThemeDropdownOpen] = useState(false);
+  
+  // QUICK DRAWER (POMODORO & THEMES)
+  const [isQuickDrawerOpen, setIsQuickDrawerOpen] = useState(false);
+  
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [isRequestingPush, setIsRequestingPush] = useState(false);
@@ -106,8 +125,15 @@ export const Header: React.FC<HeaderProps> = ({
   const [officerMessage, setOfficerMessage] = useState('');
   const [isSendingOfficerNotif, setIsSendingOfficerNotif] = useState(false);
 
+  // --- POMODORO TIMER STATE ---
+  const [pomoMode, setPomoMode] = useState<PomodoroMode>('work');
+  const [timeLeft, setTimeLeft] = useState<number>(POMODORO_TIMES.work);
+  const [isRunning, setIsRunning] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
   const targetNrp = useMemo(() => {
-    return localStorage.getItem('mymbud_user_nrp') || '';
+    return typeof window !== 'undefined' ? localStorage.getItem('mymbud_user_nrp') || '' : '';
   }, []);
 
   useEffect(() => {
@@ -123,6 +149,79 @@ export const Header: React.FC<HeaderProps> = ({
   const unreadCount = useMemo(() => {
     return notifications.filter((notification) => !notification.isRead).length;
   }, [notifications]);
+
+  // Pomodoro Web Audio Chime
+  const playChime = () => {
+    if (!soundEnabled) return;
+    try {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.3); // A5
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.8);
+    } catch (e) {
+      console.warn('AudioContext not supported');
+    }
+  };
+
+  // Pomodoro Countdown Handler
+  useEffect(() => {
+    if (isRunning) {
+      timerRef.current = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            clearInterval(timerRef.current!);
+            setIsRunning(false);
+            playChime();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
+      if (timerRef.current) clearInterval(timerRef.current);
+    }
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [isRunning, soundEnabled]);
+
+  // Sync document title with Pomodoro Timer
+  useEffect(() => {
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    const formatted = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+    if (isRunning) {
+      document.title = `(${formatted}) ${pomoMode === 'work' ? '🔥 Focus' : '☕ Break'} • myMbud Portal`;
+    } else {
+      document.title = 'myMbud Portal';
+    }
+  }, [timeLeft, isRunning, pomoMode]);
+
+  const handleSwitchMode = (mode: PomodoroMode) => {
+    setPomoMode(mode);
+    setIsRunning(false);
+    setTimeLeft(POMODORO_TIMES[mode]);
+  };
+
+  const handleResetTimer = () => {
+    setIsRunning(false);
+    setTimeLeft(POMODORO_TIMES[pomoMode]);
+  };
+
+  const formattedTimer = useMemo(() => {
+    const m = Math.floor(timeLeft / 60);
+    const s = timeLeft % 60;
+    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  }, [timeLeft]);
 
   const handleLogoClick = () => {
     if (isOfficer) {
@@ -160,19 +259,9 @@ export const Header: React.FC<HeaderProps> = ({
     setIsOfficerFormOpen(false);
 
     const data = notification.data || {};
-
-    if (data.postId) {
-      localStorage.setItem('mbud_target_post_id', data.postId);
-    }
-
-    if (data.actorNrp) {
-      localStorage.setItem('mbud_target_actor_nrp', data.actorNrp);
-    }
-
-    if (setActiveTab) {
-      setActiveTab('mbudiary');
-    }
-
+    if (data.postId) localStorage.setItem('mbud_target_post_id', data.postId);
+    if (data.actorNrp) localStorage.setItem('mbud_target_actor_nrp', data.actorNrp);
+    if (setActiveTab) setActiveTab('mbudiary');
     window.dispatchEvent(new Event('mbud_notification_navigate'));
   };
 
@@ -195,15 +284,11 @@ export const Header: React.FC<HeaderProps> = ({
     }
   };
 
-  // HANDLER PENGIRIMAN OFFICER NOTIF
   const handleSendOfficerNotif = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!officerTargetNrp.trim() || !officerTitle.trim() || !officerMessage.trim() || isSendingOfficerNotif) {
-      return;
-    }
+    if (!officerTargetNrp.trim() || !officerTitle.trim() || !officerMessage.trim() || isSendingOfficerNotif) return;
 
     setIsSendingOfficerNotif(true);
-
     try {
       await sendOfficerNotification({
         targetNrp: officerTargetNrp.trim(),
@@ -259,7 +344,7 @@ export const Header: React.FC<HeaderProps> = ({
                 whileTap={{ scale: 0.9 }}
                 onClick={() => {
                   setIsNotificationOpen((prev) => !prev);
-                  setIsThemeDropdownOpen(false);
+                  setIsQuickDrawerOpen(false);
                 }}
                 className="relative p-2.5 rounded-2xl bg-slate-100/80 dark:bg-zinc-800/80 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 transition-all flex items-center justify-center"
               >
@@ -273,55 +358,279 @@ export const Header: React.FC<HeaderProps> = ({
               </motion.button>
             </div>
 
-            {/* THEME BUTTON */}
-            {setTheme && (
-              <div className="relative">
-                <motion.button
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => {
-                    setIsThemeDropdownOpen(!isThemeDropdownOpen);
-                    setIsNotificationOpen(false);
-                  }}
-                  className="p-2.5 rounded-2xl bg-slate-100/80 dark:bg-zinc-800/80 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 transition-all flex items-center justify-center text-xs font-bold cursor-pointer"
-                >
-                  {theme === 'green' ? <Leaf className="w-5 h-5 text-emerald-600" /> :
-                   theme === 'purple' ? <Palette className="w-5 h-5 text-purple-500" /> :
-                   theme === 'pink' ? <Sparkles className="w-5 h-5 text-pink-500" /> :
-                   theme === 'dark' ? <Moon className="w-5 h-5 text-slate-700 dark:text-zinc-200" /> :
-                   <Sun className="w-5 h-5 text-amber-400" />}
-                </motion.button>
-
-                <AnimatePresence>
-                  {isThemeDropdownOpen && (
-                    <>
-                      <div className="fixed inset-0 z-40" onClick={() => setIsThemeDropdownOpen(false)} />
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.9, y: -5 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.9, y: -5 }}
-                        className="absolute right-0 mt-2 w-44 bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-2xl shadow-xl py-2 z-50 overflow-hidden"
-                      >
-                        <button onClick={() => { setTheme('light'); setIsThemeDropdownOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold ${theme === 'light' ? 'text-blue-600 bg-slate-50' : 'text-slate-600'}`}><Sun className="w-4 h-4 text-amber-400" /><span>Light</span></button>
-                        <button onClick={() => { setTheme('dark'); setIsThemeDropdownOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold ${theme === 'dark' ? 'text-blue-600 bg-slate-50' : 'text-slate-600'}`}><Moon className="w-4 h-4 text-indigo-400" /><span>Dark</span></button>
-                        <button onClick={() => { setTheme('pink'); setIsThemeDropdownOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold ${theme === 'pink' ? 'text-pink-600 bg-pink-50' : 'text-slate-600'}`}><Sparkles className="w-4 h-4 text-pink-500" /><span>Pink</span></button>
-                        <button onClick={() => { setTheme('purple'); setIsThemeDropdownOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold ${theme === 'purple' ? 'text-purple-600 bg-purple-50' : 'text-slate-600'}`}><Palette className="w-4 h-4 text-purple-500" /><span>Purple</span></button>
-                        <button onClick={() => { setTheme('green'); setIsThemeDropdownOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold ${theme === 'green' ? 'text-emerald-700 bg-emerald-50' : 'text-slate-600'}`}><Leaf className="w-4 h-4 text-emerald-600" /><span>Green</span></button>
-
-                        {onLogout && (
-                          <>
-                            <div className="my-1 border-t border-slate-100 dark:border-zinc-800" />
-                            <button onClick={() => { setIsThemeDropdownOpen(false); onLogout(); }} className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-rose-500 hover:bg-rose-50 transition-all"><LogOut className="w-4 h-4" /><span>Log Out Akun</span></button>
-                          </>
-                        )}
-                      </motion.div>
-                    </>
-                  )}
-                </AnimatePresence>
-              </div>
-            )}
+            {/* ADAPTIVE POMODORO & THEME DRAWER TRIGGER BUTTON */}
+            <motion.button
+              layout
+              whileTap={{ scale: 0.92 }}
+              onClick={() => {
+                setIsQuickDrawerOpen(true);
+                setIsNotificationOpen(false);
+              }}
+              className={`relative px-3 py-2 sm:px-3.5 sm:py-2 rounded-2xl border transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs select-none ${
+                isRunning
+                  ? pomoMode === 'work'
+                    ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-900/60 text-rose-600 dark:text-rose-400 font-mono shadow-rose-500/10'
+                    : 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-900/60 text-emerald-600 dark:text-emerald-400 font-mono shadow-emerald-500/10'
+                  : 'bg-slate-100/80 dark:bg-zinc-800/80 hover:bg-slate-200 dark:hover:bg-zinc-700 border-transparent text-slate-700 dark:text-zinc-200'
+              }`}
+            >
+              {isRunning ? (
+                <>
+                  <span className="relative flex h-2 w-2">
+                    <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${pomoMode === 'work' ? 'bg-rose-400' : 'bg-emerald-400'}`} />
+                    <span className={`relative inline-flex rounded-full h-2 w-2 ${pomoMode === 'work' ? 'bg-rose-500' : 'bg-emerald-500'}`} />
+                  </span>
+                  <span className="text-xs font-black tracking-tight tabular-nums">
+                    {formattedTimer}
+                  </span>
+                </>
+              ) : (
+                <>
+                  {theme === 'green' ? <Leaf className="w-4.5 h-4.5 text-emerald-600" /> :
+                   theme === 'purple' ? <Palette className="w-4.5 h-4.5 text-purple-500" /> :
+                   theme === 'pink' ? <Sparkles className="w-4.5 h-4.5 text-pink-500" /> :
+                   theme === 'dark' ? <Moon className="w-4.5 h-4.5 text-indigo-400" /> :
+                   <Sun className="w-4.5 h-4.5 text-amber-400" />}
+                </>
+              )}
+            </motion.button>
           </div>
         </div>
       </header>
+
+      {/* QUICK DRAWER SIDEBAR (POMODORO FOCUS & THEMES) */}
+      {typeof document !== 'undefined' &&
+        createPortal(
+          <AnimatePresence>
+            {isQuickDrawerOpen && (
+              <>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 z-[99998] bg-black/60 backdrop-blur-sm transition-opacity"
+                  onClick={() => setIsQuickDrawerOpen(false)}
+                />
+
+                <motion.aside
+                  initial={{ x: '100%' }}
+                  animate={{ x: 0 }}
+                  exit={{ x: '100%' }}
+                  transition={{ type: 'spring', damping: 30, stiffness: 350 }}
+                  className="fixed top-0 right-0 bottom-0 z-[99999] w-full max-w-[340px] bg-white dark:bg-zinc-950 border-l border-slate-200/80 dark:border-zinc-800/80 shadow-2xl flex flex-col justify-between overflow-hidden"
+                >
+                  {/* Header Drawer */}
+                  <div className="p-5 border-b border-slate-100 dark:border-zinc-800/80 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                        <Timer className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100 leading-tight">Focus & Settings</h3>
+                        <p className="text-[10px] text-slate-400 dark:text-zinc-500">Pomodoro & Kustomisasi</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setIsQuickDrawerOpen(false)}
+                      className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {/* Body Konten Drawer */}
+                  <div className="flex-1 overflow-y-auto p-5 space-y-6 custom-scrollbar">
+                    
+                    {/* SECTION POMODORO TIMER */}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-extrabold uppercase tracking-wider text-slate-400 dark:text-zinc-500">
+                          Pomodoro Timer
+                        </span>
+                        <button
+                          onClick={() => setSoundEnabled(!soundEnabled)}
+                          className={`p-1.5 rounded-lg text-xs transition-colors ${
+                            soundEnabled
+                              ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50'
+                              : 'text-slate-400 dark:text-zinc-600 bg-slate-100 dark:bg-zinc-800'
+                          }`}
+                          title={soundEnabled ? 'Suara Aktif' : 'Suara Muted'}
+                        >
+                          {soundEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
+                        </button>
+                      </div>
+
+                      {/* Mode Selector Tabs */}
+                      <div className="grid grid-cols-3 gap-1 p-1 bg-slate-100 dark:bg-zinc-900 rounded-2xl">
+                        <button
+                          onClick={() => handleSwitchMode('work')}
+                          className={`py-1.5 text-[11px] font-bold rounded-xl transition-all ${
+                            pomoMode === 'work'
+                              ? 'bg-rose-500 text-white shadow-sm'
+                              : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900'
+                          }`}
+                        >
+                          Focus (25m)
+                        </button>
+                        <button
+                          onClick={() => handleSwitchMode('shortBreak')}
+                          className={`py-1.5 text-[11px] font-bold rounded-xl transition-all ${
+                            pomoMode === 'shortBreak'
+                              ? 'bg-emerald-500 text-white shadow-sm'
+                              : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900'
+                          }`}
+                        >
+                          Short (5m)
+                        </button>
+                        <button
+                          onClick={() => handleSwitchMode('longBreak')}
+                          className={`py-1.5 text-[11px] font-bold rounded-xl transition-all ${
+                            pomoMode === 'longBreak'
+                              ? 'bg-blue-500 text-white shadow-sm'
+                              : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900'
+                          }`}
+                        >
+                          Long (15m)
+                        </button>
+                      </div>
+
+                      {/* Big Digital Display Card */}
+                      <div className={`p-6 rounded-3xl border flex flex-col items-center justify-center transition-all ${
+                        pomoMode === 'work'
+                          ? 'bg-rose-50/50 dark:bg-rose-950/20 border-rose-100 dark:border-rose-900/40 text-rose-600 dark:text-rose-400'
+                          : pomoMode === 'shortBreak'
+                          ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-100 dark:border-emerald-900/40 text-emerald-600 dark:text-emerald-400'
+                          : 'bg-blue-50/50 dark:bg-blue-950/20 border-blue-100 dark:border-blue-900/40 text-blue-600 dark:text-blue-400'
+                      }`}>
+                        <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider mb-1">
+                          {pomoMode === 'work' ? <Flame className="w-3.5 h-3.5" /> : <Coffee className="w-3.5 h-3.5" />}
+                          <span>{pomoMode === 'work' ? 'Sesi Fokus Kuliah' : 'Istirahat Santai'}</span>
+                        </div>
+
+                        <div className="text-4xl sm:text-5xl font-black font-mono tracking-tight my-2 tabular-nums">
+                          {formattedTimer}
+                        </div>
+
+                        {/* Control Buttons */}
+                        <div className="flex items-center gap-2 mt-2 w-full">
+                          <button
+                            onClick={() => setIsRunning(!isRunning)}
+                            className={`flex-1 py-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 text-white shadow-md transition-transform active:scale-95 ${
+                              pomoMode === 'work'
+                                ? 'bg-rose-600 hover:bg-rose-500 shadow-rose-600/20'
+                                : pomoMode === 'shortBreak'
+                                ? 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/20'
+                                : 'bg-blue-600 hover:bg-blue-500 shadow-blue-600/20'
+                            }`}
+                          >
+                            {isRunning ? <Pause className="w-4 h-4 fill-white" /> : <Play className="w-4 h-4 fill-white" />}
+                            <span>{isRunning ? 'Pause' : 'Start Focus'}</span>
+                          </button>
+
+                          <button
+                            onClick={handleResetTimer}
+                            className="p-3 rounded-2xl bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-700 transition-all active:scale-95"
+                            title="Reset Timer"
+                          >
+                            <RotateCcw className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* SECTION THEME PICKER */}
+                    {setTheme && (
+                      <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-zinc-800">
+                        <span className="text-xs font-extrabold uppercase tracking-wider text-slate-400 dark:text-zinc-500">
+                          Tema Aplikasi
+                        </span>
+
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            onClick={() => setTheme('light')}
+                            className={`p-3 rounded-2xl border text-xs font-bold flex items-center gap-2.5 transition-all ${
+                              theme === 'light'
+                                ? 'bg-blue-50 border-blue-500 text-blue-600 dark:bg-blue-950/40'
+                                : 'bg-slate-50 dark:bg-zinc-900 border-slate-200/80 dark:border-zinc-800 text-slate-700 dark:text-zinc-300'
+                            }`}
+                          >
+                            <Sun className="w-4 h-4 text-amber-400" />
+                            <span>Light Mode</span>
+                          </button>
+
+                          <button
+                            onClick={() => setTheme('dark')}
+                            className={`p-3 rounded-2xl border text-xs font-bold flex items-center gap-2.5 transition-all ${
+                              theme === 'dark'
+                                ? 'bg-blue-50 border-blue-500 text-blue-600 dark:bg-blue-950/40'
+                                : 'bg-slate-50 dark:bg-zinc-900 border-slate-200/80 dark:border-zinc-800 text-slate-700 dark:text-zinc-300'
+                            }`}
+                          >
+                            <Moon className="w-4 h-4 text-indigo-400" />
+                            <span>Dark Mode</span>
+                          </button>
+
+                          <button
+                            onClick={() => setTheme('pink')}
+                            className={`p-3 rounded-2xl border text-xs font-bold flex items-center gap-2.5 transition-all ${
+                              theme === 'pink'
+                                ? 'bg-pink-50 border-pink-500 text-pink-600 dark:bg-pink-950/40'
+                                : 'bg-slate-50 dark:bg-zinc-900 border-slate-200/80 dark:border-zinc-800 text-slate-700 dark:text-zinc-300'
+                            }`}
+                          >
+                            <Sparkles className="w-4 h-4 text-pink-500" />
+                            <span>Aesthetic Pink</span>
+                          </button>
+
+                          <button
+                            onClick={() => setTheme('purple')}
+                            className={`p-3 rounded-2xl border text-xs font-bold flex items-center gap-2.5 transition-all ${
+                              theme === 'purple'
+                                ? 'bg-purple-50 border-purple-500 text-purple-600 dark:bg-purple-950/40'
+                                : 'bg-slate-50 dark:bg-zinc-900 border-slate-200/80 dark:border-zinc-800 text-slate-700 dark:text-zinc-300'
+                            }`}
+                          >
+                            <Palette className="w-4 h-4 text-purple-500" />
+                            <span>Royal Purple</span>
+                          </button>
+
+                          <button
+                            onClick={() => setTheme('green')}
+                            className={`col-span-2 p-3 rounded-2xl border text-xs font-bold flex items-center justify-center gap-2.5 transition-all ${
+                              theme === 'green'
+                                ? 'bg-emerald-50 border-emerald-500 text-emerald-600 dark:bg-emerald-950/40'
+                                : 'bg-slate-50 dark:bg-zinc-900 border-slate-200/80 dark:border-zinc-800 text-slate-700 dark:text-zinc-300'
+                            }`}
+                          >
+                            <Leaf className="w-4 h-4 text-emerald-600" />
+                            <span>Botanical Green</span>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Footer Drawer (Logout) */}
+                  {onLogout && (
+                    <div className="p-5 border-t border-slate-100 dark:border-zinc-800/80 bg-slate-50/50 dark:bg-zinc-900/50">
+                      <button
+                        onClick={() => {
+                          setIsQuickDrawerOpen(false);
+                          onLogout();
+                        }}
+                        className="w-full py-3 rounded-2xl bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 text-xs font-bold transition-all flex items-center justify-center gap-2"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        <span>Keluar Akun (Logout)</span>
+                      </button>
+                    </div>
+                  )}
+                </motion.aside>
+              </>
+            )}
+          </AnimatePresence>,
+          document.body
+        )}
 
       {/* NOTIFICATION MODAL WITH FULLSCREEN PORTAL BACKDROP */}
       {typeof document !== 'undefined' &&

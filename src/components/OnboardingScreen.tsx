@@ -166,7 +166,8 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
   const Icon = current.icon;
 
   return (
-    <div className="fixed inset-0 h-[100dvh] w-screen z-[99999] bg-[#0a0a0a] text-slate-100 flex flex-col font-sans overflow-hidden">
+    <div className="fixed inset-0 min-h-[100dvh] w-screen z-[99999] bg-[#0a0a0a] text-slate-100 flex flex-col justify-between items-center font-sans overflow-y-auto overflow-x-hidden p-4 sm:p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
+      
       {/* --- BACKGROUND GLOW MESH --- */}
       <AnimatePresence mode="popLayout">
         <motion.div
@@ -175,15 +176,15 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.8 }}
-          className="absolute inset-0 overflow-hidden pointer-events-none"
+          className="fixed inset-0 overflow-hidden pointer-events-none -z-10"
         >
           <div className={`absolute -top-[20%] -left-[10%] w-[70vw] h-[70vw] rounded-full blur-[100px] ${current.elements[0]} mix-blend-screen opacity-60 animate-pulse`} />
           <div className={`absolute top-[40%] -right-[20%] w-[80vw] h-[80vw] rounded-full blur-[120px] ${current.elements[1]} mix-blend-screen opacity-50`} />
         </motion.div>
       </AnimatePresence>
 
-      {/* --- HEADER (AUDIO CONTROL ONLY) --- */}
-      <div className="relative z-20 flex justify-start items-center p-6 sm:p-8">
+      {/* --- HEADER (AUDIO CONTROL ONLY - SHRINK-0) --- */}
+      <div className="relative z-20 w-full max-w-md flex justify-start items-center shrink-0 pt-2">
         <motion.button
           whileTap={{ scale: 0.9 }}
           onClick={toggleMute}
@@ -194,39 +195,39 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
         </motion.button>
       </div>
 
-      {/* --- MAIN CONTENT (ILLUSTRATION & TEXT) --- */}
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 sm:px-12 w-full max-w-md mx-auto -mt-10">
+      {/* --- MAIN CONTENT (ADAPTIVE SHRINK & SCROLL FRIENDLY) --- */}
+      <div className="relative z-10 my-auto py-4 w-full max-w-md flex flex-col items-center justify-center">
         
         <AnimatePresence mode="wait">
           <motion.div
             key={currentSlide}
-            initial={{ opacity: 0, x: 40, filter: 'blur(10px)' }}
+            initial={{ opacity: 0, x: 30, filter: 'blur(8px)' }}
             animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
-            exit={{ opacity: 0, x: -40, filter: 'blur(10px)' }}
+            exit={{ opacity: 0, x: -30, filter: 'blur(8px)' }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="w-full flex flex-col items-center text-center space-y-10"
+            className="w-full flex flex-col items-center text-center space-y-4 sm:space-y-6"
           >
             {/* ABSTRACT 3D-LIKE GLASS CARD VISUAL */}
-            <div className="relative w-64 h-64 sm:w-72 sm:h-72 flex items-center justify-center">
+            <div className="relative w-44 h-44 sm:w-56 sm:h-56 max-h-[28vh] flex items-center justify-center">
               {/* Floating Decorative Elements */}
               <motion.div
-                animate={{ y: [-10, 10, -10], rotate: [0, 5, -5, 0] }}
+                animate={{ y: [-8, 8, -8], rotate: [0, 5, -5, 0] }}
                 transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                className={`absolute top-0 right-10 w-16 h-16 rounded-2xl bg-gradient-to-tr ${current.gradient} opacity-40 blur-xl`}
+                className={`absolute top-0 right-4 w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-tr ${current.gradient} opacity-40 blur-xl pointer-events-none`}
               />
               <motion.div
-                animate={{ y: [10, -10, 10], rotate: [0, -10, 10, 0] }}
+                animate={{ y: [8, -8, 8], rotate: [0, -8, 8, 0] }}
                 transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute bottom-4 left-4 w-20 h-20 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm z-20"
+                className="absolute bottom-2 left-2 w-14 h-14 sm:w-16 sm:h-16 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm z-20 pointer-events-none"
               />
 
               {/* Main Glass Centerpiece */}
               <motion.div
-                whileHover={{ scale: 1.05, rotateY: 10, rotateX: -10 }}
-                className={`relative z-10 w-48 h-48 sm:w-56 sm:h-56 rounded-[2rem] bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-2xl border border-white/20 shadow-2xl ${current.shadow} flex items-center justify-center transform perspective-1000 p-6`}
+                whileHover={{ scale: 1.04, rotateY: 8, rotateX: -8 }}
+                className={`relative z-10 w-36 h-36 sm:w-44 sm:h-44 rounded-3xl sm:rounded-[2rem] bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-2xl border border-white/20 shadow-2xl ${current.shadow} flex items-center justify-center p-4 sm:p-5`}
               >
                 {/* Inner Glow */}
-                <div className={`absolute inset-0 rounded-[2rem] ${current.glow} blur-2xl opacity-60`} />
+                <div className={`absolute inset-0 rounded-3xl sm:rounded-[2rem] ${current.glow} blur-2xl opacity-60 pointer-events-none`} />
                 
                 {current.isLogo ? (
                   <motion.img
@@ -235,20 +236,20 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
                     transition={{ duration: 0.5 }}
                     src="/logombud.png"
                     alt="myMbud Logo"
-                    className="w-28 h-28 sm:w-32 sm:h-32 object-contain drop-shadow-[0_0_20px_rgba(59,130,246,0.8)] z-10"
+                    className="w-20 h-20 sm:w-24 sm:h-24 object-contain drop-shadow-[0_0_20px_rgba(59,130,246,0.8)] z-10"
                   />
                 ) : (
-                  Icon && <Icon className="w-24 h-24 sm:w-28 sm:h-28 text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.5)] z-10" />
+                  Icon && <Icon className="w-16 h-16 sm:w-20 sm:h-20 text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.5)] z-10" />
                 )}
               </motion.div>
             </div>
 
             {/* TYPOGRAPHY */}
-            <div className="space-y-3">
-              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white leading-tight">
+            <div className="space-y-1.5 sm:space-y-2 px-2">
+              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white leading-snug">
                 {current.title}
               </h2>
-              <p className="text-sm sm:text-base text-slate-400 leading-relaxed max-w-sm mx-auto">
+              <p className="text-xs sm:text-sm text-slate-400 leading-relaxed max-w-xs sm:max-w-sm mx-auto">
                 {current.desc}
               </p>
             </div>
@@ -257,11 +258,11 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 
       </div>
 
-      {/* --- FOOTER (PAGINATION & BUTTON) --- */}
-      <div className="relative z-20 px-6 pb-[calc(2rem+env(safe-area-inset-bottom))] sm:pb-16 w-full max-w-md mx-auto flex flex-col items-center gap-8">
+      {/* --- FOOTER (PAGINATION & BUTTON - SHRINK-0) --- */}
+      <div className="relative z-20 w-full max-w-xs sm:max-w-sm flex flex-col items-center gap-4 sm:gap-5 shrink-0 pt-2">
         
         {/* Dot Indicators */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           {slides.map((_, index) => (
             <motion.div
               key={index}
@@ -277,7 +278,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={handleNext}
-          className={`w-full py-4 rounded-2xl flex items-center justify-center gap-3 text-sm font-bold text-white shadow-xl cursor-pointer ${
+          className={`w-full py-3.5 sm:py-4 rounded-2xl flex items-center justify-center gap-2.5 text-xs sm:text-sm font-bold text-white shadow-xl cursor-pointer ${
             currentSlide === slides.length - 1 
               ? `bg-gradient-to-r ${current.gradient} ${current.shadow}` 
               : 'bg-white/10 border border-white/10 backdrop-blur-md hover:bg-white/15'
