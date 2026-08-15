@@ -29,6 +29,7 @@ import {
   VolumeX,
   Plus,
   Minus,
+  Menu,
 } from 'lucide-react';
 
 import { TabType } from './Sidebar';
@@ -129,6 +130,7 @@ export const Header: React.FC<HeaderProps> = ({
   const [isRunning, setIsRunning] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const alarmAudioRef = useRef<HTMLAudioElement | null>(null);
 
   const targetNrp = useMemo(() => {
     return typeof window !== 'undefined' ? localStorage.getItem('mymbud_user_nrp') || '' : '';
@@ -148,24 +150,23 @@ export const Header: React.FC<HeaderProps> = ({
     return notifications.filter((notification) => !notification.isRead).length;
   }, [notifications]);
 
-  // Web Audio Chime
-  const playChime = () => {
+  // Play Eksternal Alarm Sound (/alarm.mp3)
+  const playAlarmSound = () => {
     if (!soundEnabled) return;
     try {
-      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(587.33, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.3);
-      gain.gain.setValueAtTime(0.2, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.8);
+      if (!alarmAudioRef.current) {
+        alarmAudioRef.current = new Audio('/alarm.mp3');
+      }
+      alarmAudioRef.current.currentTime = 0;
+      alarmAudioRef.current.volume = 0.9;
+      const playPromise = alarmAudioRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((err) => {
+          console.warn('[Pomodoro] Audio alarm autoplay blocked:', err);
+        });
+      }
     } catch (e) {
-      console.warn('AudioContext not supported');
+      console.warn('[Pomodoro] Gagal memutar alarm.mp3:', e);
     }
   };
 
@@ -177,7 +178,7 @@ export const Header: React.FC<HeaderProps> = ({
           if (prev <= 1) {
             clearInterval(timerRef.current!);
             setIsRunning(false);
-            playChime();
+            playAlarmSound();
             return 0;
           }
           return prev - 1;
@@ -371,7 +372,7 @@ export const Header: React.FC<HeaderProps> = ({
               </motion.button>
             </div>
 
-            {/* ADAPTIVE POMODORO & THEME BUTTON */}
+            {/* ADAPTIVE POMODORO TIMER / HAMBURGER BAR TRIGGER */}
             <motion.button
               layout
               whileTap={{ scale: 0.92 }}
@@ -386,7 +387,8 @@ export const Header: React.FC<HeaderProps> = ({
                     : 'px-3 py-2 sm:px-3.5 sm:py-2 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/60 text-emerald-600 dark:text-emerald-400 font-mono gap-1.5 shadow-xs'
                   : 'p-2.5 rounded-2xl bg-slate-100/80 dark:bg-zinc-800/80 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200'
               }`}
-              title="Pengaturan Fokus & Tema"
+              title="Menu & Fokus"
+              aria-label="Menu & Fokus"
             >
               {isRunning ? (
                 <>
@@ -399,13 +401,7 @@ export const Header: React.FC<HeaderProps> = ({
                   </span>
                 </>
               ) : (
-                <>
-                  {theme === 'green' ? <Leaf className="w-4.5 h-4.5 text-emerald-600" /> :
-                   theme === 'purple' ? <Palette className="w-4.5 h-4.5 text-purple-500" /> :
-                   theme === 'pink' ? <Sparkles className="w-4.5 h-4.5 text-pink-500" /> :
-                   theme === 'dark' ? <Moon className="w-4.5 h-4.5 text-indigo-400" /> :
-                   <Sun className="w-4.5 h-4.5 text-amber-500" />}
-                </>
+                <Menu className="w-5 h-5" />
               )}
             </motion.button>
           </div>
@@ -440,7 +436,7 @@ export const Header: React.FC<HeaderProps> = ({
                         <Timer className="w-4 h-4" />
                       </div>
                       <h3 className="text-xs font-bold text-slate-800 dark:text-zinc-200 uppercase tracking-wider">
-                        POMODORO TIMER
+                        Fokus & Preferensi
                       </h3>
                     </div>
                     <button
@@ -662,188 +658,6 @@ export const Header: React.FC<HeaderProps> = ({
                     </div>
                   )}
                 </motion.aside>
-              </>
-            )}
-          </AnimatePresence>,
-          document.body
-        )}
-
-      {/* NOTIFICATION MODAL */}
-      {typeof document !== 'undefined' &&
-        createPortal(
-          <AnimatePresence>
-            {isNotificationOpen && (
-              <>
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="fixed inset-0 z-[99998] bg-slate-950/60 backdrop-blur-sm transition-opacity"
-                  onClick={() => setIsNotificationOpen(false)}
-                />
-
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 28 }}
-                  className="fixed top-16 left-4 right-4 sm:left-auto sm:right-6 sm:top-16 sm:w-[380px] max-w-md mx-auto bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl shadow-2xl z-[99999] overflow-hidden"
-                >
-                  <div className="px-4 py-3.5 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h2 className="text-sm font-bold text-slate-900 dark:text-zinc-100">Notifikasi</h2>
-                        
-                        {isOfficer && (
-                          <button
-                            onClick={() => setIsOfficerFormOpen(!isOfficerFormOpen)}
-                            className={`p-1.5 rounded-lg transition-all ${
-                              isOfficerFormOpen 
-                                ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400' 
-                                : 'text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800 hover:text-indigo-500'
-                            }`}
-                            title="Kirim Notifikasi Manual"
-                          >
-                            <Megaphone className="w-3.5 h-3.5" />
-                          </button>
-                        )}
-
-                        {unreadCount > 0 && (
-                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-red-50 dark:bg-red-950/40 text-red-500">
-                            {unreadCount} baru
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-[10px] text-slate-400 dark:text-zinc-500 mt-0.5">Riwayat aktivitas myMbud</p>
-                    </div>
-
-                    {unreadCount > 0 && (
-                      <button onClick={handleMarkAllRead} className="flex items-center gap-1.5 text-[10px] font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 transition-colors">
-                        <CheckCheck className="w-3.5 h-3.5" /> Tandai semua
-                      </button>
-                    )}
-                  </div>
-
-                  {/* FORM BROADCAST OFFICER */}
-                  <AnimatePresence>
-                    {isOfficer && isOfficerFormOpen && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="px-3 pt-3 overflow-hidden"
-                      >
-                        <div className="p-3.5 rounded-2xl bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/60 space-y-2">
-                          <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-bold text-indigo-700 dark:text-indigo-300">Target Penerima:</span>
-                            <button
-                              type="button"
-                              onClick={() => setOfficerTargetNrp('ALL')}
-                              className="px-2 py-0.5 rounded-full bg-indigo-600 text-white text-[9px] font-bold hover:bg-indigo-500 transition-all flex items-center gap-1 active:scale-95"
-                            >
-                              <Users className="w-2.5 h-2.5" />
-                              <span>Semua User (ALL)</span>
-                            </button>
-                          </div>
-
-                          <form onSubmit={handleSendOfficerNotif} className="space-y-2">
-                            <input
-                              type="text"
-                              value={officerTargetNrp}
-                              onChange={(e) => setOfficerTargetNrp(e.target.value)}
-                              placeholder="NRP Target (atau ketik ALL)"
-                              required
-                              className="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-800 text-xs border border-indigo-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                            />
-                            <input
-                              type="text"
-                              value={officerTitle}
-                              onChange={(e) => setOfficerTitle(e.target.value)}
-                              placeholder="Judul Notifikasi"
-                              required
-                              className="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-800 text-xs border border-indigo-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                            />
-                            <textarea
-                              value={officerMessage}
-                              onChange={(e) => setOfficerMessage(e.target.value)}
-                              placeholder="Isi pesan notifikasi..."
-                              rows={2}
-                              required
-                              className="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-800 text-xs border border-indigo-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 resize-none"
-                            />
-                            <button
-                              type="submit"
-                              disabled={isSendingOfficerNotif}
-                              className="w-full py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-xs active:scale-95"
-                            >
-                              <Send className="w-3.5 h-3.5" />
-                              <span>{isSendingOfficerNotif ? 'Mengirim Broadcast...' : 'Kirim Pesan'}</span>
-                            </button>
-                          </form>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
-                  <div className="px-3 pt-3">
-                    <button onClick={handleEnablePush} disabled={isRequestingPush} className="w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50 hover:bg-blue-100 transition-all text-left disabled:opacity-60">
-                      <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0">
-                        <BellRing className="w-4 h-4" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-[11px] font-bold text-blue-700 dark:text-blue-300">
-                          {isRequestingPush ? 'Memproses...' : 'Aktifkan Push Notification'}
-                        </p>
-                        <p className="text-[9px] text-blue-500/80 dark:text-blue-400/70 mt-0.5">
-                          Terima notifikasi meski myMbud tidak sedang dibuka
-                        </p>
-                      </div>
-                    </button>
-                  </div>
-
-                  <div className="max-h-[350px] sm:max-h-[430px] overflow-y-auto p-3 space-y-1.5 custom-scrollbar">
-                    {notifications.length === 0 ? (
-                      <div className="py-10 text-center">
-                        <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-zinc-800 mx-auto flex items-center justify-center text-slate-400">
-                          <Bell className="w-5 h-5" />
-                        </div>
-                        <p className="mt-3 text-xs font-semibold text-slate-600 dark:text-zinc-300">Belum ada notifikasi</p>
-                        <p className="mt-1 text-[10px] text-slate-400">Semua aktivitas terbaru akan muncul di sini.</p>
-                      </div>
-                    ) : (
-                      notifications.map((notification) => (
-                        <button
-                          key={notification.id}
-                          onClick={() => handleNotificationClick(notification)}
-                          className={`w-full text-left p-3 rounded-2xl transition-all ${
-                            notification.isRead
-                              ? 'bg-transparent hover:bg-slate-50 dark:hover:bg-zinc-800/60'
-                              : 'bg-blue-50/70 dark:bg-blue-950/25 hover:bg-blue-50 dark:hover:bg-blue-950/40'
-                          }`}
-                        >
-                          <div className="flex gap-3">
-                            <div className="pt-1.5 shrink-0">
-                              <span className={`block w-2 h-2 rounded-full ${notification.isRead ? 'bg-transparent' : 'bg-blue-500'}`} />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-start justify-between gap-3">
-                                <p className={`text-[11px] leading-tight ${notification.isRead ? 'font-semibold text-slate-700 dark:text-zinc-300' : 'font-bold text-slate-900 dark:text-zinc-100'}`}>
-                                  {notification.title}
-                                </p>
-                                <span className="text-[9px] text-slate-400 whitespace-nowrap shrink-0">
-                                  {formatNotificationTime(notification.createdAt)}
-                                </span>
-                              </div>
-                              <p className="text-[10px] leading-relaxed text-slate-500 dark:text-zinc-400 mt-1 break-words">
-                                {notification.message}
-                              </p>
-                            </div>
-                          </div>
-                        </button>
-                      ))
-                    )}
-                  </div>
-                </motion.div>
               </>
             )}
           </AnimatePresence>,
