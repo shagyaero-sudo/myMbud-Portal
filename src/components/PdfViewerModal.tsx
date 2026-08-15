@@ -77,7 +77,7 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
             <div className="absolute top-0 left-0 right-0 z-30 flex items-center justify-between px-4 sm:px-6 py-3 bg-zinc-950/90 backdrop-blur-md border-b border-zinc-800/80 shrink-0">
               <div className="min-w-0 pr-3">
                 <div className="flex items-center gap-2 flex-wrap">
-                  {/* COUNTDOWN POMODORO DI SEBELAH KIRI BADGE (HANYA AKTIF SAAT RUNNING) */}
+                  {/* COUNTDOWN POMODORO DI SEBELAH KIRI BADGE */}
                   {pomoState.isRunning && (
                     <div
                       className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-mono text-[11px] font-bold border shadow-xs transition-all ${
@@ -116,9 +116,10 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
                 </h3>
               </div>
 
+              {/* Tombol Exit / Tutup Preview: Lebih Mencolok & Berwarna Merah */}
               <button
                 onClick={onClose}
-                className="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all shrink-0 cursor-pointer"
+                className="p-2.5 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/30 transition-all shrink-0 cursor-pointer shadow-xs active:scale-95"
                 title="Tutup Preview"
                 aria-label="Tutup Preview"
               >
