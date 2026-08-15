@@ -15,16 +15,19 @@ export const SoftForceModal: React.FC = () => {
     const userAgent = window.navigator.userAgent.toLowerCase();
 
     const checkIsMobile = () => {
-      const isTouch = navigator.maxTouchPoints > 0;
-      const isMobileUA = /android|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile/i.test(userAgent);
-      const isSmallScreen = window.innerWidth < 1024;
-      const isIPadOS = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
+      // Deteksi murni Mobile / Tablet OS (Bukan berdasarkan lebar resolusi split-screen di PC)
+      const isAndroid = /android/i.test(userAgent);
+      const isIOSReal = /iphone|ipod/.test(userAgent);
+      const isIPad = /ipad/.test(userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1 && !window.MSStream);
 
-      setIsMobileDevice(isSmallScreen || (isTouch && (isMobileUA || isIPadOS)));
+      // Hanya aktif jika benar-benar dibuka dari perangkat Android, iPhone, atau iPad
+      const isRealMobileOrTablet = isAndroid || isIOSReal || isIPad;
+
+      setIsMobileDevice(isRealMobileOrTablet);
+      setIsIOS(isIOSReal || isIPad);
     };
 
     checkIsMobile();
-    window.addEventListener('resize', checkIsMobile);
 
     const isAppMode = 
       window.matchMedia('(display-mode: standalone)').matches || 
@@ -33,8 +36,7 @@ export const SoftForceModal: React.FC = () => {
     setIsStandalone(isAppMode);
 
     const isIOSDevice = /iphone|ipad|ipod/.test(userAgent) || 
-      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    setIsIOS(isIOSDevice);
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1 && !(window as any).MSStream);
 
     const savedPWA = localStorage.getItem('mymbud_pwa_installed');
     if (savedPWA === 'true') {
@@ -62,7 +64,6 @@ export const SoftForceModal: React.FC = () => {
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
     return () => {
-      window.removeEventListener('resize', checkIsMobile);
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     };
   }, []);
@@ -117,6 +118,7 @@ export const SoftForceModal: React.FC = () => {
     setHasInstalled(false);
   };
 
+  // Jangan tampilkan jika bukan perangkat mobile sungguhan atau sudah dalam mode standalone
   if (!isMobileDevice || isStandalone) {
     return null;
   }
@@ -236,7 +238,7 @@ export const SoftForceModal: React.FC = () => {
                 whileTap={{ scale: 0.98 }}
                 onClick={handleInstallAndroid}
                 disabled={!deferredPrompt}
-                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 dark:disabled:bg-zinc-800 disabled:cursor-not-allowed text-white font-semibold py-3.5 px-6 rounded-2xl shadow-lg shadow-blue-500/25 transition-all text-sm flex items-center justify-center gap-2"
+                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 dark:disabled:bg-zinc-800 disabled:cursor-not-allowed text-white font-semibold py-3.5 px-6 rounded-2xl shadow-lg shadow-blue-500/25 transition-all text-sm flex items-center justify-center gap-2 cursor-pointer"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />

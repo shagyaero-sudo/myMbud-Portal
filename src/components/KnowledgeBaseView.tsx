@@ -159,12 +159,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
   };
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 15 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="space-y-6 pb-28 sm:pb-16 pb-[calc(7rem+env(safe-area-inset-bottom))] sm:pb-[calc(4rem+env(safe-area-inset-bottom))]"
-    >
+    <div className="space-y-6 pb-28 sm:pb-16 pb-[calc(7rem+env(safe-area-inset-bottom))] sm:pb-[calc(4rem+env(safe-area-inset-bottom))]">
       {/* Header Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1 pt-4 sm:pt-6 pb-4 sm:pb-6 mb-2 sm:mb-3">
         <div>
@@ -177,46 +172,36 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
         </div>
 
         {isOfficer && (
-          <motion.button
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
+          <button
             onClick={handleOpenUploadModal}
-            className="px-4 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition-all shadow-md shadow-blue-500/20 flex items-center gap-2 shrink-0"
+            className="px-4 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-semibold text-xs transition-all shadow-md shadow-blue-500/20 flex items-center gap-2 shrink-0 cursor-pointer"
           >
             <Upload className="w-4 h-4" />
             <span>Unggah PDF</span>
-          </motion.button>
+          </button>
         )}
       </div>
 
       {/* 2-Column Layout */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-        {/* Left Column: Vertical Course Tabs */}
+        {/* Left Column: Vertical Course Tabs (Crisp & No Glitch Layout) */}
         <div className="hidden md:block md:col-span-4 lg:col-span-3 space-y-2">
           <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-4 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-1.5 transition-colors">
             <div className="px-3 py-2 text-[11px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">
               Daftar Mata Kuliah
             </div>
 
-            <motion.button
-              whileTap={{ scale: 0.98 }}
+            <button
               onClick={() => setSelectedCourse('ALL')}
-              className={`relative w-full text-left px-4 py-3 rounded-2xl text-xs transition-all flex items-center justify-between overflow-hidden ${
+              className={`w-full text-left px-4 py-3 rounded-2xl text-xs transition-colors flex items-center justify-between cursor-pointer ${
                 selectedCourse === 'ALL'
-                  ? 'text-white font-bold'
-                  : 'text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-800 font-medium'
+                  ? 'bg-blue-600 text-white font-bold shadow-md shadow-blue-500/20'
+                  : 'text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 font-medium'
               }`}
             >
-              {selectedCourse === 'ALL' && (
-                <motion.div
-                  layoutId="activeCourseBg"
-                  className="absolute inset-0 bg-blue-600 rounded-2xl shadow-md shadow-blue-500/20"
-                  transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-                />
-              )}
-              <span className="relative z-10">Semua Matkul</span>
+              <span>Semua Matkul</span>
               <span
-                className={`relative z-10 text-[11px] px-2 py-0.5 rounded-full ${
+                className={`text-[11px] px-2 py-0.5 rounded-full ${
                   selectedCourse === 'ALL'
                     ? 'bg-white/20 text-white'
                     : 'bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400'
@@ -224,32 +209,24 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
               >
                 {materials.length}
               </span>
-            </motion.button>
+            </button>
 
             {dynamicCoursesList.map((course) => {
               const count = materials.filter((m) => m.courseName === course).length;
               const isSelected = selectedCourse === course;
               return (
-                <motion.button
+                <button
                   key={course}
-                  whileTap={{ scale: 0.98 }}
                   onClick={() => setSelectedCourse(course)}
-                  className={`relative w-full text-left px-4 py-3 rounded-2xl text-xs transition-all flex items-center justify-between overflow-hidden ${
+                  className={`w-full text-left px-4 py-3 rounded-2xl text-xs transition-colors flex items-center justify-between cursor-pointer ${
                     isSelected
-                      ? 'text-white font-bold'
-                      : 'text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-800 font-medium'
+                      ? 'bg-blue-600 text-white font-bold shadow-md shadow-blue-500/20'
+                      : 'text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 font-medium'
                   }`}
                 >
-                  {isSelected && (
-                    <motion.div
-                      layoutId="activeCourseBg"
-                      className="absolute inset-0 bg-blue-600 rounded-2xl shadow-md shadow-blue-500/20"
-                      transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-                    />
-                  )}
-                  <span className="relative z-10 truncate pr-2">{course}</span>
+                  <span className="truncate pr-2">{course}</span>
                   <span
-                    className={`relative z-10 text-[11px] px-2 py-0.5 rounded-full shrink-0 ${
+                    className={`text-[11px] px-2 py-0.5 rounded-full shrink-0 ${
                       isSelected
                         ? 'bg-white/20 text-white'
                         : 'bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400'
@@ -257,7 +234,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                   >
                     {count}
                   </span>
-                </motion.button>
+                </button>
               );
             })}
           </div>
@@ -294,65 +271,55 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
             </select>
           </div>
 
-          {/* Files List */}
+          {/* Files List Container */}
           <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-4 sm:p-6 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-2 transition-colors">
             {filteredMaterials.length === 0 ? (
               <div className="p-12 text-center text-slate-400 dark:text-zinc-500 text-xs bg-slate-50/70 dark:bg-zinc-800/50 rounded-2xl">
                 Tidak ada berkas PDF untuk mata kuliah ini.
               </div>
             ) : (
-              <motion.div layout className="space-y-2">
-                <AnimatePresence>
-                  {filteredMaterials.map((mat) => (
-                    <motion.div
-                      layout
-                      initial={{ opacity: 0, scale: 0.96 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.96 }}
-                      whileHover={{ scale: 1.005 }}
-                      whileTap={{ scale: 0.995 }}
-                      key={mat.id}
-                      onClick={() => onPreviewPdf(mat)}
-                      className="p-3.5 sm:p-4 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/60 hover:bg-blue-50/50 dark:hover:bg-blue-950/40 cursor-pointer transition-all flex items-center justify-between gap-3 group border border-transparent hover:border-blue-100 dark:hover:border-blue-900"
-                    >
-                      <div className="flex items-center gap-3 min-w-0 flex-1">
-                        <div className="p-2.5 rounded-2xl bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-all">
-                          <FileText className="w-5 h-5" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <h4 className="text-xs font-bold text-slate-800 dark:text-zinc-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
-                            {mat.title}
-                          </h4>
-                          <p className="text-[11px] text-slate-500 dark:text-zinc-400 truncate">
-                            {mat.courseName}
-                          </p>
-                        </div>
+              <div className="space-y-2">
+                {filteredMaterials.map((mat) => (
+                  <div
+                    key={mat.id}
+                    onClick={() => onPreviewPdf(mat)}
+                    className="p-3.5 sm:p-4 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/60 hover:bg-blue-50/50 dark:hover:bg-blue-950/40 cursor-pointer transition-colors flex items-center justify-between gap-3 group border border-transparent hover:border-blue-100 dark:hover:border-blue-900 active:scale-[0.998]"
+                  >
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className="p-2.5 rounded-2xl bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                        <FileText className="w-5 h-5" />
                       </div>
-
-                      <div className="flex items-center gap-2 shrink-0">
-                        <span className="text-xs font-semibold text-slate-600 dark:text-zinc-300 bg-white dark:bg-zinc-800 px-3 py-1 rounded-full shadow-xs border border-slate-100 dark:border-zinc-700">
-                          {mat.session}
-                        </span>
-
-                        {isOfficer && (
-                          <motion.button
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onDeleteMaterial(mat.id);
-                            }}
-                            className="p-2 rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-zinc-800 transition-all"
-                            title="Hapus Berkas"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </motion.button>
-                        )}
+                      <div className="min-w-0 flex-1">
+                        <h4 className="text-xs font-bold text-slate-800 dark:text-zinc-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
+                          {mat.title}
+                        </h4>
+                        <p className="text-[11px] text-slate-500 dark:text-zinc-400 truncate">
+                          {mat.courseName}
+                        </p>
                       </div>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </motion.div>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-xs font-semibold text-slate-600 dark:text-zinc-300 bg-white dark:bg-zinc-800 px-3 py-1 rounded-full shadow-xs border border-slate-100 dark:border-zinc-700">
+                        {mat.session}
+                      </span>
+
+                      {isOfficer && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDeleteMaterial(mat.id);
+                          }}
+                          className="p-2 rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-zinc-800 transition-colors"
+                          title="Hapus Berkas"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         </div>
@@ -368,10 +335,10 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
             className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
           >
             <motion.div 
-              initial={{ scale: 0.92, opacity: 0, y: 15 }}
+              initial={{ scale: 0.95, opacity: 0, y: 10 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.92, opacity: 0, y: 15 }}
-              transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              transition={{ duration: 0.2 }}
               className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"
             >
               <div className="px-6 sm:px-8 py-5 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between shrink-0 bg-white dark:bg-zinc-900">
@@ -381,7 +348,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowUploadModal(false)}
-                  className="p-2 rounded-2xl text-slate-400 hover:text-slate-800 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors shrink-0"
+                  className="p-2 rounded-2xl text-slate-400 hover:text-slate-800 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors shrink-0 cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -481,7 +448,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                         }
                       }}
                       onClick={() => fileInputRef.current?.click()}
-                      className={`relative border-2 border-dashed rounded-3xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-all ${
+                      className={`relative border-2 border-dashed rounded-3xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-colors ${
                         isDragOver
                           ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
                           : 'border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 hover:bg-slate-100 dark:hover:bg-zinc-700/50'
@@ -533,10 +500,9 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                           <span>{Math.round(uploadProgress)}%</span>
                         </div>
                         <div className="bg-slate-100 dark:bg-zinc-800 rounded-full h-2 w-full overflow-hidden">
-                          <motion.div
-                            className="h-full bg-blue-600"
-                            animate={{ width: `${uploadProgress}%` }}
-                            transition={{ ease: "easeInOut" }}
+                          <div
+                            className="h-full bg-blue-600 transition-all duration-300"
+                            style={{ width: `${uploadProgress}%` }}
                           />
                         </div>
                       </div>
@@ -549,16 +515,14 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                     type="button"
                     disabled={isUploading}
                     onClick={() => setShowUploadModal(false)}
-                    className="px-5 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 text-xs font-semibold hover:bg-slate-200 dark:hover:bg-zinc-700 transition-all disabled:opacity-50"
+                    className="px-5 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 text-xs font-semibold hover:bg-slate-200 dark:hover:bg-zinc-700 transition-colors disabled:opacity-50 cursor-pointer"
                   >
                     Batal
                   </button>
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                  <button
                     type="submit"
                     disabled={isUploading}
-                    className="px-5 py-2.5 rounded-2xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 shadow-md shadow-blue-500/20 transition-all flex items-center gap-2 disabled:opacity-70"
+                    className="px-5 py-2.5 rounded-2xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 active:scale-95 shadow-md shadow-blue-500/20 transition-all flex items-center gap-2 disabled:opacity-70 cursor-pointer"
                   >
                     {isUploading ? (
                       <>
@@ -568,13 +532,13 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                     ) : (
                       'Unggah Berkas'
                     )}
-                  </motion.button>
+                  </button>
                 </div>
               </form>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </div>
   );
 };
