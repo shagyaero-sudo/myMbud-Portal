@@ -108,9 +108,8 @@ export const Header: React.FC<HeaderProps> = ({
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState(false);
   
-  // QUICK DRAWER (POMODORO & THEMES)
+  // DRAWER & MODAL STATES
   const [isQuickDrawerOpen, setIsQuickDrawerOpen] = useState(false);
-  
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [isRequestingPush, setIsRequestingPush] = useState(false);
@@ -124,8 +123,8 @@ export const Header: React.FC<HeaderProps> = ({
 
   // --- SEAMLESS POMODORO STATE ---
   const [pomoMode, setPomoMode] = useState<SimplePomodoroMode>('focus');
-  const [focusDuration, setFocusDuration] = useState<number>(25); // dalam menit
-  const [breakDuration, setBreakDuration] = useState<number>(5);   // dalam menit
+  const [focusDuration, setFocusDuration] = useState<number>(25);
+  const [breakDuration, setBreakDuration] = useState<number>(5);
   const [timeLeft, setTimeLeft] = useState<number>(25 * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
@@ -150,7 +149,7 @@ export const Header: React.FC<HeaderProps> = ({
     return notifications.filter((notification) => !notification.isRead).length;
   }, [notifications]);
 
-  // Play Eksternal Alarm Sound (/alarm.mp3)
+  // Play Alarm Sound
   const playAlarmSound = () => {
     if (!soundEnabled) return;
     try {
@@ -162,7 +161,7 @@ export const Header: React.FC<HeaderProps> = ({
       const playPromise = alarmAudioRef.current.play();
       if (playPromise !== undefined) {
         playPromise.catch((err) => {
-          console.warn('[Pomodoro] Audio alarm autoplay blocked:', err);
+          console.warn('[Pomodoro] Audio alarm blocked:', err);
         });
       }
     } catch (e) {
@@ -170,14 +169,13 @@ export const Header: React.FC<HeaderProps> = ({
     }
   };
 
-  // Timer Tick Interval & Real-time Global Event Broadcast
+  // Timer Tick & Window Event Broadcast
   useEffect(() => {
     if (isRunning) {
       timerRef.current = setInterval(() => {
         setTimeLeft((prev) => {
           const nextTime = prev <= 1 ? 0 : prev - 1;
 
-          // Broadcast state Pomodoro ke komponen modal/komponen lain
           if (typeof window !== 'undefined') {
             window.dispatchEvent(
               new CustomEvent('mymbud_pomodoro_sync', {
@@ -231,7 +229,6 @@ export const Header: React.FC<HeaderProps> = ({
     }
   }, [timeLeft, isRunning, pomoMode]);
 
-  // Switch Mode & Reset Counter
   const handleSwitchMode = (mode: SimplePomodoroMode) => {
     setPomoMode(mode);
     setIsRunning(false);
@@ -424,7 +421,7 @@ export const Header: React.FC<HeaderProps> = ({
               </motion.button>
             </div>
 
-            {/* ADAPTIVE POMODORO TIMER / HAMBURGER BAR TRIGGER */}
+            {/* ADAPTIVE POMODORO TIMER / HAMBURGER TRIGGER */}
             <motion.button
               layout
               whileTap={{ scale: 0.92 }}
@@ -459,6 +456,188 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
       </header>
+
+      {/* NOTIFICATION MODAL (PORTAL) */}
+      {typeof document !== 'undefined' &&
+        createPortal(
+          <AnimatePresence>
+            {isNotificationOpen && (
+              <>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 z-[99998] bg-slate-950/60 backdrop-blur-sm transition-opacity"
+                  onClick={() => setIsNotificationOpen(false)}
+                />
+
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+                  className="fixed top-16 left-4 right-4 sm:left-auto sm:right-6 sm:top-16 sm:w-[380px] max-w-md mx-auto bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl shadow-2xl z-[99999] overflow-hidden"
+                >
+                  <div className="px-4 py-3.5 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-sm font-bold text-slate-900 dark:text-zinc-100">Notifikasi</h2>
+                        
+                        {isOfficer && (
+                          <button
+                            onClick={() => setIsOfficerFormOpen(!isOfficerFormOpen)}
+                            className={`p-1.5 rounded-lg transition-all ${
+                              isOfficerFormOpen 
+                                ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400' 
+                                : 'text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800 hover:text-indigo-500'
+                            }`}
+                            title="Kirim Notifikasi Manual"
+                          >
+                            <Megaphone className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+
+                        {unreadCount > 0 && (
+                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-red-50 dark:bg-red-950/40 text-red-500">
+                            {unreadCount} baru
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[10px] text-slate-400 dark:text-zinc-500 mt-0.5">Riwayat aktivitas myMbud</p>
+                    </div>
+
+                    {unreadCount > 0 && (
+                      <button onClick={handleMarkAllRead} className="flex items-center gap-1.5 text-[10px] font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 transition-colors">
+                        <CheckCheck className="w-3.5 h-3.5" /> Tandai semua
+                      </button>
+                    )}
+                  </div>
+
+                  {/* FORM BROADCAST OFFICER */}
+                  <AnimatePresence>
+                    {isOfficer && isOfficerFormOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="px-3 pt-3 overflow-hidden"
+                      >
+                        <div className="p-3.5 rounded-2xl bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/60 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-bold text-indigo-700 dark:text-indigo-300">Target Penerima:</span>
+                            <button
+                              type="button"
+                              onClick={() => setOfficerTargetNrp('ALL')}
+                              className="px-2 py-0.5 rounded-full bg-indigo-600 text-white text-[9px] font-bold hover:bg-indigo-500 transition-all flex items-center gap-1 active:scale-95"
+                            >
+                              <Users className="w-2.5 h-2.5" />
+                              <span>Semua User (ALL)</span>
+                            </button>
+                          </div>
+
+                          <form onSubmit={handleSendOfficerNotif} className="space-y-2">
+                            <input
+                              type="text"
+                              value={officerTargetNrp}
+                              onChange={(e) => setOfficerTargetNrp(e.target.value)}
+                              placeholder="NRP Target (atau ketik ALL)"
+                              required
+                              className="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-800 text-xs border border-indigo-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                            />
+                            <input
+                              type="text"
+                              value={officerTitle}
+                              onChange={(e) => setOfficerTitle(e.target.value)}
+                              placeholder="Judul Notifikasi"
+                              required
+                              className="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-800 text-xs border border-indigo-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                            />
+                            <textarea
+                              value={officerMessage}
+                              onChange={(e) => setOfficerMessage(e.target.value)}
+                              placeholder="Isi pesan notifikasi..."
+                              rows={2}
+                              required
+                              className="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-800 text-xs border border-indigo-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 resize-none"
+                            />
+                            <button
+                              type="submit"
+                              disabled={isSendingOfficerNotif}
+                              className="w-full py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-xs active:scale-95"
+                            >
+                              <Send className="w-3.5 h-3.5" />
+                              <span>{isSendingOfficerNotif ? 'Mengirim Broadcast...' : 'Kirim Pesan'}</span>
+                            </button>
+                          </form>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  <div className="px-3 pt-3">
+                    <button onClick={handleEnablePush} disabled={isRequestingPush} className="w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50 hover:bg-blue-100 transition-all text-left disabled:opacity-60">
+                      <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0">
+                        <BellRing className="w-4 h-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[11px] font-bold text-blue-700 dark:text-blue-300">
+                          {isRequestingPush ? 'Memproses...' : 'Aktifkan Push Notification'}
+                        </p>
+                        <p className="text-[9px] text-blue-500/80 dark:text-blue-400/70 mt-0.5">
+                          Terima notifikasi meski myMbud tidak sedang dibuka
+                        </p>
+                      </div>
+                    </button>
+                  </div>
+
+                  <div className="max-h-[350px] sm:max-h-[430px] overflow-y-auto p-3 space-y-1.5 custom-scrollbar">
+                    {notifications.length === 0 ? (
+                      <div className="py-10 text-center">
+                        <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-zinc-800 mx-auto flex items-center justify-center text-slate-400">
+                          <Bell className="w-5 h-5" />
+                        </div>
+                        <p className="mt-3 text-xs font-semibold text-slate-600 dark:text-zinc-300">Belum ada notifikasi</p>
+                        <p className="mt-1 text-[10px] text-slate-400">Semua aktivitas terbaru akan muncul di sini.</p>
+                      </div>
+                    ) : (
+                      notifications.map((notification) => (
+                        <button
+                          key={notification.id}
+                          onClick={() => handleNotificationClick(notification)}
+                          className={`w-full text-left p-3 rounded-2xl transition-all ${
+                            notification.isRead
+                              ? 'bg-transparent hover:bg-slate-50 dark:hover:bg-zinc-800/60'
+                              : 'bg-blue-50/70 dark:bg-blue-950/25 hover:bg-blue-50 dark:hover:bg-blue-950/40'
+                          }`}
+                        >
+                          <div className="flex gap-3">
+                            <div className="pt-1.5 shrink-0">
+                              <span className={`block w-2 h-2 rounded-full ${notification.isRead ? 'bg-transparent' : 'bg-blue-500'}`} />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-start justify-between gap-3">
+                                <p className={`text-[11px] leading-tight ${notification.isRead ? 'font-semibold text-slate-700 dark:text-zinc-300' : 'font-bold text-slate-900 dark:text-zinc-100'}`}>
+                                  {notification.title}
+                                </p>
+                                <span className="text-[9px] text-slate-400 whitespace-nowrap shrink-0">
+                                  {formatNotificationTime(notification.createdAt)}
+                                </span>
+                              </div>
+                              <p className="text-[10px] leading-relaxed text-slate-500 dark:text-zinc-400 mt-1 break-words">
+                                {notification.message}
+                              </p>
+                            </div>
+                          </div>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>,
+          document.body
+        )}
 
       {/* QUICK DRAWER SIDEBAR */}
       {typeof document !== 'undefined' &&
@@ -505,7 +684,6 @@ export const Header: React.FC<HeaderProps> = ({
                     {/* SECTION 1: SEAMLESS POMODORO */}
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
-                        {/* 2 Modes Only: Focus & Break */}
                         <div className="flex p-1 bg-slate-100 dark:bg-zinc-900 rounded-xl">
                           <button
                             onClick={() => handleSwitchMode('focus')}
@@ -529,7 +707,6 @@ export const Header: React.FC<HeaderProps> = ({
                           </button>
                         </div>
 
-                        {/* Sound Toggle */}
                         <button
                           onClick={() => setSoundEnabled(!soundEnabled)}
                           className={`p-1.5 rounded-lg text-xs transition-colors cursor-pointer ${
@@ -554,7 +731,7 @@ export const Header: React.FC<HeaderProps> = ({
                           <span>{pomoMode === 'focus' ? 'Sesi Belajar' : 'Istirahat'}</span>
                         </div>
 
-                        {/* Digit Countdown dengan Tombol Plus/Minus di Sampingnya */}
+                        {/* Digit Countdown & Stepper */}
                         <div className="flex items-center justify-center gap-3 my-2 w-full">
                           {!isRunning ? (
                             <motion.button
@@ -616,11 +793,10 @@ export const Header: React.FC<HeaderProps> = ({
                     {setTheme && (
                       <div className="space-y-2.5 pt-3 border-t border-slate-100 dark:border-zinc-800">
                         <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-zinc-500 block text-center">
-                          TEMA
+                          Tema Warna
                         </span>
 
                         <div className="flex items-center justify-between gap-1.5 p-1.5 bg-slate-100 dark:bg-zinc-900 rounded-2xl">
-                          {/* Light (Amber) */}
                           <motion.button
                             whileTap={{ scale: 0.9 }}
                             onClick={() => setTheme('light')}
@@ -634,7 +810,6 @@ export const Header: React.FC<HeaderProps> = ({
                             <Sun className="w-4.5 h-4.5 text-amber-500" />
                           </motion.button>
 
-                          {/* Dark (Indigo) */}
                           <motion.button
                             whileTap={{ scale: 0.9 }}
                             onClick={() => setTheme('dark')}
@@ -648,7 +823,6 @@ export const Header: React.FC<HeaderProps> = ({
                             <Moon className="w-4.5 h-4.5 text-indigo-400" />
                           </motion.button>
 
-                          {/* Pink */}
                           <motion.button
                             whileTap={{ scale: 0.9 }}
                             onClick={() => setTheme('pink')}
@@ -662,7 +836,6 @@ export const Header: React.FC<HeaderProps> = ({
                             <Sparkles className="w-4.5 h-4.5 text-pink-500" />
                           </motion.button>
 
-                          {/* Purple */}
                           <motion.button
                             whileTap={{ scale: 0.9 }}
                             onClick={() => setTheme('purple')}
@@ -676,7 +849,6 @@ export const Header: React.FC<HeaderProps> = ({
                             <Palette className="w-4.5 h-4.5 text-purple-500" />
                           </motion.button>
 
-                          {/* Green */}
                           <motion.button
                             whileTap={{ scale: 0.9 }}
                             onClick={() => setTheme('green')}
