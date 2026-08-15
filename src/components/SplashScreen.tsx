@@ -45,7 +45,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
         filter: 'blur(12px)',
         transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
       }}
-      className="fixed inset-0 top-0 left-0 right-0 bottom-0 z-[9999999] min-h-[100dvh] h-screen w-screen bg-[#070709] text-white flex flex-col items-center justify-center font-sans overflow-hidden select-none overscroll-none touch-none"
+      className="fixed -inset-10 z-[9999999] bg-[#070709] text-white flex flex-col items-center justify-center font-sans overflow-hidden select-none overscroll-none touch-none p-10"
+      style={{
+        width: 'calc(100vw + 80px)',
+        minHeight: 'calc(100dvh + 80px)',
+        height: 'calc(100vh + 80px)',
+        backgroundColor: '#070709',
+      }}
     >
       {/* --- AMBIENT WEB3 GLOW MESH --- */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -59,19 +65,19 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
             opacity: { duration: 0.8, ease: 'easeOut' },
             scale: { duration: 4, repeat: Infinity, ease: 'easeInOut' },
           }}
-          className="absolute -top-[10%] -left-[10%] w-[65vw] h-[65vw] rounded-full bg-gradient-to-tr from-blue-600/40 via-indigo-500/30 to-cyan-400/20 blur-[110px] mix-blend-screen"
+          className="absolute -top-[10%] -left-[10%] w-[65vw] h-[65vw] rounded-full bg-gradient-to-tr from-blue-600/40 via-indigo-500/30 to-cyan-400/20 blur-[110px]"
         />
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{
-            scale: [1, 1.25, 1],
+            scale: [1.2, 1, 1.2],
             opacity: [0.3, 0.5, 0.3],
           }}
           transition={{
             opacity: { duration: 0.8, ease: 'easeOut', delay: 0.1 },
             scale: { duration: 4.5, repeat: Infinity, ease: 'easeInOut' },
           }}
-          className="absolute -bottom-[15%] -right-[15%] w-[70vw] h-[70vw] rounded-full bg-gradient-to-br from-indigo-600/40 via-purple-600/30 to-blue-500/20 blur-[130px] mix-blend-screen"
+          className="absolute -bottom-[15%] -right-[15%] w-[70vw] h-[70vw] rounded-full bg-gradient-to-br from-indigo-600/40 via-purple-600/30 to-blue-500/20 blur-[130px]"
         />
       </div>
 
@@ -82,7 +88,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
           animate={{ scale: 1, opacity: 1, y: 0, filter: 'blur(0px)' }}
           transition={{
             duration: 0.85,
-            ease: [0.16, 1, 0.3, 1], // Smooth Cinema Easing
+            ease: [0.16, 1, 0.3, 1],
           }}
           className="relative group"
         >
@@ -159,7 +165,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.45, duration: 0.6, ease: 'easeOut' }}
-        className="absolute bottom-6 sm:bottom-8 mb-[env(safe-area-inset-bottom)] text-[11px] font-mono text-slate-400 tracking-wider"
+        className="absolute bottom-16 sm:bottom-18 mb-[env(safe-area-inset-bottom)] text-[11px] font-mono text-slate-400 tracking-wider"
       >
         v2.5
       </motion.div>
