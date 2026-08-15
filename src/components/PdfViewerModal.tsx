@@ -9,7 +9,7 @@ interface PdfViewerModalProps {
 }
 
 export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClose }) => {
-  const [zoomLevel, setZoomLevel] = useState(1); // Default scale 100%
+  const [zoomLevel, setZoomLevel] = useState(1);
 
   const getEmbedUrl = (url: string) => {
     if (url.includes('drive.google.com') && url.includes('/view')) {
@@ -18,9 +18,8 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
     return url;
   };
 
-  // Fungsi Kontrol Zoom
-  const handleZoomIn = () => setZoomLevel((prev) => Math.min(prev + 0.25, 2.5)); // Maksimal 250%
-  const handleZoomOut = () => setZoomLevel((prev) => Math.max(prev - 0.25, 0.75)); // Minimal 75%
+  const handleZoomIn = () => setZoomLevel((prev) => Math.min(prev + 0.25, 2.5));
+  const handleZoomOut = () => setZoomLevel((prev) => Math.max(prev - 0.25, 0.75));
   const handleResetZoom = () => setZoomLevel(1);
 
   return (
@@ -38,7 +37,7 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
             exit={{ opacity: 0 }}
             className="w-full h-full bg-slate-950 dark:bg-black rounded-none flex flex-col shadow-none overflow-hidden"
           >
-            {/* Header Modal Imersif (Tanpa Logo Document) */}
+            {/* Header Modal Imersif */}
             <div className="absolute top-0 left-0 right-0 z-30 flex items-center justify-between px-4 sm:px-6 py-3 bg-zinc-950/90 backdrop-blur-md border-b border-zinc-800/80 shrink-0">
               <div className="min-w-0 pr-3">
                 <div className="flex items-center gap-2 flex-wrap">
@@ -67,32 +66,32 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
             {/* Container Iframe PDF */}
             <div className="flex-1 w-full h-full bg-slate-950 dark:bg-black flex flex-col min-h-0 overflow-hidden relative">
               
-              {/* Floating Zoom Control - Diposisikan Presisi Menutupi Tombol Pop-Out Google Drive */}
-              <div className="absolute top-[68px] right-2 sm:right-3 z-30 flex items-center gap-1 bg-zinc-950/95 backdrop-blur-md p-1 rounded-xl shadow-2xl border border-zinc-800">
+              {/* Floating Zoom Control: Lebih Besar & Diturunkan Pas Menutup Tombol Pop-Out */}
+              <div className="absolute top-[78px] right-2 sm:right-3 z-30 flex items-center gap-1.5 bg-zinc-950 border border-zinc-800/90 shadow-[0_8px_30px_rgba(0,0,0,0.8)] px-2.5 py-1.5 rounded-2xl">
                 <button
                   onClick={handleZoomOut}
-                  className="p-1.5 rounded-lg text-zinc-300 hover:text-white hover:bg-zinc-800 transition-all active:scale-95 cursor-pointer"
+                  className="p-1.5 rounded-xl text-zinc-300 hover:text-white hover:bg-zinc-800 transition-all active:scale-95 cursor-pointer"
                   title="Perkecil"
                 >
-                  <ZoomOut className="w-4 h-4" />
+                  <ZoomOut className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
                 </button>
                 
-                <span className="text-xs font-bold text-zinc-200 px-1 min-w-[40px] text-center select-none tabular-nums">
+                <span className="text-xs sm:text-sm font-bold text-zinc-200 px-1.5 min-w-[46px] text-center select-none tabular-nums">
                   {Math.round(zoomLevel * 100)}%
                 </span>
                 
                 <button
                   onClick={handleZoomIn}
-                  className="p-1.5 rounded-lg text-zinc-300 hover:text-white hover:bg-zinc-800 transition-all active:scale-95 cursor-pointer"
+                  className="p-1.5 rounded-xl text-zinc-300 hover:text-white hover:bg-zinc-800 transition-all active:scale-95 cursor-pointer"
                   title="Perbesar"
                 >
-                  <ZoomIn className="w-4 h-4" />
+                  <ZoomIn className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
                 </button>
 
                 {zoomLevel !== 1 && (
                   <button
                     onClick={handleResetZoom}
-                    className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all border-l border-zinc-800 ml-0.5 cursor-pointer"
+                    className="p-1.5 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all border-l border-zinc-800 ml-0.5 cursor-pointer"
                     title="Reset Zoom"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
