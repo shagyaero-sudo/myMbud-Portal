@@ -99,7 +99,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
     try {
       await toggleTaskCompletion(currentUserNrp, task.id, nextState);
       
-      // Jika baru saja ditandai SELESAI, trigger modal dan putar SFX
       if (nextState) {
         setCelebrationTask(task);
         playCelebrationSound();
@@ -359,13 +358,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
     }
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setSelectedFile(e.target.files[0]);
-      setExistingAttachment(null);
-    }
-  };
-
   const fileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -378,9 +370,9 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
   const uploadTaskAttachmentToDrive = async (file: File): Promise<string> => {
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbyce8cTZ2F25PwyfISpmVJJDMiIunl8G8lCyzkPKQaiuUl-nxKNM5i9b72MMo4M_xis/exec';
 
-    setUploadProgress(10);
+    setUploadProgress(8);
     const base64Data = await fileToBase64(file);
-    setUploadProgress(40);
+    setUploadProgress(18);
 
     const payload = {
       fileName: file.name,
@@ -389,20 +381,38 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
       folderName: 'myMbud Task Attachments',
     };
 
-    const response = await fetch(GAS_URL, {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    });
-    setUploadProgress(80);
+    // Dynamic Asymptotic Progress Interval
+    const progressInterval = setInterval(() => {
+      setUploadProgress((prev) => {
+        if (prev >= 92) {
+          clearInterval(progressInterval);
+          return 92;
+        }
+        const step = prev < 50 ? Math.random() * 8 + 4 : Math.random() * 3 + 1;
+        return Math.min(Math.round(prev + step), 92);
+      });
+    }, 280);
 
-    if (!response.ok) throw new Error(`Upload Lampiran Tugas gagal (${response.status}).`);
+    try {
+      const response = await fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
 
-    const data = await response.json();
-    setUploadProgress(100);
+      clearInterval(progressInterval);
 
-    if (data.status !== 'success') throw new Error(data.message);
+      if (!response.ok) throw new Error(`Upload Lampiran Tugas gagal (${response.status}).`);
 
-    return data.url;
+      const data = await response.json();
+      setUploadProgress(100);
+
+      if (data.status !== 'success') throw new Error(data.message);
+
+      return data.url;
+    } catch (error) {
+      clearInterval(progressInterval);
+      throw error;
+    }
   };
 
   const handleTaskFormSubmit = async (e: React.FormEvent) => {
@@ -477,7 +487,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
             onClick={handleOpenAddModal}
-            className="px-4 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-all shadow-md shadow-blue-500/20 flex items-center gap-2 shrink-0"
+            className="px-4 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-all shadow-md shadow-blue-500/20 flex items-center gap-2 shrink-0 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Tambah Tugas Baru</span>
@@ -515,7 +525,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
               <button
                 key={option}
                 onClick={() => setFilterType(option)}
-                className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-[11px] sm:text-xs whitespace-nowrap transition-all ${
+                className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-[11px] sm:text-xs whitespace-nowrap transition-all cursor-pointer ${
                   filterType === option
                     ? 'bg-blue-600 text-white font-semibold shadow-xs'
                     : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100'
@@ -535,7 +545,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
             <button
               type="button"
               onClick={() => setActiveTab('active')}
-              className={`relative z-10 flex-1 sm:flex-initial flex items-center justify-center gap-2 px-5 py-2 rounded-full text-xs font-bold transition-all ${
+              className={`relative z-10 flex-1 sm:flex-initial flex items-center justify-center gap-2 px-5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'active'
                   ? 'text-white'
                   : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100'
@@ -563,7 +573,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
             <button
               type="button"
               onClick={() => setActiveTab('history')}
-              className={`relative z-10 flex-1 sm:flex-initial flex items-center justify-center gap-2 px-5 py-2 rounded-full text-xs font-bold transition-all ${
+              className={`relative z-10 flex-1 sm:flex-initial flex items-center justify-center gap-2 px-5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'history'
                   ? 'text-white dark:text-zinc-900'
                   : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100'
@@ -662,7 +672,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
 
                       <button
                         onClick={(e) => handleToggleComplete(e, t)}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 ${
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
                           isDone
                             ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50'
                             : 'bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300'
@@ -723,7 +733,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                       ) : (
                         <button
                           onClick={(e) => handleToggleComplete(e, t)}
-                          className="flex items-center gap-1 px-2.5 py-1 rounded-xl text-[11px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-all"
+                          className="flex items-center gap-1 px-2.5 py-1 rounded-xl text-[11px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-all cursor-pointer"
                         >
                           <CheckCircle2 className="w-3.5 h-3.5" />
                           <span>Selesai</span>
@@ -788,7 +798,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
 
                 <button
                   onClick={() => setSelectedDetailTask(null)}
-                  className="p-2 rounded-2xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
+                  className="p-2 rounded-2xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -844,7 +854,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                             setPreviewAttachment(attachment);
                             setZoomLevel(1);
                           }}
-                          className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-slate-100 hover:bg-slate-200/80 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-200/80 dark:border-zinc-700 text-slate-800 dark:text-zinc-200 text-xs font-semibold transition-all group shadow-xs text-left"
+                          className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-slate-100 hover:bg-slate-200/80 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-200/80 dark:border-zinc-700 text-slate-800 dark:text-zinc-200 text-xs font-semibold transition-all group shadow-xs text-left cursor-pointer"
                         >
                           <div className="flex items-center gap-3 min-w-0 pr-2">
                             <Paperclip className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 group-hover:scale-110 transition-transform" />
@@ -879,7 +889,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                         setSelectedDetailTask(null);
                         handleOpenEditModal(t);
                       }}
-                      className="px-3.5 py-2 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 rounded-2xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                      className="px-3.5 py-2 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 rounded-2xl text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                       Edit
@@ -890,7 +900,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                         onDeleteTask(selectedDetailTask.id);
                         setSelectedDetailTask(null);
                       }}
-                      className="px-3.5 py-2 bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/60 rounded-2xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                      className="px-3.5 py-2 bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/60 rounded-2xl text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                       Hapus
@@ -906,7 +916,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                       href={selectedDetailTask.classroomUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-xs font-bold transition-colors flex items-center gap-1.5 shadow-sm shadow-blue-500/20"
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-xs font-bold transition-colors flex items-center gap-1.5 shadow-sm shadow-blue-500/20 cursor-pointer"
                     >
                       <ExternalLink className="w-3.5 h-3.5" />
                       <span>Link Pengumpulan</span>
@@ -937,28 +947,24 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
               className="relative max-w-sm sm:max-w-md w-full rounded-3xl bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 shadow-2xl p-6 sm:p-8 text-center overflow-hidden flex flex-col items-center z-30"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Tombol Tutup X di Kanan Atas */}
               <button
                 type="button"
                 onClick={() => setCelebrationTask(null)}
-                className="absolute top-4 right-4 p-2 rounded-2xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
+                className="absolute top-4 right-4 p-2 rounded-2xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
 
-              {/* Badge Ikon Perayaan */}
               <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400 mb-4 shadow-sm">
                 <CheckCircle2 className="w-8 h-8 sm:w-9 sm:h-9" />
               </div>
 
-              {/* Judul & Sapaan */}
               <div className="space-y-1">
                 <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-zinc-100 pt-1 tracking-tight">
-                  Tugas Selesai, {currentUserName}! 🎉
+                  Tugas Selesai, {currentUserName}! ✨
                 </h3>
               </div>
 
-              {/* Info Detail Tugas yang Diselesaikan (RATA TENGAH) */}
               <div className="mt-4 p-3.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/70 border border-slate-100 dark:border-zinc-800 w-full text-center space-y-1">
                 <span className="text-[10px] font-semibold text-slate-400 dark:text-zinc-500 uppercase tracking-wider block">
                  {celebrationTask.course}
@@ -968,12 +974,10 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                 </p>
               </div>
 
-              {/* Pesan Relaksasi */}
               <p className="mt-3.5 text-xs sm:text-sm text-slate-500 dark:text-zinc-400 leading-relaxed">
-                Selamat istirahat dan jangan lupa self reward ya! 😋🍦
+                Selamat istirahat dan jangan lupa self reward ya! 🎉☕
               </p>
 
-              {/* Tombol Aksi */}
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
@@ -1054,7 +1058,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                       setPreviewAttachment(null);
                       setZoomLevel(1);
                     }}
-                    className="p-2 rounded-xl text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
+                    className="p-2 rounded-xl text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                     aria-label="Tutup viewer"
                   >
                     <X className="w-5 h-5" />
@@ -1063,12 +1067,11 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
               </div>
 
               <div className="flex-1 min-h-0 bg-slate-100 dark:bg-zinc-900 flex items-center justify-center overflow-hidden relative">
-                
                 {(isImageFile(previewAttachment.fileName) || isPdfFile(previewAttachment.fileName)) && (
                   <div className="absolute top-4 right-4 z-20 flex md:hidden items-center gap-1 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-md p-1.5 rounded-2xl shadow-xl border border-slate-200/80 dark:border-zinc-700/80">
                     <button
                       onClick={() => setZoomLevel((prev) => Math.max(prev - 0.25, 0.75))}
-                      className="p-2 rounded-xl text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-all active:scale-95"
+                      className="p-2 rounded-xl text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-all active:scale-95 cursor-pointer"
                       title="Perkecil"
                     >
                       <ZoomOut className="w-4 h-4" />
@@ -1078,7 +1081,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                     </span>
                     <button
                       onClick={() => setZoomLevel((prev) => Math.min(prev + 0.25, 2.5))}
-                      className="p-2 rounded-xl text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-all active:scale-95"
+                      className="p-2 rounded-xl text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-all active:scale-95 cursor-pointer"
                       title="Perbesar"
                     >
                       <ZoomIn className="w-4 h-4" />
@@ -1086,7 +1089,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                     {zoomLevel !== 1 && (
                       <button
                         onClick={() => setZoomLevel(1)}
-                        className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-all border-l border-slate-200 dark:border-zinc-700 ml-0.5"
+                        className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-all border-l border-slate-200 dark:border-zinc-700 ml-0.5 cursor-pointer"
                         title="Reset Zoom"
                       >
                         <RotateCcw className="w-3.5 h-3.5" />
@@ -1177,7 +1180,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="p-2 rounded-2xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors shrink-0"
+                  className="p-2 rounded-2xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors shrink-0 cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -1359,18 +1362,31 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                     </div>
 
                     {isUploading && (
-                      <div className="mt-3 space-y-1.5">
-                        <div className="flex items-center justify-between text-[10px] text-slate-500 dark:text-zinc-400">
-                          <span>Mengunggah ke Server...</span>
-                          <span>{Math.round(uploadProgress)}%</span>
+                      <div className="mt-3 space-y-1.5 p-3 rounded-2xl bg-blue-50/70 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/40">
+                        <div className="flex items-center justify-between text-[11px] font-semibold text-blue-700 dark:text-blue-400">
+                          <span className="flex items-center gap-1.5">
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            {uploadProgress < 30
+                              ? 'Menyiapkan berkas lampiran...'
+                              : uploadProgress < 85
+                              ? 'Mengunggah ke Cloud Storage...'
+                              : uploadProgress < 100
+                              ? 'Memproses penyimpanan data...'
+                              : 'Selesai!'}
+                          </span>
+                          <span className="font-mono text-xs tabular-nums font-bold">
+                            {Math.round(uploadProgress)}%
+                          </span>
                         </div>
-                        <div className="bg-slate-100 dark:bg-zinc-800 rounded-full h-2 w-full overflow-hidden">
-                          <motion.div
-                            className="h-full bg-blue-600"
-                            animate={{ width: `${uploadProgress}%` }}
-                            transition={{ ease: "easeInOut" }}
+                        <div className="bg-blue-100 dark:bg-zinc-800 rounded-full h-2 w-full overflow-hidden">
+                          <div
+                            className="h-full bg-blue-600 transition-all duration-300 ease-out"
+                            style={{ width: `${uploadProgress}%` }}
                           />
                         </div>
+                        <p className="text-[10px] text-slate-400 dark:text-zinc-500 text-center pt-0.5">
+                          Harap tetap di halaman ini hingga proses unggah tuntas.
+                        </p>
                       </div>
                     )}
                   </div>
@@ -1381,16 +1397,14 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                     type="button"
                     disabled={isUploading}
                     onClick={() => setShowModal(false)}
-                    className="px-5 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 text-xs font-semibold hover:bg-slate-200 dark:hover:bg-zinc-700 transition-all disabled:opacity-50"
+                    className="px-5 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 text-xs font-semibold hover:bg-slate-200 dark:hover:bg-zinc-700 transition-all disabled:opacity-50 cursor-pointer"
                   >
                     Batal
                   </button>
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                  <button
                     type="submit"
                     disabled={isUploading}
-                    className="px-5 py-2.5 rounded-2xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 shadow-md shadow-blue-500/20 transition-all flex items-center gap-2 disabled:opacity-70"
+                    className="px-5 py-2.5 rounded-2xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 shadow-md shadow-blue-500/20 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-70 cursor-pointer"
                   >
                     {isUploading ? (
                       <>
@@ -1400,7 +1414,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                     ) : (
                       'Simpan Tugas'
                     )}
-                  </motion.button>
+                  </button>
                 </div>
               </form>
             </motion.div>

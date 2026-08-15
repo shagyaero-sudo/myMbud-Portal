@@ -80,9 +80,9 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
   const uploadFileToDrive = async (file: File): Promise<string> => {
     const GAS_URL = "https://script.google.com/macros/s/AKfycbyce8cTZ2F25PwyfISpmVJJDMiIunl8G8lCyzkPKQaiuUl-nxKNM5i9b72MMo4M_xis/exec";
 
-    setUploadProgress(10);
+    setUploadProgress(8);
     const base64Data = await fileToBase64(file);
-    setUploadProgress(40);
+    setUploadProgress(18);
 
     const payload = {
       fileName: file.name,
@@ -91,24 +91,42 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
       folderName: "myMbud Materials",
     };
 
-    const response = await fetch(GAS_URL, {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    });
-    setUploadProgress(80);
+    // Dynamic Asymptotic Progress Interval
+    const progressInterval = setInterval(() => {
+      setUploadProgress((prev) => {
+        if (prev >= 92) {
+          clearInterval(progressInterval);
+          return 92;
+        }
+        const step = prev < 50 ? Math.random() * 8 + 4 : Math.random() * 3 + 1;
+        return Math.min(Math.round(prev + step), 92);
+      });
+    }, 280);
 
-    if (!response.ok) {
-      throw new Error(`Upload G-Drive gagal (${response.status}).`);
+    try {
+      const response = await fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+
+      clearInterval(progressInterval);
+
+      if (!response.ok) {
+        throw new Error(`Upload G-Drive gagal (${response.status}).`);
+      }
+
+      const data = await response.json();
+      setUploadProgress(100);
+
+      if (data.status !== 'success') {
+        throw new Error(data.message);
+      }
+
+      return data.url;
+    } catch (error) {
+      clearInterval(progressInterval);
+      throw error;
     }
-
-    const data = await response.json();
-    setUploadProgress(100);
-
-    if (data.status !== 'success') {
-      throw new Error(data.message);
-    }
-
-    return data.url;
   };
 
   const handleOpenUploadModal = () => {
@@ -184,7 +202,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
 
       {/* 2-Column Layout */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-        {/* Left Column: Vertical Course Tabs (Crisp & No Glitch Layout) */}
+        {/* Left Column: Vertical Course Tabs */}
         <div className="hidden md:block md:col-span-4 lg:col-span-3 space-y-2">
           <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-4 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-1.5 transition-colors">
             <div className="px-3 py-2 text-[11px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">
@@ -310,7 +328,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                             e.stopPropagation();
                             onDeleteMaterial(mat.id);
                           }}
-                          className="p-2 rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-zinc-800 transition-colors"
+                          className="p-2 rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                           title="Hapus Berkas"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -494,17 +512,31 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                     </div>
 
                     {isUploading && (
-                      <div className="mt-3 space-y-1.5">
-                        <div className="flex items-center justify-between text-[10px] text-slate-500 dark:text-zinc-400">
-                          <span>Sedang Mengunggah.. Jangan Berpindah ke Tab Lain...</span>
-                          <span>{Math.round(uploadProgress)}%</span>
+                      <div className="mt-3 space-y-1.5 p-3 rounded-2xl bg-blue-50/70 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/40">
+                        <div className="flex items-center justify-between text-[11px] font-semibold text-blue-700 dark:text-blue-400">
+                          <span className="flex items-center gap-1.5">
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            {uploadProgress < 30
+                              ? 'Menyiapkan materi...'
+                              : uploadProgress < 85
+                              ? 'Mengunggah ke Cloud Storage...'
+                              : uploadProgress < 100
+                              ? 'Memproses penyimpanan data...'
+                              : 'Selesai!'}
+                          </span>
+                          <span className="font-mono text-xs tabular-nums font-bold">
+                            {Math.round(uploadProgress)}%
+                          </span>
                         </div>
-                        <div className="bg-slate-100 dark:bg-zinc-800 rounded-full h-2 w-full overflow-hidden">
+                        <div className="bg-blue-100 dark:bg-zinc-800 rounded-full h-2 w-full overflow-hidden">
                           <div
-                            className="h-full bg-blue-600 transition-all duration-300"
+                            className="h-full bg-blue-600 transition-all duration-300 ease-out"
                             style={{ width: `${uploadProgress}%` }}
                           />
                         </div>
+                        <p className="text-[10px] text-slate-400 dark:text-zinc-500 text-center pt-0.5">
+                          Harap tetap di halaman ini hingga proses unggah tuntas.
+                        </p>
                       </div>
                     )}
                   </div>
