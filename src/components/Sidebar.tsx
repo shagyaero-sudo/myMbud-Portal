@@ -328,9 +328,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </aside>
 
-      {/* MOBILE BOTTOM NAVIGATION (SLIM & DOCKED BOTTOM BAR) */}
+      {/* MOBILE BOTTOM NAVIGATION (DOCKED, CLEAN, TANPA PADDING BOX) */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 w-full pointer-events-none">
-        <nav className="pointer-events-auto w-full bg-white/70 dark:bg-zinc-950/70 backdrop-blur-2xl backdrop-saturate-150 border-t border-slate-200/50 dark:border-zinc-800/80 rounded-t-[24px] px-3 pt-1.5 pb-[calc(0.25rem+env(safe-area-inset-bottom))] flex items-center justify-around shadow-[0_-8px_32px_rgba(0,0,0,0.08)] dark:shadow-[0_-8px_32px_rgba(0,0,0,0.5)] relative">
+        <nav className="pointer-events-auto w-full bg-white/70 dark:bg-zinc-950/70 backdrop-blur-2xl backdrop-saturate-150 border-t border-slate-200/50 dark:border-zinc-800/80 rounded-t-[24px] px-2 pt-1.5 pb-[calc(0.35rem+env(safe-area-inset-bottom))] flex items-center justify-around shadow-[0_-8px_32px_rgba(0,0,0,0.08)] dark:shadow-[0_-8px_32px_rgba(0,0,0,0.5)] relative">
           <BottomTabItem
             id="dashboard"
             label="Jadwal"
@@ -349,17 +349,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
           />
 
           {/* TOMBOL MENU TENGAH */}
-          <div className="relative flex flex-col items-center justify-center -top-3.5 px-1">
+          <div className="relative flex flex-col items-center justify-center -top-3 px-1">
             <div className="p-1 rounded-full bg-slate-50/70 dark:bg-zinc-950/70 backdrop-blur-xl border border-slate-200/40 dark:border-zinc-800/60 shadow-xs">
               <motion.button
                 whileTap={{ scale: 0.9 }}
                 onClick={() => setIsBottomSheetOpen(true)}
-                className="w-12 h-12 bg-blue-600 dark:bg-blue-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-blue-500/30 transition-transform cursor-pointer"
+                className="w-11 h-11 bg-blue-600 dark:bg-blue-500 text-white rounded-full flex items-center justify-center shadow-md shadow-blue-500/30 transition-transform cursor-pointer"
               >
                 <LayoutGrid className="w-5 h-5" />
               </motion.button>
             </div>
-            <span className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 -mt-0.5">
+            <span className="text-[9px] font-bold text-slate-500 dark:text-zinc-400 -mt-0.5">
               Menu
             </span>
           </div>
@@ -617,7 +617,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   );
 };
 
-/* HELPER COMPONENT BOTTOM TAB DENGAN HIGHLIGHT PADDING BOX FIT & TRANSLUCENT GLASS */
+/* HELPER COMPONENT BOTTOM TAB CLEAN & DIRECT */
 const BottomTabItem = ({
   id,
   label,
@@ -631,45 +631,28 @@ const BottomTabItem = ({
   return (
     <button
       onClick={() => onClick(id)}
-      className="relative flex flex-col items-center justify-center flex-1 py-1 cursor-pointer select-none"
+      className={`relative flex flex-col items-center justify-center flex-1 py-1 transition-all cursor-pointer select-none ${
+        isActive
+          ? 'text-blue-600 dark:text-blue-400 font-bold'
+          : 'text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300'
+      }`}
     >
-      <div
-        className={`relative flex flex-col items-center justify-center px-3.5 py-1 rounded-xl transition-colors duration-200 ${
-          isActive
-            ? 'text-blue-600 dark:text-blue-400 font-bold'
-            : 'text-slate-500 dark:text-zinc-400 hover:text-slate-700 dark:hover:text-zinc-200'
-        }`}
-      >
-        {/* HIGHLIGHT PADDING BOX FIT & TRANSLUCENT GLASS */}
-        {isActive && (
-          <motion.div
-            layoutId="activeBottomTab"
-            className="absolute inset-0 bg-white/70 dark:bg-white/10 backdrop-blur-md rounded-xl border border-white/40 dark:border-white/10 shadow-xs"
-            transition={{
-              type: 'spring',
-              stiffness: 400,
-              damping: 30
-            }}
-          />
-        )}
-
-        <div className="relative z-10">
-          <Icon
-            className={`w-5 h-5 mb-0.5 transition-transform ${
-              isActive ? 'scale-105' : ''
-            }`}
-          />
-          {count ? (
-            <span className="absolute -top-1 -right-2 bg-rose-500 text-white text-[8px] font-extrabold px-1 py-0.1 rounded-full flex items-center justify-center min-w-[0.9rem] h-3.5 shadow-xs">
-              {count}
-            </span>
-          ) : null}
-        </div>
-
-        <span className="relative z-10 text-[9px] tracking-tight">
-          {label}
-        </span>
+      <div className="relative">
+        <Icon
+          className={`w-5 h-5 mb-0.5 transition-transform duration-200 ${
+            isActive ? 'scale-110' : ''
+          }`}
+        />
+        {count ? (
+          <span className="absolute -top-1 -right-2 bg-rose-500 text-white text-[8px] font-extrabold px-1 py-0.1 rounded-full flex items-center justify-center min-w-[0.9rem] h-3.5 shadow-xs">
+            {count}
+          </span>
+        ) : null}
       </div>
+
+      <span className="text-[9.5px] tracking-tight">
+        {label}
+      </span>
     </button>
   );
 };
