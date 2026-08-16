@@ -321,3 +321,54 @@ export async function saveGroupResultApi(
     return null;
   }
 }
+
+
+// ============================================================
+// MATERIAL BOOKMARKS PER USER (NRP) — FIREBASE
+// ============================================================
+
+const MATERIAL_BOOKMARKS_COLLECTION = 'mbud_user_material_bookmarks';
+
+/**
+ * Mendengarkan daftar ID materi yang DIBOOKMARK oleh NRP terkait secara Realtime
+ */
+export function subscribeUserMaterialBookmarks(userNrp: string, callback: (bookmarkedMaterialIds: string[]) => void) {
+  const normalizedNrp = userNrp.trim().toLowerCase();
+  if (!normalizedNrp || normalizedNrp === 'unknown') {
+    callback([]);
+    return () => {};
+  }
+
+  const q = query(
+    collection(db, MATERIAL_BOOKMARKS_COLLECTION),
+    where('nrp', '==', normalizedNrp)
+  );
+
+  return onSnapshot(q, (snapshot) => {
+    const bookmarkedIds = snapshot.docs.map((docSnap) => docSnap.data().materialId as string);
+    callback(bookmarkedIds);
+  });
+}
+
+/**
+ * Toggle Bookmark / Unbookmark materi per NRP
+ */
+export async function toggleMaterialBookmark(userNrp: string, materialId: string, isBookmarked: boolean): Promise<void> {
+  const normalizedNrp = userNrp.trim().toLowerCase();
+  if (!normalizedNrp || normalizedNrp === 'unknown') {
+    throw new Error('NRP tidak valid. Harap login terlebih dahulu.');
+  }
+
+  const docId = `${normalizedNrp}_${materialId}`;
+  const docRef = doc(db, MATERIAL_BOOKMARKS_COLLECTION, docId);
+
+  if (isBookmarked) {
+    await setDoc(docRef, {
+      nrp: normalizedNrp,
+      materialId,
+      bookmarkedAt: serverTimestamp(),
+    });
+  } else {
+    await deleteDoc(docRef);
+  }
+}
