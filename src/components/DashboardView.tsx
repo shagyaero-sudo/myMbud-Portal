@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Clock,
@@ -31,7 +32,7 @@ import {
 } from '../services/announcements';
 
 // --- CONFIG FRS WAR MODE ---
-const IS_FRS_WAR_ACTIVE = true; // Ubah ke 'false' jika periode War FRS sudah selesai
+const IS_FRS_WAR_ACTIVE = true;
 const FRS_DIRECT_URL = 'https://mia.its.ac.id/rencana-studi/';
 
 interface DashboardViewProps {
@@ -43,11 +44,6 @@ interface DashboardViewProps {
     tab: 'tasks' | 'contacts' | 'materials' | 'spinwheel' | 'calculator' | 'mbudiary' | any,
     courseFilterOrTaskId?: string
   ) => void;
-}
-
-interface AttachmentData {
-  fileName: string;
-  fileUrl: string;
 }
 
 // --- DAFTAR LIBUR NASIONAL / TANGGAL MERAH INDONESIA 2026 ---
@@ -556,7 +552,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               )}
 
               <motion.div
-                layout
                 key={currentMobileAnn?.id}
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -566,7 +561,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 onMouseLeave={() => setIsPaused(false)}
                 onTouchStart={handleTouchStart}
                 onTouchEnd={handleTouchEnd}
-                className="p-4 sm:p-5 rounded-2xl bg-slate-50/90 dark:bg-zinc-800/70 border border-slate-100 dark:border-zinc-800/80 space-y-2 transition-all select-none cursor-pointer hover:bg-slate-100/80 dark:hover:bg-zinc-800 active:scale-[0.99]"
+                className="p-4 sm:p-5 rounded-2xl bg-slate-50/90 dark:bg-zinc-800/70 border border-slate-100 dark:border-zinc-800/80 space-y-2 transition-colors select-none cursor-pointer hover:bg-slate-100/80 dark:hover:bg-zinc-800 active:scale-[0.99]"
               >
                 <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-zinc-400">
                   <span className="font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2.5 py-0.5 rounded-full text-[10px]">
@@ -617,9 +612,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
         <div className="lg:col-span-2 space-y-4 sm:space-y-5">
 
-          {/* ========================================================================= */}
-          {/* MBUDIARY INPUT BAR (STANDARDIZED WITH THEMED CARDS) */}
-          {/* ========================================================================= */}
+          {/* MBUDIARY INPUT BAR */}
           <motion.div
             whileHover={{ scale: 1.004 }}
             whileTap={{ scale: 0.99 }}
@@ -627,7 +620,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             className="group relative overflow-hidden rounded-3xl bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 p-3 sm:p-4 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none cursor-pointer transition-all"
           >
             <div className="flex items-center gap-3">
-              {/* Foto Profil Pengguna Asli Mbudiary */}
               <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-slate-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-slate-200/60 dark:border-zinc-700/60 shrink-0">
                 {userAvatarUrl ? (
                   <img src={userAvatarUrl} alt="Profil Saya" className="w-full h-full object-cover rounded-full" />
@@ -638,7 +630,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 )}
               </div>
 
-              {/* Fake Interactive Input Box */}
               <div className="flex-1 px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/70 border border-slate-100 dark:border-zinc-800 flex items-center gap-2.5 text-slate-400 dark:text-zinc-500 group-hover:border-blue-500/20 group-hover:bg-slate-100/70 dark:group-hover:bg-zinc-800 transition-all">
                 <Pencil className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500 shrink-0" />
                 <span className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 truncate">
@@ -646,7 +637,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 </span>
               </div>
 
-              {/* Tombol Kirim Bulat */}
               <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-blue-600 hover:bg-blue-700 active:scale-95 text-white flex items-center justify-center shadow-md shadow-blue-500/25 transition-all shrink-0">
                 <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.2] -rotate-12 translate-y-[-0.5px] -translate-x-[0.5px]" />
               </div>
@@ -673,27 +663,24 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               })()}
             </div>
 
+            {/* TAB HARI STABIL (NON-GLITCHY) */}
             <div className="grid grid-cols-5 gap-1 p-1 bg-slate-100/80 dark:bg-zinc-800/80 rounded-2xl w-full">
-              {dayTabs.map((day) => (
-                <button
-                  key={day}
-                  onClick={() => setSelectedDay(day)}
-                  className={`relative w-full py-2 px-1 text-[11px] sm:text-xs text-center font-medium rounded-xl transition-all ${
-                    selectedDay === day
-                      ? 'text-white font-bold'
-                      : 'text-slate-600 dark:text-zinc-300 hover:bg-slate-200/60 dark:hover:bg-zinc-700/60'
-                  }`}
-                >
-                  {selectedDay === day && (
-                    <motion.div
-                      layoutId="activeDayBg"
-                      className="absolute inset-0 bg-blue-600 rounded-xl shadow-md shadow-blue-500/20"
-                      transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-                    />
-                  )}
-                  <span className="relative z-10">{day}</span>
-                </button>
-              ))}
+              {dayTabs.map((day) => {
+                const isActive = selectedDay === day;
+                return (
+                  <button
+                    key={day}
+                    onClick={() => setSelectedDay(day)}
+                    className={`relative w-full py-2 px-1 text-[11px] sm:text-xs text-center font-bold rounded-xl transition-colors duration-150 cursor-pointer select-none ${
+                      isActive
+                        ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                        : 'text-slate-600 dark:text-zinc-300 hover:bg-slate-200/60 dark:hover:bg-zinc-700/60'
+                    }`}
+                  >
+                    <span>{day}</span>
+                  </button>
+                );
+              })}
             </div>
 
             <div className="space-y-2.5 pt-1">
@@ -756,7 +743,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
                           <button
                             onClick={() => onNavigateTab('contacts', item.course)}
-                            className="shrink-0 px-4 py-2 rounded-xl bg-slate-200/80 dark:bg-zinc-700 hover:bg-slate-200 dark:hover:bg-zinc-600 text-slate-700 dark:text-zinc-200 text-[11px] sm:text-xs font-semibold transition-all flex items-center justify-center gap-1"
+                            className="shrink-0 px-4 py-2 rounded-xl bg-slate-200/80 dark:bg-zinc-700 hover:bg-slate-200 dark:hover:bg-zinc-600 text-slate-700 dark:text-zinc-200 text-[11px] sm:text-xs font-semibold transition-all flex items-center justify-center gap-1 cursor-pointer"
                           >
                             <span>Kontak</span>
                           </button>
@@ -782,7 +769,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <div className="flex items-center bg-slate-100 dark:bg-zinc-800 rounded-xl p-0.5 shrink-0">
                 <button
                   onClick={handlePrevMonth}
-                  className="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
+                  className="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white transition-colors cursor-pointer"
                   aria-label="Bulan Sebelumnya"
                 >
                   <ChevronLeft className="w-4 h-4" />
@@ -792,7 +779,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 </span>
                 <button
                   onClick={handleNextMonth}
-                  className="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
+                  className="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white transition-colors cursor-pointer"
                   aria-label="Bulan Selanjutnya"
                 >
                   <ChevronRight className="w-4 h-4" />
@@ -839,7 +826,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       key={dayNum}
                       title={holidayName || undefined}
                       onClick={() => setSelectedCalendarDate(dateObj)}
-                      className={`relative h-10 sm:h-12 rounded-2xl flex flex-col items-center justify-center transition-all select-none border ${
+                      className={`relative h-10 sm:h-12 rounded-2xl flex flex-col items-center justify-center transition-all select-none border cursor-pointer ${
                         isSelected
                           ? 'bg-blue-600 text-white font-black border-blue-600 shadow-md shadow-blue-500/30'
                           : isToday
@@ -882,7 +869,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
                 <button
                   onClick={() => onNavigateTab('tasks')}
-                  className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold flex items-center gap-1"
+                  className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold flex items-center gap-1 cursor-pointer"
                 >
                   <span>List Tugas &gt;</span>
                 </button>
@@ -940,7 +927,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
 
-        {/* Right Column: Announcements */}
+        {/* Right Column: Announcements Desktop */}
         <div className="hidden lg:block space-y-4 sm:space-y-5">
           <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-5 sm:p-7 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-4 transition-colors">
             <div className="flex items-center justify-between">
@@ -953,7 +940,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               {isOfficer && (
                 <button
                   onClick={handleOpenAddAnn}
-                  className="px-3 py-1.5 rounded-2xl bg-blue-600 text-white hover:bg-blue-700 transition-all text-xs font-semibold flex items-center gap-1.5 shadow-md shadow-blue-500/20"
+                  className="px-3 py-1.5 rounded-2xl bg-blue-600 text-white hover:bg-blue-700 transition-all text-xs font-semibold flex items-center gap-1.5 shadow-md shadow-blue-500/20 cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Buat</span>
@@ -1019,215 +1006,233 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
       </div>
 
+      {/* ========================================================================= */}
+      {/* FULLSCREEN PORTALS (MODAL TIDAK LAGI TERTABRAK HEADER & NAVBAR) */}
+      {/* ========================================================================= */}
+
       {/* Modal: Create / Edit Announcement */}
-      <AnimatePresence>
-        {showAnnModal && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
-          >
-            <motion.div 
-              initial={{ scale: 0.92, opacity: 0, y: 15 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.92, opacity: 0, y: 15 }}
-              transition={{ type: 'spring', stiffness: 350, damping: 28 }}
-              className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"
-            >
-              <div className="px-6 sm:px-8 py-5 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between shrink-0 bg-white dark:bg-zinc-900">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-100">
-                  {editingAnnId ? 'Edit Pengumuman' : 'Buat Pengumuman Baru'}
-                </h3>
-                <button
-                  type="button"
+      {typeof document !== 'undefined' &&
+        createPortal(
+          <AnimatePresence>
+            {showAnnModal && (
+              <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
                   onClick={() => setShowAnnModal(false)}
-                  className="p-2 rounded-2xl text-slate-400 hover:text-slate-800 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors shrink-0"
+                  className="fixed inset-0 bg-slate-950/75 backdrop-blur-md transition-opacity"
+                />
+
+                <motion.div 
+                  initial={{ scale: 0.92, opacity: 0, y: 15 }}
+                  animate={{ scale: 1, opacity: 1, y: 0 }}
+                  exit={{ scale: 0.92, opacity: 0, y: 15 }}
+                  transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+                  className="relative z-10 bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"
                 >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              <form onSubmit={handleSaveAnnouncement} className="flex flex-col flex-1 overflow-hidden">
-                <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
-                      Judul Pengumuman
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={newAnnTitle}
-                      onChange={(e) => setNewAnnTitle(e.target.value)}
-                      placeholder="Misal: Perubahan Jadwal / Info Makrab"
-                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
-                      Kategori
-                    </label>
-                    <select
-                      value={newAnnCategory}
-                      onChange={(e) => setNewAnnCategory(e.target.value as any)}
-                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  <div className="px-6 sm:px-8 py-5 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between shrink-0 bg-white dark:bg-zinc-900">
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-100">
+                      {editingAnnId ? 'Edit Pengumuman' : 'Buat Pengumuman Baru'}
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => setShowAnnModal(false)}
+                      className="p-2 rounded-2xl text-slate-400 hover:text-slate-800 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors shrink-0 cursor-pointer"
                     >
-                      <option value="Penting">Penting</option>
-                      <option value="Akademik">Akademik</option>
-                      <option value="Kegiatan">Kegiatan</option>
-                      <option value="Info">Info Umum</option>
-                    </select>
+                      <X className="w-5 h-5" />
+                    </button>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
-                      Isi Pesan / Informasi
-                    </label>
-                    <textarea
-                      rows={4}
-                      required
-                      value={newAnnContent}
-                      onChange={(e) => setNewAnnContent(e.target.value)}
-                      placeholder="Tuliskan instruksi atau pengumuman lengkap untuk teman-teman..."
-                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
+                  <form onSubmit={handleSaveAnnouncement} className="flex flex-col flex-1 overflow-hidden">
+                    <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-4 custom-scrollbar">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
+                          Judul Pengumuman
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={newAnnTitle}
+                          onChange={(e) => setNewAnnTitle(e.target.value)}
+                          placeholder="Misal: Perubahan Jadwal / Info Makrab"
+                          className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
 
-                  <div className="flex items-center gap-2 pt-1">
-                    <input
-                      type="checkbox"
-                      id="pinCheck"
-                      checked={newAnnPinned}
-                      onChange={(e) => setNewAnnPinned(e.target.checked)}
-                      className="rounded-lg border-slate-300 dark:border-zinc-700 text-blue-600 focus:ring-blue-500"
-                    />
-                    <label htmlFor="pinCheck" className="text-xs text-slate-700 dark:text-zinc-300 cursor-pointer">
-                      Sematkan (Pin) di bagian teratas
-                    </label>
-                  </div>
-                </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
+                          Kategori
+                        </label>
+                        <select
+                          value={newAnnCategory}
+                          onChange={(e) => setNewAnnCategory(e.target.value as any)}
+                          className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option value="Penting">Penting</option>
+                          <option value="Akademik">Akademik</option>
+                          <option value="Kegiatan">Kegiatan</option>
+                          <option value="Info">Info Umum</option>
+                        </select>
+                      </div>
 
-                <div className="px-6 sm:px-8 py-4 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-end gap-3 shrink-0 bg-white dark:bg-zinc-900">
-                  <button
-                    type="button"
-                    disabled={isSubmittingAnn}
-                    onClick={() => setShowAnnModal(false)}
-                    className="px-5 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 text-xs font-semibold hover:bg-slate-200 dark:hover:bg-zinc-700 transition-all disabled:opacity-50"
-                  >
-                    Batal
-                  </button>
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    type="submit"
-                    disabled={isSubmittingAnn}
-                    className="px-5 py-2.5 rounded-2xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 shadow-md shadow-blue-500/20 transition-all flex items-center gap-2 disabled:opacity-70"
-                  >
-                    {isSubmittingAnn ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Menyimpan...</span>
-                      </>
-                    ) : editingAnnId ? (
-                      'Simpan Perubahan'
-                    ) : (
-                      'Terbitkan Pengumuman'
-                    )}
-                  </motion.button>
-                </div>
-              </form>
-            </motion.div>
-          </motion.div>
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
+                          Isi Pesan / Informasi
+                        </label>
+                        <textarea
+                          rows={4}
+                          required
+                          value={newAnnContent}
+                          onChange={(e) => setNewAnnContent(e.target.value)}
+                          placeholder="Tuliskan instruksi atau pengumuman lengkap untuk teman-teman..."
+                          className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                        />
+                      </div>
+
+                      <div className="flex items-center gap-2 pt-1">
+                        <input
+                          type="checkbox"
+                          id="pinCheck"
+                          checked={newAnnPinned}
+                          onChange={(e) => setNewAnnPinned(e.target.checked)}
+                          className="rounded-lg border-slate-300 dark:border-zinc-700 text-blue-600 focus:ring-blue-500"
+                        />
+                        <label htmlFor="pinCheck" className="text-xs text-slate-700 dark:text-zinc-300 cursor-pointer">
+                          Sematkan (Pin) di bagian teratas
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="px-6 sm:px-8 py-4 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-end gap-3 shrink-0 bg-white dark:bg-zinc-900">
+                      <button
+                        type="button"
+                        disabled={isSubmittingAnn}
+                        onClick={() => setShowAnnModal(false)}
+                        className="px-5 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 text-xs font-semibold hover:bg-slate-200 dark:hover:bg-zinc-700 transition-all disabled:opacity-50 cursor-pointer"
+                      >
+                        Batal
+                      </button>
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        type="submit"
+                        disabled={isSubmittingAnn}
+                        className="px-5 py-2.5 rounded-2xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 shadow-md shadow-blue-500/20 transition-all flex items-center gap-2 disabled:opacity-70 cursor-pointer"
+                      >
+                        {isSubmittingAnn ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <span>Menyimpan...</span>
+                          </>
+                        ) : editingAnnId ? (
+                          'Simpan Perubahan'
+                        ) : (
+                          'Terbitkan Pengumuman'
+                        )}
+                      </motion.button>
+                    </div>
+                  </form>
+                </motion.div>
+              </div>
+            )}
+          </AnimatePresence>,
+          document.body
         )}
-      </AnimatePresence>
 
       {/* Modal: Announcement Detail */}
-      <AnimatePresence>
-        {selectedAnnModal && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
-          >
-            <motion.div 
-              initial={{ scale: 0.92, opacity: 0, y: 15 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.92, opacity: 0, y: 15 }}
-              transition={{ type: 'spring', stiffness: 350, damping: 28 }}
-              className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"
-            >
-              <div className="px-6 sm:px-8 py-5 border-b border-slate-100 dark:border-zinc-800 flex items-start justify-between gap-3 shrink-0 bg-white dark:bg-zinc-900">
-                <div className="pr-2 space-y-1">
-                  <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-3 py-1 rounded-full">
-                    {selectedAnnModal.category}
-                  </span>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-100 pt-1">
-                    {selectedAnnModal.title}
-                  </h3>
-                  <p className="text-[11px] text-slate-400 dark:text-zinc-500">
-                    Diterbitkan: {formatAnnouncementDate(selectedAnnModal.date)} •{' '}
-                    {selectedAnnModal.author || 'Pengurus Kelas'}
-                  </p>
-                </div>
-                <button
+      {typeof document !== 'undefined' &&
+        createPortal(
+          <AnimatePresence>
+            {selectedAnnModal && (
+              <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
                   onClick={() => setSelectedAnnModal(null)}
-                  className="p-2 rounded-2xl text-slate-400 hover:text-slate-800 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all shrink-0"
+                  className="fixed inset-0 bg-slate-950/75 backdrop-blur-md transition-opacity"
+                />
+
+                <motion.div 
+                  initial={{ scale: 0.92, opacity: 0, y: 15 }}
+                  animate={{ scale: 1, opacity: 1, y: 0 }}
+                  exit={{ scale: 0.92, opacity: 0, y: 15 }}
+                  transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+                  className="relative z-10 bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"
                 >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              <div className="flex-1 overflow-y-auto p-6 sm:p-8">
-                <div className="text-xs text-slate-600 dark:text-zinc-300 bg-slate-50 dark:bg-zinc-800/80 p-4 rounded-2xl leading-relaxed whitespace-pre-line border border-slate-100 dark:border-zinc-700/60">
-                  {renderFormattedContent(selectedAnnModal.content)}
-                </div>
-              </div>
-
-              <div className="px-6 sm:px-8 py-4 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-between shrink-0 bg-white dark:bg-zinc-900">
-                {isOfficer ? (
-                  <div className="flex gap-2">
+                  <div className="px-6 sm:px-8 py-5 border-b border-slate-100 dark:border-zinc-800 flex items-start justify-between gap-3 shrink-0 bg-white dark:bg-zinc-900">
+                    <div className="pr-2 space-y-1">
+                      <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-3 py-1 rounded-full">
+                        {selectedAnnModal.category}
+                      </span>
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-100 pt-1">
+                        {selectedAnnModal.title}
+                      </h3>
+                      <p className="text-[11px] text-slate-400 dark:text-zinc-500">
+                        Diterbitkan: {formatAnnouncementDate(selectedAnnModal.date)} •{' '}
+                        {selectedAnnModal.author || 'Pengurus Kelas'}
+                      </p>
+                    </div>
                     <button
-                      onClick={() => {
-                        const ann = selectedAnnModal;
-                        setSelectedAnnModal(null);
-                        handleOpenEditAnn(ann);
-                      }}
-                      className="px-3.5 py-2 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 rounded-2xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                      onClick={() => setSelectedAnnModal(null)}
+                      className="p-2 rounded-2xl text-slate-400 hover:text-slate-800 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all shrink-0 cursor-pointer"
                     >
-                      <Edit2 className="w-3.5 h-3.5" />
-                      Edit
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        const annId = selectedAnnModal.id;
-                        setSelectedAnnModal(null);
-                        handleDeleteAnn(annId);
-                      }}
-                      className="px-3.5 py-2 bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/60 rounded-2xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      Hapus
+                      <X className="w-5 h-5" />
                     </button>
                   </div>
-                ) : (
-                  <div />
-                )}
 
-                <button
-                  type="button"
-                  onClick={() => setSelectedAnnModal(null)}
-                  className="px-5 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 text-xs font-semibold hover:bg-slate-200 dark:hover:bg-zinc-700 transition-all"
-                >
-                  Tutup
-                </button>
+                  <div className="flex-1 overflow-y-auto p-6 sm:p-8 custom-scrollbar">
+                    <div className="text-xs text-slate-600 dark:text-zinc-300 bg-slate-50 dark:bg-zinc-800/80 p-4 rounded-2xl leading-relaxed whitespace-pre-line border border-slate-100 dark:border-zinc-700/60">
+                      {renderFormattedContent(selectedAnnModal.content)}
+                    </div>
+                  </div>
+
+                  <div className="px-6 sm:px-8 py-4 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-between shrink-0 bg-white dark:bg-zinc-900">
+                    {isOfficer ? (
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            const ann = selectedAnnModal;
+                            setSelectedAnnModal(null);
+                            handleOpenEditAnn(ann);
+                          }}
+                          className="px-3.5 py-2 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 rounded-2xl text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                          Edit
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            const annId = selectedAnnModal.id;
+                            setSelectedAnnModal(null);
+                            handleDeleteAnn(annId);
+                          }}
+                          className="px-3.5 py-2 bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/60 rounded-2xl text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          Hapus
+                        </button>
+                      </div>
+                    ) : (
+                      <div />
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => setSelectedAnnModal(null)}
+                      className="px-5 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 text-xs font-semibold hover:bg-slate-200 dark:hover:bg-zinc-700 transition-all cursor-pointer"
+                    >
+                      Tutup
+                    </button>
+                  </div>
+                </motion.div>
               </div>
-            </motion.div>
-          </motion.div>
+            )}
+          </AnimatePresence>,
+          document.body
         )}
-      </AnimatePresence>
     </motion.div>
   );
 };
