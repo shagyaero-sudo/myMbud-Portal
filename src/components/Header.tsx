@@ -728,7 +728,7 @@ export const Header: React.FC<HeaderProps> = ({
                       }`}>
                         <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider mb-1 opacity-80">
                           {pomoMode === 'focus' ? <Flame className="w-3 h-3" /> : <Coffee className="w-3 h-3" />}
-                          <span>{pomoMode === 'focus' ? 'Sesi Belajar' : 'Istirahat'}</span>
+                          <span>{pomoMode === 'focus' ? 'Belajar' : 'Istirahat'}</span>
                         </div>
 
                         {/* Digit Countdown & Stepper */}

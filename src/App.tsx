@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import {
   collection,
   addDoc,
@@ -679,78 +679,73 @@ export default function App() {
             {isInitialLoad ? (
               <AppSkeleton />
             ) : (
-              <AnimatePresence mode="popLayout" initial={false}>
-                <motion.div
-                  key={activeTab}
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.15, ease: 'easeOut' }}
-                >
-                  {activeTab === 'dashboard' && (
-                    <DashboardView
-                      state={appState}
-                      isOfficer={isOfficer}
-                      onAddAnnouncement={() => {}}
-                      onDeleteAnnouncement={() => {}}
-                      onNavigateTab={handleNavigateTab}
-                    />
-                  )}
+              <div
+                key={activeTab}
+                className="transition-opacity duration-150 ease-out opacity-100"
+              >
+                {activeTab === 'dashboard' && (
+                  <DashboardView
+                    state={appState}
+                    isOfficer={isOfficer}
+                    onAddAnnouncement={() => {}}
+                    onDeleteAnnouncement={() => {}}
+                    onNavigateTab={handleNavigateTab}
+                  />
+                )}
 
-                  {activeTab === 'contacts' && (
-                    <ContactsView
-                      key={`contacts-${selectedContactCourse}`}
-                      contacts={appState.contacts}
-                      isOfficer={isOfficer}
-                      initialCourseFilter={selectedContactCourse}
-                      onAddContact={handleAddContact}
-                      onUpdateContact={handleUpdateContact}
-                      onDeleteContact={handleDeleteContact}
-                    />
-                  )}
+                {activeTab === 'contacts' && (
+                  <ContactsView
+                    key={`contacts-${selectedContactCourse}`}
+                    contacts={appState.contacts}
+                    isOfficer={isOfficer}
+                    initialCourseFilter={selectedContactCourse}
+                    onAddContact={handleAddContact}
+                    onUpdateContact={handleUpdateContact}
+                    onDeleteContact={handleDeleteContact}
+                  />
+                )}
 
-                  {activeTab === 'materials' && (
-                    <KnowledgeBaseView
-                      materials={appState.materials}
-                      isOfficer={isOfficer}
-                      availableCourses={appState.schedules.map((s) => s.course)}
-                      onAddMaterial={handleAddMaterial}
-                      onDeleteMaterial={handleDeleteMaterial}
-                      onPreviewPdf={(material) => setPreviewMaterial(material)}
-                    />
-                  )}
+                {activeTab === 'materials' && (
+                  <KnowledgeBaseView
+                    materials={appState.materials}
+                    isOfficer={isOfficer}
+                    availableCourses={appState.schedules.map((s) => s.course)}
+                    onAddMaterial={handleAddMaterial}
+                    onDeleteMaterial={handleDeleteMaterial}
+                    onPreviewPdf={(material) => setPreviewMaterial(material)}
+                  />
+                )}
 
-                  {activeTab === 'tasks' && (
-                    <TaskTrackerView
-                      tasks={appState.tasks}
-                      contacts={appState.contacts}
-                      isOfficer={isOfficer}
-                      onAddTask={handleAddTask}
-                      onUpdateTask={handleUpdateTask}
-                      onUpdateTaskStatus={handleUpdateTaskStatus}
-                      onDeleteTask={handleDeleteTask}
-                    />
-                  )}
+                {activeTab === 'tasks' && (
+                  <TaskTrackerView
+                    tasks={appState.tasks}
+                    contacts={appState.contacts}
+                    isOfficer={isOfficer}
+                    onAddTask={handleAddTask}
+                    onUpdateTask={handleUpdateTask}
+                    onUpdateTaskStatus={handleUpdateTaskStatus}
+                    onDeleteTask={handleDeleteTask}
+                  />
+                )}
 
-                  {activeTab === 'spinwheel' && (
-                    <SpinwheelView
-                      onSaveGroupResult={handleSaveGroupResult}
-                      savedResults={appState.groupResults}
-                      isOfficer={isOfficer}
-                    />
-                  )}
+                {activeTab === 'spinwheel' && (
+                  <SpinwheelView
+                    onSaveGroupResult={handleSaveGroupResult}
+                    savedResults={appState.groupResults}
+                    isOfficer={isOfficer}
+                  />
+                )}
 
-                  {activeTab === 'calculator' && (
-                    <GradeCalculatorView courseGrades={appState.courseGrades} />
-                  )}
+                {activeTab === 'calculator' && (
+                  <GradeCalculatorView courseGrades={appState.courseGrades} />
+                )}
 
-                  {activeTab === 'letter' && <LetterGeneratorView />}
+                {activeTab === 'letter' && <LetterGeneratorView />}
 
-                  {activeTab === 'blockblast' && <BlockBlastView />}
+                {activeTab === 'blockblast' && <BlockBlastView />}
 
-                  {activeTab === 'mbudiary' && <MbudiaryView />}
-                </motion.div>
-              </AnimatePresence>
+                {activeTab === 'mbudiary' && <MbudiaryView />}
+              </div>
             )}
           </main>
         </div>
