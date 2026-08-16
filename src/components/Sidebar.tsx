@@ -15,7 +15,10 @@ import {
   Gamepad2,
   LayoutGrid,
   X,
-  Award
+  Award,
+  GraduationCap,
+  ClipboardList,
+  FileSpreadsheet
 } from 'lucide-react';
 
 export type TabType = 'dashboard' | 'contacts' | 'materials' | 'tasks' | 'spinwheel' | 'calculator' | 'letter' | 'mbudiary' | 'blockblast';
@@ -122,8 +125,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
             );
           })}
 
-          {/* Desktop Sidebar: External Links */}
+          {/* Desktop Sidebar: myITS Academics 2.0 */}
           <div className="pt-4 mt-4 border-t border-slate-100 dark:border-zinc-800 space-y-1.5">
+            <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-2 mb-2">myITS Academics 2.0</p>
+            <a href="https://mia.its.ac.id/presensi/" target="_blank" rel="noreferrer" className="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-all">
+              <ClipboardList className="w-4 h-4 text-blue-500" /> <span>Presensi</span>
+            </a>
+            <a href="https://mia.its.ac.id/rencana-studi/" target="_blank" rel="noreferrer" className="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-all">
+              <GraduationCap className="w-4 h-4 text-blue-500" /> <span>Rencana Studi (FRS)</span>
+            </a>
+            <a href="https://mia.its.ac.id/penilaian/" target="_blank" rel="noreferrer" className="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-all">
+              <FileSpreadsheet className="w-4 h-4 text-blue-500" /> <span>Transkrip Nilai</span>
+            </a>
+          </div>
+
+          {/* Desktop Sidebar: External Links */}
+          <div className="pt-4 mt-2 border-t border-slate-100 dark:border-zinc-800 space-y-1.5">
             <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-2 mb-2">Portal Akademik ITS</p>
             <a href="https://akademik.its.ac.id/home.php" target="_blank" rel="noreferrer" className="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-all">
               <Globe className="w-4 h-4" /> <span>MyITS SIAKAD</span>
@@ -223,8 +240,27 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
               <div className="flex-1 overflow-y-auto p-5 space-y-6 pb-20 custom-scrollbar">
                 
-                {/* 1. PORTAL AKADEMIK ITS (GRID 2x2) */}
+                {/* 1. myITS Academics 2.0 (PALING ATAS) */}
                 <div className="space-y-2">
+                  <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-1">myITS Academics 2.0</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <a href="https://mia.its.ac.id/presensi/" target="_blank" rel="noreferrer" className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold">
+                      <span className="flex items-center gap-2 truncate"><ClipboardList className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" /> <span className="truncate">Presensi</span></span>
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    </a>
+                    <a href="https://mia.its.ac.id/rencana-studi/" target="_blank" rel="noreferrer" className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold">
+                      <span className="flex items-center gap-2 truncate"><GraduationCap className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" /> <span className="truncate">Rencana Studi (FRS)</span></span>
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    </a>
+                    <a href="https://mia.its.ac.id/penilaian/" target="_blank" rel="noreferrer" className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold">
+                      <span className="flex items-center gap-2 truncate"><FileSpreadsheet className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" /> <span className="truncate">Transkrip Nilai</span></span>
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    </a>
+                  </div>
+                </div>
+
+                {/* 2. PORTAL AKADEMIK ITS (GRID 2x2) */}
+                <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-zinc-800">
                   <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-1">PORTAL AKADEMIK ITS</p>
                   <div className="grid grid-cols-2 gap-2">
                     <a href="https://presensi.its.ac.id/dashboard" target="_blank" rel="noreferrer" className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold">
@@ -246,7 +282,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   </div>
                 </div>
 
-                {/* 2. TOOLS LAINNYA */}
+                {/* 3. TOOLS LAINNYA */}
                 <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-zinc-800">
                   <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-1">TOOLS LAINNYA</p>
                   
@@ -277,7 +313,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   </div>
                 </div>
 
-                {/* 3. MINIGAME */}
+                {/* 4. MINIGAME */}
                 <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-zinc-800">
                   <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-1">MINIGAME</p>
                   <button onClick={() => navigateFromSheet('blockblast')} className="group relative w-full overflow-hidden rounded-2xl p-3 text-xs font-bold transition-all border bg-gradient-to-r from-purple-50 via-fuchsia-50 to-pink-50 dark:from-purple-950/40 dark:via-fuchsia-950/30 dark:to-pink-950/30 text-purple-700 dark:text-purple-300 border-purple-200/70 dark:border-purple-800/50 active:scale-95">
