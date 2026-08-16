@@ -11,8 +11,6 @@ import {
   Paperclip,
   Bookmark,
   BookOpen,
-  LayoutGrid,
-  List,
 } from 'lucide-react';
 import { MaterialFile } from '../types';
 import {
@@ -22,95 +20,106 @@ import {
 
 interface CourseTheme {
   border: string;
-  spine: string;
+  strip: string;
   badge: string;
-  icon: string;
+  iconBg: string;
+  iconColor: string;
   subtext: string;
   sidebarActive: string;
 }
 
 const COURSE_THEMES: Record<string, CourseTheme> = {
   'Ekonomi Makro': {
-    border: 'hover:border-blue-300 dark:hover:border-blue-700',
-    spine: 'bg-blue-600 dark:bg-blue-500',
-    badge: 'bg-blue-100/70 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border-blue-200/50 dark:border-blue-800/40',
-    icon: 'text-blue-600 dark:text-blue-400',
+    border: 'hover:border-blue-500/40 dark:hover:border-blue-500/40',
+    strip: 'bg-blue-500',
+    badge: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
+    iconBg: 'bg-blue-500/10 text-blue-500 dark:text-blue-400',
+    iconColor: 'text-blue-500 dark:text-blue-400',
     subtext: 'text-blue-600 dark:text-blue-400',
     sidebarActive: 'bg-blue-600 text-white shadow-md shadow-blue-500/20',
   },
   'Dasar-dasar Manajemen': {
-    border: 'hover:border-amber-300 dark:hover:border-amber-700',
-    spine: 'bg-amber-500 dark:bg-amber-400',
-    badge: 'bg-amber-100/70 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border-amber-200/50 dark:border-amber-800/40',
-    icon: 'text-amber-600 dark:text-amber-400',
+    border: 'hover:border-amber-500/40 dark:hover:border-amber-500/40',
+    strip: 'bg-amber-500',
+    badge: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
+    iconBg: 'bg-amber-500/10 text-amber-500 dark:text-amber-400',
+    iconColor: 'text-amber-500 dark:text-amber-400',
     subtext: 'text-amber-600 dark:text-amber-400',
     sidebarActive: 'bg-amber-600 text-white shadow-md shadow-amber-500/20',
   },
   'Etika Pembangunan': {
-    border: 'hover:border-emerald-300 dark:hover:border-emerald-700',
-    spine: 'bg-emerald-600 dark:bg-emerald-500',
-    badge: 'bg-emerald-100/70 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border-emerald-200/50 dark:border-emerald-800/40',
-    icon: 'text-emerald-600 dark:text-emerald-400',
+    border: 'hover:border-emerald-500/40 dark:hover:border-emerald-500/40',
+    strip: 'bg-emerald-500',
+    badge: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+    iconBg: 'bg-emerald-500/10 text-emerald-500 dark:text-emerald-400',
+    iconColor: 'text-emerald-500 dark:text-emerald-400',
     subtext: 'text-emerald-600 dark:text-emerald-400',
     sidebarActive: 'bg-emerald-600 text-white shadow-md shadow-emerald-500/20',
   },
   'Gender dan Pembangunan': {
-    border: 'hover:border-pink-300 dark:hover:border-pink-700',
-    spine: 'bg-pink-500 dark:bg-pink-400',
-    badge: 'bg-pink-100/70 dark:bg-pink-950 text-pink-800 dark:text-pink-300 border-pink-200/50 dark:border-pink-800/40',
-    icon: 'text-pink-600 dark:text-pink-400',
+    border: 'hover:border-pink-500/40 dark:hover:border-pink-500/40',
+    strip: 'bg-pink-500',
+    badge: 'bg-pink-500/10 text-pink-600 dark:text-pink-400 border-pink-500/20',
+    iconBg: 'bg-pink-500/10 text-pink-500 dark:text-pink-400',
+    iconColor: 'text-pink-500 dark:text-pink-400',
     subtext: 'text-pink-600 dark:text-pink-400',
     sidebarActive: 'bg-pink-600 text-white shadow-md shadow-pink-500/20',
   },
   'Infrastruktur Pembangunan': {
-    border: 'hover:border-orange-300 dark:hover:border-orange-700',
-    spine: 'bg-orange-500 dark:bg-orange-400',
-    badge: 'bg-orange-100/70 dark:bg-orange-950 text-orange-800 dark:text-orange-300 border-orange-200/50 dark:border-orange-800/40',
-    icon: 'text-orange-600 dark:text-orange-400',
+    border: 'hover:border-orange-500/40 dark:hover:border-orange-500/40',
+    strip: 'bg-orange-500',
+    badge: 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20',
+    iconBg: 'bg-orange-500/10 text-orange-500 dark:text-orange-400',
+    iconColor: 'text-orange-500 dark:text-orange-400',
     subtext: 'text-orange-600 dark:text-orange-400',
     sidebarActive: 'bg-orange-600 text-white shadow-md shadow-orange-500/20',
   },
   'Kebijakan Publik dan Pembangunan': {
-    border: 'hover:border-teal-300 dark:hover:border-teal-700',
-    spine: 'bg-teal-600 dark:bg-teal-500',
-    badge: 'bg-teal-100/70 dark:bg-teal-950 text-teal-800 dark:text-teal-300 border-teal-200/50 dark:border-teal-800/40',
-    icon: 'text-teal-600 dark:text-teal-400',
+    border: 'hover:border-teal-500/40 dark:hover:border-teal-500/40',
+    strip: 'bg-teal-500',
+    badge: 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20',
+    iconBg: 'bg-teal-500/10 text-teal-500 dark:text-teal-400',
+    iconColor: 'text-teal-500 dark:text-teal-400',
     subtext: 'text-teal-600 dark:text-teal-400',
     sidebarActive: 'bg-teal-600 text-white shadow-md shadow-teal-500/20',
   },
   'Komunikasi Pembangunan': {
-    border: 'hover:border-cyan-300 dark:hover:border-cyan-700',
-    spine: 'bg-cyan-500 dark:bg-cyan-400',
-    badge: 'bg-cyan-100/70 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-300 border-cyan-200/50 dark:border-cyan-800/40',
-    icon: 'text-cyan-600 dark:text-cyan-400',
+    border: 'hover:border-cyan-500/40 dark:hover:border-cyan-500/40',
+    strip: 'bg-cyan-500',
+    badge: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20',
+    iconBg: 'bg-cyan-500/10 text-cyan-500 dark:text-cyan-400',
+    iconColor: 'text-cyan-500 dark:text-cyan-400',
     subtext: 'text-cyan-600 dark:text-cyan-400',
     sidebarActive: 'bg-cyan-600 text-white shadow-md shadow-cyan-500/20',
   },
   'Manusia dan Ruang': {
-    border: 'hover:border-indigo-300 dark:hover:border-indigo-700',
-    spine: 'bg-indigo-600 dark:bg-indigo-500',
-    badge: 'bg-indigo-100/70 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-300 border-indigo-200/50 dark:border-indigo-800/40',
-    icon: 'text-indigo-600 dark:text-indigo-400',
+    border: 'hover:border-indigo-500/40 dark:hover:border-indigo-500/40',
+    strip: 'bg-indigo-500',
+    badge: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20',
+    iconBg: 'bg-indigo-500/10 text-indigo-500 dark:text-indigo-400',
+    iconColor: 'text-indigo-500 dark:text-indigo-400',
     subtext: 'text-indigo-600 dark:text-indigo-400',
     sidebarActive: 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20',
   },
   'Statistik Sosial': {
-    border: 'hover:border-purple-300 dark:hover:border-purple-700',
-    spine: 'bg-purple-600 dark:bg-purple-500',
-    badge: 'bg-purple-100/70 dark:bg-purple-950 text-purple-800 dark:text-purple-300 border-purple-200/50 dark:border-purple-800/40',
-    icon: 'text-purple-600 dark:text-purple-400',
+    border: 'hover:border-purple-500/40 dark:hover:border-purple-500/40',
+    strip: 'bg-purple-500',
+    badge: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20',
+    iconBg: 'bg-purple-500/10 text-purple-500 dark:text-purple-400',
+    iconColor: 'text-purple-500 dark:text-purple-400',
     subtext: 'text-purple-600 dark:text-purple-400',
     sidebarActive: 'bg-purple-600 text-white shadow-md shadow-purple-500/20',
   },
 };
 
 const DEFAULT_THEME: CourseTheme = {
-  border: 'hover:border-rose-300 dark:hover:border-rose-700',
-  spine: 'bg-rose-500 dark:bg-rose-400',
-  badge: 'bg-rose-100/70 dark:bg-rose-950 text-rose-800 dark:text-rose-300 border-rose-200/50 dark:border-rose-800/40',
-  icon: 'text-rose-600 dark:text-rose-400',
-  subtext: 'text-rose-600 dark:text-rose-400',
-  sidebarActive: 'bg-rose-600 text-white shadow-md shadow-rose-500/20',
+  border: 'hover:border-blue-500/40 dark:hover:border-blue-500/40',
+  strip: 'bg-blue-600',
+  badge: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
+  iconBg: 'bg-blue-500/10 text-blue-500 dark:text-blue-400',
+  iconColor: 'text-blue-500 dark:text-blue-400',
+  subtext: 'text-blue-600 dark:text-blue-400',
+  sidebarActive: 'bg-blue-600 text-white shadow-md shadow-blue-500/20',
 };
 
 const getCourseTheme = (courseName: string): CourseTheme => {
@@ -137,7 +146,6 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
   const [search, setSearch] = useState('');
   const [selectedCourse, setSelectedCourse] = useState<string>('ALL');
   const [showOnlyBookmarked, setShowOnlyBookmarked] = useState<boolean>(false);
-  const [viewMode, setViewMode] = useState<'shelf' | 'list'>('shelf');
 
   // Sync Bookmarks per User NRP dari Firestore
   const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
@@ -321,29 +329,29 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
           </p>
         </div>
 
-        {/* Action Controls Desktop */}
+        {/* Action Controls Desktop: Menggunakan Tema Base Biru Default */}
         <div className="hidden sm:flex items-center gap-2.5 shrink-0">
           <button
             type="button"
             onClick={() => setShowOnlyBookmarked((prev) => !prev)}
-            className={`px-3 py-2 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 border cursor-pointer ${
+            className={`px-3.5 py-2 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 border cursor-pointer ${
               showOnlyBookmarked
-                ? 'bg-amber-500 border-amber-600 text-white shadow-md shadow-amber-500/25'
-                : 'bg-white dark:bg-zinc-900 border-slate-200/80 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 hover:border-amber-400 hover:text-amber-500 shadow-xs'
+                ? 'bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-500/25'
+                : 'bg-white dark:bg-zinc-900 border-slate-200/80 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 hover:border-blue-500/50 hover:text-blue-600 dark:hover:text-blue-400 shadow-xs'
             }`}
             title="Tampilkan hanya materi yang disimpan"
           >
             <Bookmark
               className={`w-3.5 h-3.5 ${
-                showOnlyBookmarked ? 'fill-white text-white' : 'text-amber-500'
+                showOnlyBookmarked ? 'fill-white text-white' : 'text-slate-400 dark:text-zinc-400'
               }`}
             />
             <span>Tersimpan</span>
             <span
               className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
                 showOnlyBookmarked
-                  ? 'bg-white/25 text-white'
-                  : 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400'
+                  ? 'bg-white/20 text-white'
+                  : 'bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300'
               }`}
             >
               {bookmarkedIds.length}
@@ -429,48 +437,18 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
           </div>
         </div>
 
-        {/* Right Column: Library Shelf View */}
-        <div className="md:col-span-8 lg:col-span-9 space-y-4">
-          {/* Search Bar & View Mode Toggle */}
-          <div className="flex items-center gap-2.5">
-            <div className="relative flex-1">
-              <Search className="w-4 h-4 absolute left-4 top-3 text-slate-400" />
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Cari buku, modul, slide PPT, atau topik..."
-                className="w-full pl-11 pr-4 py-2.5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none"
-              />
-            </div>
-
-            {/* View Mode Toggle */}
-            <div className="flex items-center bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 p-1 rounded-2xl gap-1 shrink-0 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none">
-              <button
-                type="button"
-                onClick={() => setViewMode('shelf')}
-                className={`p-2 rounded-xl transition-all cursor-pointer ${
-                  viewMode === 'shelf'
-                    ? 'bg-blue-600 text-white shadow-xs'
-                    : 'text-slate-500 hover:text-slate-800 dark:text-zinc-400 dark:hover:text-zinc-200'
-                }`}
-                title="Tampilan Rak Buku (Bookshelf)"
-              >
-                <LayoutGrid className="w-3.5 h-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode('list')}
-                className={`p-2 rounded-xl transition-all cursor-pointer ${
-                  viewMode === 'list'
-                    ? 'bg-blue-600 text-white shadow-xs'
-                    : 'text-slate-500 hover:text-slate-800 dark:text-zinc-400 dark:hover:text-zinc-200'
-                }`}
-                title="Tampilan Daftar (List)"
-              >
-                <List className="w-3.5 h-3.5" />
-              </button>
-            </div>
+        {/* Right Column: List View with Left Color Strip */}
+        <div className="md:col-span-8 lg:col-span-9 space-y-3">
+          {/* Search Bar Full Width */}
+          <div className="relative w-full">
+            <Search className="w-4 h-4 absolute left-4 top-3 text-slate-400" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Cari buku, modul, slide PPT, atau topik..."
+              className="w-full pl-11 pr-4 py-2.5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none"
+            />
           </div>
 
           {/* Mobile Action Controls: Dropdown Bersebelahan dengan Tombol Tersimpan */}
@@ -501,21 +479,21 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
               onClick={() => setShowOnlyBookmarked((prev) => !prev)}
               className={`px-3 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 border shrink-0 cursor-pointer ${
                 showOnlyBookmarked
-                  ? 'bg-amber-500 border-amber-600 text-white shadow-xs'
+                  ? 'bg-blue-600 border-blue-600 text-white shadow-xs'
                   : 'bg-white dark:bg-zinc-900 border-slate-200/80 dark:border-zinc-800 text-slate-700 dark:text-zinc-300'
               }`}
             >
               <Bookmark
                 className={`w-3.5 h-3.5 ${
-                  showOnlyBookmarked ? 'fill-white text-white' : 'text-amber-500'
+                  showOnlyBookmarked ? 'fill-white text-white' : 'text-slate-400 dark:text-zinc-400'
                 }`}
               />
               <span>Tersimpan</span>
               <span
                 className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
                   showOnlyBookmarked
-                    ? 'bg-white/25 text-white'
-                    : 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400'
+                    ? 'bg-white/20 text-white'
+                    : 'bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300'
                 }`}
               >
                 {bookmarkedIds.length}
@@ -533,8 +511,8 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
             )}
           </div>
 
-          {/* Main Content: Bookshelf Container */}
-          <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-4 sm:p-6 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none transition-colors min-h-[300px]">
+          {/* Main Content: Slim List Container with Color Strips */}
+          <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-4 sm:p-5 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none transition-colors min-h-[300px]">
             {filteredMaterials.length === 0 ? (
               <div className="p-12 text-center text-slate-400 dark:text-zinc-500 text-xs bg-slate-50/70 dark:bg-zinc-800/50 rounded-2xl space-y-2">
                 <BookOpen className="w-8 h-8 mx-auto text-slate-300 dark:text-zinc-600 mb-1" />
@@ -549,9 +527,8 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                     : 'Belum ada berkas PDF untuk mata kuliah yang dipilih.'}
                 </p>
               </div>
-            ) : viewMode === 'shelf' ? (
-              /* ================= BOOKSHELF GRID VIEW (COMPACT CARD) ================= */
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+            ) : (
+              <div className="space-y-2.5">
                 {filteredMaterials.map((mat) => {
                   const isBookmarked = bookmarkedIds.includes(mat.id);
                   const theme = getCourseTheme(mat.courseName);
@@ -559,88 +536,21 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                   return (
                     <motion.div
                       key={mat.id}
-                      whileHover={{ y: -3, scale: 1.01 }}
-                      whileTap={{ scale: 0.99 }}
+                      whileHover={{ x: 3 }}
                       onClick={() => onPreviewPdf(mat)}
-                      className={`group relative rounded-2xl bg-gradient-to-b from-slate-50/90 to-slate-100/60 dark:from-zinc-800/80 dark:to-zinc-800/40 p-3.5 border border-slate-200/70 dark:border-zinc-700/60 shadow-xs hover:shadow-md ${theme.border} transition-all cursor-pointer flex flex-col justify-between overflow-hidden`}
+                      className={`group relative overflow-hidden p-3.5 sm:p-4 rounded-2xl bg-slate-50/90 dark:bg-zinc-800/60 hover:bg-slate-100/90 dark:hover:bg-zinc-800 cursor-pointer transition-all flex items-center justify-between gap-3 border border-slate-200/60 dark:border-zinc-700/60 ${theme.border} shadow-xs`}
                     >
-                      {/* Left Spine Texture Accent */}
-                      <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${theme.spine} group-hover:w-2 transition-all rounded-l-2xl`} />
+                      {/* Left Spine Color Strip Accent */}
+                      <div
+                        className={`absolute left-0 top-0 bottom-0 w-1.5 ${theme.strip} group-hover:w-2 transition-all rounded-l-2xl`}
+                      />
 
-                      <div className="pl-1.5 space-y-2.5">
-                        {/* Top Meta: Session / Type & Bookmark Action */}
-                        <div className="flex items-center justify-between gap-2">
-                          <span className={`text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-lg border ${theme.badge}`}>
-                            {mat.session || 'MODUL'}
-                          </span>
-
-                          <div className="flex items-center gap-1">
-                            <button
-                              type="button"
-                              onClick={(e) => handleToggleBookmark(e, mat.id)}
-                              className={`p-1.5 rounded-lg transition-all cursor-pointer ${
-                                isBookmarked
-                                  ? 'bg-amber-50 dark:bg-amber-950/70 text-amber-500'
-                                  : 'text-slate-400 hover:text-amber-500 hover:bg-white dark:hover:bg-zinc-700'
-                              }`}
-                              title={isBookmarked ? 'Hapus bookmark' : 'Simpan ke bookmark'}
-                            >
-                              <Bookmark
-                                className={`w-3.5 h-3.5 ${
-                                  isBookmarked ? 'fill-amber-500 text-amber-500' : ''
-                                }`}
-                              />
-                            </button>
-
-                            {isOfficer && (
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onDeleteMaterial(mat.id);
-                                }}
-                                className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
-                                title="Hapus Berkas"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Title & Subject */}
-                        <div className="space-y-1">
-                          <div className="flex items-start gap-2">
-                            <FileText className={`w-4 h-4 ${theme.icon} shrink-0 mt-0.5`} />
-                            <h4 className="text-xs font-bold text-slate-800 dark:text-zinc-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2 leading-snug">
-                              {mat.title}
-                            </h4>
-                          </div>
-                          <p className={`text-[11px] font-semibold truncate pl-6 ${theme.subtext}`}>
-                            {mat.courseName}
-                          </p>
-                        </div>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            ) : (
-              /* ================= COMPACT LIST VIEW ================= */
-              <div className="space-y-2">
-                {filteredMaterials.map((mat) => {
-                  const isBookmarked = bookmarkedIds.includes(mat.id);
-                  const theme = getCourseTheme(mat.courseName);
-
-                  return (
-                    <div
-                      key={mat.id}
-                      onClick={() => onPreviewPdf(mat)}
-                      className="p-3.5 sm:p-4 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/60 hover:bg-blue-50/50 dark:hover:bg-blue-950/40 cursor-pointer transition-colors flex items-center justify-between gap-3 group border border-transparent hover:border-blue-100 dark:hover:border-blue-900 active:scale-[0.998]"
-                    >
-                      <div className="flex items-center gap-3 min-w-0 flex-1">
-                        <div className={`p-2.5 rounded-2xl bg-white dark:bg-zinc-900 ${theme.icon} shrink-0 shadow-xs`}>
-                          <FileText className="w-5 h-5" />
+                      {/* Content Info */}
+                      <div className="flex items-center gap-3 min-w-0 flex-1 pl-1.5">
+                        <div
+                          className={`p-2.5 rounded-xl ${theme.iconBg} shrink-0`}
+                        >
+                          <FileText className="w-4 h-4" />
                         </div>
                         <div className="min-w-0 flex-1">
                           <h4 className="text-xs font-bold text-slate-800 dark:text-zinc-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
@@ -652,24 +562,27 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                         </div>
                       </div>
 
+                      {/* Right Meta Badges & Actions */}
                       <div className="flex items-center gap-2 shrink-0">
-                        <span className={`text-xs font-bold px-3 py-1 rounded-full border ${theme.badge}`}>
-                          {mat.session}
+                        <span
+                          className={`text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-lg border ${theme.badge}`}
+                        >
+                          {mat.session || 'MODUL'}
                         </span>
 
                         <button
                           type="button"
                           onClick={(e) => handleToggleBookmark(e, mat.id)}
-                          className={`p-2 rounded-xl border transition-all cursor-pointer ${
+                          className={`p-1.5 rounded-xl border transition-all cursor-pointer ${
                             isBookmarked
-                              ? 'bg-amber-50 dark:bg-amber-950/60 border-amber-200 dark:border-amber-900/60 text-amber-500 shadow-xs'
-                              : 'bg-white dark:bg-zinc-800 border-slate-100 dark:border-zinc-700 text-slate-400 hover:text-amber-500 hover:bg-slate-100 dark:hover:bg-zinc-700'
+                              ? 'bg-blue-50 dark:bg-blue-950/60 border-blue-200 dark:border-blue-900/60 text-blue-600 dark:text-blue-400 shadow-xs'
+                              : 'bg-white dark:bg-zinc-800/80 border-slate-200/80 dark:border-zinc-700 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-zinc-700'
                           }`}
                           title={isBookmarked ? 'Hapus dari Tersimpan' : 'Simpan Materi'}
                         >
                           <Bookmark
-                            className={`w-4 h-4 ${
-                              isBookmarked ? 'fill-amber-500 text-amber-500' : ''
+                            className={`w-3.5 h-3.5 ${
+                              isBookmarked ? 'fill-blue-600 dark:fill-blue-400 text-blue-600 dark:text-blue-400' : ''
                             }`}
                           />
                         </button>
@@ -681,14 +594,14 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                               e.stopPropagation();
                               onDeleteMaterial(mat.id);
                             }}
-                            className="p-2 rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                            className="p-1.5 rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                             title="Hapus Berkas"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         )}
                       </div>
-                    </div>
+                    </motion.div>
                   );
                 })}
               </div>
