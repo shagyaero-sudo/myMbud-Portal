@@ -328,27 +328,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </aside>
 
-      {/* MOBILE BOTTOM NAVIGATION */}
-      <div className="lg:hidden fixed inset-x-0 bottom-0 z-40 pointer-events-none">
-        <nav
-          className="
-            pointer-events-auto
-            mx-3
-            mb-[2px]
-            bg-white/80 dark:bg-zinc-900/85
-            backdrop-blur-2xl
-            border border-white/50 dark:border-white/10
-            px-2
-            pt-1.5
-            pb-[calc(0.375rem+env(safe-area-inset-bottom))]
-            flex items-center justify-between
-            shadow-[0_8px_30px_rgb(0,0,0,0.12)]
-            dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)]
-            rounded-[2rem]
-            transition-colors
-            relative
-          "
-        >
+      {/* MOBILE BOTTOM NAVIGATION (DOCKED & BLEND KE BAWAH) */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 w-full pointer-events-none">
+        <nav className="pointer-events-auto w-full bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border-t border-slate-200/80 dark:border-zinc-800 rounded-t-[28px] px-3 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] flex items-center justify-around shadow-[0_-8px_30px_rgba(0,0,0,0.08)] dark:shadow-[0_-8px_30px_rgba(0,0,0,0.4)] relative">
           <BottomTabItem
             id="dashboard"
             label="Jadwal"
@@ -366,28 +348,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
             count={activeTaskCount > 0 ? activeTaskCount : null}
           />
 
-          {/* TOMBOL MENU */}
-          <div className="relative flex flex-col items-center justify-center -top-2.5 z-50">
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={() => setIsBottomSheetOpen(true)}
-              className="
-                w-[3.25rem]
-                h-[3.25rem]
-                bg-gradient-to-tr from-blue-600 to-indigo-500
-                text-white
-                rounded-full
-                flex items-center justify-center
-                shadow-lg shadow-indigo-500/30
-                border-[4px] border-white/80 dark:border-zinc-900
-                transition-colors
-                focus:outline-none
-              "
-            >
-              <LayoutGrid className="w-5 h-5" />
-            </motion.button>
-
-            <span className="absolute -bottom-4 text-[10px] font-bold text-slate-500 dark:text-zinc-400 tracking-tight">
+          {/* TOMBOL MENU TENGAH SEDIKIT NAIK DENGAN CINCIN PEMISAH */}
+          <div className="relative flex flex-col items-center justify-center -top-4">
+            <div className="p-1 rounded-full bg-slate-50 dark:bg-zinc-950">
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setIsBottomSheetOpen(true)}
+                className="w-12 h-12 bg-blue-600 dark:bg-blue-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-blue-500/30 transition-transform cursor-pointer"
+              >
+                <LayoutGrid className="w-5 h-5" />
+              </motion.button>
+            </div>
+            <span className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 mt-0.5">
               Menu
             </span>
           </div>
@@ -645,7 +617,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   );
 };
 
-/* HELPER COMPONENT UNTUK BOTTOM NAV BUTTONS */
+/* HELPER COMPONENT BOTTOM TAB */
 const BottomTabItem = ({
   id,
   label,
@@ -659,41 +631,26 @@ const BottomTabItem = ({
   return (
     <button
       onClick={() => onClick(id)}
-      className={`relative flex flex-col items-center justify-center w-16 py-1.5 rounded-2xl transition-all ${
+      className={`relative flex flex-col items-center justify-center flex-1 py-1 transition-all cursor-pointer ${
         isActive
           ? 'text-blue-600 dark:text-blue-400 font-bold'
-          : 'text-slate-500 dark:text-zinc-400'
+          : 'text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300'
       }`}
     >
-      {isActive && (
-        <motion.div
-          layoutId="activeBottomTab"
-          className="absolute inset-0 bg-white/80 dark:bg-zinc-800/80 rounded-2xl shadow-sm border border-slate-200/50 dark:border-zinc-700/50"
-          transition={{
-            type: 'spring',
-            stiffness: 350,
-            damping: 30
-          }}
+      <div className="relative">
+        <Icon
+          className={`w-5 h-5 mb-1 transition-transform ${
+            isActive ? 'scale-110' : ''
+          }`}
         />
-      )}
+        {count ? (
+          <span className="absolute -top-1.5 -right-2 bg-rose-500 text-white text-[9px] font-extrabold px-1.5 py-0.2 rounded-full flex items-center justify-center min-w-[1rem] h-3.5 shadow-xs">
+            {count}
+          </span>
+        ) : null}
+      </div>
 
-      <Icon
-        className={`relative z-10 w-5 h-5 mb-0.5 ${
-          isActive
-            ? 'text-blue-600 dark:text-blue-400'
-            : 'text-slate-400 dark:text-zinc-500'
-        }`}
-      />
-
-      <span className="relative z-10 text-[10px] tracking-tight">
-        {label}
-      </span>
-
-      {count ? (
-        <span className="absolute -top-1 right-2 bg-rose-500 text-white text-[9px] font-extrabold px-1.5 py-0.2 rounded-full flex items-center justify-center min-w-[1.125rem] h-4 shadow-xs z-20">
-          {count}
-        </span>
-      ) : null}
+      <span className="text-[10px] tracking-tight">{label}</span>
     </button>
   );
 };
