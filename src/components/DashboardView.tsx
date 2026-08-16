@@ -472,10 +472,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <span>WAR FRS: 18 - 21 AGUSTUS</span>
               </div>
               <h3 className="text-lg sm:text-xl font-extrabold text-white tracking-tight">
-                FRS MIA ITS ⚡
+                RENCANA STUDI (FRS) by MIA ITS
               </h3>
               <p className="text-xs text-slate-300 max-w-md leading-relaxed">
-                Penyelamat dari portal lemot. Klik buat langsung <span className="text-amber-300 font-bold">direct</span> ke FRS tanpa lewat myITS Portal!
+                Klik tombol buat langsung menuju ke medan perang!
               </p>
             </div>
 
