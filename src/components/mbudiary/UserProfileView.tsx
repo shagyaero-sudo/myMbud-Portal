@@ -14,7 +14,7 @@ import {
 } from './lib/storage';
 import { uploadImagesToCloudinary } from './lib/cloudinary';
 import { getOptimizedImageUrl } from './lib/utils';
-import { PostCard } from './PostCard';
+import { PostCard, VerifiedBadge } from './PostCard';
 import {
   ArrowLeft,
   FileText,
@@ -128,7 +128,6 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
     try {
       const uploadedUrls = await uploadImagesToCloudinary([file]);
       if (uploadedUrls && uploadedUrls.length > 0) {
-        // FIX: Pastikan foto & header tidak undefined saat disimpan ke storage
         await saveUserProfile({
           ...currentUser,
           photoUrl: currentUser.photoUrl || undefined,
@@ -162,12 +161,12 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
 
   return (
     <div className="space-y-3 sm:space-y-4">
-      {/* TOMBOL KEMBALI COMPACT */}
+      {/* TOMBOL KEMBALI */}
       <button
         onClick={onBack}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-xs font-bold text-slate-700 dark:text-zinc-200 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-all shadow-sm group active:scale-95"
+        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 text-xs font-bold text-slate-700 dark:text-zinc-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-all shadow-xs group active:scale-95 cursor-pointer ml-1 sm:ml-0"
       >
-        <ArrowLeft className="w-3.5 h-3.5 text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" />
+        <ArrowLeft className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
         <span>Kembali</span>
       </button>
 
@@ -175,13 +174,13 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl shadow-sm relative overflow-hidden w-full"
+        className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl shadow-xs relative overflow-hidden w-full"
       >
-        <div className="w-full h-32 sm:h-44 relative bg-slate-200 dark:bg-zinc-800/80">
+        <div className="w-full h-32 sm:h-44 relative bg-slate-200 dark:bg-zinc-800">
           {authorHeaderUrl ? (
             <img src={getOptimizedImageUrl(authorHeaderUrl)} alt="Header Profil" className="w-full h-full object-cover" />
           ) : (
-            <div className="w-full h-full bg-gradient-to-tr from-indigo-100 to-sky-50 dark:from-indigo-900/40 dark:to-sky-900/20" />
+            <div className="w-full h-full bg-gradient-to-tr from-slate-200 via-blue-50 to-indigo-50 dark:from-zinc-800 dark:via-zinc-850 dark:to-zinc-900" />
           )}
 
           {isSelf && (
@@ -190,7 +189,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
               <button
                 onClick={() => headerInputRef.current?.click()}
                 disabled={isUploadingHeader}
-                className="p-2 sm:px-3 sm:py-2 rounded-full sm:rounded-xl bg-black/40 hover:bg-black/60 backdrop-blur-md text-white text-[11px] font-bold shadow-lg transition-all flex items-center gap-1.5 disabled:opacity-50"
+                className="p-2 sm:px-3 sm:py-2 rounded-full sm:rounded-xl bg-black/50 hover:bg-black/70 backdrop-blur-md text-white text-[11px] font-bold shadow-lg transition-all flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
               >
                 {isUploadingHeader ? <Loader2 className="w-4 h-4 animate-spin" /> : <Edit2 className="w-4 h-4" />}
                 <span className="hidden sm:inline">Edit Sampul</span>
@@ -199,10 +198,10 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
           )}
         </div>
 
-        <div className="px-5 sm:px-6 pb-5 sm:pb-6">
+        <div className="px-4 sm:px-6 pb-5 sm:pb-6">
           <div className="flex justify-between items-end -mt-10 sm:-mt-12 mb-3 relative z-10">
-            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-[1.25rem] sm:rounded-[1.5rem] bg-white dark:bg-zinc-900 p-1.5 shadow-sm">
-              <div className="w-full h-full rounded-xl sm:rounded-2xl bg-slate-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-slate-200/50 dark:border-zinc-700/50">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-[1.25rem] sm:rounded-[1.5rem] bg-white dark:bg-zinc-900 p-1.5 shadow-xs">
+              <div className="w-full h-full rounded-xl sm:rounded-2xl bg-slate-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-slate-200/80 dark:border-zinc-700/80">
                 {authorPhotoUrl ? (
                   <img src={getOptimizedImageUrl(authorPhotoUrl)} alt={authorName} className="w-full h-full object-cover" />
                 ) : (
@@ -217,7 +216,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                   type="button"
                   disabled={isTogglingVerified}
                   onClick={handleVerifyToggle}
-                  className={`p-2 sm:px-3 sm:py-2 rounded-2xl text-[11px] font-bold transition-all flex items-center gap-1.5 active:scale-95 disabled:opacity-50 ${authorProfile?.isVerified ? 'bg-rose-50 text-rose-600 dark:bg-rose-950/40 border border-rose-200' : 'bg-blue-50 text-blue-600 dark:bg-blue-950/40 border border-blue-200'}`}
+                  className={`p-2 sm:px-3 sm:py-2 rounded-2xl text-[11px] font-bold transition-all flex items-center gap-1.5 active:scale-95 disabled:opacity-50 cursor-pointer ${authorProfile?.isVerified ? 'bg-rose-50 text-rose-600 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60' : 'bg-blue-50 text-blue-600 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/60'}`}
                 >
                   {isTogglingVerified ? <Loader2 className="w-4 h-4 animate-spin" /> : <BadgeCheck className="w-4 h-4" />}
                   <span className="hidden sm:inline">{authorProfile?.isVerified ? 'Cabut Cenblu' : '+ Kasih Cenblu'}</span>
@@ -227,7 +226,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
               {!isSelf && (
                 <button
                   onClick={handleFollowToggle}
-                  className={`px-5 py-2 sm:py-2.5 rounded-2xl text-xs sm:text-[13px] font-bold transition-all flex items-center gap-1.5 shadow-sm active:scale-95 ${following ? 'bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700 hover:bg-rose-50 hover:text-rose-600' : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-500/20'}`}
+                  className={`px-5 py-2 sm:py-2.5 rounded-2xl text-xs sm:text-[13px] font-bold transition-all flex items-center gap-1.5 shadow-xs active:scale-95 cursor-pointer ${following ? 'bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700 hover:bg-rose-50 hover:text-rose-600' : 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-500/20'}`}
                 >
                   {following ? (
                     <><UserCheck className="w-4 h-4 text-emerald-500" /><span className="hidden sm:inline">Mengikuti</span></>
@@ -243,13 +242,9 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
           <div className="mb-4">
             <div className="flex items-center gap-1.5 flex-wrap">
               <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-zinc-100 tracking-tight">{authorName}</h2>
-              {authorProfile?.isVerified && (
-                <span className="inline-flex items-center justify-center shrink-0 w-5 h-5 rounded-full bg-blue-500 text-white shadow-sm">
-                  <svg viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5"><path fillRule="evenodd" d="M16.704 5.29a1 1 0 0 1 .006 1.414l-7.25 7.25a1 1 0 0 1-1.414 0l-3.25-3.25A1 1 0 0 1 6.21 9.29l2.543 2.543 6.543-6.543a1 1 0 0 1 1.408 0Z" clipRule="evenodd" /></svg>
-                </span>
-              )}
+              {authorProfile?.isVerified && <VerifiedBadge size="md" />}
               {isSelf && (
-                <span className="px-2.5 py-0.5 text-[11px] font-bold rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/50 ml-1">Saya</span>
+                <span className="px-2.5 py-0.5 text-[11px] font-bold rounded-full bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400 border border-blue-100 dark:border-blue-900/50 ml-1">Saya</span>
               )}
             </div>
             {authorUsername && (
@@ -258,15 +253,15 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
           </div>
 
           <div className="grid grid-cols-3 gap-2 w-full">
-            <div className="p-2 sm:px-3.5 sm:py-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 flex flex-col xl:flex-row items-center justify-center gap-1 sm:gap-2 text-[11px] sm:text-[13px] transition-colors text-center">
+            <div className="p-2.5 sm:px-3.5 sm:py-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-100 dark:border-zinc-800 flex flex-col xl:flex-row items-center justify-center gap-1 sm:gap-2 text-[11px] sm:text-[13px] transition-colors text-center">
               <div className="flex items-center gap-1.5">
-                <FileText className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                <FileText className="w-4 h-4 text-blue-500 shrink-0" />
                 <span className="font-black text-slate-900 dark:text-zinc-100 leading-none">{userPosts.length}</span>
               </div>
               <span className="text-slate-500 dark:text-zinc-400 font-medium leading-none mt-0.5 xl:mt-0">Cerita</span>
             </div>
 
-            <button onClick={() => openFollowModal('followers')} className="p-2 sm:px-3.5 sm:py-2.5 rounded-2xl bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800/60 dark:hover:bg-zinc-800 border border-slate-100 dark:border-zinc-800 flex flex-col xl:flex-row items-center justify-center gap-1 sm:gap-2 text-[11px] sm:text-[13px] transition-all cursor-pointer text-center">
+            <button onClick={() => openFollowModal('followers')} className="p-2.5 sm:px-3.5 sm:py-2.5 rounded-2xl bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800/50 dark:hover:bg-zinc-800 border border-slate-100 dark:border-zinc-800 flex flex-col xl:flex-row items-center justify-center gap-1 sm:gap-2 text-[11px] sm:text-[13px] transition-all cursor-pointer text-center">
               <div className="flex items-center gap-1.5">
                 <Users className="w-4 h-4 text-amber-500 shrink-0" />
                 <span className="font-black text-slate-900 dark:text-zinc-100 leading-none">{followerCount}</span>
@@ -274,7 +269,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
               <span className="text-slate-500 dark:text-zinc-400 font-medium leading-none mt-0.5 xl:mt-0">Pengikut</span>
             </button>
 
-            <button onClick={() => openFollowModal('following')} className="p-2 sm:px-3.5 sm:py-2.5 rounded-2xl bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800/60 dark:hover:bg-zinc-800 border border-slate-100 dark:border-zinc-800 flex flex-col xl:flex-row items-center justify-center gap-1 sm:gap-2 text-[11px] sm:text-[13px] transition-all cursor-pointer text-center">
+            <button onClick={() => openFollowModal('following')} className="p-2.5 sm:px-3.5 sm:py-2.5 rounded-2xl bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800/50 dark:hover:bg-zinc-800 border border-slate-100 dark:border-zinc-800 flex flex-col xl:flex-row items-center justify-center gap-1 sm:gap-2 text-[11px] sm:text-[13px] transition-all cursor-pointer text-center">
               <div className="flex items-center gap-1.5">
                 <UserPlus className="w-4 h-4 text-emerald-500 shrink-0" />
                 <span className="font-black text-slate-900 dark:text-zinc-100 leading-none">{followingCount}</span>
@@ -288,7 +283,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
       {/* DAFTAR POSTINGAN USER */}
       <div className="space-y-3 pt-1">
         {userPosts.length === 0 ? (
-          <div className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl p-8 text-center text-xs text-slate-400 dark:text-zinc-500 shadow-sm w-full">
+          <div className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl p-8 text-center text-xs text-slate-400 dark:text-zinc-500 shadow-xs w-full">
             User ini belum membuat postingan di mbudiary.
           </div>
         ) : (
@@ -303,12 +298,12 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
         {followModalType && (
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6"
+            className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 sm:p-6"
             onClick={() => setFollowModalType(null)}
           >
             <motion.div
               initial={{ scale: 0.95, y: 10, opacity: 0 }} animate={{ scale: 1, y: 0, opacity: 1 }} exit={{ scale: 0.95, y: 0, opacity: 0 }} transition={{ duration: 0.2 }}
-              className="w-full max-w-sm bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-3xl p-5 shadow-2xl flex flex-col max-h-[70dvh]"
+              className="w-full max-w-sm bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-3xl p-5 shadow-2xl flex flex-col max-h-[70dvh]"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100 dark:border-zinc-800 shrink-0">
@@ -316,7 +311,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                   {followModalType === 'followers' ? <Users className="w-5 h-5 text-amber-500" /> : <UserPlus className="w-5 h-5 text-emerald-500" />}
                   {followModalType === 'followers' ? 'Pengikut' : 'Mengikuti'}
                 </h3>
-                <button onClick={() => setFollowModalType(null)} className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors">
+                <button onClick={() => setFollowModalType(null)} className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -337,7 +332,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                           setFollowModalType(null);
                           onSelectAuthor?.(nrp);
                         }}
-                        className="flex items-center gap-3 p-2.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-zinc-800/50 cursor-pointer transition-colors border border-transparent hover:border-slate-100 dark:hover:border-zinc-800"
+                        className="flex items-center gap-3 p-2.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-zinc-800/60 cursor-pointer transition-colors border border-transparent hover:border-slate-100 dark:hover:border-zinc-800"
                       >
                         <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden border border-slate-200 dark:border-zinc-700">
                           {user.photoUrl ? (
@@ -349,9 +344,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5">
                             <span className="text-sm font-bold text-slate-900 dark:text-zinc-100 truncate">{user.nickname}</span>
-                            {user.isVerified && (
-                              <span className="inline-flex items-center justify-center shrink-0 w-3.5 h-3.5 rounded-full bg-blue-500 text-white"><svg viewBox="0 0 20 20" fill="currentColor" className="w-2.5 h-2.5"><path fillRule="evenodd" d="M16.704 5.29a1 1 0 0 1 .006 1.414l-7.25 7.25a1 1 0 0 1-1.414 0l-3.25-3.25A1 1 0 0 1 6.21 9.29l2.543 2.543 6.543-6.543a1 1 0 0 1 1.408 0Z" clipRule="evenodd" /></svg></span>
-                            )}
+                            {user.isVerified && <VerifiedBadge size="sm" />}
                           </div>
                           <div className="text-[11px] text-slate-500 dark:text-zinc-400 truncate">@{user.username}</div>
                         </div>

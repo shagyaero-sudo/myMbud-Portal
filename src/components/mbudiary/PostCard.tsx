@@ -41,6 +41,34 @@ import {
   notifyPostCommented,
 } from '../../services/oneSignalNotification';
 
+export const VerifiedBadge: React.FC<{ size?: 'sm' | 'md' | 'lg' }> = ({ size = 'md' }) => {
+  const sizeClasses = {
+    sm: 'w-3.5 h-3.5',
+    md: 'w-4 h-4',
+    lg: 'w-5 h-5',
+  };
+
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-label="Verified account"
+      className={`${sizeClasses[size]} shrink-0 select-none inline-block`}
+      style={{ color: '#1D9BF0' }}
+    >
+      <g>
+        <path
+          fill="currentColor"
+          d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.67-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.33 2.19c-1.4-.46-2.91-.2-3.92.81s-1.26 2.52-.8 3.91c-1.31.67-2.2 1.91-2.2 3.34s.89 2.67 2.2 3.34c-.46 1.39-.21 2.9.8 3.91s2.52 1.26 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.67-.88 3.34-2.19c1.39.45 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34z"
+        />
+        <path
+          fill="#FFFFFF"
+          d="M10.25 16.5l-3.75-3.75 1.41-1.41 2.34 2.34 5.34-5.34 1.41 1.41-6.75 6.75z"
+        />
+      </g>
+    </svg>
+  );
+};
+
 interface PostCardProps {
   post: MbudiaryPost;
   currentUser: UserProfile;
@@ -73,7 +101,7 @@ const FormattedPostContent: React.FC<{
                   onSelectAuthor(user.nrp);
                 }
               }}
-              className="text-indigo-600 dark:text-indigo-400 font-bold hover:underline cursor-pointer"
+              className="text-blue-600 dark:text-blue-400 font-bold hover:underline cursor-pointer"
             >
               {part}
             </span>
@@ -102,7 +130,6 @@ export const PostCard: React.FC<PostCardProps> = ({
   const [isDeleting, setIsDeleting] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
 
-  // AUTOCOMPLETE MENTION STATE (REPLY)
   const [commentMentionSuggestions, setCommentMentionSuggestions] = useState<MbudiaryUser[]>([]);
   const [commentMentionQuery, setCommentMentionQuery] = useState<string | null>(null);
   const commentInputRef = useRef<HTMLInputElement>(null);
@@ -380,7 +407,7 @@ export const PostCard: React.FC<PostCardProps> = ({
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95 }}
         transition={{ duration: 0.25 }}
-        className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl p-5 sm:p-6 transition-all duration-200 shadow-sm w-full mx-auto"
+        className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800/90 rounded-3xl p-4 sm:p-5 transition-all duration-200 shadow-xs w-full"
       >
         {isPlainRepost && (
           <div className="flex items-center gap-2 mb-3 text-[10px] font-semibold text-slate-400 dark:text-zinc-500">
@@ -389,41 +416,31 @@ export const PostCard: React.FC<PostCardProps> = ({
           </div>
         )}
 
-        <div className="flex items-start justify-between gap-3 mb-4">
+        <div className="flex items-start justify-between gap-3 mb-3.5">
           <div
             onClick={() => onSelectAuthor?.(displayAuthorNrp)}
             className="flex items-center gap-3 cursor-pointer group/author"
             title={`Lihat profil ${displayAuthorName}`}
           >
-            <div className="w-11 h-11 rounded-2xl bg-slate-50 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden border border-slate-100 dark:border-zinc-800 group-hover/author:scale-105 transition-transform">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-slate-100 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden border border-slate-200/80 dark:border-zinc-700/80 group-hover/author:scale-105 transition-transform">
               {displayAuthorPhotoUrl ? (
                 <img src={getOptimizedImageUrl(displayAuthorPhotoUrl)} alt={displayAuthorName} className="w-full h-full object-cover rounded-2xl" />
               ) : (
-                <span className="text-2xl leading-none">{displayAuthorEmoji}</span>
+                <span className="text-xl sm:text-2xl leading-none">{displayAuthorEmoji}</span>
               )}
             </div>
 
             <div>
               <div className="flex items-center flex-wrap gap-1.5">
-                <span className="text-slate-900 dark:text-zinc-100 font-bold text-sm sm:text-base group-hover/author:text-indigo-600 dark:group-hover/author:text-indigo-400 transition-colors">
+                <span className="text-slate-900 dark:text-zinc-100 font-bold text-sm group-hover/author:text-blue-500 transition-colors">
                   {displayAuthorName}
                 </span>
 
-                {displayAuthorIsVerified && (
-                  <span className="inline-flex items-center justify-center shrink-0 w-4 h-4 rounded-full bg-blue-500 text-white">
-                    <svg viewBox="0 0 20 20" fill="currentColor" className="w-2.5 h-2.5">
-                      <path fillRule="evenodd" d="M16.704 5.29a1 1 0 0 1 .006 1.414l-7.25 7.25a1 1 0 0 1-1.414 0l-3.25-3.25A1 1 0 0 1 6.21 9.29l2.543 2.543 6.543-6.543a1 1 0 0 1 1.408 0Z" clipRule="evenodd" />
-                    </svg>
-                  </span>
-                )}
+                {displayAuthorIsVerified && <VerifiedBadge size="sm" />}
               </div>
 
               <div className="text-slate-400 dark:text-zinc-500 text-[11px] mt-0.5">
-                @{displayAuthorUsername || 'unknown'}
-              </div>
-
-              <div className="text-slate-400 dark:text-zinc-500 text-[11px] mt-0.5">
-                <span title={formatDateFormatted(displayCreatedAt)}>{formatPostTimestamp(displayCreatedAt)}</span>
+                @{displayAuthorUsername || 'unknown'} • <span title={formatDateFormatted(displayCreatedAt)}>{formatPostTimestamp(displayCreatedAt)}</span>
               </div>
             </div>
           </div>
@@ -434,7 +451,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                 type="button"
                 onClick={() => setIsMenuOpen((prev) => !prev)}
                 disabled={isDeleting}
-                className="p-1.5 rounded-xl text-slate-400 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
+                className="p-1.5 rounded-xl text-slate-400 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
               >
                 <MoreVertical className="w-5 h-5" />
               </button>
@@ -445,13 +462,13 @@ export const PostCard: React.FC<PostCardProps> = ({
                     initial={{ opacity: 0, y: -4, scale: 0.97 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -4, scale: 0.97 }}
-                    className="absolute right-0 top-full mt-1.5 z-30 w-44 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-2xl p-1.5 shadow-xl"
+                    className="absolute right-0 top-full mt-1.5 z-30 w-44 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl p-1.5 shadow-xl"
                   >
                     <button
                       type="button"
                       onClick={handleDeletePost}
                       disabled={isDeleting}
-                      className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors disabled:opacity-50"
+                      className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors disabled:opacity-50 cursor-pointer"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                       <span>Hapus Postingan</span>
@@ -464,13 +481,13 @@ export const PostCard: React.FC<PostCardProps> = ({
         </div>
 
         {isQuoteRepost && (
-          <div className="text-[13px] sm:text-sm text-slate-800 dark:text-zinc-200 leading-relaxed whitespace-pre-line mb-4 font-normal">
+          <div className="text-[13px] sm:text-sm text-slate-800 dark:text-zinc-200 leading-relaxed whitespace-pre-line mb-3.5 font-normal">
             <FormattedPostContent content={post.quoteContent || ''} onSelectAuthor={onSelectAuthor} />
           </div>
         )}
 
         {!isQuoteRepost && displayContent && (
-          <div className="text-[13px] sm:text-sm text-slate-800 dark:text-zinc-200 leading-relaxed whitespace-pre-line mb-4 font-normal">
+          <div className="text-[13px] sm:text-sm text-slate-800 dark:text-zinc-200 leading-relaxed whitespace-pre-line mb-3.5 font-normal">
             <FormattedPostContent content={displayContent} onSelectAuthor={onSelectAuthor} />
           </div>
         )}
@@ -478,10 +495,10 @@ export const PostCard: React.FC<PostCardProps> = ({
         {isQuoteRepost && originalPost && (
           <div
             onClick={() => onSelectPost?.(originalPost.id)}
-            className="mb-4 rounded-2xl border border-slate-200 dark:border-zinc-700 overflow-hidden bg-slate-50/50 dark:bg-zinc-800/40 cursor-pointer hover:bg-slate-100/50 dark:hover:bg-zinc-800 transition-colors w-full"
+            className="mb-3.5 rounded-2xl border border-slate-200/80 dark:border-zinc-800 overflow-hidden bg-slate-50/50 dark:bg-zinc-950/50 cursor-pointer hover:bg-slate-100/50 dark:hover:bg-zinc-950 transition-colors w-full"
           >
             <div className="px-4 pt-3.5 pb-2 flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-xl bg-slate-200 dark:bg-zinc-700 flex items-center justify-center shrink-0 overflow-hidden">
+              <div className="w-7 h-7 rounded-xl bg-slate-200 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden">
                 {originalAuthorPhotoUrl ? (
                   <img src={getOptimizedImageUrl(originalAuthorPhotoUrl)} alt={originalAuthorName} className="w-full h-full object-cover" />
                 ) : (
@@ -492,11 +509,7 @@ export const PostCard: React.FC<PostCardProps> = ({
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5 min-w-0">
                   <div className="text-xs font-bold text-slate-900 dark:text-zinc-100 truncate">{originalAuthorName}</div>
-                  {originalAuthorProfile?.isVerified && (
-                    <span className="inline-flex items-center justify-center shrink-0 w-3.5 h-3.5 rounded-full bg-blue-500 text-white">
-                      <svg viewBox="0 0 20 20" fill="currentColor" className="w-2.5 h-2.5"><path fillRule="evenodd" d="M16.704 5.29a1 1 0 0 1 .006 1.414l-7.25 7.25a1 1 0 0 1-1.414 0l-3.25-3.25A1 1 0 0 1 6.21 9.29l2.543 2.543 6.543-6.543a1 1 0 0 1 1.408 0Z" clipRule="evenodd" /></svg>
-                    </span>
-                  )}
+                  {originalAuthorProfile?.isVerified && <VerifiedBadge size="sm" />}
                 </div>
                 <div className="text-[10px] text-slate-400 dark:text-zinc-500">@{originalAuthorProfile?.username || 'unknown'}</div>
               </div>
@@ -511,7 +524,7 @@ export const PostCard: React.FC<PostCardProps> = ({
         )}
 
         {!isQuoteRepost && displayImages && displayImages.length > 0 && (
-          <div className={`mb-4 grid gap-2 w-full ${displayImages.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+          <div className={`mb-3.5 grid gap-2 w-full ${displayImages.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
             {displayImages.map((imageUrl, index) => (
               <button
                 key={`${imageUrl}-${index}`}
@@ -525,12 +538,12 @@ export const PostCard: React.FC<PostCardProps> = ({
           </div>
         )}
 
-        <div className="flex items-center justify-between pt-2.5 sm:pt-3 border-t border-slate-100 dark:border-zinc-800/80 text-xs">
+        <div className="flex items-center justify-between pt-2 sm:pt-2.5 border-t border-slate-100 dark:border-zinc-800/80 text-xs">
           <div className="flex items-center gap-1 sm:gap-2 -ml-1">
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={handleLikeToggle}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full transition-all text-xs font-medium ${isLiked ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-500 font-bold border border-rose-200/80 dark:border-rose-900/50' : 'text-slate-500 dark:text-zinc-400 hover:text-rose-500 hover:bg-rose-50/60 dark:hover:bg-zinc-800/80 border border-transparent'}`}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full transition-all text-xs font-medium cursor-pointer ${isLiked ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-500 font-bold border border-rose-200/80 dark:border-rose-900/50' : 'text-slate-500 dark:text-zinc-400 hover:text-rose-500 hover:bg-rose-50/60 dark:hover:bg-zinc-800/80 border border-transparent'}`}
             >
               <Heart className={`w-4 h-4 transition-transform ${isLiked ? 'fill-rose-500 text-rose-500 scale-110' : ''}`} />
               <span>{likeCount}</span>
@@ -538,7 +551,7 @@ export const PostCard: React.FC<PostCardProps> = ({
 
             <button
               onClick={handleCommentClick}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full transition-all text-xs font-medium ${isRepliesExpanded && isDetailPage ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-bold border border-indigo-200/80 dark:border-indigo-900/50' : 'text-slate-500 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50/60 dark:hover:bg-zinc-800/80 border border-transparent'}`}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full transition-all text-xs font-medium cursor-pointer ${isRepliesExpanded && isDetailPage ? 'bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 font-bold border border-blue-200/80 dark:border-blue-900/50' : 'text-slate-500 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50/60 dark:hover:bg-zinc-800/80 border border-transparent'}`}
             >
               <MessageSquare className="w-4 h-4" />
               <span>{post.replyCount || replies.length}</span>
@@ -549,7 +562,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                 type="button"
                 onClick={() => setIsRepostMenuOpen((prev) => !prev)}
                 disabled={isReposting}
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full transition-all text-xs font-medium ${isRepostMenuOpen ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-200/80 dark:border-emerald-900/50' : 'text-slate-500 dark:text-zinc-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50/60 dark:hover:bg-zinc-800/80 border border-transparent disabled:opacity-50'}`}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full transition-all text-xs font-medium cursor-pointer ${isRepostMenuOpen ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-200/80 dark:border-emerald-900/50' : 'text-slate-500 dark:text-zinc-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50/60 dark:hover:bg-zinc-800/80 border border-transparent disabled:opacity-50'}`}
               >
                 <Repeat2 className={`w-4 h-4 ${isReposting ? 'animate-pulse' : ''}`} />
                 <span className="hidden xs:inline">Repost</span>
@@ -561,12 +574,12 @@ export const PostCard: React.FC<PostCardProps> = ({
                     initial={{ opacity: 0, y: -4, scale: 0.97 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -4, scale: 0.97 }}
-                    className="absolute left-0 bottom-full mb-1.5 z-30 w-44 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-2xl p-1.5 shadow-xl"
+                    className="absolute left-0 bottom-full mb-1.5 z-30 w-44 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl p-1.5 shadow-xl"
                   >
-                    <button type="button" onClick={handleRepost} className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left text-xs font-semibold text-slate-700 dark:text-zinc-200 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors">
+                    <button type="button" onClick={handleRepost} className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left text-xs font-semibold text-slate-700 dark:text-zinc-200 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer">
                       <Repeat2 className="w-4 h-4" /><span>Repost</span>
                     </button>
-                    <button type="button" onClick={() => { setIsRepostMenuOpen(false); setIsQuoteOpen(true); }} className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left text-xs font-semibold text-slate-700 dark:text-zinc-200 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors">
+                    <button type="button" onClick={() => { setIsRepostMenuOpen(false); setIsQuoteOpen(true); }} className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left text-xs font-semibold text-slate-700 dark:text-zinc-200 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer">
                       <Quote className="w-4 h-4" /><span>Quote Repost</span>
                     </button>
                   </motion.div>
@@ -579,7 +592,7 @@ export const PostCard: React.FC<PostCardProps> = ({
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={handleBookmarkToggle}
-              className={`flex items-center justify-center p-2 rounded-full transition-all border border-transparent ${isBookmarked ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-500 hover:bg-amber-100 dark:hover:bg-amber-900/50' : 'text-slate-400 dark:text-zinc-500 hover:text-amber-500 hover:bg-amber-50/60 dark:hover:bg-zinc-800/80'}`}
+              className={`flex items-center justify-center p-2 rounded-full transition-all border border-transparent cursor-pointer ${isBookmarked ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-500 hover:bg-amber-100 dark:hover:bg-amber-900/50' : 'text-slate-400 dark:text-zinc-500 hover:text-amber-500 hover:bg-amber-50/60 dark:hover:bg-zinc-800/80'}`}
               title={isBookmarked ? 'Hapus Bookmark' : 'Simpan Postingan'}
             >
               <Bookmark className={`w-4 h-4 transition-all ${isBookmarked ? 'fill-amber-500 text-amber-500' : ''}`} />
@@ -596,13 +609,13 @@ export const PostCard: React.FC<PostCardProps> = ({
               className="mt-3 pt-4 border-t border-slate-100 dark:border-zinc-800 space-y-3 overflow-hidden"
             >
               <h4 className="text-xs font-bold text-slate-700 dark:text-zinc-300 flex items-center gap-1.5">
-                <CornerDownRight className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
+                <CornerDownRight className="w-3.5 h-3.5 text-blue-500" />
                 Komen & Balasan ({replies.length})
               </h4>
 
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 {replies.length === 0 ? (
-                  <div className="p-3.5 text-center rounded-2xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-100 dark:border-zinc-800 text-xs text-slate-400 dark:text-zinc-500 italic">
+                  <div className="p-3.5 text-center rounded-2xl bg-slate-50 dark:bg-zinc-800/40 border border-slate-100 dark:border-zinc-800 text-xs text-slate-400 dark:text-zinc-500 italic">
                     Belum ada komen. Berikan tanggapan pertamamu!
                   </div>
                 ) : (
@@ -613,7 +626,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                     const replyPhotoUrl = replyAuthor?.photoUrl;
 
                     return (
-                      <div key={reply.id} className="p-3.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-100 dark:border-zinc-800 space-y-1.5 w-full">
+                      <div key={reply.id} className="p-3.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/40 border border-slate-100 dark:border-zinc-800/80 space-y-1.5 w-full">
                         <div className="flex items-center justify-between text-xs">
                           <div onClick={() => onSelectAuthor?.(reply.authorNrp)} className="flex items-center gap-2 cursor-pointer group/replyAuthor">
                             <div className="w-6 h-6 rounded-lg bg-slate-200 dark:bg-zinc-700 flex items-center justify-center shrink-0 overflow-hidden">
@@ -625,12 +638,10 @@ export const PostCard: React.FC<PostCardProps> = ({
                             </div>
 
                             <div className="flex items-center gap-1.5 min-w-0">
-                              <span className="text-slate-900 dark:text-zinc-100 font-bold text-xs sm:text-[13px] group-hover/replyAuthor:text-indigo-600 dark:group-hover/replyAuthor:text-indigo-400 transition-colors">
+                              <span className="text-slate-900 dark:text-zinc-100 font-bold text-xs sm:text-[13px] group-hover/replyAuthor:text-blue-500 transition-colors">
                                 {replyName}
                               </span>
-                              {replyAuthor?.isVerified && (
-                                <span className="inline-flex items-center justify-center shrink-0 w-3.5 h-3.5 rounded-full bg-blue-500 text-white"><svg viewBox="0 0 20 20" fill="currentColor" className="w-2.5 h-2.5"><path fillRule="evenodd" d="M16.704 5.29a1 1 0 0 1 .006 1.414l-7.25 7.25a1 1 0 0 1-1.414 0l-3.25-3.25A1 1 0 0 1 6.21 9.29l2.543 2.543 6.543-6.543a1 1 0 0 1 1.408 0Z" clipRule="evenodd" /></svg></span>
-                              )}
+                              {replyAuthor?.isVerified && <VerifiedBadge size="sm" />}
                             </div>
                           </div>
 
@@ -654,14 +665,13 @@ export const PostCard: React.FC<PostCardProps> = ({
                     value={replyContent}
                     onChange={handleCommentChange}
                     placeholder={`Tulis komen sebagai ${currentUser.nickname}...`}
-                    className="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-xs sm:text-[13px] border border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-xs sm:text-[13px] border border-slate-200/80 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
 
-                  {/* AUTOCOMPLETE DROPDOWN UNTUK KOMENTAR */}
                   {commentMentionQuery !== null && commentMentionSuggestions.length > 0 && (
                     <div className="absolute left-0 bottom-full mb-1 z-50 w-64 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-2xl p-1.5 shadow-xl max-h-48 overflow-y-auto">
                       <div className="text-[10px] font-bold text-slate-400 px-2 py-1 flex items-center gap-1">
-                        <AtSign className="w-3 h-3 text-indigo-500" />
+                        <AtSign className="w-3 h-3 text-blue-500" />
                         <span>Pilih User</span>
                       </div>
                       {commentMentionSuggestions.map((u) => (
@@ -690,7 +700,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                 <button
                   type="submit"
                   disabled={!replyContent.trim() || isSubmittingReply}
-                  className="px-4 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-100 dark:disabled:bg-zinc-800 text-white disabled:text-slate-400 text-xs font-semibold transition-all flex items-center gap-1 shadow-sm"
+                  className="px-4 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-500 disabled:bg-slate-100 dark:disabled:bg-zinc-800 text-white disabled:text-slate-400 text-xs font-semibold transition-all flex items-center gap-1 shadow-xs cursor-pointer"
                 >
                   <Send className="w-4 h-4" />
                   <span className="hidden xs:inline">Kirim</span>
@@ -707,7 +717,7 @@ export const PostCard: React.FC<PostCardProps> = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className={`fixed inset-0 z-[999998] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 transition-all duration-300 ${isQuoteFocused ? 'pb-[26dvh] sm:pb-0' : 'pb-0'}`}
+            className={`fixed inset-0 z-[999998] bg-black/70 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 transition-all duration-300 ${isQuoteFocused ? 'pb-[26dvh] sm:pb-0' : 'pb-0'}`}
             onMouseDown={(e) => {
               if (e.target === e.currentTarget) {
                 setIsQuoteOpen(false);
@@ -720,7 +730,7 @@ export const PostCard: React.FC<PostCardProps> = ({
               initial={{ scale: 0.95, opacity: 0, y: 10 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 10 }}
-              className="w-full max-w-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-3xl p-5 sm:p-6 shadow-2xl flex flex-col max-h-[85dvh]"
+              className="w-full max-w-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-3xl p-5 sm:p-6 shadow-2xl flex flex-col max-h-[85dvh]"
               onMouseDown={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-4 shrink-0">
@@ -728,7 +738,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                   <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100">Quote Repost</h3>
                   <p className="text-[10px] text-slate-400 dark:text-zinc-500 mt-0.5">Tambahkan komentar sebelum me-repost.</p>
                 </div>
-                <button type="button" onClick={() => { setIsQuoteOpen(false); setQuoteContent(''); setIsQuoteFocused(false); }} className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors">
+                <button type="button" onClick={() => { setIsQuoteOpen(false); setQuoteContent(''); setIsQuoteFocused(false); }} className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -742,12 +752,12 @@ export const PostCard: React.FC<PostCardProps> = ({
                   onBlur={() => setIsQuoteFocused(false)}
                   placeholder="Apa pendapatmu tentang postingan ini?"
                   rows={3}
-                  className="w-full resize-none px-4 py-3 mb-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-sm text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 shrink-0"
+                  className="w-full resize-none px-4 py-3 mb-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-sm text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 shrink-0"
                 />
 
-                <div className="rounded-2xl border border-slate-200 dark:border-zinc-700 overflow-y-auto bg-slate-50/50 dark:bg-zinc-800/40 flex-1 min-h-0 mb-3 custom-scrollbar">
+                <div className="rounded-2xl border border-slate-200 dark:border-zinc-800 overflow-y-auto bg-slate-50/50 dark:bg-zinc-950 flex-1 min-h-0 mb-3 custom-scrollbar">
                   <div className="px-4 py-3 flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-xl bg-slate-200 dark:bg-zinc-700 flex items-center justify-center shrink-0 overflow-hidden">
+                    <div className="w-8 h-8 rounded-xl bg-slate-200 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden">
                       {(post.isRepost && originalPost ? originalAuthorPhotoUrl : authorPhotoUrl) ? (
                         <img src={getOptimizedImageUrl(post.isRepost && originalPost ? originalAuthorPhotoUrl : authorPhotoUrl)} alt="Avatar" className="w-full h-full object-cover" />
                       ) : (
@@ -773,8 +783,8 @@ export const PostCard: React.FC<PostCardProps> = ({
                 </div>
 
                 <div className="flex items-center justify-end gap-2 shrink-0">
-                  <button type="button" onClick={() => { setIsQuoteOpen(false); setQuoteContent(''); setIsQuoteFocused(false); }} className="px-4 py-2.5 rounded-2xl text-xs font-semibold text-slate-500 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors">Batal</button>
-                  <button type="submit" disabled={!quoteContent.trim() || isReposting} className="px-5 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-100 dark:disabled:bg-zinc-800 text-white disabled:text-slate-400 text-xs font-semibold transition-all flex items-center gap-1.5 shadow-sm">
+                  <button type="button" onClick={() => { setIsQuoteOpen(false); setQuoteContent(''); setIsQuoteFocused(false); }} className="px-4 py-2.5 rounded-2xl text-xs font-semibold text-slate-500 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer">Batal</button>
+                  <button type="submit" disabled={!quoteContent.trim() || isReposting} className="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-500 disabled:bg-slate-100 dark:disabled:bg-zinc-800 text-white disabled:text-slate-400 text-xs font-semibold transition-all flex items-center gap-1.5 shadow-xs cursor-pointer">
                     <Quote className="w-4 h-4" />
                     <span>{isReposting ? 'Memproses...' : 'Quote Repost'}</span>
                   </button>

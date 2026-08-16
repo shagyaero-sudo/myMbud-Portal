@@ -12,7 +12,7 @@ interface PostListProps {
 }
 
 const PostCardSkeleton = () => (
-  <div className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl p-5 sm:p-6 shadow-sm animate-pulse space-y-4 w-full mx-auto">
+  <div className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl p-5 sm:p-6 shadow-xs animate-pulse space-y-4 w-full mx-auto">
     <div className="flex items-start gap-3">
       <div className="w-11 h-11 rounded-2xl bg-slate-200 dark:bg-zinc-800 shrink-0"></div>
       <div className="space-y-2 flex-1 pt-1">
@@ -70,13 +70,11 @@ export const PostList: React.FC<PostListProps> = ({
   }, []);
 
   const filteredPosts = posts.filter((post) => {
-    // 1. Filter Bookmark Jika Tombol Aktif
     if (showBookmarksOnly) {
       const bookmarkedIds = getBookmarkedPostIds();
       if (!bookmarkedIds.includes(post.id)) return false;
     }
 
-    // 2. Filter Pencarian
     if (!searchQuery.trim()) return true;
     const q = searchQuery.trim().toLowerCase();
     const author = getCachedUserByNrp(post.authorNrp);
@@ -98,8 +96,8 @@ export const PostList: React.FC<PostListProps> = ({
 
   return (
     <div className="space-y-3">
-      {/* Control Bar dengan Tombol Bookmark Terpisah */}
-      <div className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-2xl sm:rounded-3xl p-2 sm:p-2.5 shadow-sm">
+      {/* Control Bar */}
+      <div className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-2xl sm:rounded-3xl p-2 sm:p-2.5 shadow-xs">
         <div className="flex items-center gap-1.5 sm:gap-2">
           
           {/* SEARCH BAR */}
@@ -109,36 +107,36 @@ export const PostList: React.FC<PostListProps> = ({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Cari..."
-              className="w-full pl-8 pr-3 py-1.5 text-[11px] sm:text-xs rounded-xl sm:rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all"
+              placeholder="Cari cerita..."
+              className="w-full pl-8 pr-3 py-1.5 text-[11px] sm:text-xs rounded-xl sm:rounded-2xl bg-slate-50 dark:bg-zinc-800/80 border border-slate-200/80 dark:border-zinc-700/80 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all"
             />
             {searchQuery && (
-              <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-200 text-[10px] font-bold">✕</button>
+              <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-200 text-[10px] font-bold cursor-pointer">✕</button>
             )}
           </div>
 
-          {/* TOMBOL TAB SORTING (Ditambah Ikon Switch) */}
+          {/* TOMBOL TAB SORTING */}
           <button
             onClick={() => setSort(sort === 'newest' ? 'popular' : 'newest')}
-            className="px-2.5 py-1.5 rounded-xl sm:rounded-2xl bg-slate-50 dark:bg-zinc-800/80 hover:bg-slate-100 dark:hover:bg-zinc-800 border border-slate-100 dark:border-zinc-800 text-slate-700 dark:text-zinc-200 text-[11px] sm:text-xs font-bold flex items-center gap-1.5 transition-colors shrink-0"
+            className="px-2.5 py-1.5 rounded-xl sm:rounded-2xl bg-slate-50 dark:bg-zinc-800/80 hover:bg-slate-100 dark:hover:bg-zinc-800 border border-slate-200/80 dark:border-zinc-700/80 text-slate-700 dark:text-zinc-200 text-[11px] sm:text-xs font-bold flex items-center gap-1.5 transition-colors shrink-0 cursor-pointer"
             title="Ubah Urutan Postingan"
           >
             {sort === 'newest' ? (
-              <><Clock className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" /><span className="hidden sm:inline">Terbaru</span></>
+              <><Clock className="w-3.5 h-3.5 text-blue-500" /><span className="hidden sm:inline">Terbaru</span></>
             ) : (
               <><TrendingUp className="w-3.5 h-3.5 text-rose-500" /><span className="hidden sm:inline">Terpopuler</span></>
             )}
             <ArrowUpDown className="w-3 h-3 text-slate-400 ml-0.5" />
           </button>
 
-          {/* TOMBOL BOOKMARK TERPISAH */}
+          {/* TOMBOL BOOKMARK */}
           <button
             onClick={() => setShowBookmarksOnly((prev) => !prev)}
-            className={`px-2.5 py-1.5 rounded-xl sm:rounded-2xl border ${showBookmarksOnly ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-900/50 text-amber-600 dark:text-amber-400' : 'bg-slate-50 dark:bg-zinc-800/80 border-slate-100 dark:border-zinc-800 text-slate-400 dark:text-zinc-500 hover:text-amber-500'} transition-all shrink-0 flex items-center gap-1.5`}
+            className={`px-2.5 py-1.5 rounded-xl sm:rounded-2xl border ${showBookmarksOnly ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-900/50 text-amber-600 dark:text-amber-400 font-bold' : 'bg-slate-50 dark:bg-zinc-800/80 border-slate-200/80 dark:border-zinc-700/80 text-slate-400 dark:text-zinc-500 hover:text-amber-500'} transition-all shrink-0 flex items-center gap-1.5 cursor-pointer`}
             title="Lihat Postingan Tersimpan"
           >
             <Bookmark className={`w-3.5 h-3.5 transition-all ${showBookmarksOnly ? 'fill-amber-500 text-amber-500' : ''}`} />
-            <span className="hidden sm:inline text-[11px] sm:text-xs font-bold">Tersimpan</span>
+            <span className="hidden sm:inline text-[11px] sm:text-xs">Tersimpan</span>
           </button>
         </div>
       </div>
@@ -151,7 +149,7 @@ export const PostList: React.FC<PostListProps> = ({
             <PostCardSkeleton />
           </>
         ) : sortedPosts.length === 0 ? (
-          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl p-8 text-center shadow-sm space-y-3">
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl p-8 text-center shadow-xs space-y-3">
             <div className="w-12 h-12 rounded-full bg-slate-50 dark:bg-zinc-800 border border-slate-100 dark:border-zinc-800 text-slate-400 dark:text-zinc-500 flex items-center justify-center mx-auto">
               {showBookmarksOnly ? <Bookmark className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}
             </div>
@@ -169,7 +167,7 @@ export const PostList: React.FC<PostListProps> = ({
             {(searchQuery || showBookmarksOnly) && (
               <button 
                 onClick={() => { setSearchQuery(''); setShowBookmarksOnly(false); }} 
-                className="px-4 py-2 bg-indigo-600 text-white rounded-full text-xs font-semibold hover:bg-indigo-500 transition-colors inline-block shadow-sm mt-2"
+                className="px-4 py-2 bg-blue-600 text-white rounded-full text-xs font-semibold hover:bg-blue-500 transition-colors inline-block shadow-xs mt-2 cursor-pointer"
               >
                 Kembali ke Feed
               </button>

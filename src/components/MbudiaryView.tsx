@@ -45,7 +45,6 @@ export const MbudiaryView: React.FC = () => {
       forceRefresh((value) => value + 1);
     };
 
-    // HANDLER KHUSUS ROUTING DARI NOTIFIKASI
     const handleNotificationNavigation = () => {
       const targetPostId = localStorage.getItem('mbud_target_post_id');
       const targetActorNrp = localStorage.getItem('mbud_target_actor_nrp');
@@ -61,7 +60,6 @@ export const MbudiaryView: React.FC = () => {
       }
     };
 
-    // Cek langsung saat pertama kali dipasang
     handleNotificationNavigation();
 
     window.addEventListener('mbud_user_change', sync);
@@ -138,9 +136,8 @@ export const MbudiaryView: React.FC = () => {
   const selectedPost: MbudiaryPost | undefined = allPosts.find((post) => post.id === selectedPostId);
 
   return (
-    <div className="w-full bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 font-sans transition-colors duration-300 antialiased relative overflow-x-hidden">
-      <main className="flex-1 max-w-[600px] w-full mx-auto px-2 sm:px-0 py-3 sm:py-8 pb-24 sm:pb-8 relative z-10 space-y-3 sm:space-y-6">
-
+    <div className="w-full text-slate-900 dark:text-zinc-100 font-sans transition-colors duration-300 antialiased relative">
+      <main className="w-full max-w-3xl mx-auto px-0 sm:px-2 py-2 sm:py-6 pb-24 sm:pb-8 relative z-10 space-y-3 sm:space-y-5">
         {selectedAuthorNrp ? (
           <UserProfileView
             authorNrp={selectedAuthorNrp}
@@ -157,7 +154,7 @@ export const MbudiaryView: React.FC = () => {
           <div className="space-y-3 sm:space-y-4">
             <button
               onClick={() => setSelectedPostId(null)}
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 sm:px-4 sm:py-2.5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-xs font-bold text-slate-700 dark:text-zinc-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-all shadow-sm active:scale-95 group"
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 sm:px-4 sm:py-2.5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 text-xs font-bold text-slate-700 dark:text-zinc-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-zinc-800/80 transition-all shadow-xs active:scale-95 group ml-1 sm:ml-0 cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
               <span>Kembali</span>
@@ -175,7 +172,7 @@ export const MbudiaryView: React.FC = () => {
                 isDetailPage
               />
             ) : (
-              <div className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-3xl p-8 text-center text-xs font-medium text-slate-500 dark:text-zinc-400 shadow-sm">
+              <div className="bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 rounded-3xl p-8 text-center text-xs font-medium text-slate-500 dark:text-zinc-400 shadow-xs">
                 Postingan tidak ditemukan atau telah dihapus.
               </div>
             )}
@@ -183,7 +180,7 @@ export const MbudiaryView: React.FC = () => {
         ) : (
           <>
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-              <div className="flex items-start justify-between gap-3 px-2 sm:px-0 pt-1 sm:pt-0">
+              <div className="flex items-start justify-between gap-3 px-3 sm:px-1 pt-1 pb-1">
                 <div>
                   <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-zinc-100">
                     mbudiary.
@@ -195,19 +192,19 @@ export const MbudiaryView: React.FC = () => {
                 <div className="flex items-center gap-2 shrink-0">
                   <button
                     onClick={handleOpenEditModal}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-xs font-bold text-slate-700 dark:text-zinc-200 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-200 dark:hover:border-indigo-900 hover:bg-indigo-50/50 dark:hover:bg-zinc-800 transition-all shadow-sm active:scale-95"
+                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 text-xs font-bold text-slate-700 dark:text-zinc-200 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-200 dark:hover:border-blue-900/60 hover:bg-blue-50/50 dark:hover:bg-zinc-800/80 transition-all shadow-xs active:scale-95 cursor-pointer"
                     title="Kustomisasi Profilmu"
                   >
-                    <Edit3 className="w-3.5 h-3.5 text-indigo-500" />
-                    <span className="hidden xs:inline">Kustomisasi Profilmu</span>
+                    <Edit3 className="w-3.5 h-3.5 text-blue-500" />
+                    <span className="hidden xs:inline">Kustomisasi</span>
                   </button>
 
                   <button
                     onClick={() => setSelectedAuthorNrp(currentUser.nrp)}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-xs font-bold text-slate-700 dark:text-zinc-200 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-200 dark:hover:border-indigo-900 hover:bg-indigo-50/50 dark:hover:bg-zinc-800 transition-all shadow-sm active:scale-95"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 text-xs font-bold text-slate-700 dark:text-zinc-200 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-200 dark:hover:border-blue-900/60 hover:bg-blue-50/50 dark:hover:bg-zinc-800/80 transition-all shadow-xs active:scale-95 cursor-pointer"
                     title="Lihat Profil Saya"
                   >
-                    <User className="w-3.5 h-3.5" />
+                    <User className="w-3.5 h-3.5 text-blue-500" />
                     <span>Profil Saya</span>
                   </button>
                 </div>
@@ -231,30 +228,30 @@ export const MbudiaryView: React.FC = () => {
         )}
       </main>
 
-      {/* EDIT PROFILE MODAL (RINGKAS TANPA EMOJI PICKER) */}
+      {/* EDIT PROFILE MODAL */}
       <AnimatePresence>
         {isEditModalOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
+            className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4"
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0, y: 10 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 10 }}
-              className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-5"
+              className="bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-5"
             >
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
-                  <User className="w-5 h-5 text-indigo-500" />
+                  <User className="w-5 h-5 text-blue-500" />
                   <span>Kustomisasi Profilmu</span>
                 </h3>
                 <button
                   type="button"
                   onClick={() => setIsEditModalOpen(false)}
-                  className="p-2 rounded-2xl text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
+                  className="p-2 rounded-2xl text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -266,9 +263,9 @@ export const MbudiaryView: React.FC = () => {
                     Foto Profil
                   </label>
                   <div className="flex items-center gap-4 p-3 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800">
-                    <div className="relative w-16 h-16 rounded-2xl overflow-hidden bg-slate-200 dark:bg-zinc-700 flex items-center justify-center shrink-0 border border-slate-200 dark:border-zinc-700">
+                    <div className="relative w-16 h-16 rounded-2xl overflow-hidden bg-slate-200 dark:bg-zinc-800 flex items-center justify-center shrink-0 border border-slate-200/80 dark:border-zinc-700">
                       {isUploadingAvatar ? (
-                        <Loader2 className="w-6 h-6 text-indigo-500 animate-spin" />
+                        <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
                       ) : editPhotoUrl ? (
                         <img src={editPhotoUrl} alt="Avatar Preview" className="w-full h-full object-cover" />
                       ) : (
@@ -280,7 +277,7 @@ export const MbudiaryView: React.FC = () => {
                         type="button"
                         disabled={isUploadingAvatar}
                         onClick={() => avatarInputRef.current?.click()}
-                        className="px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-colors flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
+                        className="px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition-colors flex items-center justify-center gap-2 shadow-xs disabled:opacity-50 cursor-pointer"
                       >
                         <Camera className="w-3.5 h-3.5" />
                         <span>{editPhotoUrl ? 'Ganti Foto' : 'Upload Foto'}</span>
@@ -289,7 +286,7 @@ export const MbudiaryView: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => setEditPhotoUrl(undefined)}
-                          className="px-3 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 text-xs font-semibold hover:bg-rose-100 dark:hover:bg-rose-900/60 transition-colors flex items-center justify-center gap-1.5"
+                          className="px-3 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 text-xs font-semibold hover:bg-rose-100 dark:hover:bg-rose-900/60 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                         >
                           <Trash2 className="w-3 h-3" />
                           <span>Hapus Foto</span>
@@ -320,7 +317,7 @@ export const MbudiaryView: React.FC = () => {
                       onChange={(e) => setEditUsername(e.target.value.replace(/\s+/g, '').toLowerCase())}
                       placeholder="usernameunik"
                       maxLength={30}
-                      className="w-full pl-7 pr-3.5 py-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-xs border border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full pl-7 pr-3.5 py-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-xs border border-slate-200/80 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                 </div>
@@ -329,14 +326,14 @@ export const MbudiaryView: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setIsEditModalOpen(false)}
-                    className="px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 text-xs font-semibold hover:bg-slate-200 dark:hover:bg-zinc-700 transition-colors"
+                    className="px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 text-xs font-semibold hover:bg-slate-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
                   >
                     Batal
                   </button>
                   <button
                     type="submit"
                     disabled={!editUsername.trim() || isUploadingAvatar}
-                    className="px-5 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-bold transition-all shadow-md shadow-indigo-500/20 active:scale-95 flex items-center gap-1.5"
+                    className="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-xs font-bold transition-all shadow-md shadow-blue-500/20 active:scale-95 flex items-center gap-1.5 cursor-pointer"
                   >
                     {isUploadingAvatar && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                     <span>Simpan Profil</span>
