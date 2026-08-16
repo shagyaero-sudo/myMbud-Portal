@@ -64,15 +64,15 @@ const IS_MAINTENANCE = false;
 
 const AppSkeleton = () => (
   <div className="animate-pulse space-y-6">
-    <div className="h-40 bg-slate-200/60 dark:bg-[#13181f] rounded-3xl w-full border border-slate-200 dark:border-[#1f2732]"></div>
+    <div className="h-40 bg-slate-200/60 dark:bg-zinc-900 rounded-3xl w-full border border-slate-200 dark:border-zinc-800"></div>
 
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2 space-y-6">
-        <div className="h-64 bg-slate-200/60 dark:bg-[#13181f] rounded-3xl w-full border border-slate-200 dark:border-[#1f2732]"></div>
-        <div className="h-48 bg-slate-200/60 dark:bg-[#13181f] rounded-3xl w-full border border-slate-200 dark:border-[#1f2732]"></div>
+        <div className="h-64 bg-slate-200/60 dark:bg-zinc-900 rounded-3xl w-full border border-slate-200 dark:border-zinc-800"></div>
+        <div className="h-48 bg-slate-200/60 dark:bg-zinc-900 rounded-3xl w-full border border-slate-200 dark:border-zinc-800"></div>
       </div>
 
-      <div className="h-96 bg-slate-200/60 dark:bg-[#13181f] rounded-3xl w-full border border-slate-200 dark:border-[#1f2732]"></div>
+      <div className="h-96 bg-slate-200/60 dark:bg-zinc-900 rounded-3xl w-full border border-slate-200 dark:border-zinc-800"></div>
     </div>
   </div>
 );
@@ -80,8 +80,8 @@ const AppSkeleton = () => (
 export default function App() {
   if (IS_MAINTENANCE) {
     return (
-      <div className="min-h-screen bg-[#0b0f14] text-slate-100 flex flex-col items-center justify-center p-6 text-center font-sans">
-        <div className="bg-[#13181f] border border-[#1f2732] rounded-3xl p-8 max-w-md w-full shadow-2xl backdrop-blur-md flex flex-col items-center space-y-4">
+      <div className="min-h-screen bg-zinc-950 text-slate-100 flex flex-col items-center justify-center p-6 text-center font-sans">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8 max-w-md w-full shadow-2xl backdrop-blur-md flex flex-col items-center space-y-4">
           <div className="w-16 h-16 bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center text-3xl mb-2 border border-blue-500/20">
             🛠️
           </div>
@@ -590,7 +590,7 @@ export default function App() {
         {showSplash && <SplashScreen key="splash" soundUrl="/splash-sound.mp3" />}
       </AnimatePresence>
 
-      <div className="min-h-screen bg-slate-50 dark:bg-[#0b0f14] text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-200">
+      <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-200">
         <Header
           isOfficer={isOfficer}
           setIsOfficer={setIsOfficer}

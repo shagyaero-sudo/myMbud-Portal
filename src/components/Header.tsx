@@ -127,18 +127,18 @@ export const Header: React.FC<HeaderProps> = ({
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const alarmAudioRef = useRef<HTMLAudioElement | null>(null);
 
-  // --- myITS 2-LAYER THEME STATE ---
+  // --- 2-LAYER THEME STATE ---
   const [themeMode, setThemeMode] = useState<ThemeMode>('dark');
   const [themeAccent, setThemeAccent] = useState<ThemeAccent>('blue');
 
   const accentOptions = [
-    { id: 'blue' as ThemeAccent, color: '#007AC2', label: 'Biru' },
+    { id: 'blue' as ThemeAccent, color: '#0284C7', label: 'Biru' },
     { id: 'purple' as ThemeAccent, color: '#7C3AED', label: 'Ungu' },
     { id: 'pink' as ThemeAccent, color: '#DB2777', label: 'Pink' },
     { id: 'orange' as ThemeAccent, color: '#EA580C', label: 'Oranye' },
     { id: 'green' as ThemeAccent, color: '#16A34A', label: 'Hijau' },
     { id: 'teal' as ThemeAccent, color: '#0D9488', label: 'Teal' },
-    { id: 'cyan' as ThemeAccent, color: '#0284C7', label: 'Cyan' },
+    { id: 'cyan' as ThemeAccent, color: '#0891B2', label: 'Cyan' },
   ];
 
   const applyThemeToDOM = (mode: ThemeMode, accent: ThemeAccent) => {
@@ -415,7 +415,7 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <>
-      <header className="sticky top-0 z-30 w-full bg-white/85 dark:bg-[#0b0f14]/85 backdrop-blur-md text-slate-800 dark:text-zinc-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] dark:shadow-none dark:border-b dark:border-[#1f2732]/80 transition-colors pt-[env(safe-area-inset-top)]">
+      <header className="sticky top-0 z-30 w-full bg-white/85 dark:bg-zinc-950/85 backdrop-blur-md text-slate-800 dark:text-zinc-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] dark:shadow-none dark:border-b dark:border-zinc-800/80 transition-colors pt-[env(safe-area-inset-top)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 py-2.5 sm:py-3.5 flex items-center justify-between">
           {/* LOGO */}
           <motion.button
@@ -450,14 +450,14 @@ export const Header: React.FC<HeaderProps> = ({
                   setIsNotificationOpen((prev) => !prev);
                   setIsQuickDrawerOpen(false);
                 }}
-                className="relative p-2.5 rounded-2xl bg-slate-100/80 dark:bg-[#1a212b] hover:bg-slate-200 dark:hover:bg-[#263140] text-slate-700 dark:text-zinc-200 transition-all flex items-center justify-center cursor-pointer border border-transparent dark:border-[#1f2732]"
+                className="relative p-2.5 rounded-2xl bg-slate-100/80 dark:bg-zinc-800/80 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 transition-all flex items-center justify-center cursor-pointer border border-transparent dark:border-zinc-800"
                 title="Notifikasi"
               >
                 {unreadCount > 0 ? <BellRing className="w-5 h-5" /> : <Bell className="w-5 h-5" />}
                 {unreadCount > 0 && (
                   <span className="absolute top-1 right-1 flex h-2.5 w-2.5">
                     <span className="absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75 animate-ping" />
-                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500 border-2 border-white dark:border-[#0b0f14]" />
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500 border-2 border-white dark:border-zinc-950" />
                   </span>
                 )}
               </motion.button>
@@ -476,7 +476,7 @@ export const Header: React.FC<HeaderProps> = ({
                   ? pomoMode === 'focus'
                     ? 'px-3 py-2 sm:px-3.5 sm:py-2 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-900/60 text-rose-600 dark:text-rose-400 font-mono gap-1.5 shadow-xs'
                     : 'px-3 py-2 sm:px-3.5 sm:py-2 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-900/60 text-emerald-600 dark:text-emerald-400 font-mono gap-1.5 shadow-xs'
-                  : 'p-2.5 rounded-2xl bg-slate-100/80 dark:bg-[#1a212b] hover:bg-slate-200 dark:hover:bg-[#263140] text-slate-700 dark:text-zinc-200 dark:border-[#1f2732]'
+                  : 'p-2.5 rounded-2xl bg-slate-100/80 dark:bg-zinc-800/80 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 dark:border-zinc-800'
               }`}
               title="Menu & Fokus"
               aria-label="Menu & Fokus"
@@ -518,9 +518,9 @@ export const Header: React.FC<HeaderProps> = ({
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: -10 }}
                   transition={{ type: 'spring', stiffness: 400, damping: 28 }}
-                  className="fixed top-16 left-4 right-4 sm:left-auto sm:right-6 sm:top-16 sm:w-[380px] max-w-md mx-auto bg-white dark:bg-[#13181f] border border-slate-100 dark:border-[#1f2732] rounded-3xl shadow-2xl z-[99999] overflow-hidden"
+                  className="fixed top-16 left-4 right-4 sm:left-auto sm:right-6 sm:top-16 sm:w-[380px] max-w-md mx-auto bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl shadow-2xl z-[99999] overflow-hidden"
                 >
-                  <div className="px-4 py-3.5 border-b border-slate-100 dark:border-[#1f2732] flex items-center justify-between">
+                  <div className="px-4 py-3.5 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between">
                     <div>
                       <div className="flex items-center gap-2">
                         <h2 className="text-sm font-bold text-slate-900 dark:text-zinc-100">Notifikasi</h2>
@@ -531,7 +531,7 @@ export const Header: React.FC<HeaderProps> = ({
                             className={`p-1.5 rounded-lg transition-all ${
                               isOfficerFormOpen 
                                 ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400' 
-                                : 'text-slate-400 hover:bg-slate-100 dark:hover:bg-[#1a212b] hover:text-indigo-500'
+                                : 'text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800 hover:text-indigo-500'
                             }`}
                             title="Kirim Notifikasi Manual"
                           >
@@ -584,7 +584,7 @@ export const Header: React.FC<HeaderProps> = ({
                               onChange={(e) => setOfficerTargetNrp(e.target.value)}
                               placeholder="NRP Target (atau ketik ALL)"
                               required
-                              className="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-[#1a212b] text-xs border border-indigo-200 dark:border-[#1f2732] text-slate-900 dark:text-zinc-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                              className="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-800 text-xs border border-indigo-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                             />
                             <input
                               type="text"
@@ -592,7 +592,7 @@ export const Header: React.FC<HeaderProps> = ({
                               onChange={(e) => setOfficerTitle(e.target.value)}
                               placeholder="Judul Notifikasi"
                               required
-                              className="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-[#1a212b] text-xs border border-indigo-200 dark:border-[#1f2732] text-slate-900 dark:text-zinc-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                              className="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-800 text-xs border border-indigo-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                             />
                             <textarea
                               value={officerMessage}
@@ -600,7 +600,7 @@ export const Header: React.FC<HeaderProps> = ({
                               placeholder="Isi pesan notifikasi..."
                               rows={2}
                               required
-                              className="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-[#1a212b] text-xs border border-indigo-200 dark:border-[#1f2732] text-slate-900 dark:text-zinc-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 resize-none"
+                              className="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-800 text-xs border border-indigo-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 resize-none"
                             />
                             <button
                               type="submit"
@@ -635,7 +635,7 @@ export const Header: React.FC<HeaderProps> = ({
                   <div className="max-h-[350px] sm:max-h-[430px] overflow-y-auto p-3 space-y-1.5 custom-scrollbar">
                     {notifications.length === 0 ? (
                       <div className="py-10 text-center">
-                        <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-[#1a212b] mx-auto flex items-center justify-center text-slate-400">
+                        <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-zinc-800 mx-auto flex items-center justify-center text-slate-400">
                           <Bell className="w-5 h-5" />
                         </div>
                         <p className="mt-3 text-xs font-semibold text-slate-600 dark:text-zinc-300">Belum ada notifikasi</p>
@@ -648,7 +648,7 @@ export const Header: React.FC<HeaderProps> = ({
                           onClick={() => handleNotificationClick(notification)}
                           className={`w-full text-left p-3 rounded-2xl transition-all ${
                             notification.isRead
-                              ? 'bg-transparent hover:bg-slate-50 dark:hover:bg-[#1a212b]'
+                              ? 'bg-transparent hover:bg-slate-50 dark:hover:bg-zinc-800/60'
                               : 'bg-blue-50/70 dark:bg-blue-950/25 hover:bg-blue-50 dark:hover:bg-blue-950/40'
                           }`}
                         >
@@ -700,10 +700,10 @@ export const Header: React.FC<HeaderProps> = ({
                   animate={{ x: 0 }}
                   exit={{ x: '100%' }}
                   transition={{ type: 'spring', damping: 30, stiffness: 350 }}
-                  className="fixed top-0 right-0 bottom-0 z-[99999] w-full max-w-[320px] bg-white dark:bg-[#0b0f14] border-l border-slate-200/80 dark:border-[#1f2732] shadow-2xl flex flex-col justify-between overflow-hidden"
+                  className="fixed top-0 right-0 bottom-0 z-[99999] w-full max-w-[320px] bg-white dark:bg-zinc-950 border-l border-slate-200/80 dark:border-zinc-800 shadow-2xl flex flex-col justify-between overflow-hidden"
                 >
                   {/* Header Drawer */}
-                  <div className="px-5 py-4 border-b border-slate-100 dark:border-[#1f2732] flex items-center justify-between">
+                  <div className="px-5 py-4 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="w-7 h-7 rounded-xl bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center text-blue-500">
                         <Timer className="w-4 h-4" />
@@ -714,7 +714,7 @@ export const Header: React.FC<HeaderProps> = ({
                     </div>
                     <button
                       onClick={() => setIsQuickDrawerOpen(false)}
-                      className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-[#1a212b] transition-colors"
+                      className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -726,7 +726,7 @@ export const Header: React.FC<HeaderProps> = ({
                     {/* SECTION 1: SEAMLESS POMODORO */}
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
-                        <div className="flex p-1 bg-slate-100 dark:bg-[#13181f] rounded-xl border border-transparent dark:border-[#1f2732]">
+                        <div className="flex p-1 bg-slate-100 dark:bg-zinc-900 rounded-xl border border-transparent dark:border-zinc-800">
                           <button
                             onClick={() => handleSwitchMode('focus')}
                             className={`px-3 py-1 text-[11px] font-bold rounded-lg transition-all cursor-pointer ${
@@ -754,7 +754,7 @@ export const Header: React.FC<HeaderProps> = ({
                           className={`p-1.5 rounded-lg text-xs transition-colors cursor-pointer border border-transparent ${
                             soundEnabled
                               ? 'text-blue-500 bg-blue-50 dark:bg-blue-950/50 dark:border-blue-900/40'
-                              : 'text-slate-400 dark:text-zinc-600 bg-slate-100 dark:bg-[#1a212b] dark:border-[#1f2732]'
+                              : 'text-slate-400 dark:text-zinc-600 bg-slate-100 dark:bg-zinc-800 dark:border-zinc-700'
                           }`}
                           title={soundEnabled ? 'Suara Aktif' : 'Suara Muted'}
                         >
@@ -822,7 +822,7 @@ export const Header: React.FC<HeaderProps> = ({
 
                           <button
                             onClick={handleResetTimer}
-                            className="p-2.5 rounded-xl bg-white dark:bg-[#1a212b] border border-slate-200 dark:border-[#1f2732] text-slate-600 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-[#263140] transition-all active:scale-95 cursor-pointer"
+                            className="p-2.5 rounded-xl bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-700 transition-all active:scale-95 cursor-pointer"
                             title="Reset Waktu"
                           >
                             <RotateCcw className="w-3.5 h-3.5" />
@@ -831,13 +831,13 @@ export const Header: React.FC<HeaderProps> = ({
                       </div>
                     </div>
 
-                    {/* SECTION 2: 2-LAYER THEME CUSTOMIZER ALA myITS */}
-                    <div className="space-y-4 pt-3 border-t border-slate-100 dark:border-[#1f2732]">
+                    {/* SECTION 2: 2-LAYER THEME CUSTOMIZER */}
+                    <div className="space-y-4 pt-3 border-t border-slate-100 dark:border-zinc-800">
                       <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-zinc-500 block text-center">
-                        Personalisesi Tampilan
+                        Personalisasi Tampilan
                       </span>
 
-                      {/* 1. Mode Tampilan (Terang vs Gelap) */}
+                      {/* 1. Mode Tampilan */}
                       <div className="space-y-1.5">
                         <label className="text-[11px] font-bold text-slate-700 dark:text-zinc-400">
                           Mode Tampilan
@@ -848,7 +848,7 @@ export const Header: React.FC<HeaderProps> = ({
                             className={`flex items-center justify-center gap-2 py-2.5 rounded-2xl border text-xs font-bold transition-all cursor-pointer ${
                               themeMode === 'light'
                                 ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 shadow-xs'
-                                : 'border-slate-200 dark:border-[#1f2732] bg-slate-50 dark:bg-[#13181f] text-slate-500 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-[#1a212b]'
+                                : 'border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900 text-slate-500 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800'
                             }`}
                           >
                             <Sun className="w-4 h-4" />
@@ -860,7 +860,7 @@ export const Header: React.FC<HeaderProps> = ({
                             className={`flex items-center justify-center gap-2 py-2.5 rounded-2xl border text-xs font-bold transition-all cursor-pointer ${
                               themeMode === 'dark'
                                 ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 shadow-xs'
-                                : 'border-slate-200 dark:border-[#1f2732] bg-slate-50 dark:bg-[#13181f] text-slate-500 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-[#1a212b]'
+                                : 'border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900 text-slate-500 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800'
                             }`}
                           >
                             <Moon className="w-4 h-4" />
@@ -869,12 +869,12 @@ export const Header: React.FC<HeaderProps> = ({
                         </div>
                       </div>
 
-                      {/* 2. Warna Aksen myITS */}
+                      {/* 2. Warna Aksen */}
                       <div className="space-y-1.5">
                         <label className="text-[11px] font-bold text-slate-700 dark:text-zinc-400">
                           Warna Aksen
                         </label>
-                        <div className="flex items-center justify-between gap-1.5 p-2 bg-slate-100/70 dark:bg-[#13181f] rounded-2xl border border-slate-200/60 dark:border-[#1f2732]">
+                        <div className="flex items-center justify-between gap-1.5 p-2 bg-slate-100/70 dark:bg-zinc-900 rounded-2xl border border-slate-200/60 dark:border-zinc-800">
                           {accentOptions.map((item) => {
                             const isSelected = themeAccent === item.id;
                             return (
@@ -896,9 +896,9 @@ export const Header: React.FC<HeaderProps> = ({
                     </div>
                   </div>
 
-                  {/* Footer Drawer (Logout) */}
+                  {/* Footer Drawer */}
                   {onLogout && (
-                    <div className="p-4 border-t border-slate-100 dark:border-[#1f2732] bg-slate-50/50 dark:bg-[#0b0f14]">
+                    <div className="p-4 border-t border-slate-100 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-950">
                       <button
                         onClick={() => {
                           setIsQuickDrawerOpen(false);
@@ -922,18 +922,18 @@ export const Header: React.FC<HeaderProps> = ({
       <AnimatePresence>
         {showPinModal && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4">
-            <motion.div initial={{ scale: 0.9, opacity: 0, y: 10 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 10 }} className="bg-white dark:bg-[#13181f] border border-slate-100 dark:border-[#1f2732] rounded-3xl max-w-sm w-full p-6 sm:p-8 shadow-2xl space-y-5 relative">
-              <button onClick={() => setShowPinModal(false)} className="absolute top-5 right-5 p-2 rounded-2xl text-slate-400 hover:bg-slate-100 dark:hover:bg-[#1a212b] transition-all"><X className="w-4 h-4" /></button>
+            <motion.div initial={{ scale: 0.9, opacity: 0, y: 10 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 10 }} className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl max-w-sm w-full p-6 sm:p-8 shadow-2xl space-y-5 relative">
+              <button onClick={() => setShowPinModal(false)} className="absolute top-5 right-5 p-2 rounded-2xl text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all"><X className="w-4 h-4" /></button>
               <div className="text-center space-y-2">
                 <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-blue-500 mx-auto flex items-center justify-center"><KeyRound className="w-6 h-6" /></div>
                 <h3 className="text-base font-bold text-slate-800 dark:text-zinc-100">Apakah kamu PJ?!</h3>
                 <p className="text-xs text-slate-500 dark:text-zinc-400">Jika iya, masukkan PIN untuk masuk mode kelola data.</p>
               </div>
               <form onSubmit={handlePinSubmit} className="space-y-4">
-                <input type="password" maxLength={6} autoFocus required value={pinInput} onChange={(e) => { setPinInput(e.target.value); if (pinError) setPinError(false); }} placeholder="• • • • • •" className={`w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-[#1a212b] text-slate-900 dark:text-zinc-100 text-center text-lg font-mono tracking-widest focus:outline-none focus:ring-2 transition-all border ${pinError ? 'border-red-500 bg-red-50/50' : 'border-slate-200 dark:border-[#1f2732] focus:ring-blue-500'}`} />
+                <input type="password" maxLength={6} autoFocus required value={pinInput} onChange={(e) => { setPinInput(e.target.value); if (pinError) setPinError(false); }} placeholder="• • • • • •" className={`w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 text-center text-lg font-mono tracking-widest focus:outline-none focus:ring-2 transition-all border ${pinError ? 'border-red-500 bg-red-50/50' : 'border-slate-200 dark:border-zinc-700 focus:ring-blue-500'}`} />
                 {pinError && <p className="text-[11px] font-semibold text-red-600 text-center flex items-center justify-center gap-1"><ShieldAlert className="w-3.5 h-3.5" /><span>PIN salah. Silakan coba lagi ya.</span></p>}
                 <div className="flex items-center gap-2 pt-1">
-                  <button type="button" onClick={() => setShowPinModal(false)} className="flex-1 py-2.5 rounded-2xl bg-slate-100 dark:bg-[#1a212b] text-slate-700 dark:text-zinc-300 text-xs font-semibold hover:bg-slate-200 dark:hover:bg-[#263140] transition-all">Batal</button>
+                  <button type="button" onClick={() => setShowPinModal(false)} className="flex-1 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 text-xs font-semibold hover:bg-slate-200 dark:hover:bg-zinc-700 transition-all">Batal</button>
                   <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} type="submit" className="flex-1 py-2.5 rounded-2xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 shadow-md shadow-blue-500/20 transition-all">Verifikasi</motion.button>
                 </div>
               </form>
