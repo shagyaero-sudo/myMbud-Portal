@@ -22,35 +22,32 @@
     
     <!-- Meta Tags Khusus iOS/iPadOS Web App -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="myMbud" />
 
-    <!-- Meta Tag Android Adaptif -->
-    <meta name="theme-color" content="#ffffff" />
+    <!-- Meta Tag Android / PWA Status Bar Default Charcoal -->
+    <meta name="theme-color" content="#121214" />
+    <meta name="color-scheme" content="dark light" />
 
-    <!-- SCRIPT CEGAH FLICKER & MEMBACA 5 TEMA -->
+    <!-- SCRIPT CEGAH FLICKER & MEMBACA SISTEM TEMA 2-LAYER -->
     <script>
       (function() {
-        const savedTheme = localStorage.getItem('theme');
+        const savedMode = localStorage.getItem('mymbud_theme_mode') || 'dark';
+        const savedAccent = localStorage.getItem('mymbud_theme_accent') || 'blue';
         const root = document.documentElement;
         
-        if (savedTheme === 'green') {
-          root.classList.add('green');
-          root.classList.remove('dark', 'pink', 'purple');
-        } else if (savedTheme === 'purple') {
-          root.classList.add('purple');
-          root.classList.remove('dark', 'pink', 'green');
-        } else if (savedTheme === 'pink') {
-          root.classList.add('pink');
-          root.classList.remove('dark', 'purple', 'green');
-        } else if (savedTheme === 'dark' || savedTheme === null) {
+        root.setAttribute('data-mode', savedMode);
+        root.setAttribute('data-accent', savedAccent);
+
+        if (savedMode === 'dark') {
           root.classList.add('dark');
-          root.classList.remove('pink', 'purple', 'green');
-          if (savedTheme === null) {
-            localStorage.setItem('theme', 'dark');
-          }
         } else {
-          root.classList.remove('dark', 'pink', 'purple', 'green');
+          root.classList.remove('dark');
+        }
+
+        const metaThemeColor = document.querySelector("meta[name='theme-color']");
+        if (metaThemeColor) {
+          metaThemeColor.setAttribute('content', savedMode === 'dark' ? '#121214' : '#ffffff');
         }
       })();
     </script>

@@ -151,6 +151,18 @@ export const Header: React.FC<HeaderProps> = ({
     } else {
       document.documentElement.classList.remove('dark');
     }
+
+    // SINKRONKAN STATUS BAR HP & PWA
+    const targetColor = mode === 'dark' ? '#121214' : '#ffffff';
+    let metaThemeColor = document.querySelector("meta[name='theme-color']");
+    if (metaThemeColor) {
+      metaThemeColor.setAttribute('content', targetColor);
+    } else {
+      const meta = document.createElement('meta');
+      meta.name = 'theme-color';
+      meta.content = targetColor;
+      document.head.appendChild(meta);
+    }
   };
 
   useEffect(() => {
