@@ -34,7 +34,7 @@
   }
 
   /* =========================================================
-     1. BASE SURFACE PALETTE (CLEAN LIGHT vs JET OBSIDIAN DARK)
+     1. BASE SURFACE PALETTE (CLEAN LIGHT vs MATTE CHARCOAL DARK)
      ========================================================= */
   :root {
     --color-slate-50: #f8fafc;
@@ -50,36 +50,36 @@
   }
 
   .dark {
-    /* Pure Jet-Obsidian Canvas (Bukan Biru Pudar) */
-    --color-slate-950: #0d0f12;
-    --color-zinc-950: #0d0f12;
-    --color-black: #0d0f12;
+    /* Pure Neutral Charcoal Canvas (0% Blue Saturation) */
+    --color-slate-950: #121214;
+    --color-zinc-950: #121214;
+    --color-black: #121214;
 
-    /* Card Surface Netral Mewah */
-    --color-zinc-900: #16181d;
-    --color-slate-900: #16181d;
+    /* Card Surface Keabuan Elegan */
+    --color-zinc-900: #18181b;
+    --color-slate-900: #18181b;
 
     /* Inner Container / Input Background */
-    --color-zinc-800: #1f2229;
-    --color-slate-800: #1f2229;
+    --color-zinc-800: #232326;
+    --color-slate-800: #232326;
 
-    /* Crisp Subtle Border */
-    --color-zinc-700: #2a2e38;
-    --color-slate-700: #2a2e38;
+    /* Subtle Neutral Gray Border */
+    --color-zinc-700: #2e2e33;
+    --color-slate-700: #2e2e33;
 
-    /* High Contrast Typography */
-    --color-zinc-100: #f8fafc;
-    --color-zinc-200: #e2e8f0;
-    --color-zinc-300: #cbd5e1;
-    --color-zinc-400: #94a3b8;
-    --color-zinc-500: #64748b;
-    --color-slate-400: #94a3b8;
-    --color-slate-500: #64748b;
+    /* Text Hierarchy */
+    --color-zinc-100: #f4f4f5;
+    --color-zinc-200: #e4e4e7;
+    --color-zinc-300: #d4d4d8;
+    --color-zinc-400: #a1a1aa;
+    --color-zinc-500: #71717a;
+    --color-slate-400: #a1a1aa;
+    --color-slate-500: #71717a;
   }
 }
 
 /* =========================================================
-   2. ACCENT COLORS (Solid, Bold & High-Contrast)
+   2. ACCENT COLORS (Solid, Punchy & Clean Contrast)
    ========================================================= */
 
 /* BIRU myITS */
