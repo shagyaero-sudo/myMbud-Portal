@@ -328,9 +328,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </aside>
 
-      {/* MOBILE BOTTOM NAVIGATION (DOCKED, CLEAN, TANPA PADDING BOX) */}
+      {/* MOBILE BOTTOM NAVIGATION (LOCKED TIGHT HEIGHT, ZERO EXTRA GAP) */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 w-full pointer-events-none">
-        <nav className="pointer-events-auto w-full bg-white/70 dark:bg-zinc-950/70 backdrop-blur-2xl backdrop-saturate-150 border-t border-slate-200/50 dark:border-zinc-800/80 rounded-t-[24px] px-2 pt-1.5 pb-[calc(0.35rem+env(safe-area-inset-bottom))] flex items-center justify-around shadow-[0_-8px_32px_rgba(0,0,0,0.08)] dark:shadow-[0_-8px_32px_rgba(0,0,0,0.5)] relative">
+        <nav className="pointer-events-auto w-full h-16 bg-white/70 dark:bg-zinc-950/70 backdrop-blur-2xl backdrop-saturate-150 border-t border-slate-200/50 dark:border-zinc-800/80 rounded-t-[22px] px-3 pb-1 flex items-center justify-around shadow-[0_-8px_32px_rgba(0,0,0,0.08)] dark:shadow-[0_-8px_32px_rgba(0,0,0,0.5)] relative">
           <BottomTabItem
             id="dashboard"
             label="Jadwal"
@@ -349,7 +349,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           />
 
           {/* TOMBOL MENU TENGAH */}
-          <div className="relative flex flex-col items-center justify-center -top-3 px-1">
+          <div className="relative flex flex-col items-center justify-center -top-3 px-1 shrink-0">
             <div className="p-1 rounded-full bg-slate-50/70 dark:bg-zinc-950/70 backdrop-blur-xl border border-slate-200/40 dark:border-zinc-800/60 shadow-xs">
               <motion.button
                 whileTap={{ scale: 0.9 }}
@@ -617,7 +617,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   );
 };
 
-/* HELPER COMPONENT BOTTOM TAB CLEAN & DIRECT */
+/* HELPER COMPONENT BOTTOM TAB CLEAN & PRECISE */
 const BottomTabItem = ({
   id,
   label,
@@ -631,13 +631,13 @@ const BottomTabItem = ({
   return (
     <button
       onClick={() => onClick(id)}
-      className={`relative flex flex-col items-center justify-center flex-1 py-1 transition-all cursor-pointer select-none ${
+      className={`relative flex flex-col items-center justify-center flex-1 h-full transition-all cursor-pointer select-none ${
         isActive
           ? 'text-blue-600 dark:text-blue-400 font-bold'
           : 'text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300'
       }`}
     >
-      <div className="relative">
+      <div className="relative flex items-center justify-center">
         <Icon
           className={`w-5 h-5 mb-0.5 transition-transform duration-200 ${
             isActive ? 'scale-110' : ''
@@ -650,7 +650,7 @@ const BottomTabItem = ({
         ) : null}
       </div>
 
-      <span className="text-[9.5px] tracking-tight">
+      <span className="text-[9.5px] tracking-tight leading-none">
         {label}
       </span>
     </button>
