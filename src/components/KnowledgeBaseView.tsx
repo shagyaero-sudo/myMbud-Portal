@@ -315,9 +315,14 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
   };
 
   return (
-    <div className="pb-28 sm:pb-16 pb-[calc(7rem+env(safe-area-inset-bottom))] sm:pb-[calc(4rem+env(safe-area-inset-bottom))]">
-      {/* HEADER BANNER */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+    <motion.div
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="space-y-6 pb-12"
+    >
+      {/* HEADER BANNER - Presisi 100% Identik dengan ContactsView */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1 pt-4 sm:pt-6 pb-4 sm:pb-6 mb-2 sm:mb-3">
         <div>
           <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
             Bank PDF Matkul
@@ -332,7 +337,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
           <button
             type="button"
             onClick={() => setShowOnlyBookmarked((prev) => !prev)}
-            className={`px-3.5 py-2 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 border cursor-pointer ${
+            className={`px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 border cursor-pointer ${
               showOnlyBookmarked
                 ? 'bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-500/25'
                 : 'bg-white dark:bg-zinc-900 border-slate-200/80 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 hover:border-blue-500/50 hover:text-blue-600 dark:hover:text-blue-400 shadow-xs'
@@ -357,13 +362,15 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
           </button>
 
           {isOfficer && (
-            <button
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
               onClick={handleOpenUploadModal}
-              className="px-4 py-2 rounded-2xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-semibold text-xs transition-all shadow-md shadow-blue-500/20 flex items-center gap-2 shrink-0 cursor-pointer"
+              className="px-4 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-semibold text-xs transition-all shadow-md shadow-blue-500/20 flex items-center gap-2 shrink-0 cursor-pointer"
             >
               <Upload className="w-3.5 h-3.5" />
               <span>Unggah PDF</span>
-            </button>
+            </motion.button>
           )}
         </div>
       </div>
@@ -445,7 +452,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Cari buku, modul, slide PPT, atau topik..."
-              className="w-full pl-11 pr-4 py-2.5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none"
+              className="w-full pl-11 pr-4 py-2.5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] dark:shadow-none"
             />
           </div>
 
@@ -839,6 +846,6 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 };
