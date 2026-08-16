@@ -116,11 +116,10 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
                 </h3>
               </div>
 
-              {/* Tombol Exit / Tutup Preview: Lebih Mencolok & Berwarna Merah */}
+              {/* Tombol Exit / Tutup Preview */}
               <button
                 onClick={onClose}
                 className="p-2.5 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/30 transition-all shrink-0 cursor-pointer shadow-xs active:scale-95"
-                title="Tutup Preview"
                 aria-label="Tutup Preview"
               >
                 <X className="w-5 h-5" />
@@ -130,12 +129,12 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
             {/* Container Iframe PDF */}
             <div className="flex-1 w-full h-full bg-slate-950 dark:bg-black flex flex-col min-h-0 overflow-hidden relative">
               
-              {/* Floating Zoom Control Menutupi Tombol Pop-Out */}
+              {/* Floating Zoom Control */}
               <div className="absolute top-[78px] right-2 sm:right-3 z-30 flex items-center gap-1.5 bg-zinc-950 border border-zinc-800/90 shadow-[0_8px_30px_rgba(0,0,0,0.8)] px-2.5 py-1.5 rounded-2xl">
                 <button
                   onClick={handleZoomOut}
                   className="p-1.5 rounded-xl text-zinc-300 hover:text-white hover:bg-zinc-800 transition-all active:scale-95 cursor-pointer"
-                  title="Perkecil"
+                  aria-label="Perkecil"
                 >
                   <ZoomOut className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
                 </button>
@@ -147,7 +146,7 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
                 <button
                   onClick={handleZoomIn}
                   className="p-1.5 rounded-xl text-zinc-300 hover:text-white hover:bg-zinc-800 transition-all active:scale-95 cursor-pointer"
-                  title="Perbesar"
+                  aria-label="Perbesar"
                 >
                   <ZoomIn className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
                 </button>
@@ -156,7 +155,7 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
                   <button
                     onClick={handleResetZoom}
                     className="p-1.5 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all border-l border-zinc-800 ml-0.5 cursor-pointer"
-                    title="Reset Zoom"
+                    aria-label="Reset Zoom"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
                   </button>
@@ -175,7 +174,6 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
                 >
                   <iframe
                     src={getEmbedUrl(material.fileUrl)}
-                    title={material.title}
                     className="w-full h-full border-0 bg-white"
                     allow="autoplay"
                   />
