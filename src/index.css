@@ -1,14 +1,11 @@
 @import "tailwindcss";
 
 @custom-variant dark (&:where(.dark, .dark *));
-@custom-variant pink (&:where(.pink, .pink *));
-@custom-variant purple (&:where(.purple, .purple *));
-@custom-variant green (&:where(.green, .green *));
 
 @layer base {
   html {
     scroll-behavior: smooth;
-    -webkit-tap-highlight-color: transparent; /* Hilangkan kotak abu-abu saat tap di Android */
+    -webkit-tap-highlight-color: transparent;
   }
 
   body {
@@ -17,7 +14,7 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Custom Soft Scrollbar Khas macOS/iOS */
+  /* Custom Soft Scrollbar */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -35,73 +32,143 @@
   ::-webkit-scrollbar-thumb:hover {
     background: rgba(150, 150, 150, 0.45);
   }
+
+  /* =========================================================
+     1. BASE SURFACE PALETTE (LIGHT vs myITS OBSIDIAN DARK)
+     ========================================================= */
+  :root {
+    --color-slate-50: #f8fafc;
+    --color-slate-100: #f1f5f9;
+    --color-slate-200: #e2e8f0;
+    --color-slate-400: #94a3b8;
+    --color-slate-500: #64748b;
+    --color-slate-600: #475569;
+    --color-slate-700: #334155;
+    --color-slate-800: #1e293b;
+    --color-slate-900: #0f172a;
+    --color-slate-950: #020617;
+  }
+
+  .dark {
+    /* myITS Academics Cool Dark Slate Canvas */
+    --color-slate-950: #0b0f14;
+    --color-zinc-950: #0b0f14;
+    --color-black: #0b0f14;
+
+    /* myITS Card Surface */
+    --color-zinc-900: #13181f;
+    --color-slate-900: #13181f;
+
+    /* myITS Inner Elements & Inputs */
+    --color-zinc-800: #1a212b;
+    --color-slate-800: #1a212b;
+
+    /* myITS Subtle Border */
+    --color-zinc-700: #1f2732;
+    --color-slate-700: #1f2732;
+
+    /* myITS Text Hierarchy */
+    --color-zinc-100: #f0f6fc;
+    --color-zinc-200: #e6edf3;
+    --color-zinc-300: #c9d1d9;
+    --color-zinc-400: #8b949e;
+    --color-zinc-500: #6e7681;
+    --color-slate-400: #8b949e;
+    --color-slate-500: #6e7681;
+  }
 }
 
-/* === PINK MODE OVERRIDES === */
-.pink {
-  --color-slate-50: #fff0f3;
-  --color-slate-100: #ffe4e8;
-  --color-slate-200: #FDB3C2;
-  
-  --color-slate-400: #F891A5;
-  --color-slate-500: #E56D85;
-  --color-slate-600: #BF3853;
-  --color-slate-700: #A41F39;
-  --color-slate-800: #801328;
-  --color-slate-900: #590a1a;
+/* =========================================================
+   2. MODULAR ACCENT COLOR PALETTES (Overrides Tailwind Blue)
+   ========================================================= */
 
-  --color-blue-50: #ffe4e8;
-  --color-blue-100: #FDB3C2;
-  --color-blue-400: #F891A5;
-  --color-blue-500: #E56D85;
-  --color-blue-600: #E56D85;
-  --color-blue-700: #BF3853;
-  --color-blue-900: #A41F39;
-  --color-blue-950: #801328;
+/* BIRU myITS (Default) */
+:root[data-accent="blue"] {
+  --color-blue-50: #e8f4fd;
+  --color-blue-100: #d0e9fb;
+  --color-blue-200: #a3d4f7;
+  --color-blue-400: #58a6ff;
+  --color-blue-500: #007ac2;
+  --color-blue-600: #007ac2;
+  --color-blue-700: #005a91;
+  --color-blue-900: #0d3859;
+  --color-blue-950: #072238;
 }
 
-/* === PURPLE MODE OVERRIDES === */
-.purple {
-  --color-slate-50: #f8f0fe;
-  --color-slate-100: #f0dbfd;
-  --color-slate-200: #cc92fc;
-  
-  --color-slate-400: #b365f2;
-  --color-slate-500: #9a32ef;
-  --color-slate-600: #7710d1;
-  --color-slate-700: #6e25aa;
-  --color-slate-800: #521884;
-  --color-slate-900: #380b5c;
-
-  --color-blue-50: #f0dbfd;
-  --color-blue-100: #cc92fc;
-  --color-blue-400: #b365f2;
-  --color-blue-500: #9a32ef;
-  --color-blue-600: #9a32ef;
-  --color-blue-700: #7710d1;
-  --color-blue-900: #6e25aa;
-  --color-blue-950: #521884;
+/* UNGU */
+:root[data-accent="purple"] {
+  --color-blue-50: #f5f0ff;
+  --color-blue-100: #ebdfff;
+  --color-blue-200: #d8c2ff;
+  --color-blue-400: #bc8cff;
+  --color-blue-500: #7c3aed;
+  --color-blue-600: #7c3aed;
+  --color-blue-700: #6d28d9;
+  --color-blue-900: #3b1875;
+  --color-blue-950: #230b49;
 }
 
-/* === GREEN / MATCHA MODE OVERRIDES === */
-.green {
-  --color-slate-50: #f7fcf5;
-  --color-slate-100: #e5f5e0;
-  --color-slate-200: #c7e9c0;
-  
-  --color-slate-400: #74c476;
-  --color-slate-500: #41ab5d;
-  --color-slate-600: #238b45;
-  --color-slate-700: #006d2c;
-  --color-slate-800: #00441b;
-  --color-slate-900: #002b11;
+/* PINK */
+:root[data-accent="pink"] {
+  --color-blue-50: #fff0f5;
+  --color-blue-100: #ffe0eb;
+  --color-blue-200: #ffc2d7;
+  --color-blue-400: #f472b6;
+  --color-blue-500: #db2777;
+  --color-blue-600: #db2777;
+  --color-blue-700: #be185d;
+  --color-blue-900: #670b33;
+  --color-blue-950: #3e041d;
+}
 
-  --color-blue-50: #e5f5e0;
-  --color-blue-100: #c7e9c0;
-  --color-blue-400: #74c476;
-  --color-blue-500: #41ab5d;
-  --color-blue-600: #238b45;
-  --color-blue-700: #006d2c;
-  --color-blue-900: #00441b;
-  --color-blue-950: #002b11;
+/* ORANYE */
+:root[data-accent="orange"] {
+  --color-blue-50: #fff5ed;
+  --color-blue-100: #ffe8d6;
+  --color-blue-200: #ffd0ad;
+  --color-blue-400: #fb923c;
+  --color-blue-500: #ea580c;
+  --color-blue-600: #ea580c;
+  --color-blue-700: #c2410c;
+  --color-blue-900: #6c2306;
+  --color-blue-950: #431202;
+}
+
+/* HIJAU */
+:root[data-accent="green"] {
+  --color-blue-50: #f0fdf4;
+  --color-blue-100: #dcfce7;
+  --color-blue-200: #bbf7d0;
+  --color-blue-400: #4ade80;
+  --color-blue-500: #16a34a;
+  --color-blue-600: #16a34a;
+  --color-blue-700: #15803d;
+  --color-blue-900: #14532d;
+  --color-blue-950: #052e16;
+}
+
+/* TEAL */
+:root[data-accent="teal"] {
+  --color-blue-50: #f0fdfa;
+  --color-blue-100: #ccfbf1;
+  --color-blue-200: #99f6e4;
+  --color-blue-400: #2dd4bf;
+  --color-blue-500: #0d9488;
+  --color-blue-600: #0d9488;
+  --color-blue-700: #0f766e;
+  --color-blue-900: #134e4a;
+  --color-blue-950: #042f2e;
+}
+
+/* CYAN */
+:root[data-accent="cyan"] {
+  --color-blue-50: #f0f9ff;
+  --color-blue-100: #e0f2fe;
+  --color-blue-200: #bae6fd;
+  --color-blue-400: #38bdf8;
+  --color-blue-500: #0284c7;
+  --color-blue-600: #0284c7;
+  --color-blue-700: #0369a1;
+  --color-blue-900: #0c4a6e;
+  --color-blue-950: #082f49;
 }

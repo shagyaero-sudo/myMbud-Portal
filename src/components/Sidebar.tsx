@@ -189,8 +189,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </aside>
 
       {/* MOBILE BOTTOM NAVIGATION */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 pb-[env(safe-area-inset-bottom)] pointer-events-none">
-        <nav className="pointer-events-auto mx-4 mb-2 sm:mb-4 bg-white/80 dark:bg-zinc-900/85 backdrop-blur-2xl border border-white/50 dark:border-white/10 px-2.5 py-2.5 flex items-center justify-between shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] rounded-[2rem] transition-colors relative">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 pb-[max(0.25rem,env(safe-area-inset-bottom))] pointer-events-none">
+        <nav className="pointer-events-auto mx-3 bg-white/80 dark:bg-zinc-900/85 backdrop-blur-2xl border border-white/50 dark:border-white/10 px-2 py-1.5 flex items-center justify-between shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] rounded-[2rem] transition-colors relative">
           
           <BottomTabItem id="dashboard" label="Jadwal" icon={CalendarDays} activeTab={activeTab} onClick={setActiveTab} />
           
