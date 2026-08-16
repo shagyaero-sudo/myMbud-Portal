@@ -433,7 +433,7 @@ export const Header: React.FC<HeaderProps> = ({
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={handleLogoClick}
-            className="flex items-center gap-2.5 text-left group focus:outline-none"
+            className="flex items-center gap-2.5 text-left group focus:outline-none shrink-0"
           >
             <img src="/logombud.png" alt="Logo myMbud" className="h-8 w-auto object-contain" />
             <div>
@@ -453,16 +453,16 @@ export const Header: React.FC<HeaderProps> = ({
           </motion.button>
 
           {/* ACTIONS */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             {/* NOTIFICATION BELL */}
-            <div className="relative">
+            <div className="relative shrink-0">
               <motion.button
                 whileTap={{ scale: 0.9 }}
                 onClick={() => {
                   setIsNotificationOpen((prev) => !prev);
                   setIsQuickDrawerOpen(false);
                 }}
-                className="relative p-2.5 rounded-2xl bg-slate-100/80 dark:bg-zinc-800/80 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 transition-all flex items-center justify-center cursor-pointer border border-transparent dark:border-zinc-800"
+                className="relative p-2.5 rounded-2xl bg-slate-100/80 dark:bg-zinc-800/80 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 transition-colors flex items-center justify-center cursor-pointer border border-transparent dark:border-zinc-800"
                 title="Notifikasi"
               >
                 {unreadCount > 0 ? <BellRing className="w-5 h-5" /> : <Bell className="w-5 h-5" />}
@@ -475,15 +475,14 @@ export const Header: React.FC<HeaderProps> = ({
               </motion.button>
             </div>
 
-            {/* ADAPTIVE POMODORO TIMER / HAMBURGER TRIGGER */}
+            {/* ADAPTIVE POMODORO TIMER / HAMBURGER TRIGGER (STABIL & NON-GLITCHY) */}
             <motion.button
-              layout
               whileTap={{ scale: 0.92 }}
               onClick={() => {
                 setIsQuickDrawerOpen(true);
                 setIsNotificationOpen(false);
               }}
-              className={`relative transition-all flex items-center justify-center cursor-pointer select-none border border-transparent ${
+              className={`relative transition-colors flex items-center justify-center cursor-pointer select-none shrink-0 border border-transparent ${
                 isRunning
                   ? pomoMode === 'focus'
                     ? 'px-3 py-2 sm:px-3.5 sm:py-2 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-900/60 text-rose-600 dark:text-rose-400 font-mono gap-1.5 shadow-xs'
@@ -495,7 +494,7 @@ export const Header: React.FC<HeaderProps> = ({
             >
               {isRunning ? (
                 <>
-                  <span className="relative flex h-2 w-2">
+                  <span className="relative flex h-2 w-2 shrink-0">
                     <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${pomoMode === 'focus' ? 'bg-rose-400' : 'bg-emerald-400'}`} />
                     <span className={`relative inline-flex rounded-full h-2 w-2 ${pomoMode === 'focus' ? 'bg-rose-500' : 'bg-emerald-500'}`} />
                   </span>
