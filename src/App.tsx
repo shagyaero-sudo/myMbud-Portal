@@ -64,15 +64,15 @@ const IS_MAINTENANCE = false;
 
 const AppSkeleton = () => (
   <div className="animate-pulse space-y-6">
-    <div className="h-40 bg-slate-200/60 dark:bg-zinc-900 rounded-3xl w-full border border-slate-200 dark:border-zinc-800"></div>
+    <div className="h-40 bg-slate-200/60 dark:bg-zinc-900/60 rounded-3xl w-full border border-slate-200 dark:border-zinc-800"></div>
 
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2 space-y-6">
-        <div className="h-64 bg-slate-200/60 dark:bg-zinc-900 rounded-3xl w-full border border-slate-200 dark:border-zinc-800"></div>
-        <div className="h-48 bg-slate-200/60 dark:bg-zinc-900 rounded-3xl w-full border border-slate-200 dark:border-zinc-800"></div>
+        <div className="h-64 bg-slate-200/60 dark:bg-zinc-900/60 rounded-3xl w-full border border-slate-200 dark:border-zinc-800"></div>
+        <div className="h-48 bg-slate-200/60 dark:bg-zinc-900/60 rounded-3xl w-full border border-slate-200 dark:border-zinc-800"></div>
       </div>
 
-      <div className="h-96 bg-slate-200/60 dark:bg-zinc-900 rounded-3xl w-full border border-slate-200 dark:border-zinc-800"></div>
+      <div className="h-96 bg-slate-200/60 dark:bg-zinc-900/60 rounded-3xl w-full border border-slate-200 dark:border-zinc-800"></div>
     </div>
   </div>
 );
@@ -80,9 +80,11 @@ const AppSkeleton = () => (
 export default function App() {
   if (IS_MAINTENANCE) {
     return (
-      <div className="min-h-screen bg-zinc-950 text-slate-100 flex flex-col items-center justify-center p-6 text-center font-sans">
-        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8 max-w-md w-full shadow-2xl backdrop-blur-md flex flex-col items-center space-y-4">
-          <div className="w-16 h-16 bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center text-3xl mb-2 border border-blue-500/20">
+      <div className="min-h-screen bg-zinc-950 text-slate-100 flex flex-col items-center justify-center p-6 text-center font-sans relative overflow-hidden">
+        <div className="fixed top-[-20%] left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-slate-500/10 rounded-full blur-[140px] pointer-events-none -z-10" />
+        
+        <div className="bg-zinc-900/80 border border-zinc-800 rounded-3xl p-8 max-w-md w-full shadow-2xl backdrop-blur-md flex flex-col items-center space-y-4">
+          <div className="w-16 h-16 bg-slate-800 text-slate-300 rounded-2xl flex items-center justify-center text-3xl mb-2 border border-zinc-700">
             🛠️
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-white">
@@ -590,7 +592,15 @@ export default function App() {
         {showSplash && <SplashScreen key="splash" soundUrl="/splash-sound.mp3" />}
       </AnimatePresence>
 
-      <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-200">
+      <div className="relative min-h-screen bg-slate-50 dark:bg-[#0c0e12] text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-300 overflow-x-hidden">
+        
+        {/* --- DYNAMIC AMBIENT THEME GLOW (OPSI 1) --- */}
+        {/* Pendaran atas dinamis yang halus (di dark mode menghasilkan efek kedalaman, di light mode memberi tint lembut) */}
+        <div className="fixed top-[-15%] left-1/2 -translate-x-1/2 w-[700px] sm:w-[950px] h-[500px] bg-[radial-gradient(circle,currentColor_0%,transparent_70%)] opacity-[0.06] dark:opacity-[0.11] rounded-full blur-[120px] pointer-events-none -z-10 transition-all duration-700 text-blue-600 dark:text-blue-500" />
+        
+        {/* Pendaran bawah kanan sekunder */}
+        <div className="fixed bottom-[-10%] right-[-10%] w-[450px] sm:w-[600px] h-[450px] bg-[radial-gradient(circle,currentColor_0%,transparent_70%)] opacity-[0.04] dark:opacity-[0.09] rounded-full blur-[130px] pointer-events-none -z-10 transition-all duration-700 text-indigo-600 dark:text-indigo-500" />
+
         <Header
           isOfficer={isOfficer}
           setIsOfficer={setIsOfficer}
@@ -603,7 +613,7 @@ export default function App() {
           onLogout={handleLogout}
         />
 
-        <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 flex flex-col lg:flex-row gap-6 pt-6">
+        <div className="relative z-10 flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 flex flex-col lg:flex-row gap-6 pt-6 pb-24 lg:pb-8">
           <Sidebar
             activeTab={activeTab}
             setActiveTab={(tab) => handleNavigateTab(tab)}
@@ -611,7 +621,7 @@ export default function App() {
             onOpenGpaModal={() => setIsGpaModalOpen(true)}
           />
 
-          <main className="flex-1 pb-8 overflow-y-auto space-y-6">
+          <main className="flex-1 overflow-y-auto space-y-6">
             {isInitialLoad ? (
               <AppSkeleton />
             ) : (
