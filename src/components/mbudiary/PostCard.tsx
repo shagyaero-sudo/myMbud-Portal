@@ -17,8 +17,6 @@ import {
 } from './lib/storage';
 import {
   formatDateFormatted,
-  formatTimeAgo,
-  formatPostTimestamp,
   getOptimizedImageUrl,
 } from './lib/utils';
 import {
@@ -67,6 +65,28 @@ export const VerifiedBadge: React.FC<{ size?: 'sm' | 'md' | 'lg' }> = ({ size = 
       </g>
     </svg>
   );
+};
+
+// HELPER FORMAT WAKTU SUPER RINGKAS ALA THREADS
+const formatThreadsTime = (timestamp: string | number | Date): string => {
+  if (!timestamp) return 'baru saja';
+  const now = Date.now();
+  const time = new Date(timestamp).getTime();
+  const diffSec = Math.floor((now - time) / 1000);
+
+  if (diffSec < 60) return 'baru saja';
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `${diffMin}m`;
+  const diffHours = Math.floor(diffMin / 60);
+  if (diffHours < 24) return `${diffHours}j`;
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays < 7) return `${diffDays}h`;
+  const diffWeeks = Math.floor(diffDays / 7);
+  if (diffWeeks < 4) return `${diffWeeks}mg`;
+  const diffMonths = Math.floor(diffDays / 30);
+  if (diffMonths < 12) return `${diffMonths}bln`;
+  const diffYears = Math.floor(diffDays / 365);
+  return `${diffYears}th`;
 };
 
 interface PostCardProps {
@@ -431,16 +451,21 @@ export const PostCard: React.FC<PostCardProps> = ({
             </div>
 
             <div>
-              <div className="flex items-center flex-wrap gap-1.5">
+              {/* BARIS 1: NAMA & CENTANG BIRU */}
+              <div className="flex items-center flex-wrap gap-1.5 leading-none">
                 <span className="text-slate-900 dark:text-zinc-100 font-bold text-sm group-hover/author:text-blue-500 transition-colors">
                   {displayAuthorName}
                 </span>
-
                 {displayAuthorIsVerified && <VerifiedBadge size="sm" />}
               </div>
 
-              <div className="text-slate-400 dark:text-zinc-500 text-[11px] mt-0.5">
-                @{displayAuthorUsername || 'unknown'} • <span title={formatDateFormatted(displayCreatedAt)}>{formatPostTimestamp(displayCreatedAt)}</span>
+              {/* BARIS 2: USERNAME · WAKTU ALA THREADS */}
+              <div className="text-slate-400 dark:text-zinc-500 text-[11px] mt-1 flex items-center gap-1 font-normal">
+                <span>@{displayAuthorUsername || 'unknown'}</span>
+                <span className="text-[9px] opacity-70">·</span>
+                <span title={formatDateFormatted(displayCreatedAt)}>
+                  {formatThreadsTime(displayCreatedAt)}
+                </span>
               </div>
             </div>
           </div>
@@ -511,7 +536,9 @@ export const PostCard: React.FC<PostCardProps> = ({
                   <div className="text-xs font-bold text-slate-900 dark:text-zinc-100 truncate">{originalAuthorName}</div>
                   {originalAuthorProfile?.isVerified && <VerifiedBadge size="sm" />}
                 </div>
-                <div className="text-[10px] text-slate-400 dark:text-zinc-500">@{originalAuthorProfile?.username || 'unknown'}</div>
+                <div className="text-[10px] text-slate-400 dark:text-zinc-500">
+                  @{originalAuthorProfile?.username || 'unknown'} · {formatThreadsTime(originalPost.createdAt)}
+                </div>
               </div>
             </div>
 
@@ -645,7 +672,9 @@ export const PostCard: React.FC<PostCardProps> = ({
                             </div>
                           </div>
 
-                          <span className="text-slate-400 dark:text-zinc-500 text-[10px]">{formatTimeAgo(reply.createdAt)}</span>
+                          <span className="text-slate-400 dark:text-zinc-500 text-[10px]">
+                            {formatThreadsTime(reply.createdAt)}
+                          </span>
                         </div>
 
                         <p className="text-[13px] text-slate-700 dark:text-zinc-300 leading-relaxed pl-8">
@@ -772,7 +801,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                         </div>
                       </div>
                       <div className="text-[10px] text-slate-400 dark:text-zinc-500">
-                        @{post.isRepost && originalPost ? originalAuthorProfile?.username || 'unknown' : authorProfile?.username || 'unknown'}
+                        @{post.isRepost && originalPost ? originalAuthorProfile?.username || 'unknown' : authorProfile?.username || 'unknown'} · {formatThreadsTime(originalPost.createdAt)}
                       </div>
                     </div>
                   </div>
