@@ -376,7 +376,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
         <div className="hidden md:block md:col-span-4 lg:col-span-3 space-y-2">
           <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-4 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-1.5 transition-colors">
             <div className="px-3 py-2 text-[11px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider flex items-center justify-between">
-              <span>Daftar Rak Kuliah</span>
+              <span>Daftar Matkul</span>
               <BookOpen className="w-3.5 h-3.5 text-slate-400" />
             </div>
 
@@ -488,7 +488,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                   showOnlyBookmarked ? 'fill-white text-white' : 'text-slate-400 dark:text-zinc-400'
                 }`}
               />
-              <span>Tersimpan</span>
+              <span>Bookmark</span>
               <span
                 className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
                   showOnlyBookmarked
