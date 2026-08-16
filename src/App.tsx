@@ -1,8 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import {
@@ -69,15 +64,15 @@ const IS_MAINTENANCE = false;
 
 const AppSkeleton = () => (
   <div className="animate-pulse space-y-6">
-    <div className="h-40 bg-slate-200/60 dark:bg-zinc-800/60 rounded-3xl w-full border border-slate-200 dark:border-zinc-800"></div>
+    <div className="h-40 bg-slate-200/60 dark:bg-[#13181f] rounded-3xl w-full border border-slate-200 dark:border-[#1f2732]"></div>
 
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2 space-y-6">
-        <div className="h-64 bg-slate-200/60 dark:bg-zinc-800/60 rounded-3xl w-full border border-slate-200 dark:border-zinc-800"></div>
-        <div className="h-48 bg-slate-200/60 dark:bg-zinc-800/60 rounded-3xl w-full border border-slate-200 dark:border-zinc-800"></div>
+        <div className="h-64 bg-slate-200/60 dark:bg-[#13181f] rounded-3xl w-full border border-slate-200 dark:border-[#1f2732]"></div>
+        <div className="h-48 bg-slate-200/60 dark:bg-[#13181f] rounded-3xl w-full border border-slate-200 dark:border-[#1f2732]"></div>
       </div>
 
-      <div className="h-96 bg-slate-200/60 dark:bg-zinc-800/60 rounded-3xl w-full border border-slate-200 dark:border-zinc-800"></div>
+      <div className="h-96 bg-slate-200/60 dark:bg-[#13181f] rounded-3xl w-full border border-slate-200 dark:border-[#1f2732]"></div>
     </div>
   </div>
 );
@@ -85,8 +80,8 @@ const AppSkeleton = () => (
 export default function App() {
   if (IS_MAINTENANCE) {
     return (
-      <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col items-center justify-center p-6 text-center font-sans">
-        <div className="bg-slate-800/80 border border-slate-700/60 rounded-3xl p-8 max-w-md w-full shadow-2xl backdrop-blur-md flex flex-col items-center space-y-4">
+      <div className="min-h-screen bg-[#0b0f14] text-slate-100 flex flex-col items-center justify-center p-6 text-center font-sans">
+        <div className="bg-[#13181f] border border-[#1f2732] rounded-3xl p-8 max-w-md w-full shadow-2xl backdrop-blur-md flex flex-col items-center space-y-4">
           <div className="w-16 h-16 bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center text-3xl mb-2 border border-blue-500/20">
             🛠️
           </div>
@@ -107,7 +102,6 @@ export default function App() {
     );
   }
 
-  // --- STATE SPLASH SCREEN DENGAN DURASI 3 DETIK ---
   const [showSplash, setShowSplash] = useState<boolean>(true);
 
   useEffect(() => {
@@ -129,7 +123,6 @@ export default function App() {
   const [completedTaskIds, setCompletedTaskIds] = useState<string[]>([]);
   const currentUserNrp = localStorage.getItem('mymbud_user_nrp') || 'unknown';
 
-  // --- CHECK INDIVIDUAL SESSION TERMINATION (KILL-SWITCH) ---
   useEffect(() => {
     const checkSessionStatus = async () => {
       const userNrp = localStorage.getItem('mymbud_user_nrp');
@@ -173,10 +166,7 @@ export default function App() {
         const nrp = localStorage.getItem('mymbud_user_nrp');
 
         if (nrp) {
-          console.log('[OneSignal] Linking user NRP:', nrp);
           await loginOneSignal(nrp);
-        } else {
-          console.warn('[OneSignal] NRP user tidak ditemukan di localStorage.');
         }
       }
     };
@@ -187,10 +177,7 @@ export default function App() {
   useEffect(() => {
     const handleOneSignalRedirect = (e: any) => {
       const targetTab = e?.detail?.tab || localStorage.getItem('mbud_target_tab') || 'mbudiary';
-      
-      console.log('[App Router] Redirecting to tab:', targetTab);
       setActiveTab(targetTab as TabType);
-
       window.dispatchEvent(new Event('mbud_notification_navigate'));
     };
 
@@ -220,13 +207,10 @@ export default function App() {
     setIsAuthenticated(false);
   };
 
-  // --- LOGIKA DETEKSI PERANGKAT & GATEKEEPING PWA ---
   const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera || '';
-  
   const isAndroid = /android/i.test(userAgent);
   const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream;
   const isIPadOS = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
-  
   const isMobileOrTabletOS = isAndroid || isIOS || isIPadOS;
 
   const isStandalone =
@@ -238,7 +222,6 @@ export default function App() {
 
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
   const [selectedContactCourse, setSelectedContactCourse] = useState<string>('ALL');
-
   const [isOfficer, setIsOfficer] = useState<boolean>(false);
   const [isGpaModalOpen, setIsGpaModalOpen] = useState<boolean>(false);
 
@@ -260,47 +243,6 @@ export default function App() {
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [isInitialLoad, setIsInitialLoad] = useState<boolean>(true);
   const [previewMaterial, setPreviewMaterial] = useState<MaterialFile | null>(null);
-
-  const [theme, setTheme] = useState<
-    'light' | 'dark' | 'pink' | 'purple' | 'green'
-  >(() => {
-    const root = document.documentElement;
-
-    if (root.classList.contains('green')) return 'green';
-    if (root.classList.contains('purple')) return 'purple';
-    if (root.classList.contains('pink')) return 'pink';
-    if (root.classList.contains('dark')) return 'dark';
-
-    return 'light';
-  });
-
-  useEffect(() => {
-    const root = document.documentElement;
-
-    root.classList.remove('dark', 'pink', 'purple', 'green');
-
-    if (theme === 'dark') {
-      root.classList.add('dark');
-    } else if (theme === 'pink') {
-      root.classList.add('pink');
-    } else if (theme === 'purple') {
-      root.classList.add('purple');
-    } else if (theme === 'green') {
-      root.classList.add('green');
-    }
-
-    localStorage.setItem('theme', theme);
-
-    const metaThemeColor = document.querySelector("meta[name='theme-color']");
-
-    if (metaThemeColor) {
-      if (theme === 'dark') {
-        metaThemeColor.setAttribute('content', '#18181b');
-      } else {
-        metaThemeColor.setAttribute('content', '#ffffff');
-      }
-    }
-  }, [theme]);
 
   useEffect(() => {
     const unsubscribe = subscribeAnnouncements((announcementsData) => {
@@ -628,12 +570,10 @@ export default function App() {
     }
   };
 
-  // --- GATEKEEPER 1: WAJIB LOGIN DULU ---
   if (requiresLogin) {
     return <LoginScreen onLoginSuccess={() => setIsAuthenticated(true)} />;
   }
 
-  // --- GATEKEEPER 2: ONBOARDING HANYA BISA DIBUKA JIKA SUDAH AUTHENTICATED ---
   if (isAuthenticated && !hasCompletedOnboarding) {
     const currentUserName = localStorage.getItem('mymbud_user_name') || 'Mbuders';
     return (
@@ -644,15 +584,13 @@ export default function App() {
     );
   }
 
-  // --- MAIN PORTAL ---
   return (
     <>
-      {/* IN-APP SPLASH SCREEN (3 DETIK DENGAN SOUND EFFECT) */}
       <AnimatePresence>
         {showSplash && <SplashScreen key="splash" soundUrl="/splash-sound.mp3" />}
       </AnimatePresence>
 
-      <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-200">
+      <div className="min-h-screen bg-slate-50 dark:bg-[#0b0f14] text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-200">
         <Header
           isOfficer={isOfficer}
           setIsOfficer={setIsOfficer}
@@ -662,8 +600,6 @@ export default function App() {
           lastUpdated={appState.lastUpdated}
           onRefresh={syncState}
           urgentTaskCount={urgentTaskCount}
-          theme={theme}
-          setTheme={setTheme}
           onLogout={handleLogout}
         />
 
