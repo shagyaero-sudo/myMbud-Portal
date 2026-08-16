@@ -592,13 +592,10 @@ export default function App() {
         {showSplash && <SplashScreen key="splash" soundUrl="/splash-sound.mp3" />}
       </AnimatePresence>
 
-      <div className="relative min-h-screen bg-slate-50 dark:bg-[#0c0e12] text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-300 overflow-x-hidden">
+      <div className="relative min-h-screen bg-slate-50 dark:bg-[#0c0e12] text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-300">
         
-        {/* --- DYNAMIC AMBIENT THEME GLOW (OPSI 1) --- */}
-        {/* Pendaran atas dinamis yang halus (di dark mode menghasilkan efek kedalaman, di light mode memberi tint lembut) */}
+        {/* DYNAMIC AMBIENT THEME GLOW */}
         <div className="fixed top-[-15%] left-1/2 -translate-x-1/2 w-[700px] sm:w-[950px] h-[500px] bg-[radial-gradient(circle,currentColor_0%,transparent_70%)] opacity-[0.06] dark:opacity-[0.11] rounded-full blur-[120px] pointer-events-none -z-10 transition-all duration-700 text-blue-600 dark:text-blue-500" />
-        
-        {/* Pendaran bawah kanan sekunder */}
         <div className="fixed bottom-[-10%] right-[-10%] w-[450px] sm:w-[600px] h-[450px] bg-[radial-gradient(circle,currentColor_0%,transparent_70%)] opacity-[0.04] dark:opacity-[0.09] rounded-full blur-[130px] pointer-events-none -z-10 transition-all duration-700 text-indigo-600 dark:text-indigo-500" />
 
         <Header
@@ -621,7 +618,7 @@ export default function App() {
             onOpenGpaModal={() => setIsGpaModalOpen(true)}
           />
 
-          <main className="flex-1 overflow-y-auto space-y-6">
+          <main className="flex-1 space-y-6">
             {isInitialLoad ? (
               <AppSkeleton />
             ) : (
