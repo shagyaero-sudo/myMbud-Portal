@@ -10,6 +10,10 @@ import {
   Loader2,
   Paperclip,
   Bookmark,
+  BookOpen,
+  LayoutGrid,
+  List,
+  Sparkles,
 } from 'lucide-react';
 import { MaterialFile } from '../types';
 import {
@@ -37,6 +41,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
   const [search, setSearch] = useState('');
   const [selectedCourse, setSelectedCourse] = useState<string>('ALL');
   const [showOnlyBookmarked, setShowOnlyBookmarked] = useState<boolean>(false);
+  const [viewMode, setViewMode] = useState<'shelf' | 'list'>('shelf');
 
   // Sync Bookmarks per User NRP dari Firestore
   const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
@@ -107,7 +112,8 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
   };
 
   const uploadFileToDrive = async (file: File): Promise<string> => {
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbyce8cTZ2F25PwyfISpmVJJDMiIunl8G8lCyzkPKQaiuUl-nxKNM5i9b72MMo4M_xis/exec";
+    const GAS_URL =
+      'https://script.google.com/macros/s/AKfycbyce8cTZ2F25PwyfISpmVJJDMiIunl8G8lCyzkPKQaiuUl-nxKNM5i9b72MMo4M_xis/exec';
 
     setUploadProgress(8);
     const base64Data = await fileToBase64(file);
@@ -117,7 +123,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
       fileName: file.name,
       mimeType: file.type,
       base64: base64Data,
-      folderName: "myMbud Materials",
+      folderName: 'myMbud Materials',
     };
 
     const progressInterval = setInterval(() => {
@@ -206,26 +212,61 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
 
   return (
     <div className="space-y-6 pb-28 sm:pb-16 pb-[calc(7rem+env(safe-area-inset-bottom))] sm:pb-[calc(4rem+env(safe-area-inset-bottom))]">
-      {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1 pt-4 sm:pt-6 pb-4 sm:pb-6 mb-2 sm:mb-3">
+      {/* HEADER BANNER WITH SLIM BOOKMARK PILL */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-1 pt-4 sm:pt-6 pb-2 mb-1">
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
-            Bank PDF Matkul
-          </h2>
+          <div className="flex items-center gap-2.5">
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
+              Bank PDF Matkul
+            </h2>
+            <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-900/50">
+              <Sparkles className="w-3 h-3" /> Library Edition
+            </span>
+          </div>
           <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1">
-            Perpustakaan Materi Perkuliahan
+            Perpustakaan Arsip Materi Perkuliahan
           </p>
         </div>
 
-        {isOfficer && (
+        {/* Action Controls: Slim Bookmark Pill + Upload Button */}
+        <div className="flex items-center gap-2.5 self-start sm:self-auto shrink-0">
           <button
-            onClick={handleOpenUploadModal}
-            className="px-4 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-semibold text-xs transition-all shadow-md shadow-blue-500/20 flex items-center gap-2 shrink-0 cursor-pointer"
+            type="button"
+            onClick={() => setShowOnlyBookmarked((prev) => !prev)}
+            className={`px-3 py-2 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 border cursor-pointer ${
+              showOnlyBookmarked
+                ? 'bg-amber-500 border-amber-600 text-white shadow-md shadow-amber-500/25'
+                : 'bg-white dark:bg-zinc-900 border-slate-200/80 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 hover:border-amber-400 hover:text-amber-500 shadow-xs'
+            }`}
+            title="Tampilkan hanya materi yang disimpan"
           >
-            <Upload className="w-4 h-4" />
-            <span>Unggah PDF</span>
+            <Bookmark
+              className={`w-3.5 h-3.5 ${
+                showOnlyBookmarked ? 'fill-white text-white' : 'text-amber-500'
+              }`}
+            />
+            <span>Tersimpan</span>
+            <span
+              className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
+                showOnlyBookmarked
+                  ? 'bg-white/25 text-white'
+                  : 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400'
+              }`}
+            >
+              {bookmarkedIds.length}
+            </span>
           </button>
-        )}
+
+          {isOfficer && (
+            <button
+              onClick={handleOpenUploadModal}
+              className="px-4 py-2 rounded-2xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-semibold text-xs transition-all shadow-md shadow-blue-500/20 flex items-center gap-2 shrink-0 cursor-pointer"
+            >
+              <Upload className="w-3.5 h-3.5" />
+              <span>Unggah PDF</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* 2-Column Layout */}
@@ -233,8 +274,9 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
         {/* Left Column: Vertical Course Tabs */}
         <div className="hidden md:block md:col-span-4 lg:col-span-3 space-y-2">
           <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-4 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-1.5 transition-colors">
-            <div className="px-3 py-2 text-[11px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">
-              Daftar Mata Kuliah
+            <div className="px-3 py-2 text-[11px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider flex items-center justify-between">
+              <span>Daftar Rak Kuliah</span>
+              <BookOpen className="w-3.5 h-3.5 text-slate-400" />
             </div>
 
             <button
@@ -292,48 +334,51 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
           </div>
         </div>
 
-        {/* Right Column: Files List View */}
+        {/* Right Column: Library Shelf View */}
         <div className="md:col-span-8 lg:col-span-9 space-y-4">
-          {/* Top Filter Bar with Search & Bookmark Toggle */}
-          <div className="flex flex-col sm:flex-row items-center gap-2.5 sm:gap-3 w-full">
-            <div className="relative flex-1 w-full">
-              <Search className="w-4 h-4 absolute left-4 top-3.5 text-slate-400" />
+          {/* Search Bar & View Mode Toggle */}
+          <div className="flex items-center gap-2.5">
+            <div className="relative flex-1">
+              <Search className="w-4 h-4 absolute left-4 top-3 text-slate-400" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Cari berkas PDF, judul, atau pertemuan..."
-                className="w-full pl-11 pr-4 py-3 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none"
+                placeholder="Cari buku, modul, slide PPT, atau topik..."
+                className="w-full pl-11 pr-4 py-2.5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none"
               />
             </div>
 
-            {/* Tombol Tersimpan di Header */}
-            <button
-              onClick={() => setShowOnlyBookmarked((prev) => !prev)}
-              className={`w-full sm:w-auto px-4 py-3 rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-2 shrink-0 border cursor-pointer ${
-                showOnlyBookmarked
-                  ? 'bg-amber-500 border-amber-600 text-white shadow-md shadow-amber-500/25'
-                  : 'bg-white dark:bg-zinc-900 border-slate-100 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-800 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none'
-              }`}
-            >
-              <Bookmark
-                className={`w-4 h-4 ${
-                  showOnlyBookmarked ? 'fill-white text-white' : 'text-amber-500'
+            {/* View Mode Toggle: Grid Shelf vs Compact List */}
+            <div className="flex items-center bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 p-1 rounded-2xl gap-1 shrink-0 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none">
+              <button
+                type="button"
+                onClick={() => setViewMode('shelf')}
+                className={`p-2 rounded-xl transition-all cursor-pointer ${
+                  viewMode === 'shelf'
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'text-slate-500 hover:text-slate-800 dark:text-zinc-400 dark:hover:text-zinc-200'
                 }`}
-              />
-              <span>Tersimpan</span>
-              <span
-                className={`text-[11px] px-2 py-0.5 rounded-full font-extrabold ${
-                  showOnlyBookmarked
-                    ? 'bg-white/25 text-white'
-                    : 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400'
-                }`}
+                title="Tampilan Rak Buku (Bookshelf)"
               >
-                {bookmarkedIds.length}
-              </span>
-            </button>
+                <LayoutGrid className="w-3.5 h-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('list')}
+                className={`p-2 rounded-xl transition-all cursor-pointer ${
+                  viewMode === 'list'
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'text-slate-500 hover:text-slate-800 dark:text-zinc-400 dark:hover:text-zinc-200'
+                }`}
+                title="Tampilan Daftar (List)"
+              >
+                <List className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
 
+          {/* Mobile Course Dropdown */}
           <div className="block md:hidden w-full">
             <select
               value={selectedCourse}
@@ -343,27 +388,119 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
               }}
               className="w-full px-4 py-3 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none"
             >
-              <option value="ALL">Semua Mata Kuliah ({materials.length} PDF)</option>
+              <option value="ALL">Semua Rak Matkul ({materials.length} Berkas)</option>
               {dynamicCoursesList.map((course) => {
                 const count = materials.filter((m) => m.courseName === course).length;
                 return (
                   <option key={course} value={course}>
-                    {course} ({count} PDF)
+                    {course} ({count} Berkas)
                   </option>
                 );
               })}
             </select>
           </div>
 
-          {/* Files List Container */}
-          <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-4 sm:p-6 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-2 transition-colors">
+          {/* Main Content: Bookshelf Container */}
+          <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-4 sm:p-6 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none transition-colors min-h-[300px]">
             {filteredMaterials.length === 0 ? (
-              <div className="p-12 text-center text-slate-400 dark:text-zinc-500 text-xs bg-slate-50/70 dark:bg-zinc-800/50 rounded-2xl">
-                {showOnlyBookmarked
-                  ? 'Belum ada berkas PDF yang kamu simpan / bookmark.'
-                  : 'Tidak ada berkas PDF untuk mata kuliah ini.'}
+              <div className="p-12 text-center text-slate-400 dark:text-zinc-500 text-xs bg-slate-50/70 dark:bg-zinc-800/50 rounded-2xl space-y-2">
+                <BookOpen className="w-8 h-8 mx-auto text-slate-300 dark:text-zinc-600 mb-1" />
+                <p className="font-semibold text-slate-600 dark:text-zinc-300">
+                  {showOnlyBookmarked
+                    ? 'Belum ada berkas yang disimpan di rak favoritmu.'
+                    : 'Rak ini masih kosong.'}
+                </p>
+                <p className="text-[11px]">
+                  {showOnlyBookmarked
+                    ? 'Klik ikon bookmark pada modul untuk menyimpannya di sini.'
+                    : 'Belum ada berkas PDF untuk mata kuliah yang dipilih.'}
+                </p>
+              </div>
+            ) : viewMode === 'shelf' ? (
+              /* ================= BOOKSHELF GRID VIEW ================= */
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredMaterials.map((mat) => {
+                  const isBookmarked = bookmarkedIds.includes(mat.id);
+
+                  return (
+                    <motion.div
+                      key={mat.id}
+                      whileHover={{ y: -4, scale: 1.01 }}
+                      whileTap={{ scale: 0.99 }}
+                      onClick={() => onPreviewPdf(mat)}
+                      className="group relative rounded-2xl bg-gradient-to-b from-slate-50/90 to-slate-100/60 dark:from-zinc-800/80 dark:to-zinc-800/40 p-4 border border-slate-200/70 dark:border-zinc-700/60 shadow-xs hover:shadow-lg hover:border-blue-300 dark:hover:border-blue-700 transition-all cursor-pointer flex flex-col justify-between overflow-hidden"
+                    >
+                      {/* Left Spine Texture Accent */}
+                      <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-blue-600 dark:bg-blue-500 group-hover:w-2 transition-all rounded-l-2xl" />
+
+                      <div className="pl-1.5 space-y-3">
+                        {/* Top Meta: Session / Volume & Bookmark Action */}
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-lg bg-blue-100/70 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200/50 dark:border-blue-800/40">
+                            {mat.session || 'MODUL'}
+                          </span>
+
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={(e) => handleToggleBookmark(e, mat.id)}
+                              className={`p-1.5 rounded-lg transition-all cursor-pointer ${
+                                isBookmarked
+                                  ? 'bg-amber-50 dark:bg-amber-950/70 text-amber-500'
+                                  : 'text-slate-400 hover:text-amber-500 hover:bg-white dark:hover:bg-zinc-700'
+                              }`}
+                              title={isBookmarked ? 'Hapus bookmark' : 'Simpan ke bookmark'}
+                            >
+                              <Bookmark
+                                className={`w-3.5 h-3.5 ${
+                                  isBookmarked ? 'fill-amber-500 text-amber-500' : ''
+                                }`}
+                              />
+                            </button>
+
+                            {isOfficer && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onDeleteMaterial(mat.id);
+                                }}
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
+                                title="Hapus Berkas"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Book Icon & Title */}
+                        <div className="space-y-1 pt-0.5">
+                          <div className="flex items-center gap-2">
+                            <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                            <h4 className="text-xs font-bold text-slate-800 dark:text-zinc-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2 leading-snug">
+                              {mat.title}
+                            </h4>
+                          </div>
+                          <p className="text-[11px] font-medium text-slate-500 dark:text-zinc-400 truncate pl-6">
+                            {mat.courseName}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Footer: Library Shelf Floor Shadow */}
+                      <div className="pl-1.5 pt-3 mt-2 flex items-center justify-between text-[10px] text-slate-400 dark:text-zinc-500 border-t border-slate-200/50 dark:border-zinc-700/50">
+                        <span>{mat.fileSize || 'PDF'}</span>
+                        <span className="font-semibold text-blue-600 dark:text-blue-400 group-hover:underline">
+                          Buka Bacaan →
+                        </span>
+                      </div>
+                    </motion.div>
+                  );
+                })}
               </div>
             ) : (
+              /* ================= COMPACT LIST VIEW ================= */
               <div className="space-y-2">
                 {filteredMaterials.map((mat) => {
                   const isBookmarked = bookmarkedIds.includes(mat.id);
@@ -389,13 +526,12 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                       </div>
 
                       <div className="flex items-center gap-2 shrink-0">
-                        {/* Badge Sesi / Pertemuan */}
                         <span className="text-xs font-semibold text-slate-600 dark:text-zinc-300 bg-white dark:bg-zinc-800 px-3 py-1 rounded-full shadow-xs border border-slate-100 dark:border-zinc-700">
                           {mat.session}
                         </span>
 
-                        {/* Tombol Bookmark di Sisi Kanan Badge Sesi */}
                         <button
+                          type="button"
                           onClick={(e) => handleToggleBookmark(e, mat.id)}
                           className={`p-2 rounded-xl border transition-all cursor-pointer ${
                             isBookmarked
@@ -413,6 +549,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
 
                         {isOfficer && (
                           <button
+                            type="button"
                             onClick={(e) => {
                               e.stopPropagation();
                               onDeleteMaterial(mat.id);
@@ -436,13 +573,13 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
       {/* Upload Material Modal */}
       <AnimatePresence>
         {showUploadModal && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
           >
-            <motion.div 
+            <motion.div
               initial={{ scale: 0.95, opacity: 0, y: 10 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 10 }}
@@ -462,7 +599,10 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                 </button>
               </div>
 
-              <form onSubmit={handleUploadSubmit} className="flex flex-col flex-1 overflow-hidden">
+              <form
+                onSubmit={handleUploadSubmit}
+                className="flex flex-col flex-1 overflow-hidden"
+              >
                 <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-4">
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
