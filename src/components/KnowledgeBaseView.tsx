@@ -316,7 +316,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
 
   return (
     <div className="pb-28 sm:pb-16 pb-[calc(7rem+env(safe-area-inset-bottom))] sm:pb-[calc(4rem+env(safe-area-inset-bottom))]">
-      {/* HEADER BANNER - Presisi Margin & Padding Mengikuti Direktori Kontak */}
+      {/* HEADER BANNER */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
@@ -327,7 +327,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
           </p>
         </div>
 
-        {/* Action Controls Desktop: Sesuai Tema Base */}
+        {/* Action Controls Desktop */}
         <div className="hidden sm:flex items-center gap-2.5 shrink-0">
           <button
             type="button"
@@ -509,14 +509,14 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
             )}
           </div>
 
-          {/* Main Content: Slim List Container with Color Strips */}
-          <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-4 sm:p-5 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none transition-colors min-h-[300px]">
+          {/* Main Content: Adaptive List Container */}
+          <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-3 sm:p-4 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none transition-colors">
             {filteredMaterials.length === 0 ? (
-              <div className="p-12 text-center text-slate-400 dark:text-zinc-500 text-xs bg-slate-50/70 dark:bg-zinc-800/50 rounded-2xl space-y-2">
+              <div className="p-8 text-center text-slate-400 dark:text-zinc-500 text-xs bg-slate-50/70 dark:bg-zinc-800/50 rounded-2xl space-y-2">
                 <BookOpen className="w-8 h-8 mx-auto text-slate-300 dark:text-zinc-600 mb-1" />
                 <p className="font-semibold text-slate-600 dark:text-zinc-300">
                   {showOnlyBookmarked
-                    ? 'Belum ada berkas yang disimpan di rak favoritmu.'
+                    ? 'Belum ada berkas yang disimpan di bookmark.'
                     : 'Rak ini masih kosong.'}
                 </p>
                 <p className="text-[11px]">
@@ -526,7 +526,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                 </p>
               </div>
             ) : (
-              <div className="space-y-2.5">
+              <div className="space-y-2">
                 {filteredMaterials.map((mat) => {
                   const isBookmarked = bookmarkedIds.includes(mat.id);
                   const theme = getCourseTheme(mat.courseName);
@@ -536,7 +536,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                       key={mat.id}
                       whileHover={{ x: 3 }}
                       onClick={() => onPreviewPdf(mat)}
-                      className={`group relative overflow-hidden p-3.5 sm:p-4 rounded-2xl bg-slate-50/90 dark:bg-zinc-800/60 hover:bg-slate-100/90 dark:hover:bg-zinc-800 cursor-pointer transition-all flex items-center justify-between gap-3 border border-slate-200/60 dark:border-zinc-700/60 ${theme.border} shadow-xs`}
+                      className={`group relative overflow-hidden p-3 sm:p-3.5 rounded-2xl bg-slate-50/90 dark:bg-zinc-800/60 hover:bg-slate-100/90 dark:hover:bg-zinc-800 cursor-pointer transition-all flex items-center justify-between gap-3 border border-slate-200/60 dark:border-zinc-700/60 ${theme.border} shadow-xs`}
                     >
                       {/* Left Spine Color Strip Accent */}
                       <div
@@ -546,7 +546,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                       {/* Content Info */}
                       <div className="flex items-center gap-3 min-w-0 flex-1 pl-1.5">
                         <div
-                          className={`p-2.5 rounded-xl ${theme.iconBg} shrink-0`}
+                          className={`p-2 rounded-xl ${theme.iconBg} shrink-0`}
                         >
                           <FileText className="w-4 h-4" />
                         </div>
@@ -563,7 +563,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                       {/* Right Meta Badges & Actions */}
                       <div className="flex items-center gap-2 shrink-0">
                         <span
-                          className={`text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-lg border ${theme.badge}`}
+                          className={`text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-lg border ${theme.badge}`}
                         >
                           {mat.session || 'MODUL'}
                         </span>
