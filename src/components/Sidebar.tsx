@@ -330,55 +330,58 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* MOBILE BOTTOM NAVIGATION (LOCKED TIGHT HEIGHT, ZERO EXTRA GAP) */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 w-full pointer-events-none">
-        <nav className="pointer-events-auto w-full h-16 bg-white/70 dark:bg-zinc-950/70 backdrop-blur-2xl backdrop-saturate-150 border-t border-slate-200/50 dark:border-zinc-800/80 rounded-t-[22px] px-3 pb-1 flex items-center justify-around shadow-[0_-8px_32px_rgba(0,0,0,0.08)] dark:shadow-[0_-8px_32px_rgba(0,0,0,0.5)] relative">
-          <BottomTabItem
-            id="dashboard"
-            label="Jadwal"
-            icon={CalendarDays}
-            activeTab={activeTab}
-            onClick={setActiveTab}
-          />
+        <nav className="pointer-events-auto w-full h-16 bg-white/70 dark:bg-zinc-950/70 backdrop-blur-2xl backdrop-saturate-150 border-t border-slate-200/50 dark:border-zinc-800/80 rounded-t-[22px] px-3 pb-1 flex items-center justify-center shadow-[0_-8px_32px_rgba(0,0,0,0.08)] dark:shadow-[0_-8px_32px_rgba(0,0,0,0.5)] relative">
+          {/* INNER CONTAINER PROPORSIONAL (Mencegah icon mencar saat di stretch/iPad) */}
+          <div className="w-full max-w-md mx-auto flex items-center justify-around h-full">
+            <BottomTabItem
+              id="dashboard"
+              label="Jadwal"
+              icon={CalendarDays}
+              activeTab={activeTab}
+              onClick={setActiveTab}
+            />
 
-          <BottomTabItem
-            id="tasks"
-            label="Tugas"
-            icon={FolderKanban}
-            activeTab={activeTab}
-            onClick={setActiveTab}
-            count={activeTaskCount > 0 ? activeTaskCount : null}
-          />
+            <BottomTabItem
+              id="tasks"
+              label="Tugas"
+              icon={FolderKanban}
+              activeTab={activeTab}
+              onClick={setActiveTab}
+              count={activeTaskCount > 0 ? activeTaskCount : null}
+            />
 
-          {/* TOMBOL MENU TENGAH */}
-          <div className="relative flex flex-col items-center justify-center -top-3 px-1 shrink-0">
-            <div className="p-1 rounded-full bg-slate-50/70 dark:bg-zinc-950/70 backdrop-blur-xl border border-slate-200/40 dark:border-zinc-800/60 shadow-xs">
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={() => setIsBottomSheetOpen(true)}
-                className="w-11 h-11 bg-blue-600 dark:bg-blue-500 text-white rounded-full flex items-center justify-center shadow-md shadow-blue-500/30 transition-transform cursor-pointer"
-              >
-                <LayoutGrid className="w-5 h-5" />
-              </motion.button>
+            {/* TOMBOL MENU TENGAH */}
+            <div className="relative flex flex-col items-center justify-center -top-3 px-1 shrink-0">
+              <div className="p-1 rounded-full bg-slate-50/70 dark:bg-zinc-950/70 backdrop-blur-xl border border-slate-200/40 dark:border-zinc-800/60 shadow-xs">
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setIsBottomSheetOpen(true)}
+                  className="w-11 h-11 bg-blue-600 dark:bg-blue-500 text-white rounded-full flex items-center justify-center shadow-md shadow-blue-500/30 transition-transform cursor-pointer"
+                >
+                  <LayoutGrid className="w-5 h-5" />
+                </motion.button>
+              </div>
+              <span className="text-[9px] font-bold text-slate-500 dark:text-zinc-400 -mt-0.5">
+                Menu
+              </span>
             </div>
-            <span className="text-[9px] font-bold text-slate-500 dark:text-zinc-400 -mt-0.5">
-              Menu
-            </span>
+
+            <BottomTabItem
+              id="contacts"
+              label="Kontak"
+              icon={Users}
+              activeTab={activeTab}
+              onClick={setActiveTab}
+            />
+
+            <BottomTabItem
+              id="materials"
+              label="Materi"
+              icon={FileText}
+              activeTab={activeTab}
+              onClick={setActiveTab}
+            />
           </div>
-
-          <BottomTabItem
-            id="contacts"
-            label="Kontak"
-            icon={Users}
-            activeTab={activeTab}
-            onClick={setActiveTab}
-          />
-
-          <BottomTabItem
-            id="materials"
-            label="Materi"
-            icon={FileText}
-            activeTab={activeTab}
-            onClick={setActiveTab}
-          />
         </nav>
       </div>
 

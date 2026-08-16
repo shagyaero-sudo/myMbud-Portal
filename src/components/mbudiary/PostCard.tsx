@@ -80,13 +80,13 @@ const formatThreadsTime = (timestamp: string | number | Date): string => {
   const diffHours = Math.floor(diffMin / 60);
   if (diffHours < 24) return `${diffHours}j`;
   const diffDays = Math.floor(diffHours / 24);
-  if (diffDays < 7) return `${diffDays}h`;
+  if (diffDays < 7) return `${diffDays}hr`;
   const diffWeeks = Math.floor(diffDays / 7);
   if (diffWeeks < 4) return `${diffWeeks}mg`;
   const diffMonths = Math.floor(diffDays / 30);
   if (diffMonths < 12) return `${diffMonths}bln`;
   const diffYears = Math.floor(diffDays / 365);
-  return `${diffYears}th`;
+  return `${diffYears}thn`;
 };
 
 interface PostCardProps {
