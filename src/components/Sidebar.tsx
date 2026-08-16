@@ -141,7 +141,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
           {/* Desktop Sidebar: External Links */}
           <div className="pt-4 mt-2 border-t border-slate-100 dark:border-zinc-800 space-y-1.5">
-            <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-2 mb-2">Portal Akademik ITS</p>
+            <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-2 mb-2">Portal Akademik ITS (Lama)</p>
             <a href="https://akademik.its.ac.id/home.php" target="_blank" rel="noreferrer" className="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-all">
               <Globe className="w-4 h-4" /> <span>MyITS SIAKAD</span>
             </a>
@@ -261,7 +261,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
                 {/* 2. PORTAL AKADEMIK ITS (GRID 2x2) */}
                 <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-zinc-800">
-                  <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-1">PORTAL AKADEMIK ITS</p>
+                  <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-1">PORTAL AKADEMIK ITS (Lama)</p>
                   <div className="grid grid-cols-2 gap-2">
                     <a href="https://presensi.its.ac.id/dashboard" target="_blank" rel="noreferrer" className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold">
                       <span className="flex items-center gap-2 truncate"><Globe className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" /> <span className="truncate">myITS Presensi</span></span>
