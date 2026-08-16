@@ -334,7 +334,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           className="
             pointer-events-auto
             mx-3
-            mb-[-12px]
+            mb-0
             bg-white/80 dark:bg-zinc-900/85
             backdrop-blur-2xl
             border border-white/50 dark:border-white/10
