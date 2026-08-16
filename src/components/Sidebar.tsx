@@ -129,7 +129,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <Globe className="w-4 h-4" /> <span>MyITS SIAKAD</span>
             </a>
             <a href="https://kemahasiswaan.its.ac.id/beranda" target="_blank" rel="noreferrer" className="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-all">
-              <Handshake className="w-4 h-4" /> <span>myITS StudConn</span>
+              <Handshake className="w-4 h-4" /> <span>myITS StudentConnect</span>
             </a>
             <a href="https://classroom.its.ac.id/auth/oidc" target="_blank" rel="noreferrer" className="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-all">
               <BookOpenCheck className="w-4 h-4" /> <span>myITS Classroom</span>
@@ -240,7 +240,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                     </a>
                     <a href="https://kemahasiswaan.its.ac.id/beranda" target="_blank" rel="noreferrer" className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold">
-                      <span className="flex items-center gap-2 truncate"><Handshake className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" /> <span className="truncate">myITS StudentConnect</span></span>
+                      <span className="flex items-center gap-2 truncate"><Handshake className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" /> <span className="truncate">myITS StudConn</span></span>
                       <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                     </a>
                   </div>
