@@ -34,7 +34,7 @@
   }
 
   /* =========================================================
-     1. BASE SURFACE PALETTE (LIGHT vs myITS OBSIDIAN DARK)
+     1. BASE SURFACE PALETTE (CLEAN LIGHT vs JET OBSIDIAN DARK)
      ========================================================= */
   :root {
     --color-slate-50: #f8fafc;
@@ -50,88 +50,88 @@
   }
 
   .dark {
-    /* myITS Academics Cool Dark Slate Canvas */
-    --color-slate-950: #0b0f14;
-    --color-zinc-950: #0b0f14;
-    --color-black: #0b0f14;
+    /* Pure Jet-Obsidian Canvas (Bukan Biru Pudar) */
+    --color-slate-950: #0d0f12;
+    --color-zinc-950: #0d0f12;
+    --color-black: #0d0f12;
 
-    /* myITS Card Surface */
-    --color-zinc-900: #13181f;
-    --color-slate-900: #13181f;
+    /* Card Surface Netral Mewah */
+    --color-zinc-900: #16181d;
+    --color-slate-900: #16181d;
 
-    /* myITS Inner Elements & Inputs */
-    --color-zinc-800: #1a212b;
-    --color-slate-800: #1a212b;
+    /* Inner Container / Input Background */
+    --color-zinc-800: #1f2229;
+    --color-slate-800: #1f2229;
 
-    /* myITS Subtle Border */
-    --color-zinc-700: #1f2732;
-    --color-slate-700: #1f2732;
+    /* Crisp Subtle Border */
+    --color-zinc-700: #2a2e38;
+    --color-slate-700: #2a2e38;
 
-    /* myITS Text Hierarchy */
-    --color-zinc-100: #f0f6fc;
-    --color-zinc-200: #e6edf3;
-    --color-zinc-300: #c9d1d9;
-    --color-zinc-400: #8b949e;
-    --color-zinc-500: #6e7681;
-    --color-slate-400: #8b949e;
-    --color-slate-500: #6e7681;
+    /* High Contrast Typography */
+    --color-zinc-100: #f8fafc;
+    --color-zinc-200: #e2e8f0;
+    --color-zinc-300: #cbd5e1;
+    --color-zinc-400: #94a3b8;
+    --color-zinc-500: #64748b;
+    --color-slate-400: #94a3b8;
+    --color-slate-500: #64748b;
   }
 }
 
 /* =========================================================
-   2. MODULAR ACCENT COLOR PALETTES (Overrides Tailwind Blue)
+   2. ACCENT COLORS (Solid, Bold & High-Contrast)
    ========================================================= */
 
-/* BIRU myITS (Default) */
+/* BIRU myITS */
 :root[data-accent="blue"] {
-  --color-blue-50: #e8f4fd;
-  --color-blue-100: #d0e9fb;
-  --color-blue-200: #a3d4f7;
-  --color-blue-400: #58a6ff;
-  --color-blue-500: #007ac2;
-  --color-blue-600: #007ac2;
-  --color-blue-700: #005a91;
-  --color-blue-900: #0d3859;
-  --color-blue-950: #072238;
+  --color-blue-50: #eff6ff;
+  --color-blue-100: #dbeafe;
+  --color-blue-200: #bfdbfe;
+  --color-blue-400: #38bdf8;
+  --color-blue-500: #0284c7;
+  --color-blue-600: #0284c7;
+  --color-blue-700: #0369a1;
+  --color-blue-900: #075985;
+  --color-blue-950: #082f49;
 }
 
 /* UNGU */
 :root[data-accent="purple"] {
-  --color-blue-50: #f5f0ff;
-  --color-blue-100: #ebdfff;
-  --color-blue-200: #d8c2ff;
-  --color-blue-400: #bc8cff;
-  --color-blue-500: #7c3aed;
+  --color-blue-50: #faf5ff;
+  --color-blue-100: #f3e8ff;
+  --color-blue-200: #e9d5ff;
+  --color-blue-400: #c084fc;
+  --color-blue-500: #8b5cf6;
   --color-blue-600: #7c3aed;
   --color-blue-700: #6d28d9;
-  --color-blue-900: #3b1875;
-  --color-blue-950: #230b49;
+  --color-blue-900: #4c1d95;
+  --color-blue-950: #2e1065;
 }
 
 /* PINK */
 :root[data-accent="pink"] {
-  --color-blue-50: #fff0f5;
-  --color-blue-100: #ffe0eb;
-  --color-blue-200: #ffc2d7;
+  --color-blue-50: #fdf2f8;
+  --color-blue-100: #fce7f3;
+  --color-blue-200: #fbcfe8;
   --color-blue-400: #f472b6;
-  --color-blue-500: #db2777;
+  --color-blue-500: #ec4899;
   --color-blue-600: #db2777;
   --color-blue-700: #be185d;
-  --color-blue-900: #670b33;
-  --color-blue-950: #3e041d;
+  --color-blue-900: #831843;
+  --color-blue-950: #500724;
 }
 
 /* ORANYE */
 :root[data-accent="orange"] {
-  --color-blue-50: #fff5ed;
-  --color-blue-100: #ffe8d6;
-  --color-blue-200: #ffd0ad;
+  --color-blue-50: #fff7ed;
+  --color-blue-100: #ffedd5;
+  --color-blue-200: #fed7aa;
   --color-blue-400: #fb923c;
-  --color-blue-500: #ea580c;
+  --color-blue-500: #f97316;
   --color-blue-600: #ea580c;
   --color-blue-700: #c2410c;
-  --color-blue-900: #6c2306;
-  --color-blue-950: #431202;
+  --color-blue-900: #7c2d12;
+  --color-blue-950: #431407;
 }
 
 /* HIJAU */
@@ -140,7 +140,7 @@
   --color-blue-100: #dcfce7;
   --color-blue-200: #bbf7d0;
   --color-blue-400: #4ade80;
-  --color-blue-500: #16a34a;
+  --color-blue-500: #22c55e;
   --color-blue-600: #16a34a;
   --color-blue-700: #15803d;
   --color-blue-900: #14532d;
@@ -153,7 +153,7 @@
   --color-blue-100: #ccfbf1;
   --color-blue-200: #99f6e4;
   --color-blue-400: #2dd4bf;
-  --color-blue-500: #0d9488;
+  --color-blue-500: #14b8a6;
   --color-blue-600: #0d9488;
   --color-blue-700: #0f766e;
   --color-blue-900: #134e4a;
@@ -162,13 +162,13 @@
 
 /* CYAN */
 :root[data-accent="cyan"] {
-  --color-blue-50: #f0f9ff;
-  --color-blue-100: #e0f2fe;
-  --color-blue-200: #bae6fd;
-  --color-blue-400: #38bdf8;
-  --color-blue-500: #0284c7;
-  --color-blue-600: #0284c7;
-  --color-blue-700: #0369a1;
-  --color-blue-900: #0c4a6e;
-  --color-blue-950: #082f49;
+  --color-blue-50: #ecfeff;
+  --color-blue-100: #cffafe;
+  --color-blue-200: #a5f3fc;
+  --color-blue-400: #22d3ee;
+  --color-blue-500: #06b6d4;
+  --color-blue-600: #0891b2;
+  --color-blue-700: #0e7490;
+  --color-blue-900: #164e63;
+  --color-blue-950: #083344;
 }
