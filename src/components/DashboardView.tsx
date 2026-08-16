@@ -31,8 +31,8 @@ import {
 } from '../services/announcements';
 
 // --- CONFIG FRS WAR MODE ---
-const IS_FRS_WAR_ACTIVE = false; // Ubah ke 'false' jika periode War FRS sudah selesai
-const FRS_DIRECT_URL = 'https://akademik.its.ac.id/list_frs.php';
+const IS_FRS_WAR_ACTIVE = true; // Ubah ke 'false' jika periode War FRS sudah selesai
+const FRS_DIRECT_URL = 'https://mia.its.ac.id/rencana-studi/';
 
 interface DashboardViewProps {
   state: AppState;
@@ -472,7 +472,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <span>WAR FRS: 18 - 21 AGUSTUS</span>
               </div>
               <h3 className="text-lg sm:text-xl font-extrabold text-white tracking-tight">
-                Bypass Web FRS SIAKAD ⚡
+                FRS MIA ITS ⚡
               </h3>
               <p className="text-xs text-slate-300 max-w-md leading-relaxed">
                 Penyelamat dari portal lemot. Klik buat langsung <span className="text-amber-300 font-bold">direct</span> ke FRS tanpa lewat myITS Portal!
@@ -488,7 +488,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               className="w-full sm:w-auto px-6 py-3.5 sm:py-4 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:from-amber-300 hover:to-amber-500 text-slate-950 font-black text-xs sm:text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-amber-500/30 transition-all shrink-0 cursor-pointer border border-amber-300/60 active:scale-95"
             >
               <span className="text-lg">🚀</span>
-              <span>GAS WAR FRS SEKARANG!</span>
+              <span>WAR NOW!</span>
             </motion.a>
           </div>
         </motion.div>
