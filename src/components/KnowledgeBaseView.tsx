@@ -315,21 +315,19 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
   };
 
   return (
-    <div className="space-y-6 pb-28 sm:pb-16 pb-[calc(7rem+env(safe-area-inset-bottom))] sm:pb-[calc(4rem+env(safe-area-inset-bottom))]">
-      {/* HEADER BANNER */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-1 pt-4 sm:pt-6 pb-2 mb-1">
+    <div className="pb-28 sm:pb-16 pb-[calc(7rem+env(safe-area-inset-bottom))] sm:pb-[calc(4rem+env(safe-area-inset-bottom))]">
+      {/* HEADER BANNER - Presisi Margin & Padding Mengikuti Direktori Kontak */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <div className="flex items-center gap-2.5">
-            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
-              Bank PDF Matkul
-            </h2>
-          </div>
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
+            Bank PDF Matkul
+          </h2>
           <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1">
-            Perpustakaan Arsip Materi Perkuliahan
+            Perpustakaan Materi Perkuliahan
           </p>
         </div>
 
-        {/* Action Controls Desktop: Menggunakan Tema Base Biru Default */}
+        {/* Action Controls Desktop: Sesuai Tema Base */}
         <div className="hidden sm:flex items-center gap-2.5 shrink-0">
           <button
             type="button"
@@ -346,7 +344,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                 showOnlyBookmarked ? 'fill-white text-white' : 'text-slate-400 dark:text-zinc-400'
               }`}
             />
-            <span>Tersimpan</span>
+            <span>Bookmark</span>
             <span
               className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
                 showOnlyBookmarked
@@ -371,7 +369,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
       </div>
 
       {/* 2-Column Layout */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
         {/* Left Column: Vertical Course Tabs */}
         <div className="hidden md:block md:col-span-4 lg:col-span-3 space-y-2">
           <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-4 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-1.5 transition-colors">
@@ -438,7 +436,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
         </div>
 
         {/* Right Column: List View with Left Color Strip */}
-        <div className="md:col-span-8 lg:col-span-9 space-y-3">
+        <div className="md:col-span-8 lg:col-span-9 space-y-4">
           {/* Search Bar Full Width */}
           <div className="relative w-full">
             <Search className="w-4 h-4 absolute left-4 top-3 text-slate-400" />
@@ -451,7 +449,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
             />
           </div>
 
-          {/* Mobile Action Controls: Dropdown Bersebelahan dengan Tombol Tersimpan */}
+          {/* Mobile Action Controls: Dropdown Bersebelahan dengan Tombol Bookmark */}
           <div className="flex md:hidden items-center gap-2 w-full">
             <div className="relative flex-1">
               <select
@@ -578,7 +576,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                               ? 'bg-blue-50 dark:bg-blue-950/60 border-blue-200 dark:border-blue-900/60 text-blue-600 dark:text-blue-400 shadow-xs'
                               : 'bg-white dark:bg-zinc-800/80 border-slate-200/80 dark:border-zinc-700 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-zinc-700'
                           }`}
-                          title={isBookmarked ? 'Hapus dari Tersimpan' : 'Simpan Materi'}
+                          title={isBookmarked ? 'Hapus dari Bookmark' : 'Simpan Materi'}
                         >
                           <Bookmark
                             className={`w-3.5 h-3.5 ${
