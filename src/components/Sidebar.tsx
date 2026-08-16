@@ -1,4 +1,3 @@
-cat > src/Sidebar.tsx <<'EOF'
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -367,7 +366,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             count={activeTaskCount > 0 ? activeTaskCount : null}
           />
 
-          {/* TOMBOL SAKTI / APP DRAWER TRIGGER */}
+          {/* TOMBOL MENU */}
           <div className="relative flex flex-col items-center justify-center -top-2.5 z-50">
             <motion.button
               whileTap={{ scale: 0.9 }}
@@ -447,7 +446,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </div>
 
               <div className="flex-1 overflow-y-auto p-5 space-y-6 pb-20 custom-scrollbar">
-
                 {/* 1. myITS Academics 2.0 */}
                 <div className="space-y-2">
                   <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 tracking-wider px-1">
@@ -455,7 +453,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   </p>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    <a href="https://mia.its.ac.id/presensi/" target="_blank" rel="noreferrer" className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold">
+                    <a
+                      href="https://mia.its.ac.id/presensi/"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold"
+                    >
                       <span className="flex items-center gap-2 truncate">
                         <ClipboardList className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
                         <span className="truncate">Presensi</span>
@@ -463,7 +466,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                     </a>
 
-                    <a href="https://mia.its.ac.id/rencana-studi/" target="_blank" rel="noreferrer" className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold">
+                    <a
+                      href="https://mia.its.ac.id/rencana-studi/"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold"
+                    >
                       <span className="flex items-center gap-2 truncate">
                         <GraduationCap className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
                         <span className="truncate">Rencana Studi (FRS)</span>
@@ -471,7 +479,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                     </a>
 
-                    <a href="https://mia.its.ac.id/penilaian/" target="_blank" rel="noreferrer" className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold">
+                    <a
+                      href="https://mia.its.ac.id/penilaian/"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold"
+                    >
                       <span className="flex items-center gap-2 truncate">
                         <FileSpreadsheet className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
                         <span className="truncate">Transkrip Nilai</span>
@@ -488,7 +501,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   </p>
 
                   <div className="grid grid-cols-2 gap-2">
-                    <a href="https://presensi.its.ac.id/dashboard" target="_blank" rel="noreferrer" className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold">
+                    <a
+                      href="https://presensi.its.ac.id/dashboard"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold"
+                    >
                       <span className="flex items-center gap-2 truncate">
                         <Globe className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
                         <span className="truncate">myITS Presensi</span>
@@ -496,7 +514,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                     </a>
 
-                    <a href="https://classroom.its.ac.id/auth/oidc" target="_blank" rel="noreferrer" className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold">
+                    <a
+                      href="https://classroom.its.ac.id/auth/oidc"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold"
+                    >
                       <span className="flex items-center gap-2 truncate">
                         <BookOpenCheck className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
                         <span className="truncate">myITS Classroom</span>
@@ -504,7 +527,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                     </a>
 
-                    <a href="https://akademik.its.ac.id/home.php" target="_blank" rel="noreferrer" className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold">
+                    <a
+                      href="https://akademik.its.ac.id/home.php"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold"
+                    >
                       <span className="flex items-center gap-2 truncate">
                         <Globe className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
                         <span className="truncate">myITS SIAKAD</span>
@@ -512,7 +540,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                     </a>
 
-                    <a href="https://kemahasiswaan.its.ac.id/beranda" target="_blank" rel="noreferrer" className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold">
+                    <a
+                      href="https://kemahasiswaan.its.ac.id/beranda"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold"
+                    >
                       <span className="flex items-center gap-2 truncate">
                         <Handshake className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
                         <span className="truncate">myITS StudConn</span>
@@ -529,7 +562,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   </p>
 
                   <div className="grid grid-cols-2 gap-2">
-                    <button onClick={() => navigateFromSheet('spinwheel')} className="flex items-center justify-between p-3 rounded-2xl text-xs font-semibold transition-all bg-blue-50/70 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 active:bg-blue-100">
+                    <button
+                      onClick={() => navigateFromSheet('spinwheel')}
+                      className="flex items-center justify-between p-3 rounded-2xl text-xs font-semibold transition-all bg-blue-50/70 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 active:bg-blue-100"
+                    >
                       <div className="flex items-center gap-2 truncate">
                         <Dices className="w-4 h-4 shrink-0" />
                         <span className="truncate">Spinwheel</span>
@@ -537,7 +573,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       <ChevronRight className="w-3.5 h-3.5 opacity-70 shrink-0" />
                     </button>
 
-                    <button onClick={() => navigateFromSheet('calculator')} className="flex items-center justify-between p-3 rounded-2xl text-xs font-semibold transition-all bg-indigo-50/70 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 active:bg-indigo-100">
+                    <button
+                      onClick={() => navigateFromSheet('calculator')}
+                      className="flex items-center justify-between p-3 rounded-2xl text-xs font-semibold transition-all bg-indigo-50/70 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 active:bg-indigo-100"
+                    >
                       <div className="flex items-center gap-2 truncate">
                         <Calculator className="w-4 h-4 shrink-0" />
                         <span className="truncate">Kalkulator Nilai</span>
@@ -545,7 +584,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       <ChevronRight className="w-3.5 h-3.5 opacity-70 shrink-0" />
                     </button>
 
-                    <button onClick={() => navigateFromSheet('letter')} className="flex items-center justify-between p-3 rounded-2xl text-xs font-semibold transition-all bg-emerald-50/70 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 active:bg-emerald-100">
+                    <button
+                      onClick={() => navigateFromSheet('letter')}
+                      className="flex items-center justify-between p-3 rounded-2xl text-xs font-semibold transition-all bg-emerald-50/70 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 active:bg-emerald-100"
+                    >
                       <div className="flex items-center gap-2 truncate">
                         <FileEdit className="w-4 h-4 shrink-0" />
                         <span className="truncate">Ajukan Surat Turlap</span>
@@ -594,7 +636,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     </div>
                   </button>
                 </div>
-
               </div>
             </motion.div>
           </>
@@ -604,7 +645,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   );
 };
 
-/* --- HELPER COMPONENT UNTUK BOTTOM NAV BUTTONS --- */
+/* HELPER COMPONENT UNTUK BOTTOM NAV BUTTONS */
 const BottomTabItem = ({
   id,
   label,
