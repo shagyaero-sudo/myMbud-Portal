@@ -127,7 +127,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
           {/* Desktop Sidebar: myITS Academics 2.0 */}
           <div className="pt-4 mt-4 border-t border-slate-100 dark:border-zinc-800 space-y-1.5">
-            <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-2 mb-2">myITS Academics 2.0</p>
+            <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 tracking-wider px-2 mb-2">
+              <span className="lowercase">my</span>ITS ACADEMICS 2.0
+            </p>
             <a href="https://mia.its.ac.id/presensi/" target="_blank" rel="noreferrer" className="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-all">
               <ClipboardList className="w-4 h-4" /> <span>Presensi</span>
             </a>
@@ -242,7 +244,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 
                 {/* 1. myITS Academics 2.0 (PALING ATAS) */}
                 <div className="space-y-2">
-                  <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-1">myITS Academics 2.0</p>
+                  <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 tracking-wider px-1">
+                    <span className="lowercase">my</span>ITS ACADEMICS 2.0
+                  </p>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     <a href="https://mia.its.ac.id/presensi/" target="_blank" rel="noreferrer" className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold">
                       <span className="flex items-center gap-2 truncate"><ClipboardList className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" /> <span className="truncate">Presensi</span></span>
