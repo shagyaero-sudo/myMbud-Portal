@@ -745,7 +745,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
                         <div className="flex items-center gap-2 pt-2 border-t border-slate-200/60 dark:border-zinc-700/60 w-full">
                           <a
-                            href="https://presensi.its.ac.id/dashboard"
+                            href="https://mia.its.ac.id/presensi/"
                             target="_blank"
                             rel="noreferrer"
                             className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-[11px] sm:text-xs font-bold flex items-center justify-center gap-2 rounded-xl transition-all shadow-sm shadow-blue-500/20 cursor-pointer"
