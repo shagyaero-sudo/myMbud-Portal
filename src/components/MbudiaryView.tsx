@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowLeft, User, Edit3, X, Camera, Trash2, Loader2 } from 'lucide-react';
+import { ArrowLeft, User, X, Camera, Trash2, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UserProfile, MbudiaryPost } from './mbudiary/types';
 import { getUserProfile, getPosts, initializeMbudiary, saveUserProfile } from './mbudiary/lib/storage';
@@ -149,6 +149,7 @@ export const MbudiaryView: React.FC = () => {
             }}
             onPostUpdate={() => forceRefresh((value) => value + 1)}
             onSelectAuthor={(authorNrp) => setSelectedAuthorNrp(authorNrp)}
+            onOpenEditProfile={handleOpenEditModal}
           />
         ) : selectedPostId ? (
           <div className="space-y-3 sm:space-y-4">
@@ -191,21 +192,12 @@ export const MbudiaryView: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <button
-                    onClick={handleOpenEditModal}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 text-xs font-bold text-slate-700 dark:text-zinc-200 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-200 dark:hover:border-blue-900/60 hover:bg-blue-50/50 dark:hover:bg-zinc-800/80 transition-all shadow-xs active:scale-95 cursor-pointer"
-                    title="Kustomisasi Profilmu"
-                  >
-                    <Edit3 className="w-3.5 h-3.5 text-blue-500" />
-                    <span className="hidden xs:inline">Kustomisasi</span>
-                  </button>
-
-                  <button
                     onClick={() => setSelectedAuthorNrp(currentUser.nrp)}
                     className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 text-xs font-bold text-slate-700 dark:text-zinc-200 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-200 dark:hover:border-blue-900/60 hover:bg-blue-50/50 dark:hover:bg-zinc-800/80 transition-all shadow-xs active:scale-95 cursor-pointer"
                     title="Lihat Profil Saya"
                   >
                     <User className="w-3.5 h-3.5 text-blue-500" />
-                    <span>Profil Saya</span>
+                    <span>Edit Profil</span>
                   </button>
                 </div>
               </div>
@@ -288,7 +280,7 @@ export const MbudiaryView: React.FC = () => {
                           onClick={() => setEditPhotoUrl(undefined)}
                           className="px-3 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 text-xs font-semibold hover:bg-rose-100 dark:hover:bg-rose-900/60 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                         >
-                          <Trash2 className="w-3 h-3" />
+                          <Trash2 className="w-3.5 h-3.5" />
                           <span>Hapus Foto</span>
                         </button>
                       )}

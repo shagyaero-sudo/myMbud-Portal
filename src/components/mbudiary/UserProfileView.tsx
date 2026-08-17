@@ -24,6 +24,7 @@ import {
   BadgeCheck,
   Loader2,
   Edit2,
+  Edit3,
   X,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -37,6 +38,7 @@ interface UserProfileViewProps {
   onSelectPost?: (postId: string) => void;
   onPostUpdate?: () => void;
   onSelectAuthor?: (authorNrp: string) => void;
+  onOpenEditProfile?: () => void;
 }
 
 export const UserProfileView: React.FC<UserProfileViewProps> = ({
@@ -46,6 +48,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
   onSelectPost,
   onPostUpdate,
   onSelectAuthor,
+  onOpenEditProfile,
 }) => {
   const allPosts = getPosts();
   const [following, setFollowing] = useState<boolean>(isFollowing(authorNrp));
@@ -210,7 +213,18 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
               </div>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-center">
+              {isSelf && (
+                <button
+                  type="button"
+                  onClick={onOpenEditProfile}
+                  className="px-4 py-2 sm:py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs sm:text-[13px] transition-all shadow-md shadow-blue-500/20 active:scale-95 flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                  <span>Edit Profil</span>
+                </button>
+              )}
+
               {currentUser.isOfficer && !isSelf && (
                 <button
                   type="button"
