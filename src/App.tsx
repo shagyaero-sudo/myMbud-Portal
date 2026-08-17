@@ -210,15 +210,26 @@ export default function App() {
     setIsAuthenticated(false);
   };
 
-  const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera || '';
-  const isAndroid = /android/i.test(userAgent);
-  const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream;
-  const isIPadOS = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
-  const isMobileOrTabletOS = isAndroid || isIOS || isIPadOS;
+  // DETEKSI MOBILE & TABLET SECARA LENGKAP (Termasuk Samsung DeX / Android Tablet)
+  const userAgent = (navigator.userAgent || navigator.vendor || (window as any).opera || '').toLowerCase();
+  const platform = (navigator.platform || '').toLowerCase();
+  const maxTouchPoints = navigator.maxTouchPoints || 0;
+
+  const isAndroid =
+    /android|samsungbrowser/i.test(userAgent) ||
+    /linux arm|android/i.test(platform) ||
+    (/linux/i.test(platform) && maxTouchPoints > 1 && !/windows|macintosh/i.test(userAgent));
+
+  const isIOS =
+    /ipad|iphone|ipod/.test(userAgent) ||
+    (platform === 'macintel' && maxTouchPoints > 1 && !(window as any).MSStream);
+
+  const isMobileOrTabletOS = isAndroid || isIOS;
 
   const isStandalone =
     window.matchMedia('(display-mode: standalone)').matches ||
-    ('standalone' in navigator && (navigator as any).standalone === true);
+    ('standalone' in navigator && (navigator as any).standalone === true) ||
+    document.referrer.includes('android-app://');
 
   const requiresLogin =
     !isAuthenticated && (!isMobileOrTabletOS || isStandalone);
