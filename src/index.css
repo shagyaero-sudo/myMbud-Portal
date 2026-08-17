@@ -47,6 +47,9 @@
     --color-slate-800: #1e293b;
     --color-slate-900: #0f172a;
     --color-slate-950: #020617;
+
+    /* Fallback Logo Filter */
+    --logo-filter: none;
   }
 
   .dark {
@@ -79,7 +82,7 @@
 }
 
 /* =========================================================
-   2. ACCENT COLORS (Solid, Punchy & Clean Contrast)
+   2. ACCENT COLORS (Solid, Punchy & Adaptive Logo Filter)
    ========================================================= */
 
 /* BIRU myITS */
@@ -93,6 +96,7 @@
   --color-blue-700: #0369a1;
   --color-blue-900: #075985;
   --color-blue-950: #082f49;
+  --logo-filter: none;
 }
 
 /* UNGU */
@@ -106,6 +110,7 @@
   --color-blue-700: #6d28d9;
   --color-blue-900: #4c1d95;
   --color-blue-950: #2e1065;
+  --logo-filter: hue-rotate(50deg) saturate(1.25);
 }
 
 /* PINK */
@@ -119,6 +124,7 @@
   --color-blue-700: #be185d;
   --color-blue-900: #831843;
   --color-blue-950: #500724;
+  --logo-filter: hue-rotate(115deg) saturate(1.35);
 }
 
 /* ORANYE */
@@ -132,6 +138,7 @@
   --color-blue-700: #c2410c;
   --color-blue-900: #7c2d12;
   --color-blue-950: #431407;
+  --logo-filter: hue-rotate(175deg) saturate(1.4) brightness(1.05);
 }
 
 /* HIJAU */
@@ -145,6 +152,7 @@
   --color-blue-700: #15803d;
   --color-blue-900: #14532d;
   --color-blue-950: #052e16;
+  --logo-filter: hue-rotate(245deg) saturate(1.25);
 }
 
 /* TEAL */
@@ -158,6 +166,7 @@
   --color-blue-700: #0f766e;
   --color-blue-900: #134e4a;
   --color-blue-950: #042f2e;
+  --logo-filter: hue-rotate(320deg) saturate(1.15);
 }
 
 /* CYAN */
@@ -171,4 +180,5 @@
   --color-blue-700: #0e7490;
   --color-blue-900: #164e63;
   --color-blue-950: #083344;
+  --logo-filter: hue-rotate(345deg) saturate(1.1);
 }
