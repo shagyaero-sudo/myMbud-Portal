@@ -44,6 +44,7 @@ import {
   Task,
   Contact,
   GroupResult,
+  ScheduleItem,
 } from './types';
 
 import { initialAppState } from './data/mockData';
@@ -268,8 +269,8 @@ export default function App() {
     const unsubCourses = onSnapshot(
       qCourses,
       (snapshot) => {
-        const firebaseSchedules: AppState['schedules'] = [];
-        const firebaseContacts: AppState['contacts'] = [];
+        const firebaseSchedules: ScheduleItem[] = [];
+        const firebaseContacts: Contact[] = [];
 
         snapshot.forEach((courseDoc) => {
           const d = courseDoc.data();
@@ -298,6 +299,7 @@ export default function App() {
             lecturer: d.lecturerName || '',
             pjMatkul: d.pjName ? String(d.pjName).trim() : '',
             sks: Number(d.sks) || 0,
+            attendanceUrl: d.attendanceUrl || '',
           });
 
           firebaseContacts.push({
@@ -312,6 +314,7 @@ export default function App() {
             room: d.room || '',
             scheduleDayTime:
               d.scheduleDayTime || scheduleDay + ', ' + scheduleTime,
+            attendanceUrl: d.attendanceUrl || '',
           });
         });
 

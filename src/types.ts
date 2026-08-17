@@ -20,18 +20,21 @@ export interface ScheduleItem {
   lecturer: string;
   pjMatkul: string;
   sks: number;
+  attendanceUrl?: string;
 }
 
 export interface Contact {
   id: string;
   course: string;
   code?: string;
+  sks?: number;
   lecturerName: string;
   lecturerPhone: string;
   pjName: string;
   pjPhone: string;
   room?: string;
   scheduleDayTime?: string;
+  attendanceUrl?: string;
   lecturers?: any[];
 }
 

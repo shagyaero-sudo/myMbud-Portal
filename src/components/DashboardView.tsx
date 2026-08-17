@@ -511,7 +511,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <div className="flex justify-end pb-2">
               <button
                 onClick={handleOpenAddAnn}
-                className="px-2.5 py-1 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-all text-xs font-semibold flex items-center gap-1 shadow-xs"
+                className="px-2.5 py-1 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-all text-xs font-semibold flex items-center gap-1 shadow-xs cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Buat</span>
@@ -532,7 +532,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       e.stopPropagation();
                       handlePrevAnn();
                     }}
-                    className="absolute left-1 top-1/2 -translate-y-1/2 z-20 text-slate-400 dark:text-zinc-500 hover:text-slate-800 dark:hover:text-zinc-100 opacity-70 hover:opacity-100 transition-all active:scale-90 p-1"
+                    className="absolute left-1 top-1/2 -translate-y-1/2 z-20 text-slate-400 dark:text-zinc-500 hover:text-slate-800 dark:hover:text-zinc-100 opacity-70 hover:opacity-100 transition-all active:scale-90 p-1 cursor-pointer"
                     aria-label="Pengumuman Sebelumnya"
                   >
                     <ChevronLeft className="w-5 h-5" />
@@ -543,7 +543,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       e.stopPropagation();
                       handleNextAnn();
                     }}
-                    className="absolute right-1 top-1/2 -translate-y-1/2 z-20 text-slate-400 dark:text-zinc-500 hover:text-slate-800 dark:hover:text-zinc-100 opacity-70 hover:opacity-100 transition-all active:scale-90 p-1"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 z-20 text-slate-400 dark:text-zinc-500 hover:text-slate-800 dark:hover:text-zinc-100 opacity-70 hover:opacity-100 transition-all active:scale-90 p-1 cursor-pointer"
                     aria-label="Pengumuman Selanjutnya"
                   >
                     <ChevronRight className="w-5 h-5" />
@@ -578,7 +578,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                             e.stopPropagation();
                             handleOpenEditAnn(currentMobileAnn);
                           }}
-                          className="text-slate-400 hover:text-blue-600 transition-colors p-0.5"
+                          className="text-slate-400 hover:text-blue-600 transition-colors p-0.5 cursor-pointer"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
                         </button>
@@ -587,7 +587,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                             e.stopPropagation();
                             handleDeleteAnn(currentMobileAnn.id);
                           }}
-                          className="text-slate-400 hover:text-rose-600 transition-colors p-0.5"
+                          className="text-slate-400 hover:text-rose-600 transition-colors p-0.5 cursor-pointer"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -732,7 +732,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
                         <div className="flex items-center gap-2 pt-2 border-t border-slate-200/60 dark:border-zinc-700/60 w-full">
                           <a
-                            href="https://mia.its.ac.id/presensi/"
+                            href={
+                              item.attendanceUrl && item.attendanceUrl.trim() !== ''
+                                ? item.attendanceUrl
+                                : 'https://mia.its.ac.id/presensi/'
+                            }
                             target="_blank"
                             rel="noreferrer"
                             className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-[11px] sm:text-xs font-bold flex items-center justify-center gap-2 rounded-xl transition-all shadow-sm shadow-blue-500/20 cursor-pointer"
@@ -973,7 +977,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                               e.stopPropagation();
                               handleOpenEditAnn(ann);
                             }}
-                            className="text-slate-400 hover:text-blue-600 transition-colors p-0.5"
+                            className="text-slate-400 hover:text-blue-600 transition-colors p-0.5 cursor-pointer"
                           >
                             <Edit2 className="w-3.5 h-3.5" />
                           </button>
@@ -982,7 +986,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                               e.stopPropagation();
                               handleDeleteAnn(ann.id);
                             }}
-                            className="text-slate-400 hover:text-rose-600 transition-colors p-0.5"
+                            className="text-slate-400 hover:text-rose-600 transition-colors p-0.5 cursor-pointer"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -1005,10 +1009,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
       </div>
-
-      {/* ========================================================================= */}
-      {/* FULLSCREEN PORTALS (MODAL TIDAK LAGI TERTABRAK HEADER & NAVBAR) */}
-      {/* ========================================================================= */}
 
       {/* Modal: Create / Edit Announcement */}
       {typeof document !== 'undefined' &&

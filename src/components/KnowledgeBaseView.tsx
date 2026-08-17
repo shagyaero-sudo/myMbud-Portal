@@ -467,7 +467,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                 }}
                 className="w-full px-3.5 py-2.5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xs"
               >
-                <option value="ALL">Semua Rak ({materials.length})</option>
+                <option value="ALL">Semua Matkul ({materials.length})</option>
                 {dynamicCoursesList.map((course) => {
                   const count = materials.filter((m) => m.courseName === course).length;
                   return (
