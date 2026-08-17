@@ -328,11 +328,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </aside>
 
-      {/* MOBILE BOTTOM NAVIGATION (LOCKED TIGHT HEIGHT, ZERO EXTRA GAP) */}
+      {/* MOBILE BOTTOM NAVIGATION (LOCKED HEIGHT + SAFE CLEARANCE UNTUK HOME BAR IOS) */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 w-full pointer-events-none">
-        <nav className="pointer-events-auto w-full h-16 bg-white/70 dark:bg-zinc-950/70 backdrop-blur-2xl backdrop-saturate-150 border-t border-slate-200/50 dark:border-zinc-800/80 rounded-t-[22px] px-3 pb-1 flex items-center justify-center shadow-[0_-8px_32px_rgba(0,0,0,0.08)] dark:shadow-[0_-8px_32px_rgba(0,0,0,0.5)] relative">
-          {/* INNER CONTAINER PROPORSIONAL (Mencegah icon mencar saat di stretch/iPad) */}
-          <div className="w-full max-w-md mx-auto flex items-center justify-around h-full">
+        <nav className="pointer-events-auto w-full h-[4.25rem] bg-white/70 dark:bg-zinc-950/70 backdrop-blur-2xl backdrop-saturate-150 border-t border-slate-200/50 dark:border-zinc-800/80 rounded-t-[22px] px-3 pb-2.5 flex items-center justify-center shadow-[0_-8px_32px_rgba(0,0,0,0.08)] dark:shadow-[0_-8px_32px_rgba(0,0,0,0.5)] relative">
+          {/* INNER CONTAINER PROPORSIONAL (JARAK GAP STATIS KONSISTEN) */}
+          <div className="w-full flex items-center justify-center gap-4 sm:gap-8 h-full">
             <BottomTabItem
               id="dashboard"
               label="Jadwal"
@@ -634,7 +634,7 @@ const BottomTabItem = ({
   return (
     <button
       onClick={() => onClick(id)}
-      className={`relative flex flex-col items-center justify-center flex-1 h-full transition-all cursor-pointer select-none ${
+      className={`relative flex flex-col items-center justify-center flex-1 max-w-[72px] h-full transition-all cursor-pointer select-none ${
         isActive
           ? 'text-blue-600 dark:text-blue-400 font-bold'
           : 'text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300'
