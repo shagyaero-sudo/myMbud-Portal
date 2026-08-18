@@ -55,6 +55,8 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
   const [formCourse, setFormCourse] = useState('');
   const [formLecturerName, setFormLecturerName] = useState('');
   const [formLecturerPhone, setFormLecturerPhone] = useState('');
+  const [formLecturerName2, setFormLecturerName2] = useState('');
+  const [formLecturerPhone2, setFormLecturerPhone2] = useState('');
   const [formPjName, setFormPjName] = useState('');
   const [formPjPhone, setFormPjPhone] = useState('');
   const [formRoom, setFormRoom] = useState('');
@@ -72,6 +74,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
   const [openTemplateIndex, setOpenTemplateIndex] = useState<number | null>(0);
 
   const formatWaNumber = (phoneStr: string) => {
+    if (!phoneStr) return '';
     let clean = phoneStr.replace(/[^0-9]/g, '');
     if (clean.startsWith('0')) {
       clean = '62' + clean.slice(1);
@@ -107,6 +110,8 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
         (c.code && c.code.toLowerCase().includes(search.toLowerCase())) ||
         (c.lecturerName &&
           c.lecturerName.toLowerCase().includes(search.toLowerCase())) ||
+        (c.lecturerName2 &&
+          c.lecturerName2.toLowerCase().includes(search.toLowerCase())) ||
         c.pjName.toLowerCase().includes(search.toLowerCase());
       const matchCourse =
         selectedCourseFilter === 'ALL' || c.course === selectedCourseFilter;
@@ -130,6 +135,8 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
     setFormCourse('');
     setFormLecturerName('');
     setFormLecturerPhone('');
+    setFormLecturerName2('');
+    setFormLecturerPhone2('');
     setFormPjName('');
     setFormPjPhone('');
     setFormRoom('');
@@ -143,10 +150,12 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
     setEditingId(c.id);
     setFormCode(c.code || '');
     setFormCourse(c.course);
-    setFormLecturerName(c.lecturerName);
-    setFormLecturerPhone(c.lecturerPhone);
-    setFormPjName(c.pjName);
-    setFormPjPhone(c.pjPhone);
+    setFormLecturerName(c.lecturerName || '');
+    setFormLecturerPhone(c.lecturerPhone || '');
+    setFormLecturerName2(c.lecturerName2 || '');
+    setFormLecturerPhone2(c.lecturerPhone2 || '');
+    setFormPjName(c.pjName || '');
+    setFormPjPhone(c.pjPhone || '');
     setFormRoom(c.room || '');
     setFormScheduleDayTime(c.scheduleDayTime || '');
     setFormSks(c.sks || '');
@@ -159,14 +168,16 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
     if (!formCourse.trim() || !formLecturerName.trim()) return;
 
     const payload: any = {
-      code: formCode,
-      course: formCourse,
-      lecturerName: formLecturerName,
-      lecturerPhone: formLecturerPhone,
-      pjName: formPjName,
-      pjPhone: formPjPhone,
-      room: formRoom,
-      scheduleDayTime: formScheduleDayTime,
+      code: formCode.trim(),
+      course: formCourse.trim(),
+      lecturerName: formLecturerName.trim(),
+      lecturerPhone: formLecturerPhone.trim(),
+      lecturerName2: formLecturerName2.trim(),
+      lecturerPhone2: formLecturerPhone2.trim(),
+      pjName: formPjName.trim(),
+      pjPhone: formPjPhone.trim(),
+      room: formRoom.trim(),
+      scheduleDayTime: formScheduleDayTime.trim(),
       sks: Number(formSks) || 0,
       attendanceUrl: formAttendanceUrl.trim(),
     };
@@ -343,11 +354,12 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                   </div>
 
                   <div className="space-y-3">
+                    {/* 1. DOSEN 1 */}
                     <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 space-y-2.5">
                       <div className="flex items-center gap-1.5 overflow-hidden">
                         <GraduationCap className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
                         <span className="text-xs font-bold text-slate-700 dark:text-zinc-300 shrink-0">
-                          Dosen:
+                          Dosen{c.lecturerName2 ? ' 1' : ''}:
                         </span>
                         <span className="text-xs font-bold text-slate-900 dark:text-zinc-100 truncate">
                           {c.lecturerName}
@@ -368,11 +380,45 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                           className="w-full flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition-all shadow-md shadow-blue-500/20 cursor-pointer"
                         >
                           <MessageSquare className="w-3.5 h-3.5" />
-                          <span>Chat Dosen (Pilih Template)</span>
+                          <span>Chat Dosen{c.lecturerName2 ? ' 1' : ''} (Pilih Template)</span>
                         </motion.button>
                       </div>
                     </div>
 
+                    {/* 2. DOSEN 2 (JIKA ADA) */}
+                    {c.lecturerName2 && c.lecturerName2.trim() !== '' && (
+                      <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 space-y-2.5">
+                        <div className="flex items-center gap-1.5 overflow-hidden">
+                          <GraduationCap className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                          <span className="text-xs font-bold text-slate-700 dark:text-zinc-300 shrink-0">
+                            Dosen 2:
+                          </span>
+                          <span className="text-xs font-bold text-slate-900 dark:text-zinc-100 truncate">
+                            {c.lecturerName2}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2 pt-0.5">
+                          <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() =>
+                              openTemplate(
+                                c.lecturerName2,
+                                c.lecturerPhone2 || '',
+                                c.course
+                              )
+                            }
+                            className="w-full flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition-all shadow-md shadow-blue-500/20 cursor-pointer"
+                          >
+                            <MessageSquare className="w-3.5 h-3.5" />
+                            <span>Chat Dosen 2 (Pilih Template)</span>
+                          </motion.button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 3. PJ MATKUL */}
                     <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-50/50 dark:bg-zinc-800/40 border border-slate-100 dark:border-zinc-800 space-y-2.5">
                       <div className="flex items-center gap-1.5 overflow-hidden">
                         <UserCheck className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
@@ -474,10 +520,11 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                     </div>
                   </div>
 
+                  {/* DOSEN 1 */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
-                        Nama Dosen
+                        Nama Dosen 1
                       </label>
                       <input
                         type="text"
@@ -490,7 +537,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                     </div>
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
-                        WhatsApp Dosen
+                        WhatsApp Dosen 1
                       </label>
                       <input
                         type="text"
@@ -498,6 +545,34 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                         value={formLecturerPhone}
                         onChange={(e) => setFormLecturerPhone(e.target.value)}
                         placeholder="081234567890"
+                        className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* DOSEN 2 (OPSIONAL) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
+                        Nama Dosen 2 (Opsional)
+                      </label>
+                      <input
+                        type="text"
+                        value={formLecturerName2}
+                        onChange={(e) => setFormLecturerName2(e.target.value)}
+                        placeholder="Dr. Suprapto, M.Si."
+                        className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
+                        WhatsApp Dosen 2 (Opsional)
+                      </label>
+                      <input
+                        type="text"
+                        value={formLecturerPhone2}
+                        onChange={(e) => setFormLecturerPhone2(e.target.value)}
+                        placeholder="081298765432"
                         className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>

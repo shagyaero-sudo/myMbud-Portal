@@ -18,6 +18,7 @@ export interface ScheduleItem {
   time: string;
   room: string;
   lecturer: string;
+  lecturer2?: string;
   pjMatkul: string;
   sks: number;
   attendanceUrl?: string;
@@ -30,6 +31,8 @@ export interface Contact {
   sks?: number;
   lecturerName: string;
   lecturerPhone: string;
+  lecturerName2?: string;
+  lecturerPhone2?: string;
   pjName: string;
   pjPhone: string;
   room?: string;

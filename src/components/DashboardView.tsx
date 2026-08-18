@@ -229,8 +229,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     const days: DayOfWeek[] = ['Minggu' as DayOfWeek, 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
     const currentDayIndex = new Date().getDay();
     const todayName = days[currentDayIndex];
-    if (todayName && todayName !== ('Minggu' as DayOfWeek)) {
+    if (todayName && todayName !== ('Minggu' as DayOfWeek) && todayName !== ('Jumat' as DayOfWeek) && todayName !== ('Sabtu' as DayOfWeek)) {
       setSelectedDay(todayName);
+    } else {
+      setSelectedDay('Senin');
     }
   }, []);
 
@@ -369,7 +371,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     });
   };
 
-  const dayTabs: DayOfWeek[] = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
+  // HARI PERKULIAHAN AKTIF: SENIN - KAMIS (HAPUS JUMAT)
+  const dayTabs: DayOfWeek[] = ['Senin', 'Selasa', 'Rabu', 'Kamis'];
 
   const filteredSchedule = state.schedules
     .filter((s) => s.day === selectedDay)
@@ -668,8 +671,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               })()}
             </div>
 
-            {/* TAB HARI STABIL */}
-            <div className="grid grid-cols-5 gap-1 p-1 bg-slate-100/80 dark:bg-zinc-800/80 rounded-2xl w-full">
+            {/* TAB HARI STABIL (4 KOLOM: SENIN - KAMIS) */}
+            <div className="grid grid-cols-4 gap-1 p-1 bg-slate-100/80 dark:bg-zinc-800/80 rounded-2xl w-full">
               {dayTabs.map((day) => {
                 const isActive = selectedDay === day;
                 return (
@@ -714,11 +717,30 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                             <h3 className="text-sm font-bold text-slate-800 dark:text-zinc-100 leading-snug pr-2">
                               {item.course}
                             </h3>
-                            <p className="text-xs text-slate-500 dark:text-zinc-400 truncate">
-                              Dosen: {item.lecturer}
-                            </p>
-                            <p className="text-xs text-slate-500 dark:text-zinc-400 truncate">
-                              PJ: {item.pjMatkul.replace(/\s*08\d+/g, '')}
+
+                            {/* FORMAT PENULISAN DOSEN BULLETED LIST JIKA ADA DOSEN 2 */}
+                            <div className="text-xs text-slate-500 dark:text-zinc-400">
+                              {item.lecturer2 && item.lecturer2.trim() !== '' ? (
+                                <div className="space-y-0.5 pt-0.5">
+                                  <span className="font-medium text-slate-600 dark:text-zinc-400">Dosen:</span>
+                                  <ul className="pl-1 space-y-0.5">
+                                    <li className="flex items-center gap-1.5 truncate">
+                                      <span className="w-1 h-1 rounded-full bg-slate-400 shrink-0" />
+                                      <span className="truncate">{item.lecturer}</span>
+                                    </li>
+                                    <li className="flex items-center gap-1.5 truncate">
+                                      <span className="w-1 h-1 rounded-full bg-slate-400 shrink-0" />
+                                      <span className="truncate">{item.lecturer2}</span>
+                                    </li>
+                                  </ul>
+                                </div>
+                              ) : (
+                                <p className="truncate">Dosen: {item.lecturer || '-'}</p>
+                              )}
+                            </div>
+
+                            <p className="text-xs text-slate-500 dark:text-zinc-400 truncate pt-0.5">
+                              PJ: {item.pjMatkul ? item.pjMatkul.replace(/\s*08\d+/g, '') : '-'}
                             </p>
                           </div>
 
@@ -906,7 +928,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       >
                         <div className="space-y-0.5">
                           <span className="font-bold text-blue-900 dark:text-blue-200 block">{s.course}</span>
-                          <span className="text-[11px] text-blue-700 dark:text-blue-400">Dosen: {s.lecturer}</span>
+                          <span className="text-[11px] text-blue-700 dark:text-blue-400">
+                            Dosen: {s.lecturer2 && s.lecturer2.trim() !== '' ? `${s.lecturer}, ${s.lecturer2}` : s.lecturer}
+                          </span>
                         </div>
                         <div className="text-right">
                           <span className="font-bold text-blue-600 dark:text-blue-400 block">{s.time}</span>
