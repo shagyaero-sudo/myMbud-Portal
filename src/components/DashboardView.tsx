@@ -890,7 +890,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
             </div>
 
-            {/* Panel Ringkasan Agenda Tanggal Terpilih */}
+            {/* Panel Ringkasan Agenda Tanggal Terpilih (CLEAN & RINGKAS TANPA DOSEN) */}
             <div className="pt-3 border-t border-slate-100 dark:border-zinc-800 space-y-2.5">
               <div className="flex items-center justify-between gap-2 flex-wrap">
                 <span className="text-xs font-bold text-slate-700 dark:text-zinc-300">
@@ -926,13 +926,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         key={s.id}
                         className="p-3 rounded-2xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50 flex items-center justify-between text-xs"
                       >
-                        <div className="space-y-0.5">
-                          <span className="font-bold text-blue-900 dark:text-blue-200 block">{s.course}</span>
-                          <span className="text-[11px] text-blue-700 dark:text-blue-400">
-                            Dosen: {s.lecturer2 && s.lecturer2.trim() !== '' ? `${s.lecturer}, ${s.lecturer2}` : s.lecturer}
-                          </span>
+                        <div className="min-w-0 pr-3">
+                          <span className="font-bold text-blue-900 dark:text-blue-200 block truncate">{s.course}</span>
                         </div>
-                        <div className="text-right">
+                        <div className="text-right shrink-0">
                           <span className="font-bold text-blue-600 dark:text-blue-400 block">{s.time}</span>
                           <span className="text-[10px] text-slate-500 dark:text-zinc-400">{s.room}</span>
                         </div>
@@ -947,7 +944,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       >
                         <div className="space-y-0.5 min-w-0 pr-2">
                           <span className="font-bold text-rose-900 dark:text-rose-200 block truncate">{t.title}</span>
-                          <span className="text-[11px] text-rose-700 dark:text-rose-400 block">{t.course}</span>
+                          <span className="text-[11px] text-rose-700 dark:text-rose-400 block truncate">{t.course}</span>
                         </div>
                         <span className="font-bold px-2 py-1 rounded-xl bg-rose-600 text-white text-[10px] shrink-0">
                           Deadline {new Date(t.deadline).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WIB
