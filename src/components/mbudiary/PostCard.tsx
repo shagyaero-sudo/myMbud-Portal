@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { MbudiaryPost, MbudiaryReply, UserProfile, MbudiaryUser } from '../types';
 import {
@@ -141,14 +141,15 @@ export const PostCard: React.FC<PostCardProps> = ({
   onSelectAuthor,
   isDetailPage = false,
 }) => {
-  const [replies, setReplies] = useState<MbudiaryReply[]>([]);
-  const [isRepliesExpanded, setIsRepliesExpanded] = useState(isDetailPage);
+  const [replies, setReplies] = useState<MbudiaryReply[]>(() => getReplies(post.id) || []);
+  const [isRepliesExpanded, setIsRepliesExpanded] = useState<boolean>(isDetailPage);
   const [replyContent, setReplyContent] = useState('');
   const [isSubmittingReply, setIsSubmittingReply] = useState(false);
-  const [isLiked, setIsLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(post.likes?.length || 0);
+  
+  const [isLiked, setIsLiked] = useState<boolean>(() => (post.likes || []).includes(currentUser.nrp.toLowerCase()));
+  const [likeCount, setLikeCount] = useState<number>((post.likes || []).length);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState<boolean>(() => getBookmarkedPostIds().includes(post.id));
 
   const [commentMentionSuggestions, setCommentMentionSuggestions] = useState<MbudiaryUser[]>([]);
   const [commentMentionQuery, setCommentMentionQuery] = useState<string | null>(null);
@@ -163,7 +164,19 @@ export const PostCard: React.FC<PostCardProps> = ({
   const [isReposting, setIsReposting] = useState(false);
   const [isQuoteFocused, setIsQuoteFocused] = useState(false);
 
-  const [authorProfile, setAuthorProfile] = useState(getCachedUserByNrp(post.authorNrp));
+  const [authorProfile, setAuthorProfile] = useState<MbudiaryUser | null>(() => getCachedUserByNrp(post.authorNrp));
+
+  // AMBIL DATA SEMUA POST DARI STORAGE UNTUK MEMASTIKAN ORIGINAL POST TERSEDIA
+  const allAvailablePosts = getPosts() || [];
+  const originalPost = useMemo(() => {
+    if (!post.isRepost || !post.originalPostId) return null;
+    return allAvailablePosts.find((p) => String(p.id) === String(post.originalPostId)) || null;
+  }, [post.isRepost, post.originalPostId, allAvailablePosts]);
+
+  const originalAuthorProfile = useMemo(() => {
+    if (!originalPost) return null;
+    return getCachedUserByNrp(originalPost.authorNrp);
+  }, [originalPost]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -178,46 +191,44 @@ export const PostCard: React.FC<PostCardProps> = ({
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && selectedImage) {
+      if (event.key === 'Escape') {
         setSelectedImage(null);
-      }
-      if (event.key === 'Escape' && isQuoteOpen) {
         setIsQuoteOpen(false);
         setQuoteContent('');
         setIsQuoteFocused(false);
       }
     };
 
-    if (selectedImage || isQuoteOpen) {
-      document.addEventListener('keydown', handleKeyDown);
-    }
+    document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [selectedImage, isQuoteOpen]);
+  }, []);
 
-  const syncData = () => {
+  const refreshComponentData = () => {
     setIsLiked((post.likes || []).includes(currentUser.nrp.toLowerCase()));
-    setLikeCount(post.likes?.length || 0);
-    setReplies(getReplies(post.id));
+    setLikeCount((post.likes || []).length);
+    setReplies(getReplies(post.id) || []);
     setAuthorProfile(getCachedUserByNrp(post.authorNrp));
     setIsBookmarked(getBookmarkedPostIds().includes(post.id));
   };
 
   useEffect(() => {
-    syncData();
-    if (isDetailPage) setIsRepliesExpanded(true);
+    refreshComponentData();
+    if (isDetailPage) {
+      setIsRepliesExpanded(true);
+    }
 
-    window.addEventListener('mbud_users_change', syncData);
-    window.addEventListener('mbud_posts_change', syncData);
-    window.addEventListener('mbud_replies_change', syncData);
-    window.addEventListener('mbud_bookmarks_change', syncData);
+    window.addEventListener('mbud_users_change', refreshComponentData);
+    window.addEventListener('mbud_posts_change', refreshComponentData);
+    window.addEventListener('mbud_replies_change', refreshComponentData);
+    window.addEventListener('mbud_bookmarks_change', refreshComponentData);
 
     return () => {
-      window.removeEventListener('mbud_users_change', syncData);
-      window.removeEventListener('mbud_posts_change', syncData);
-      window.removeEventListener('mbud_replies_change', syncData);
-      window.removeEventListener('mbud_bookmarks_change', syncData);
+      window.removeEventListener('mbud_users_change', refreshComponentData);
+      window.removeEventListener('mbud_posts_change', refreshComponentData);
+      window.removeEventListener('mbud_replies_change', refreshComponentData);
+      window.removeEventListener('mbud_bookmarks_change', refreshComponentData);
     };
-  }, [post, currentUser, isDetailPage]);
+  }, [post.id, isDetailPage]);
 
   const handleCommentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -251,20 +262,17 @@ export const PostCard: React.FC<PostCardProps> = ({
     commentInputRef.current.focus();
   };
 
-  const authorName = authorProfile?.nickname || authorProfile?.username || 'Mbuders';
+  const authorName = authorProfile?.nickname || authorProfile?.username || post.authorName || 'Mbuders';
   const authorEmoji = authorProfile?.emoji || '😊';
   const authorPhotoUrl = authorProfile?.photoUrl;
   const actorName = currentUser.nickname || currentUser.username || 'Mbuders';
 
-  const allAvailablePosts = getPosts();
-  const originalPost = post.isRepost && post.originalPostId ? allAvailablePosts.find((item) => item.id === post.originalPostId) : null;
-  const originalAuthorProfile = originalPost ? getCachedUserByNrp(originalPost.authorNrp) : null;
-  const originalAuthorName = originalAuthorProfile?.nickname || originalAuthorProfile?.username || 'Mbuders';
-  const originalAuthorEmoji = originalAuthorProfile?.emoji || '😊';
-  const originalAuthorPhotoUrl = originalAuthorProfile?.photoUrl;
-
   const isQuoteRepost = post.isRepost && !!post.quoteContent;
   const isPlainRepost = post.isRepost && !post.quoteContent;
+
+  const originalAuthorName = originalAuthorProfile?.nickname || originalAuthorProfile?.username || originalPost?.authorName || 'Mbuders';
+  const originalAuthorEmoji = originalAuthorProfile?.emoji || '😊';
+  const originalAuthorPhotoUrl = originalAuthorProfile?.photoUrl;
 
   const displayAuthorName = isPlainRepost && originalPost ? originalAuthorName : authorName;
   const displayAuthorEmoji = isPlainRepost && originalPost ? originalAuthorEmoji : authorEmoji;
@@ -275,9 +283,10 @@ export const PostCard: React.FC<PostCardProps> = ({
   const displayContent = isPlainRepost && originalPost ? originalPost.content : post.content;
   const displayImages = isPlainRepost && originalPost ? originalPost.imageUrls : post.imageUrls;
 
+  // Data target yang akan dikutip di modal
   const quoteTargetPost = post.isRepost && originalPost ? originalPost : post;
-  const quoteTargetAuthorProfile = post.isRepost && originalPost ? originalAuthorProfile : authorProfile;
   const quoteTargetAuthorName = post.isRepost && originalPost ? originalAuthorName : authorName;
+  const quoteTargetAuthorUsername = post.isRepost && originalPost ? (originalAuthorProfile?.username || 'unknown') : (authorProfile?.username || 'unknown');
   const quoteTargetAuthorEmoji = post.isRepost && originalPost ? originalAuthorEmoji : authorEmoji;
   const quoteTargetAuthorPhotoUrl = post.isRepost && originalPost ? originalAuthorPhotoUrl : authorPhotoUrl;
 
@@ -288,7 +297,7 @@ export const PostCard: React.FC<PostCardProps> = ({
 
     const nowLiked = (updated.likes || []).includes(currentUser.nrp.toLowerCase());
     setIsLiked(nowLiked);
-    setLikeCount(updated.likes?.length || 0);
+    setLikeCount((updated.likes || []).length);
 
     if (!wasLiked && nowLiked) {
       void notifyPostLiked({
@@ -310,6 +319,40 @@ export const PostCard: React.FC<PostCardProps> = ({
       onSelectPost(post.id);
     } else {
       setIsRepliesExpanded((prev) => !prev);
+    }
+  };
+
+  const handleAddReply = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmedComment = replyContent.trim();
+    if (!trimmedComment || isSubmittingReply) return;
+
+    setIsSubmittingReply(true);
+    try {
+      await addReply(post.id, trimmedComment);
+      setReplyContent('');
+      setReplies(getReplies(post.id) || []);
+
+      void notifyPostCommented({
+        postAuthorNrp: post.authorNrp,
+        actorNrp: currentUser.nrp,
+        actorName,
+        postId: post.id,
+        comment: trimmedComment,
+      });
+
+      await processMentionsInContent({
+        content: trimmedComment,
+        senderNrp: currentUser.nrp,
+        senderName: actorName,
+        postId: post.id,
+      });
+
+      onPostUpdate?.();
+    } catch (error) {
+      console.error('[mbudiary] Gagal menambahkan komentar:', error);
+    } finally {
+      setIsSubmittingReply(false);
     }
   };
 
@@ -451,7 +494,7 @@ export const PostCard: React.FC<PostCardProps> = ({
           )}
         </div>
 
-        {/* KONTEN UTAMA TEKS QUOTE */}
+        {/* KONTEN UTAMA QUOTE REPOST */}
         {isQuoteRepost && (
           <div className="text-[13px] sm:text-sm text-slate-800 dark:text-zinc-200 leading-relaxed whitespace-pre-line mb-3.5 font-normal">
             <FormattedPostContent content={post.quoteContent || ''} onSelectAuthor={onSelectAuthor} />
@@ -464,7 +507,7 @@ export const PostCard: React.FC<PostCardProps> = ({
           </div>
         )}
 
-        {/* KARTU POST ASLI YANG DIKUTIP (QUOTE EMBED CARD) */}
+        {/* EMBED KARTU KUTIPAN ASLI */}
         {isQuoteRepost && (
           <div
             onClick={(e) => {
@@ -504,7 +547,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                 )}
               </>
             ) : (
-              <div className="p-4 text-xs italic text-slate-400 dark:text-zinc-500">
+              <div className="p-3.5 text-xs italic text-slate-400 dark:text-zinc-500">
                 Postingan asli tidak dapat dimuat atau telah dihapus.
               </div>
             )}
@@ -545,7 +588,7 @@ export const PostCard: React.FC<PostCardProps> = ({
               <span>{post.replyCount || replies.length}</span>
             </button>
 
-            {/* DIRECT QUOTE REPOST */}
+            {/* DIRECT QUOTE REPOST BUTTON */}
             <motion.button
               whileTap={{ scale: 0.9 }}
               type="button"
@@ -571,6 +614,7 @@ export const PostCard: React.FC<PostCardProps> = ({
           </div>
         </div>
 
+        {/* SECTION KOMENTAR / BALASAN */}
         <AnimatePresence>
           {isRepliesExpanded && (
             <motion.div
@@ -745,10 +789,9 @@ export const PostCard: React.FC<PostCardProps> = ({
                         <div className="text-xs sm:text-[13px] font-bold text-slate-900 dark:text-zinc-100 truncate">
                           {quoteTargetAuthorName}
                         </div>
-                        {quoteTargetAuthorProfile?.isVerified && <VerifiedBadge size="sm" />}
                       </div>
                       <div className="text-[10px] text-slate-400 dark:text-zinc-500">
-                        @{quoteTargetAuthorProfile?.username || 'unknown'} · {formatThreadsTime(quoteTargetPost?.createdAt)}
+                        @{quoteTargetAuthorUsername} · {formatThreadsTime(quoteTargetPost?.createdAt)}
                       </div>
                     </div>
                   </div>
@@ -779,7 +822,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                 <motion.button initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }} onClick={() => setSelectedImage(null)} className="fixed top-6 right-5 sm:top-6 sm:right-6 z-[10000002] w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full bg-zinc-800/80 hover:bg-zinc-700 border border-white/20 text-white shadow-2xl backdrop-blur-md transition-all cursor-pointer">
                   <X className="w-5 h-5 sm:w-6 sm:h-6" />
                 </motion.button>
-                <motion.div initial={{ opacity: 0, scale: 0.92, y: 10 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.92, y: 10 }} className="relative z-[10000001] max-w-[95vw] max-h-[85dvh] flex items-center justify-center" onMouseDown={(e) => e.stopPropagation()}>
+                <motion.div initial={{ opacity: 0, scale: 0.92, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.92, y: 10 }} className="relative z-[10000001] max-w-[95vw] max-h-[85dvh] flex items-center justify-center" onMouseDown={(e) => e.stopPropagation()}>
                   <img src={selectedImage} alt="Pratinjau" className="max-w-[95vw] max-h-[85dvh] w-auto h-auto object-contain rounded-2xl sm:rounded-3xl shadow-2xl border border-white/10" />
                 </motion.div>
               </motion.div>
