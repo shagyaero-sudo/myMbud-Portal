@@ -19,7 +19,8 @@ import {
   RotateCcw,
   Loader2,
   Zap,
-  Send
+  Send,
+  Building2
 } from 'lucide-react';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../services/firebase';
@@ -748,9 +749,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                             <span className="text-[11px] text-slate-500 dark:text-zinc-400 mb-0.5">
                               {item.sks} SKS
                             </span>
-                            <span className="text-xs font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap">
-                              {item.room}
+                            
+                            {/* NAMA RUANGAN DENGAN ICON GEDUNG */}
+                            <span className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap">
+                              <Building2 className="w-3.5 h-3.5 shrink-0 stroke-[2.2]" />
+                              <span>{item.room}</span>
                             </span>
+
                             <span className="text-xs font-bold text-slate-900 dark:text-zinc-100 font-sans whitespace-nowrap">
                               {item.time}
                             </span>
@@ -890,7 +895,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
             </div>
 
-            {/* Panel Ringkasan Agenda Tanggal Terpilih (CLEAN & RINGKAS TANPA DOSEN) */}
+            {/* Panel Ringkasan Agenda Tanggal Terpilih (BERSIH & RAMPING) */}
             <div className="pt-3 border-t border-slate-100 dark:border-zinc-800 space-y-2.5">
               <div className="flex items-center justify-between gap-2 flex-wrap">
                 <span className="text-xs font-bold text-slate-700 dark:text-zinc-300">
@@ -931,7 +936,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         </div>
                         <div className="text-right shrink-0">
                           <span className="font-bold text-blue-600 dark:text-blue-400 block">{s.time}</span>
-                          <span className="text-[10px] text-slate-500 dark:text-zinc-400">{s.room}</span>
+                          <span className="inline-flex items-center gap-1 text-[10px] text-slate-500 dark:text-zinc-400 justify-end">
+                            <Building2 className="w-3 h-3 shrink-0" />
+                            <span>{s.room}</span>
+                          </span>
                         </div>
                       </div>
                     ))}
@@ -1187,7 +1195,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   animate={{ scale: 1, opacity: 1, y: 0 }}
                   exit={{ scale: 0.92, opacity: 0, y: 15 }}
                   transition={{ type: 'spring', stiffness: 350, damping: 28 }}
-                  className="relative z-10 bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"
+                  className="relative z-10 bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"
                 >
                   <div className="px-6 sm:px-8 py-5 border-b border-slate-100 dark:border-zinc-800 flex items-start justify-between gap-3 shrink-0 bg-white dark:bg-zinc-900">
                     <div className="pr-2 space-y-1">
