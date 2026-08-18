@@ -68,10 +68,11 @@ export const VerifiedBadge: React.FC<{ size?: 'sm' | 'md' | 'lg' }> = ({ size = 
 };
 
 // HELPER FORMAT WAKTU SUPER RINGKAS ALA THREADS
-const formatThreadsTime = (timestamp: string | number | Date): string => {
+const formatThreadsTime = (timestamp?: string | number | Date | null): string => {
   if (!timestamp) return 'baru saja';
   const now = Date.now();
   const time = new Date(timestamp).getTime();
+  if (isNaN(time)) return 'baru saja';
   const diffSec = Math.floor((now - time) / 1000);
 
   if (diffSec < 60) return 'baru saja';
@@ -156,9 +157,7 @@ export const PostCard: React.FC<PostCardProps> = ({
 
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isRepostMenuOpen, setIsRepostMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const repostMenuRef = useRef<HTMLDivElement>(null);
 
   const [isQuoteOpen, setIsQuoteOpen] = useState(false);
   const [quoteContent, setQuoteContent] = useState('');
@@ -169,9 +168,6 @@ export const PostCard: React.FC<PostCardProps> = ({
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setIsMenuOpen(false);
-      }
-      if (repostMenuRef.current && !repostMenuRef.current.contains(event.target as Node)) {
-        setIsRepostMenuOpen(false);
       }
     };
 
@@ -279,6 +275,13 @@ export const PostCard: React.FC<PostCardProps> = ({
   const displayContent = isPlainRepost && originalPost ? originalPost.content : post.content;
   const displayImages = isPlainRepost && originalPost ? originalPost.imageUrls : post.imageUrls;
 
+  // Objek referensi target untuk ditampilkan dalam Modal QRT
+  const quoteTargetPost = post.isRepost && originalPost ? originalPost : post;
+  const quoteTargetAuthorProfile = post.isRepost && originalPost ? originalAuthorProfile : authorProfile;
+  const quoteTargetAuthorName = post.isRepost && originalPost ? originalAuthorName : authorName;
+  const quoteTargetAuthorEmoji = post.isRepost && originalPost ? originalAuthorEmoji : authorEmoji;
+  const quoteTargetAuthorPhotoUrl = post.isRepost && originalPost ? originalAuthorPhotoUrl : authorPhotoUrl;
+
   const handleLikeToggle = async () => {
     const wasLiked = isLiked;
     const updated = await toggleLikePost(post.id, currentUser.nrp);
@@ -308,62 +311,6 @@ export const PostCard: React.FC<PostCardProps> = ({
       onSelectPost(post.id);
     } else {
       setIsRepliesExpanded((prev) => !prev);
-    }
-  };
-
-  const handleAddReply = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmedComment = replyContent.trim();
-    if (!trimmedComment || isSubmittingReply) return;
-
-    setIsSubmittingReply(true);
-    try {
-      await addReply(post.id, trimmedComment);
-      setReplyContent('');
-      setReplies(getReplies(post.id));
-
-      void notifyPostCommented({
-        postAuthorNrp: post.authorNrp,
-        actorNrp: currentUser.nrp,
-        actorName,
-        postId: post.id,
-        comment: trimmedComment,
-      });
-
-      await processMentionsInContent({
-        content: trimmedComment,
-        senderNrp: currentUser.nrp,
-        senderName: actorName,
-        postId: post.id,
-      });
-
-      onPostUpdate?.();
-    } catch (error) {
-      console.error('[mbudiary] Gagal menambahkan komentar:', error);
-    } finally {
-      setIsSubmittingReply(false);
-    }
-  };
-
-  const handleRepost = async () => {
-    setIsRepostMenuOpen(false);
-    if (isReposting) return;
-    setIsReposting(true);
-
-    try {
-      await savePost({
-        content: '',
-        isOfficerPost: currentUser.isOfficer,
-        imageUrls: [],
-        isRepost: true,
-        originalPostId: post.isRepost && post.originalPostId ? post.originalPostId : post.id,
-        quoteContent: undefined,
-      });
-      onPostUpdate?.();
-    } catch (error) {
-      console.error('[mbudiary] Gagal melakukan repost:', error);
-    } finally {
-      setIsReposting(false);
     }
   };
 
@@ -584,35 +531,18 @@ export const PostCard: React.FC<PostCardProps> = ({
               <span>{post.replyCount || replies.length}</span>
             </button>
 
-            <div ref={repostMenuRef} className="relative">
-              <button
-                type="button"
-                onClick={() => setIsRepostMenuOpen((prev) => !prev)}
-                disabled={isReposting}
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full transition-all text-xs font-medium cursor-pointer ${isRepostMenuOpen ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-200/80 dark:border-emerald-900/50' : 'text-slate-500 dark:text-zinc-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50/60 dark:hover:bg-zinc-800/80 border border-transparent disabled:opacity-50'}`}
-              >
-                <Repeat2 className={`w-4 h-4 ${isReposting ? 'animate-pulse' : ''}`} />
-                <span className="hidden xs:inline">Repost</span>
-              </button>
-
-              <AnimatePresence>
-                {isRepostMenuOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -4, scale: 0.97 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -4, scale: 0.97 }}
-                    className="absolute left-0 bottom-full mb-1.5 z-30 w-44 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl p-1.5 shadow-xl"
-                  >
-                    <button type="button" onClick={handleRepost} className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left text-xs font-semibold text-slate-700 dark:text-zinc-200 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer">
-                      <Repeat2 className="w-4 h-4" /><span>Repost</span>
-                    </button>
-                    <button type="button" onClick={() => { setIsRepostMenuOpen(false); setIsQuoteOpen(true); }} className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left text-xs font-semibold text-slate-700 dark:text-zinc-200 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer">
-                      <Quote className="w-4 h-4" /><span>Quote Repost</span>
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+            {/* DIRECT QUOTE REPOST BUTTON (KLIK LANGSUNG BUKA MODAL QRT) */}
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              type="button"
+              onClick={() => setIsQuoteOpen(true)}
+              disabled={isReposting}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full transition-all text-xs font-medium cursor-pointer text-slate-500 dark:text-zinc-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50/60 dark:hover:bg-zinc-800/80 border border-transparent disabled:opacity-50"
+              title="Quote Repost"
+            >
+              <Repeat2 className={`w-4 h-4 ${isReposting ? 'animate-pulse' : ''}`} />
+              <span className="hidden xs:inline">Repost</span>
+            </motion.button>
           </div>
 
           <div className="-mr-1">
@@ -740,6 +670,7 @@ export const PostCard: React.FC<PostCardProps> = ({
         </AnimatePresence>
       </motion.article>
 
+      {/* MODAL QUOTE REPOST */}
       <AnimatePresence>
         {isQuoteOpen && (
           <motion.div
@@ -784,30 +715,32 @@ export const PostCard: React.FC<PostCardProps> = ({
                   className="w-full resize-none px-4 py-3 mb-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-sm text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 shrink-0"
                 />
 
+                {/* PRATINJAU KARTU YANG DI-QUOTE (NULL-SAFE) */}
                 <div className="rounded-2xl border border-slate-200 dark:border-zinc-800 overflow-y-auto bg-slate-50/50 dark:bg-zinc-950 flex-1 min-h-0 mb-3 custom-scrollbar">
                   <div className="px-4 py-3 flex items-center gap-2">
                     <div className="w-8 h-8 rounded-xl bg-slate-200 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden">
-                      {(post.isRepost && originalPost ? originalAuthorPhotoUrl : authorPhotoUrl) ? (
-                        <img src={getOptimizedImageUrl(post.isRepost && originalPost ? originalAuthorPhotoUrl : authorPhotoUrl)} alt="Avatar" className="w-full h-full object-cover" />
+                      {quoteTargetAuthorPhotoUrl ? (
+                        <img src={getOptimizedImageUrl(quoteTargetAuthorPhotoUrl)} alt="Avatar" className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-base leading-none">{post.isRepost && originalPost ? originalAuthorEmoji : authorEmoji}</span>
+                        <span className="text-base leading-none">{quoteTargetAuthorEmoji}</span>
                       )}
                     </div>
 
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5 min-w-0">
                         <div className="text-xs sm:text-[13px] font-bold text-slate-900 dark:text-zinc-100 truncate">
-                          {post.isRepost && originalPost ? originalAuthorName : authorName}
+                          {quoteTargetAuthorName}
                         </div>
+                        {quoteTargetAuthorProfile?.isVerified && <VerifiedBadge size="sm" />}
                       </div>
                       <div className="text-[10px] text-slate-400 dark:text-zinc-500">
-                        @{post.isRepost && originalPost ? originalAuthorProfile?.username || 'unknown' : authorProfile?.username || 'unknown'} · {formatThreadsTime(originalPost.createdAt)}
+                        @{quoteTargetAuthorProfile?.username || 'unknown'} · {formatThreadsTime(quoteTargetPost?.createdAt)}
                       </div>
                     </div>
                   </div>
 
                   <div className="px-4 pb-4 text-[13px] text-slate-700 dark:text-zinc-300 leading-relaxed whitespace-pre-line">
-                    <FormattedPostContent content={post.isRepost && originalPost ? originalPost.content || '' : post.content || ''} onSelectAuthor={onSelectAuthor} />
+                    <FormattedPostContent content={quoteTargetPost?.content || ''} onSelectAuthor={onSelectAuthor} />
                   </div>
                 </div>
 
