@@ -155,19 +155,34 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
             my<strong className="font-black">Mbud</strong> Portal
           </h1>
           <p className="text-xs sm:text-sm font-light tracking-wide text-slate-400">
-            #SemakinMudah
+            #RuangBertumbuh
           </p>
         </motion.div>
       </div>
 
-      {/* --- FOOTER VERSION LABEL --- */}
+      {/* --- FOOTER: INTEGRATED WITH MYITS & VERSION LABEL --- */}
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.45, duration: 0.6, ease: 'easeOut' }}
-        className="absolute bottom-16 sm:bottom-18 mb-[env(safe-area-inset-bottom)] text-[11px] font-mono text-slate-400 tracking-wider"
+        className="absolute bottom-12 sm:bottom-14 mb-[env(safe-area-inset-bottom)] flex flex-col items-center gap-2 select-none"
       >
-        v2.5
+        {/* Integrated With myITS */}
+        <div className="flex flex-col items-center gap-1.5 opacity-80 hover:opacity-100 transition-opacity">
+          <span className="text-[9.5px] uppercase tracking-widest text-slate-400 font-medium">
+            Integrated with
+          </span>
+          <img
+            src="/myits-logo.svg"
+            alt="myITS Logo"
+            className="h-3.5 sm:h-4 w-auto object-contain brightness-0 invert opacity-90"
+          />
+        </div>
+
+        {/* Version Label */}
+        <span className="text-[10px] font-mono text-slate-500 tracking-wider">
+          ©2026
+        </span>
       </motion.div>
     </motion.div>
   );

@@ -381,7 +381,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
       folderName: 'myMbud Task Attachments',
     };
 
-    // Dynamic Asymptotic Progress Interval
     const progressInterval = setInterval(() => {
       setUploadProgress((prev) => {
         if (prev >= 92) {
@@ -503,7 +502,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Cari nama tugas, mata kuliah, atau dosen..."
+            placeholder="Cari nama tugas atau mata kuliah..."
             className="w-full pl-11 pr-4 py-2.5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] dark:shadow-none"
           />
         </div>
@@ -639,10 +638,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                         <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100 group-hover:text-blue-600 transition-colors leading-snug">
                           {t.title}
                         </h3>
-
-                        <p className="text-xs font-medium text-slate-500 dark:text-zinc-400 mt-1">
-                          Dosen: {t.assigner}
-                        </p>
                       </div>
 
                       <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed bg-slate-50/70 dark:bg-zinc-800/60 p-3 rounded-2xl line-clamp-2 overflow-hidden text-ellipsis">
@@ -745,10 +740,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                       <h3 className="text-sm font-bold text-slate-800 dark:text-zinc-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-1">
                         {t.title}
                       </h3>
-
-                      <p className="text-xs text-slate-500 dark:text-zinc-400 truncate">
-                        Dosen: {t.assigner}
-                      </p>
                     </div>
 
                     <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-zinc-400 pt-1.5 border-t border-slate-100 dark:border-zinc-800">
@@ -805,17 +796,8 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
               </div>
 
               <div className="flex-1 overflow-y-auto p-6 space-y-5">
-                <div className="bg-slate-50 dark:bg-zinc-800/60 p-4 rounded-2xl text-xs border border-slate-100 dark:border-zinc-800 space-y-3">
+                <div className="bg-slate-50 dark:bg-zinc-800/60 p-4 rounded-2xl text-xs border border-slate-100 dark:border-zinc-800 space-y-2">
                   <div>
-                    <span className="text-slate-400 dark:text-zinc-400 block mb-0.5">
-                      Dosen:
-                    </span>
-                    <span className="font-bold text-slate-800 dark:text-zinc-200">
-                      {selectedDetailTask.assigner}
-                    </span>
-                  </div>
-
-                  <div className="pt-2 border-t border-slate-200/50 dark:border-zinc-700/50">
                     <span className="text-slate-400 dark:text-zinc-400 block mb-0.5">
                       Tenggat:
                     </span>
