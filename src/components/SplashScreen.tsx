@@ -160,26 +160,26 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
         </motion.div>
       </div>
 
-      {/* --- FOOTER: INTEGRATED WITH MYITS & VERSION LABEL --- */}
+      {/* --- FOOTER: LOGO MYITS (ATAS), INTEGRATED (BAWAH), & COPYRIGHT --- */}
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.45, duration: 0.6, ease: 'easeOut' }}
-        className="absolute bottom-12 sm:bottom-14 mb-[env(safe-area-inset-bottom)] flex flex-col items-center gap-2 select-none"
+        className="absolute bottom-10 sm:bottom-12 mb-[env(safe-area-inset-bottom)] flex flex-col items-center gap-2 select-none"
       >
-        {/* Integrated With myITS */}
-        <div className="flex flex-col items-center gap-1.5 opacity-80 hover:opacity-100 transition-opacity">
-          <span className="text-[9.5px] uppercase tracking-widest text-slate-400 font-medium">
-            Integrated with
-          </span>
+        {/* Logo myITS di Atas, Text Integrated di Bawah */}
+        <div className="flex flex-col items-center gap-1 opacity-80 hover:opacity-100 transition-opacity">
           <img
             src="/myits-logo.svg"
             alt="myITS Logo"
             className="h-3.5 sm:h-4 w-auto object-contain brightness-0 invert opacity-90"
           />
+          <span className="text-[9px] uppercase tracking-widest text-slate-400 font-medium">
+            Integrated
+          </span>
         </div>
 
-        {/* Version Label */}
+        {/* Copyright / Version Label */}
         <span className="text-[10px] font-mono text-slate-500 tracking-wider">
           ©2026
         </span>
