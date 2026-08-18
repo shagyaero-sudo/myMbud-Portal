@@ -42,6 +42,32 @@ interface AttachmentData {
   fileUrl: string;
 }
 
+// HELPER AUTO-DETECT LINK (CLICKABLE & WARNA BIRU)
+const renderTextWithLinks = (text: string) => {
+  if (!text) return 'Tidak ada instruksi.';
+
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  const parts = text.split(urlRegex);
+
+  return parts.map((part, index) => {
+    if (part.match(urlRegex)) {
+      return (
+        <a
+          key={index}
+          href={part}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 underline underline-offset-2 break-all hover:opacity-80 transition-opacity font-medium cursor-pointer"
+        >
+          {part}
+        </a>
+      );
+    }
+    return part;
+  });
+};
+
 export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
   tasks,
   contacts = [],
@@ -98,7 +124,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
 
     try {
       await toggleTaskCompletion(currentUserNrp, task.id, nextState);
-      
+
       if (nextState) {
         setCelebrationTask(task);
         playCelebrationSound();
@@ -148,14 +174,14 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
     try {
       const response = await fetch(downloadUrl);
       const blob = await response.blob();
-      
+
       const blobUrl = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = blobUrl;
       a.download = fileName.endsWith('.pdf') ? fileName : `${fileName}.pdf`;
       document.body.appendChild(a);
       a.click();
-      
+
       window.URL.revokeObjectURL(blobUrl);
       document.body.removeChild(a);
     } catch (error) {
@@ -640,9 +666,9 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                         </h3>
                       </div>
 
-                      <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed bg-slate-50/70 dark:bg-zinc-800/60 p-3 rounded-2xl line-clamp-2 overflow-hidden text-ellipsis">
-                        {t.description || 'Klik untuk melihat rincian instruksi tugas lengkap.'}
-                      </p>
+                      <div className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed bg-slate-50/70 dark:bg-zinc-800/60 p-3 rounded-2xl line-clamp-2 overflow-hidden text-ellipsis break-words">
+                        {t.description ? renderTextWithLinks(t.description) : 'Klik untuk melihat rincian instruksi tugas lengkap.'}
+                      </div>
 
                       <div className="space-y-1 pt-1 text-xs text-slate-500 dark:text-zinc-400 border-t border-slate-50 dark:border-zinc-800">
                         <div className="flex items-center justify-between text-[11px] pt-1">
@@ -812,8 +838,8 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                     Rincian Tugas
                   </h4>
 
-                  <div className="p-4 rounded-2xl bg-slate-50 dark:bg-zinc-800/80 text-xs leading-relaxed text-slate-700 dark:text-zinc-300 whitespace-pre-wrap border border-slate-100 dark:border-zinc-700/60">
-                    {selectedDetailTask.description || 'Tidak ada instruksi.'}
+                  <div className="p-4 rounded-2xl bg-slate-50 dark:bg-zinc-800/80 text-xs leading-relaxed text-slate-700 dark:text-zinc-300 whitespace-pre-wrap border border-slate-100 dark:border-zinc-700/60 break-words">
+                    {renderTextWithLinks(selectedDetailTask.description)}
                   </div>
                 </div>
 

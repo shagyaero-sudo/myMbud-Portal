@@ -181,7 +181,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
 
         {/* Copyright / Version Label */}
         <span className="text-[10px] font-mono text-slate-500 tracking-wider">
-          ©2026
+          
         </span>
       </motion.div>
     </motion.div>

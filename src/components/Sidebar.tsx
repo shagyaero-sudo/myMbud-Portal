@@ -250,7 +250,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               className="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-all"
             >
               <Globe className="w-4 h-4" />
-              <span>MyITS SIAKAD</span>
+              <span>myITS SIAKAD</span>
             </a>
 
             <a
@@ -328,10 +328,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </aside>
 
-      {/* MOBILE BOTTOM NAVIGATION (LOCKED HEIGHT + SAFE CLEARANCE UNTUK HOME BAR IOS) */}
+      {/* MOBILE BOTTOM NAVIGATION */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 w-full pointer-events-none">
         <nav className="pointer-events-auto w-full h-[4.25rem] bg-white/70 dark:bg-zinc-950/70 backdrop-blur-2xl backdrop-saturate-150 border-t border-slate-200/50 dark:border-zinc-800/80 rounded-t-[22px] px-3 pb-2.5 flex items-center justify-center shadow-[0_-8px_32px_rgba(0,0,0,0.08)] dark:shadow-[0_-8px_32px_rgba(0,0,0,0.5)] relative">
-          {/* INNER CONTAINER PROPORSIONAL (JARAK GAP STATIS KONSISTEN) */}
           <div className="w-full flex items-center justify-center gap-4 sm:gap-8 h-full">
             <BottomTabItem
               id="dashboard"
@@ -469,22 +468,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   </div>
                 </div>
 
-                {/* 2. PORTAL AKADEMIK ITS */}
+                {/* 2. PORTAL AKADEMIK myITS (LAMA) */}
                 <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-zinc-800">
                   <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-1">
-                    PORTAL AKADEMIK (LAMA)
+                    PORTAL myITS (LAMA)
                   </p>
 
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     <a
-                      href="https://presensi.its.ac.id/dashboard"
+                      href="https://akademik.its.ac.id/home.php"
                       target="_blank"
                       rel="noreferrer"
                       className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold"
                     >
                       <span className="flex items-center gap-2 truncate">
                         <Globe className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
-                        <span className="truncate">myITS Presensi</span>
+                        <span className="truncate">SIAKAD 1.0</span>
                       </span>
                       <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                     </a>
@@ -497,20 +496,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     >
                       <span className="flex items-center gap-2 truncate">
                         <BookOpenCheck className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
-                        <span className="truncate">myITS Classroom</span>
-                      </span>
-                      <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                    </a>
-
-                    <a
-                      href="https://akademik.its.ac.id/home.php"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold"
-                    >
-                      <span className="flex items-center gap-2 truncate">
-                        <Globe className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
-                        <span className="truncate">myITS SIAKAD</span>
+                        <span className="truncate">Classroom</span>
                       </span>
                       <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                     </a>
@@ -523,7 +509,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     >
                       <span className="flex items-center gap-2 truncate">
                         <Handshake className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
-                        <span className="truncate">myITS StudConn</span>
+                        <span className="truncate">StudentConnect</span>
                       </span>
                       <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                     </a>
@@ -620,7 +606,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   );
 };
 
-/* HELPER COMPONENT BOTTOM TAB CLEAN & PRECISE */
+/* HELPER COMPONENT BOTTOM TAB */
 const BottomTabItem = ({
   id,
   label,

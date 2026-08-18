@@ -713,7 +713,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         key={item.id}
                         className="p-4 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/60 hover:bg-slate-100/60 dark:hover:bg-zinc-800 transition-all flex flex-col space-y-3 border border-slate-100 dark:border-zinc-800/80"
                       >
-                        <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-stretch justify-between gap-3">
+                          {/* SISI KIRI: NAMA MATKUL, DOSEN, PJ */}
                           <div className="space-y-1 min-w-0 flex-1">
                             <h3 className="text-sm font-bold text-slate-800 dark:text-zinc-100 leading-snug pr-2">
                               {item.course}
@@ -745,20 +746,24 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                             </p>
                           </div>
 
-                          <div className="flex flex-col items-end shrink-0 text-right space-y-1">
-                            <span className="text-[11px] text-slate-500 dark:text-zinc-400 mb-0.5">
+                          {/* SISI KANAN: SKS DI ATAS SENDIRIAN, RUANG & JAM TURUN KE BAWAH */}
+                          <div className="flex flex-col justify-between items-end shrink-0 text-right">
+                            {/* POJOK ATAS SENDIRIAN */}
+                            <span className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">
                               {item.sks} SKS
                             </span>
-                            
-                            {/* NAMA RUANGAN DENGAN ICON GEDUNG */}
-                            <span className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap">
-                              <Building2 className="w-3.5 h-3.5 shrink-0 stroke-[2.2]" />
-                              <span>{item.room}</span>
-                            </span>
 
-                            <span className="text-xs font-bold text-slate-900 dark:text-zinc-100 font-sans whitespace-nowrap">
-                              {item.time}
-                            </span>
+                            {/* DITARUH AGAK KEBAWAH */}
+                            <div className="flex flex-col items-end space-y-1">
+                              <span className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap">
+                                <Building2 className="w-3.5 h-3.5 shrink-0 stroke-[2.2]" />
+                                <span>{item.room}</span>
+                              </span>
+
+                              <span className="text-xs font-bold text-slate-900 dark:text-zinc-100 font-sans whitespace-nowrap">
+                                {item.time}
+                              </span>
+                            </div>
                           </div>
                         </div>
 
@@ -1195,7 +1200,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   animate={{ scale: 1, opacity: 1, y: 0 }}
                   exit={{ scale: 0.92, opacity: 0, y: 15 }}
                   transition={{ type: 'spring', stiffness: 350, damping: 28 }}
-                  className="relative z-10 bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"
+                  className="relative z-10 bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"
                 >
                   <div className="px-6 sm:px-8 py-5 border-b border-slate-100 dark:border-zinc-800 flex items-start justify-between gap-3 shrink-0 bg-white dark:bg-zinc-900">
                     <div className="pr-2 space-y-1">
