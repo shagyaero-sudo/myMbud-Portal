@@ -67,7 +67,6 @@ export const VerifiedBadge: React.FC<{ size?: 'sm' | 'md' | 'lg' }> = ({ size = 
   );
 };
 
-// HELPER FORMAT WAKTU SUPER RINGKAS ALA THREADS
 const formatThreadsTime = (timestamp?: string | number | Date | null): string => {
   if (!timestamp) return 'baru saja';
   const now = Date.now();
@@ -147,7 +146,7 @@ export const PostCard: React.FC<PostCardProps> = ({
   const [replyContent, setReplyContent] = useState('');
   const [isSubmittingReply, setIsSubmittingReply] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(post.likes.length);
+  const [likeCount, setLikeCount] = useState(post.likes?.length || 0);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
 
@@ -163,6 +162,8 @@ export const PostCard: React.FC<PostCardProps> = ({
   const [quoteContent, setQuoteContent] = useState('');
   const [isReposting, setIsReposting] = useState(false);
   const [isQuoteFocused, setIsQuoteFocused] = useState(false);
+
+  const [authorProfile, setAuthorProfile] = useState(getCachedUserByNrp(post.authorNrp));
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -193,11 +194,9 @@ export const PostCard: React.FC<PostCardProps> = ({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [selectedImage, isQuoteOpen]);
 
-  const [authorProfile, setAuthorProfile] = useState(getCachedUserByNrp(post.authorNrp));
-
   const syncData = () => {
-    setIsLiked(post.likes.includes(currentUser.nrp.toLowerCase()));
-    setLikeCount(post.likes.length);
+    setIsLiked((post.likes || []).includes(currentUser.nrp.toLowerCase()));
+    setLikeCount(post.likes?.length || 0);
     setReplies(getReplies(post.id));
     setAuthorProfile(getCachedUserByNrp(post.authorNrp));
     setIsBookmarked(getBookmarkedPostIds().includes(post.id));
@@ -257,7 +256,8 @@ export const PostCard: React.FC<PostCardProps> = ({
   const authorPhotoUrl = authorProfile?.photoUrl;
   const actorName = currentUser.nickname || currentUser.username || 'Mbuders';
 
-  const originalPost = post.isRepost && post.originalPostId ? getPosts().find((item) => item.id === post.originalPostId) : null;
+  const allAvailablePosts = getPosts();
+  const originalPost = post.isRepost && post.originalPostId ? allAvailablePosts.find((item) => item.id === post.originalPostId) : null;
   const originalAuthorProfile = originalPost ? getCachedUserByNrp(originalPost.authorNrp) : null;
   const originalAuthorName = originalAuthorProfile?.nickname || originalAuthorProfile?.username || 'Mbuders';
   const originalAuthorEmoji = originalAuthorProfile?.emoji || '😊';
@@ -275,7 +275,6 @@ export const PostCard: React.FC<PostCardProps> = ({
   const displayContent = isPlainRepost && originalPost ? originalPost.content : post.content;
   const displayImages = isPlainRepost && originalPost ? originalPost.imageUrls : post.imageUrls;
 
-  // Objek referensi target untuk ditampilkan dalam Modal QRT
   const quoteTargetPost = post.isRepost && originalPost ? originalPost : post;
   const quoteTargetAuthorProfile = post.isRepost && originalPost ? originalAuthorProfile : authorProfile;
   const quoteTargetAuthorName = post.isRepost && originalPost ? originalAuthorName : authorName;
@@ -287,9 +286,9 @@ export const PostCard: React.FC<PostCardProps> = ({
     const updated = await toggleLikePost(post.id, currentUser.nrp);
     if (!updated) return;
 
-    const nowLiked = updated.likes.includes(currentUser.nrp.toLowerCase());
+    const nowLiked = (updated.likes || []).includes(currentUser.nrp.toLowerCase());
     setIsLiked(nowLiked);
-    setLikeCount(updated.likes.length);
+    setLikeCount(updated.likes?.length || 0);
 
     if (!wasLiked && nowLiked) {
       void notifyPostLiked({
@@ -320,12 +319,14 @@ export const PostCard: React.FC<PostCardProps> = ({
 
     setIsReposting(true);
     try {
+      const targetOriginalId = post.isRepost && post.originalPostId ? post.originalPostId : post.id;
+
       const newPost = await savePost({
         content: '',
         isOfficerPost: currentUser.isOfficer,
         imageUrls: [],
         isRepost: true,
-        originalPostId: post.isRepost && post.originalPostId ? post.originalPostId : post.id,
+        originalPostId: targetOriginalId,
         quoteContent: quoteContent.trim(),
       });
 
@@ -398,7 +399,6 @@ export const PostCard: React.FC<PostCardProps> = ({
             </div>
 
             <div>
-              {/* BARIS 1: NAMA & CENTANG BIRU */}
               <div className="flex items-center flex-wrap gap-1.5 leading-none">
                 <span className="text-slate-900 dark:text-zinc-100 font-bold text-sm group-hover/author:text-blue-500 transition-colors">
                   {displayAuthorName}
@@ -406,7 +406,6 @@ export const PostCard: React.FC<PostCardProps> = ({
                 {displayAuthorIsVerified && <VerifiedBadge size="sm" />}
               </div>
 
-              {/* BARIS 2: USERNAME · WAKTU ALA THREADS */}
               <div className="text-slate-400 dark:text-zinc-500 text-[11px] mt-1 flex items-center gap-1 font-normal">
                 <span>@{displayAuthorUsername || 'unknown'}</span>
                 <span className="text-[9px] opacity-70">·</span>
@@ -452,6 +451,7 @@ export const PostCard: React.FC<PostCardProps> = ({
           )}
         </div>
 
+        {/* KONTEN UTAMA TEKS QUOTE */}
         {isQuoteRepost && (
           <div className="text-[13px] sm:text-sm text-slate-800 dark:text-zinc-200 leading-relaxed whitespace-pre-line mb-3.5 font-normal">
             <FormattedPostContent content={post.quoteContent || ''} onSelectAuthor={onSelectAuthor} />
@@ -464,34 +464,48 @@ export const PostCard: React.FC<PostCardProps> = ({
           </div>
         )}
 
-        {isQuoteRepost && originalPost && (
+        {/* KARTU POST ASLI YANG DIKUTIP (QUOTE EMBED CARD) */}
+        {isQuoteRepost && (
           <div
-            onClick={() => onSelectPost?.(originalPost.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (originalPost && onSelectPost) {
+                onSelectPost(originalPost.id);
+              }
+            }}
             className="mb-3.5 rounded-2xl border border-slate-200/80 dark:border-zinc-800 overflow-hidden bg-slate-50/50 dark:bg-zinc-950/50 cursor-pointer hover:bg-slate-100/50 dark:hover:bg-zinc-950 transition-colors w-full"
           >
-            <div className="px-4 pt-3.5 pb-2 flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-xl bg-slate-200 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden">
-                {originalAuthorPhotoUrl ? (
-                  <img src={getOptimizedImageUrl(originalAuthorPhotoUrl)} alt={originalAuthorName} className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-sm leading-none">{originalAuthorEmoji}</span>
+            {originalPost ? (
+              <>
+                <div className="px-4 pt-3.5 pb-2 flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-xl bg-slate-200 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden">
+                    {originalAuthorPhotoUrl ? (
+                      <img src={getOptimizedImageUrl(originalAuthorPhotoUrl)} alt={originalAuthorName} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-sm leading-none">{originalAuthorEmoji}</span>
+                    )}
+                  </div>
+
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <div className="text-xs font-bold text-slate-900 dark:text-zinc-100 truncate">{originalAuthorName}</div>
+                      {originalAuthorProfile?.isVerified && <VerifiedBadge size="sm" />}
+                    </div>
+                    <div className="text-[10px] text-slate-400 dark:text-zinc-500">
+                      @{originalAuthorProfile?.username || 'unknown'} · {formatThreadsTime(originalPost.createdAt)}
+                    </div>
+                  </div>
+                </div>
+
+                {originalPost.content && (
+                  <div className="px-4 pb-3 text-[13px] text-slate-700 dark:text-zinc-300 leading-relaxed whitespace-pre-line">
+                    <FormattedPostContent content={originalPost.content} onSelectAuthor={onSelectAuthor} />
+                  </div>
                 )}
-              </div>
-
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <div className="text-xs font-bold text-slate-900 dark:text-zinc-100 truncate">{originalAuthorName}</div>
-                  {originalAuthorProfile?.isVerified && <VerifiedBadge size="sm" />}
-                </div>
-                <div className="text-[10px] text-slate-400 dark:text-zinc-500">
-                  @{originalAuthorProfile?.username || 'unknown'} · {formatThreadsTime(originalPost.createdAt)}
-                </div>
-              </div>
-            </div>
-
-            {originalPost.content && (
-              <div className="px-4 pb-3 text-[13px] text-slate-700 dark:text-zinc-300 leading-relaxed whitespace-pre-line">
-                <FormattedPostContent content={originalPost.content} onSelectAuthor={onSelectAuthor} />
+              </>
+            ) : (
+              <div className="p-4 text-xs italic text-slate-400 dark:text-zinc-500">
+                Postingan asli tidak dapat dimuat atau telah dihapus.
               </div>
             )}
           </div>
@@ -531,7 +545,7 @@ export const PostCard: React.FC<PostCardProps> = ({
               <span>{post.replyCount || replies.length}</span>
             </button>
 
-            {/* DIRECT QUOTE REPOST BUTTON (KLIK LANGSUNG BUKA MODAL QRT) */}
+            {/* DIRECT QUOTE REPOST */}
             <motion.button
               whileTap={{ scale: 0.9 }}
               type="button"
@@ -670,7 +684,7 @@ export const PostCard: React.FC<PostCardProps> = ({
         </AnimatePresence>
       </motion.article>
 
-      {/* MODAL QUOTE REPOST */}
+      {/* MODAL FORM QUOTE REPOST */}
       <AnimatePresence>
         {isQuoteOpen && (
           <motion.div
@@ -715,7 +729,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                   className="w-full resize-none px-4 py-3 mb-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-sm text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 shrink-0"
                 />
 
-                {/* PRATINJAU KARTU YANG DI-QUOTE (NULL-SAFE) */}
+                {/* EMBED TARGET POST PREVIEW */}
                 <div className="rounded-2xl border border-slate-200 dark:border-zinc-800 overflow-y-auto bg-slate-50/50 dark:bg-zinc-950 flex-1 min-h-0 mb-3 custom-scrollbar">
                   <div className="px-4 py-3 flex items-center gap-2">
                     <div className="w-8 h-8 rounded-xl bg-slate-200 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden">
@@ -765,7 +779,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                 <motion.button initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }} onClick={() => setSelectedImage(null)} className="fixed top-6 right-5 sm:top-6 sm:right-6 z-[10000002] w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full bg-zinc-800/80 hover:bg-zinc-700 border border-white/20 text-white shadow-2xl backdrop-blur-md transition-all cursor-pointer">
                   <X className="w-5 h-5 sm:w-6 sm:h-6" />
                 </motion.button>
-                <motion.div initial={{ opacity: 0, scale: 0.92, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.92, y: 10 }} className="relative z-[10000001] max-w-[95vw] max-h-[85dvh] flex items-center justify-center" onMouseDown={(e) => e.stopPropagation()}>
+                <motion.div initial={{ opacity: 0, scale: 0.92, y: 10 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.92, y: 10 }} className="relative z-[10000001] max-w-[95vw] max-h-[85dvh] flex items-center justify-center" onMouseDown={(e) => e.stopPropagation()}>
                   <img src={selectedImage} alt="Pratinjau" className="max-w-[95vw] max-h-[85dvh] w-auto h-auto object-contain rounded-2xl sm:rounded-3xl shadow-2xl border border-white/10" />
                 </motion.div>
               </motion.div>
