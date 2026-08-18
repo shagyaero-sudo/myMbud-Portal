@@ -32,7 +32,7 @@ import {
 } from '../services/announcements';
 
 // --- CONFIG FRS WAR MODE ---
-const IS_FRS_WAR_ACTIVE = true;
+const IS_FRS_WAR_ACTIVE = false;
 const FRS_DIRECT_URL = 'https://mia.its.ac.id/rencana-studi/';
 
 interface DashboardViewProps {
@@ -663,7 +663,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               })()}
             </div>
 
-            {/* TAB HARI STABIL (NON-GLITCHY) */}
+            {/* TAB HARI STABIL */}
             <div className="grid grid-cols-5 gap-1 p-1 bg-slate-100/80 dark:bg-zinc-800/80 rounded-2xl w-full">
               {dayTabs.map((day) => {
                 const isActive = selectedDay === day;
@@ -822,7 +822,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   const dayTasks = getTasksForDate(dateObj);
                   const hasTasks = dayTasks.length > 0;
                   
-                  const isCourseActive = isWithinSemesterPeriod(dateObj) && getDayNameFromDate(dateObj) !== ('Minggu' as any) && getDayNameFromDate(dateObj) !== ('Sabtu' as any);
+                  const dayName = getDayNameFromDate(dateObj);
+                  const hasSchedulesOnDay = state.schedules.some((s) => s.day === dayName);
+                  const isCourseActive = isWithinSemesterPeriod(dateObj) && hasSchedulesOnDay;
 
                   return (
                     <motion.button
