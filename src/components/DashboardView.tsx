@@ -281,8 +281,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     return time >= startOfSemester.getTime() && time <= endOfSemesterLimit.getTime();
   };
 
+  // URUTKAN JADWAL DI KALENDER SECARA KRONOLOGIS
   const selectedDateSchedules = isWithinSemesterPeriod(selectedCalendarDate)
-    ? state.schedules.filter((s) => s.day === selectedDateDayName)
+    ? state.schedules
+        .filter((s) => s.day === selectedDateDayName)
+        .sort((a, b) => {
+          const startA = a.time.split('-')[0]?.trim() || '';
+          const startB = b.time.split('-')[0]?.trim() || '';
+          return startA.localeCompare(startB);
+        })
     : [];
 
   const formatAnnouncementDate = (dateStr: string) => {
@@ -367,8 +374,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const filteredSchedule = state.schedules
     .filter((s) => s.day === selectedDay)
     .sort((a, b) => {
-      const startA = a.time.split('-')[0].trim();
-      const startB = b.time.split('-')[0].trim();
+      const startA = a.time.split('-')[0]?.trim() || '';
+      const startB = b.time.split('-')[0]?.trim() || '';
       return startA.localeCompare(startB);
     });
 
@@ -492,7 +499,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
       {/* CLUSTER HEADER & PENGUMUMAN MOBILE */}
       <div className="block lg:hidden space-y-3">
-        {/* Mobile Greeting & Flip Calendar */}
         <div className="flex items-center justify-between gap-3 px-1 pt-1">
           <div>
             <h2 className="text-xl font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
@@ -505,7 +511,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <FlipCalendarWidget />
         </div>
 
-        {/* Mobile Announcements Carousel */}
         <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-4 sm:p-5 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none transition-colors relative">
           {isOfficer && (
             <div className="flex justify-end pb-2">
