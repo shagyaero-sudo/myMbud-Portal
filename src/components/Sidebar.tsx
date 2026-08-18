@@ -18,7 +18,8 @@ import {
   Award,
   GraduationCap,
   ClipboardList,
-  FileSpreadsheet
+  FileSpreadsheet,
+  type LucideIcon
 } from 'lucide-react';
 
 export type TabType =
@@ -39,6 +40,32 @@ interface SidebarProps {
   onOpenGpaModal: () => void;
 }
 
+type MenuItem =
+  | {
+      id: TabType;
+      label: string;
+      icon: LucideIcon;
+      count: number | null;
+      isModal?: false;
+    }
+  | {
+      id: string;
+      label: string;
+      icon: LucideIcon;
+      count: number | null;
+      isModal: true;
+      action: () => void;
+    };
+
+interface BottomTabItemProps {
+  id: TabType;
+  label: string;
+  icon: LucideIcon;
+  activeTab: TabType;
+  onClick: (id: TabType) => void;
+  count?: number | null;
+}
+
 export const Sidebar: React.FC<SidebarProps> = ({
   activeTab,
   setActiveTab,
@@ -49,8 +76,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const getGreeting = () => {
     const hour = new Date().getHours();
-    const userName =
-      localStorage.getItem('mymbud_user_name') || 'Mbuders';
+    const userName = localStorage.getItem('mymbud_user_name') || 'Mbuders';
 
     if (hour >= 4 && hour < 11) return `Selamat Pagi, ${userName}!`;
     if (hour >= 11 && hour < 15) return `Selamat Siang, ${userName}!`;
@@ -59,62 +85,56 @@ export const Sidebar: React.FC<SidebarProps> = ({
     return `Selamat Malam, ${userName}!`;
   };
 
-  const menuItems = [
+  const menuItems: MenuItem[] = [
     {
-      id: 'dashboard' as TabType,
+      id: 'dashboard',
       label: 'Jadwal Perkuliahan',
       icon: CalendarDays,
-      count: null,
-      isModal: false
+      count: null
     },
     {
-      id: 'tasks' as TabType,
+      id: 'tasks',
       label: 'Manajemen Tugas',
       icon: FolderKanban,
-      count: activeTaskCount > 0 ? activeTaskCount : null,
-      isModal: false
+      count: activeTaskCount > 0 ? activeTaskCount : null
     },
     {
-      id: 'contacts' as TabType,
+      id: 'contacts',
       label: 'Direktori Kontak',
       icon: Users,
-      count: null,
-      isModal: false
+      count: null
     },
     {
-      id: 'materials' as TabType,
+      id: 'materials',
       label: 'Bank Materi PDF',
       icon: FileText,
-      count: null,
-      isModal: false
+      count: null
     },
     {
-      id: 'spinwheel' as TabType,
+      id: 'spinwheel',
       label: 'Spinwheel',
       icon: Dices,
-      count: null,
-      isModal: false
+      count: null
     },
     {
-      id: 'calculator' as TabType,
+      id: 'calculator',
       label: 'Kalkulator Nilai',
       icon: Calculator,
-      count: null,
-      isModal: false
+      count: null
     },
     {
-      id: 'letter' as TabType,
+      id: 'letter',
       label: 'Ajukan Surat Turlap',
       icon: FileEdit,
-      count: null,
-      isModal: false
+      count: null
     },
     {
-      id: 'gpacalculator' as any,
+      id: 'gpacalculator',
       label: 'Hitung IP Semester',
       icon: Award,
       count: null,
-      isModal: true
+      isModal: true,
+      action: onOpenGpaModal
     }
   ];
 
@@ -136,18 +156,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </p>
         </div>
 
-        <nav className="flex-1 space-y-2 overflow-y-auto pr-1 pb-4 custom-scrollbar">
+        <nav aria-label="Sidebar Navigation" className="flex-1 space-y-2 overflow-y-auto pr-1 pb-4 custom-scrollbar">
           {menuItems.map((item) => {
             const Icon = item.icon;
-            const isActive = activeTab === item.id;
+            const isActive = !item.isModal && activeTab === item.id;
 
             return (
               <motion.button
+                type="button"
                 whileTap={{ scale: 0.98 }}
                 key={item.id}
                 onClick={() => {
                   if (item.isModal) {
-                    onOpenGpaModal();
+                    item.action();
                   } else {
                     setActiveTab(item.id);
                   }
@@ -277,6 +298,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* Desktop Sidebar: Minigame */}
           <div className="pt-4 mt-2 border-t border-slate-100 dark:border-zinc-800">
             <motion.button
+              type="button"
               whileHover={{ scale: 1.015 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => setActiveTab('blockblast')}
@@ -330,7 +352,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* MOBILE BOTTOM NAVIGATION */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 w-full pointer-events-none">
-        <nav className="pointer-events-auto w-full h-[4.25rem] bg-white/70 dark:bg-zinc-950/70 backdrop-blur-2xl backdrop-saturate-150 border-t border-slate-200/50 dark:border-zinc-800/80 rounded-t-[22px] px-3 pb-2.5 flex items-center justify-center shadow-[0_-8px_32px_rgba(0,0,0,0.08)] dark:shadow-[0_-8px_32px_rgba(0,0,0,0.5)] relative">
+        <nav aria-label="Mobile Navigation" className="pointer-events-auto w-full h-[4.25rem] bg-white/70 dark:bg-zinc-950/70 backdrop-blur-2xl backdrop-saturate-150 border-t border-slate-200/50 dark:border-zinc-800/80 rounded-t-[22px] px-3 pb-2.5 flex items-center justify-center shadow-[0_-8px_32px_rgba(0,0,0,0.08)] dark:shadow-[0_-8px_32px_rgba(0,0,0,0.5)] relative">
           <div className="w-full flex items-center justify-center gap-4 sm:gap-8 h-full">
             <BottomTabItem
               id="dashboard"
@@ -353,6 +375,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="relative flex flex-col items-center justify-center -top-3 px-1 shrink-0">
               <div className="p-1 rounded-full bg-slate-50/70 dark:bg-zinc-950/70 backdrop-blur-xl border border-slate-200/40 dark:border-zinc-800/60 shadow-xs">
                 <motion.button
+                  type="button"
+                  aria-label="Buka menu navigasi"
                   whileTap={{ scale: 0.9 }}
                   onClick={() => setIsBottomSheetOpen(true)}
                   className="w-11 h-11 bg-blue-600 dark:bg-blue-500 text-white rounded-full flex items-center justify-center shadow-md shadow-blue-500/30 transition-transform cursor-pointer"
@@ -412,6 +436,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <div className="w-12 h-1.5 bg-slate-200 dark:bg-zinc-800 rounded-full" />
 
                 <button
+                  type="button"
+                  aria-label="Tutup sheet"
                   onClick={() => setIsBottomSheetOpen(false)}
                   className="p-2 bg-slate-100 dark:bg-zinc-800 rounded-full text-slate-500 hover:text-slate-800 transition-colors"
                 >
@@ -524,6 +550,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
                   <div className="grid grid-cols-2 gap-2">
                     <button
+                      type="button"
                       onClick={() => navigateFromSheet('spinwheel')}
                       className="flex items-center justify-between p-3 rounded-2xl text-xs font-semibold transition-all bg-blue-50/70 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 active:bg-blue-100"
                     >
@@ -535,6 +562,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     </button>
 
                     <button
+                      type="button"
                       onClick={() => navigateFromSheet('calculator')}
                       className="flex items-center justify-between p-3 rounded-2xl text-xs font-semibold transition-all bg-indigo-50/70 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 active:bg-indigo-100"
                     >
@@ -546,6 +574,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     </button>
 
                     <button
+                      type="button"
                       onClick={() => navigateFromSheet('letter')}
                       className="flex items-center justify-between p-3 rounded-2xl text-xs font-semibold transition-all bg-emerald-50/70 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 active:bg-emerald-100"
                     >
@@ -557,6 +586,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     </button>
 
                     <button
+                      type="button"
                       onClick={() => {
                         setIsBottomSheetOpen(false);
                         onOpenGpaModal();
@@ -579,6 +609,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   </p>
 
                   <button
+                    type="button"
                     onClick={() => navigateFromSheet('blockblast')}
                     className="group relative w-full overflow-hidden rounded-2xl p-3 text-xs font-bold transition-all border bg-gradient-to-r from-purple-50 via-fuchsia-50 to-pink-50 dark:from-purple-950/40 dark:via-fuchsia-950/30 dark:to-pink-950/30 text-purple-700 dark:text-purple-300 border-purple-200/70 dark:border-purple-800/50 active:scale-95"
                   >
@@ -607,18 +638,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
 };
 
 /* HELPER COMPONENT BOTTOM TAB */
-const BottomTabItem = ({
+const BottomTabItem: React.FC<BottomTabItemProps> = ({
   id,
   label,
   icon: Icon,
   activeTab,
   onClick,
   count
-}: any) => {
+}) => {
   const isActive = activeTab === id;
 
   return (
     <button
+      type="button"
       onClick={() => onClick(id)}
       className={`relative flex flex-col items-center justify-center flex-1 max-w-[72px] h-full transition-all cursor-pointer select-none ${
         isActive
