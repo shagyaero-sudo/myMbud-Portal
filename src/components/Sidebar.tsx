@@ -494,50 +494,41 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   </div>
                 </div>
 
-                {/* 2. PORTAL AKADEMIK myITS (LAMA) */}
+                {/* 2. PORTAL myITS (LAMA) - PASTI 1 BARIS HORIZONTAL DI MOBILE & DESKTOP */}
                 <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-zinc-800">
                   <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-1">
                     PORTAL myITS (LAMA)
                   </p>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <div className="grid grid-cols-3 gap-1.5 w-full">
                     <a
                       href="https://akademik.its.ac.id/home.php"
                       target="_blank"
                       rel="noreferrer"
-                      className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold"
+                      className="flex flex-col sm:flex-row items-center justify-center gap-1.5 p-2 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 active:scale-95 transition-all text-[11px] font-semibold text-center border border-slate-100 dark:border-zinc-800/60"
                     >
-                      <span className="flex items-center gap-2 truncate">
-                        <Globe className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
-                        <span className="truncate">SIAKAD 1.0</span>
-                      </span>
-                      <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <Globe className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+                      <span className="truncate">SIAKAD 1.0</span>
                     </a>
 
                     <a
                       href="https://classroom.its.ac.id/auth/oidc"
                       target="_blank"
                       rel="noreferrer"
-                      className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold"
+                      className="flex flex-col sm:flex-row items-center justify-center gap-1.5 p-2 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 active:scale-95 transition-all text-[11px] font-semibold text-center border border-slate-100 dark:border-zinc-800/60"
                     >
-                      <span className="flex items-center gap-2 truncate">
-                        <BookOpenCheck className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
-                        <span className="truncate">Classroom</span>
-                      </span>
-                      <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <BookOpenCheck className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+                      <span className="truncate">Classroom</span>
                     </a>
 
                     <a
                       href="https://kemahasiswaan.its.ac.id/beranda"
                       target="_blank"
                       rel="noreferrer"
-                      className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold"
+                      className="flex flex-col sm:flex-row items-center justify-center gap-1.5 p-2 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 active:scale-95 transition-all text-[11px] font-semibold text-center border border-slate-100 dark:border-zinc-800/60"
                     >
-                      <span className="flex items-center gap-2 truncate">
-                        <Handshake className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
-                        <span className="truncate">StudentConnect</span>
-                      </span>
-                      <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <Handshake className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+                      <span className="truncate">StudentConnect</span>
                     </a>
                   </div>
                 </div>
