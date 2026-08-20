@@ -155,7 +155,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
             my<strong className="font-black">Mbud</strong> Portal
           </h1>
           <p className="text-xs sm:text-sm font-light tracking-wide text-slate-400">
-            #RuangBertumbuh
+            Ruang Digital Kelas A
           </p>
         </motion.div>
       </div>
