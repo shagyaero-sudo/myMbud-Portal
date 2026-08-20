@@ -8,11 +8,13 @@ import {
   CalendarCheck,
   Loader2,
   ChevronLeft,
+  ShieldAlert,
 } from 'lucide-react';
 import {
   UserStreak,
   LeaderboardUser,
   fetchStreakLeaderboard,
+  useStreakRevive,
 } from '../services/streakService';
 
 interface StreakModalProps {
@@ -20,6 +22,7 @@ interface StreakModalProps {
   onClose: () => void;
   streak: UserStreak;
   userName: string;
+  onStreakUpdate?: (updated: UserStreak) => void;
 }
 
 export const StreakModal: React.FC<StreakModalProps> = ({
@@ -27,10 +30,12 @@ export const StreakModal: React.FC<StreakModalProps> = ({
   onClose,
   streak,
   userName,
+  onStreakUpdate,
 }) => {
   const [viewMode, setViewMode] = useState<'my_streak' | 'leaderboard'>('my_streak');
   const [leaderboard, setLeaderboard] = useState<LeaderboardUser[]>([]);
   const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState(false);
+  const [isReviving, setIsReviving] = useState(false);
 
   const daysOfWeek = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
   const todayIndex = new Date().getDay();
@@ -42,6 +47,19 @@ export const StreakModal: React.FC<StreakModalProps> = ({
       const data = await fetchStreakLeaderboard();
       setLeaderboard(data);
       setIsLoadingLeaderboard(false);
+    }
+  };
+
+  const handleRevive = async () => {
+    const nrp = localStorage.getItem('mymbud_user_nrp') || 'unknown';
+    setIsReviving(true);
+    try {
+      const updated = await useStreakRevive(nrp, userName);
+      if (updated && onStreakUpdate) {
+        onStreakUpdate(updated);
+      }
+    } finally {
+      setIsReviving(false);
     }
   };
 
@@ -71,7 +89,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.92, opacity: 0, y: 15 }}
             transition={{ type: 'spring', stiffness: 350, damping: 28 }}
-            className="relative max-w-sm sm:max-w-md w-full rounded-3xl bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 shadow-2xl p-6 sm:p-7 text-center overflow-hidden flex flex-col items-center max-h-[85vh]"
+            className="relative max-w-sm sm:max-w-md w-full rounded-3xl bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 shadow-2xl p-6 sm:p-7 text-center overflow-hidden flex flex-col items-center max-h-[88vh]"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Ambient Glow */}
@@ -127,14 +145,52 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                 <h2 className="text-3xl font-extrabold text-slate-900 dark:text-zinc-100 tracking-tight">
                   {streak.currentStreak} Hari
                 </h2>
-                
-                {/* SUBTITLE BERSIH TANPA ICON SPARKLE */}
+
                 <p className="text-xs font-semibold text-amber-500 dark:text-amber-400 mt-1 tracking-wide">
-                  Streak Kamu Menyala!
+                  Streak Menyala!
                 </p>
 
+                {/* BANNER STREAK REVIVE JIKA PUTUS */}
+                {streak.canRevive && (streak.previousBrokenStreak || 0) > 1 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="w-full mt-4 p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200/80 dark:border-rose-900/60 flex flex-col gap-2 text-left"
+                  >
+                    <div className="flex items-start gap-2.5">
+                      <div className="p-1.5 rounded-xl bg-rose-100 dark:bg-rose-900/50 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5">
+                        <ShieldAlert className="w-4 h-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-rose-900 dark:text-rose-200">
+                          Streak {streak.previousBrokenStreak} Hari Terputus!
+                        </p>
+                        <p className="text-[10px] text-rose-600 dark:text-rose-400 leading-tight mt-0.5">
+                          Kamu punya {streak.reviveQuota}x kesempatan revive untuk mempertahankan apimu di hari ke-{streak.previousBrokenStreak}.
+                        </p>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      disabled={isReviving}
+                      onClick={handleRevive}
+                      className="w-full py-2 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-600 hover:to-amber-600 text-white font-extrabold text-xs shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60"
+                    >
+                      {isReviving ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          <span>Memulihkan...</span>
+                        </>
+                      ) : (
+                        <span>Gunakan Penyelamat Streak 🧊 ({streak.reviveQuota}/3)</span>
+                      )}
+                    </button>
+                  </motion.div>
+                )}
+
                 {/* Progress Mingguan Sen - Min */}
-                <div className="w-full mt-5 p-4 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 space-y-2">
+                <div className="w-full mt-4 p-4 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 space-y-2">
                   <p className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 text-left flex items-center gap-1.5">
                     <CalendarCheck className="w-3.5 h-3.5" />
                     Aktivitas Pekan Ini
@@ -176,18 +232,32 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                   </div>
                 </div>
 
-                {/* Stat Rekor */}
-                <div className="w-full mt-3 p-3.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <div className="p-2 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400">
-                      <Trophy className="w-4 h-4" />
+                {/* Stat Rekor & Sisa Revive */}
+                <div className="w-full mt-3 grid grid-cols-2 gap-2">
+                  <div className="p-3 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 flex items-center gap-2">
+                    <div className="p-1.5 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 shrink-0">
+                      <Trophy className="w-3.5 h-3.5" />
                     </div>
-                    <div className="text-left">
-                      <p className="text-[10px] font-medium text-slate-400 dark:text-zinc-500">
-                        Rekor Streak Terpanjang:
+                    <div className="text-left min-w-0">
+                      <p className="text-[9.5px] font-medium text-slate-400 dark:text-zinc-500 truncate">
+                        Rekor Terpanjang
                       </p>
-                      <p className="text-xs font-bold text-slate-800 dark:text-zinc-200">
-                        {streak.longestStreak} Hari Berturut-turut
+                      <p className="text-xs font-bold text-slate-800 dark:text-zinc-200 truncate">
+                        {streak.longestStreak} Hari
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="p-3 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 flex items-center gap-2">
+                    <div className="p-1.5 rounded-xl bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 shrink-0 text-xs">
+                      🧊
+                    </div>
+                    <div className="text-left min-w-0">
+                      <p className="text-[9.5px] font-medium text-slate-400 dark:text-zinc-500 truncate">
+                        Jatah Revive
+                      </p>
+                      <p className="text-xs font-bold text-slate-800 dark:text-zinc-200 truncate">
+                        {streak.reviveQuota ?? 3}x Tersedia
                       </p>
                     </div>
                   </div>

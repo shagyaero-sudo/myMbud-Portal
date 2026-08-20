@@ -16,6 +16,14 @@ export interface UserStreak {
   longestStreak: number;
   lastActiveDate: string; // Format: "YYYY-MM-DD"
   weeklyActiveDays: number[]; // Index hari (0 = Min, 1 = Sen, ..., 6 = Sab)
+  reviveQuota: number;
+  previousBrokenStreak?: number;
+  canRevive?: boolean;
+}
+
+export interface SyncStreakResult {
+  streak: UserStreak;
+  isFirstVisitToday: boolean;
 }
 
 export interface LeaderboardUser {
@@ -26,6 +34,7 @@ export interface LeaderboardUser {
 }
 
 const STORAGE_KEY = 'mymbud_user_streak';
+const POPUP_SEEN_KEY = 'mymbud_streak_popup_seen_date';
 
 export const getLocalStreak = (): UserStreak => {
   const defaultStreak: UserStreak = {
@@ -33,6 +42,8 @@ export const getLocalStreak = (): UserStreak => {
     longestStreak: 1,
     lastActiveDate: '',
     weeklyActiveDays: [new Date().getDay()],
+    reviveQuota: 3,
+    canRevive: false,
   };
 
   try {
@@ -46,21 +57,29 @@ export const getLocalStreak = (): UserStreak => {
 export const syncUserStreak = async (
   userNrp: string,
   userName: string
-): Promise<UserStreak> => {
+): Promise<SyncStreakResult> => {
   const today = new Date().toISOString().split('T')[0];
   const currentDayIndex = new Date().getDay();
   const normalizedNrp = userNrp.trim().toLowerCase();
 
   const cached = getLocalStreak();
+  const lastSeenPopupDate = localStorage.getItem(POPUP_SEEN_KEY);
+  const isFirstVisitToday = lastSeenPopupDate !== today;
 
-  // Jika hari ini sudah terhitung di cache lokal, 0 READ & 0 WRITE ke Firestore
+  // Jika hari ini sudah terhitung di cache lokal
   if (cached.lastActiveDate === today) {
-    return cached;
+    if (isFirstVisitToday) {
+      localStorage.setItem(POPUP_SEEN_KEY, today);
+    }
+    return { streak: cached, isFirstVisitToday };
   }
 
   let newCurrent = cached.currentStreak;
   let newLongest = cached.longestStreak || 1;
   let newWeeklyDays = [...(cached.weeklyActiveDays || [])];
+  let reviveQuota = typeof cached.reviveQuota === 'number' ? cached.reviveQuota : 3;
+  let canRevive = false;
+  let previousBrokenStreak = cached.previousBrokenStreak || 0;
 
   if (!cached.lastActiveDate) {
     newCurrent = 1;
@@ -73,11 +92,16 @@ export const syncUserStreak = async (
     const diffDays = Math.round(diffTime / (1000 * 3600 * 24));
 
     if (diffDays === 1) {
+      // Normal berturut-turut
       newCurrent += 1;
+      canRevive = false;
       if (!newWeeklyDays.includes(currentDayIndex)) {
         newWeeklyDays.push(currentDayIndex);
       }
     } else if (diffDays > 1) {
+      // Terputus: Simpan streak terakhir sebelum reset ke 1
+      previousBrokenStreak = cached.currentStreak;
+      canRevive = reviveQuota > 0 && previousBrokenStreak > 1;
       newCurrent = 1;
       newWeeklyDays = [currentDayIndex];
     }
@@ -92,12 +116,14 @@ export const syncUserStreak = async (
     longestStreak: newLongest,
     lastActiveDate: today,
     weeklyActiveDays: newWeeklyDays,
+    reviveQuota,
+    canRevive,
+    previousBrokenStreak,
   };
 
-  // Simpan ke LocalStorage seketika
   localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedStreak));
+  localStorage.setItem(POPUP_SEEN_KEY, today);
 
-  // Sync ke Firestore di latar belakang jika ada NRP valid (Hanya 1x per hari)
   if (normalizedNrp && normalizedNrp !== 'unknown') {
     try {
       const streakRef = doc(db, 'user_streaks', normalizedNrp);
@@ -110,12 +136,65 @@ export const syncUserStreak = async (
           longestStreak: newLongest,
           lastActiveDate: today,
           weeklyActiveDays: newWeeklyDays,
+          reviveQuota,
           updatedAt: serverTimestamp(),
         },
         { merge: true }
       );
     } catch (err) {
       console.warn('[Streak] Gagal sinkronisasi Firestore:', err);
+    }
+  }
+
+  return { streak: updatedStreak, isFirstVisitToday: true };
+};
+
+export const useStreakRevive = async (
+  userNrp: string,
+  userName: string
+): Promise<UserStreak | null> => {
+  const cached = getLocalStreak();
+
+  if (!cached.canRevive || !cached.previousBrokenStreak || cached.reviveQuota <= 0) {
+    return null;
+  }
+
+  const normalizedNrp = userNrp.trim().toLowerCase();
+  const today = new Date().toISOString().split('T')[0];
+
+  const restoredStreakCount = cached.previousBrokenStreak;
+  const newQuota = cached.reviveQuota - 1;
+
+  const updatedStreak: UserStreak = {
+    ...cached,
+    currentStreak: restoredStreakCount,
+    longestStreak: Math.max(cached.longestStreak, restoredStreakCount),
+    reviveQuota: newQuota,
+    canRevive: false,
+    previousBrokenStreak: 0,
+    lastActiveDate: today,
+  };
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedStreak));
+
+  if (normalizedNrp && normalizedNrp !== 'unknown') {
+    try {
+      const streakRef = doc(db, 'user_streaks', normalizedNrp);
+      await setDoc(
+        streakRef,
+        {
+          nrp: normalizedNrp,
+          name: userName,
+          currentStreak: restoredStreakCount,
+          longestStreak: updatedStreak.longestStreak,
+          reviveQuota: newQuota,
+          lastActiveDate: today,
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true }
+      );
+    } catch (err) {
+      console.warn('[Streak] Gagal update revive ke Firestore:', err);
     }
   }
 
