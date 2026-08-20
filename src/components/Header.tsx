@@ -44,6 +44,12 @@ import {
 } from '../services/oneSignal';
 
 import { sendOfficerNotification } from '../services/oneSignalNotification';
+import {
+  syncUserStreak,
+  getLocalStreak,
+  UserStreak,
+} from '../services/streakService';
+import { StreakModal } from './StreakModal';
 
 export type ThemeMode = 'light' | 'dark';
 export type ThemeAccent = 'blue' | 'purple' | 'pink' | 'orange' | 'green' | 'teal' | 'cyan';
@@ -109,6 +115,10 @@ export const Header: React.FC<HeaderProps> = ({
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [isRequestingPush, setIsRequestingPush] = useState(false);
+
+  // STATE STREAK DESKTOP
+  const [streakData, setStreakData] = useState<UserStreak>(getLocalStreak);
+  const [isStreakModalOpen, setIsStreakModalOpen] = useState(false);
 
   // STATE FORM OFFICER
   const [isOfficerFormOpen, setIsOfficerFormOpen] = useState(false);
@@ -188,6 +198,16 @@ export const Header: React.FC<HeaderProps> = ({
   const targetNrp = useMemo(() => {
     return typeof window !== 'undefined' ? localStorage.getItem('mymbud_user_nrp') || '' : '';
   }, []);
+
+  const currentUserName = useMemo(() => {
+    return typeof window !== 'undefined' ? localStorage.getItem('mymbud_user_name') || 'Mbuders' : 'Mbuders';
+  }, []);
+
+  useEffect(() => {
+    syncUserStreak(targetNrp, currentUserName).then(({ streak }) => {
+      setStreakData(streak);
+    });
+  }, [targetNrp, currentUserName]);
 
   useEffect(() => {
     if (!targetNrp) {
@@ -459,6 +479,59 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* ACTIONS */}
           <div className="flex items-center gap-2 shrink-0">
+            {/* STREAK BADGE KHUSUS DESKTOP / PC */}
+            <motion.button
+              type="button"
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setIsStreakModalOpen(true)}
+              className="hidden lg:flex relative items-center h-10 pl-7 pr-3.5 rounded-2xl bg-slate-100/80 dark:bg-zinc-800/80 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-100 transition-colors cursor-pointer border border-transparent dark:border-zinc-800 shrink-0 select-none group mr-1"
+              title="Daily Streak"
+            >
+              {/* 3D Glossy Flame Asset */}
+              <div className="absolute -left-2.5 -top-1.5 w-9 h-11 pointer-events-none group-hover:scale-110 transition-transform filter drop-shadow-[0_2px_6px_rgba(255,100,0,0.45)]">
+                <svg viewBox="0 0 100 120" className="w-full h-full overflow-visible">
+                  <defs>
+                    <linearGradient id="headerFlameOuter" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#FF1E00" />
+                      <stop offset="50%" stopColor="#FF4500" />
+                      <stop offset="100%" stopColor="#FF8C00" />
+                    </linearGradient>
+                    <linearGradient id="headerFlameInner" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor="#FFFFFF" />
+                      <stop offset="35%" stopColor="#FFF200" />
+                      <stop offset="100%" stopColor="#FFAE00" />
+                    </linearGradient>
+                    <linearGradient id="headerFlameGloss" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.8" />
+                      <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
+                    </linearGradient>
+                  </defs>
+
+                  <path
+                    d="M50 2 C55 24, 78 35, 88 56 C99 77, 92 102, 73 114 C54 125, 26 122, 12 105 C-2 88, 1 65, 15 48 C20 42, 23 48, 25 39 C27 28, 38 18, 50 2 Z"
+                    fill="url(#headerFlameOuter)"
+                  />
+                  <path
+                    d="M50 28 C56 42, 74 52, 78 68 C83 85, 74 103, 58 110 C42 117, 24 112, 18 97 C12 82, 19 68, 28 58 C33 53, 34 43, 50 28 Z"
+                    fill="#FF5E00"
+                    opacity="0.85"
+                  />
+                  <path
+                    d="M50 48 C55 58, 67 67, 68 79 C69 92, 60 104, 48 107 C36 110, 26 102, 25 90 C24 78, 32 68, 38 61 C42 56, 43 51, 50 48 Z"
+                    fill="url(#headerFlameInner)"
+                  />
+                  <path
+                    d="M48 12 C38 24, 25 38, 20 54 C16 68, 18 78, 17 84 C15 76, 16 60, 24 46 C32 32, 42 20, 48 12 Z"
+                    fill="url(#headerFlameGloss)"
+                  />
+                </svg>
+              </div>
+
+              <span className="text-sm font-extrabold tabular-nums ml-0.5">
+                {streakData.currentStreak}
+              </span>
+            </motion.button>
+
             {/* NOTIFICATION BELL */}
             <div className="relative shrink-0">
               <motion.button
@@ -514,6 +587,15 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
       </header>
+
+      {/* STREAK MODAL (PORTAL) */}
+      <StreakModal
+        isOpen={isStreakModalOpen}
+        onClose={() => setIsStreakModalOpen(false)}
+        streak={streakData}
+        userName={currentUserName}
+        onStreakUpdate={(updated) => setStreakData(updated)}
+      />
 
       {/* NOTIFICATION MODAL (PORTAL) */}
       {typeof document !== 'undefined' &&
