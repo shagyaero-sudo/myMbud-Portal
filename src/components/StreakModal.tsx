@@ -193,7 +193,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                 <div className="w-full mt-4 p-4 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 space-y-2">
                   <p className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 text-left flex items-center gap-1.5">
                     <CalendarCheck className="w-3.5 h-3.5" />
-                    Aktivitas Pekan Ini
+                    Aktivitas Minggu Ini
                   </p>
                   <div className="grid grid-cols-7 gap-1.5 pt-1">
                     {daysOfWeek.map((day, idx) => {
@@ -254,7 +254,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                     </div>
                     <div className="text-left min-w-0">
                       <p className="text-[9.5px] font-medium text-slate-400 dark:text-zinc-500 truncate">
-                        Restore perbulan
+                        Restore Perbulan
                       </p>
                       <p className="text-xs font-bold text-slate-800 dark:text-zinc-200 truncate">
                         {streak.reviveQuota ?? 3}x Jatah
