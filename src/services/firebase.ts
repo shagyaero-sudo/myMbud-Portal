@@ -1,11 +1,14 @@
 // src/services/firebase.ts
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import { 
+  initializeFirestore, 
+  persistentLocalCache, 
+  persistentMultipleTabManager 
+} from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { getAnalytics } from "firebase/analytics";
-import { getStorage } from "firebase/storage"; // <-- BARU: Tambahan untuk fitur upload file
+import { getStorage } from "firebase/storage";
 
-// Mengambil kunci dari brankas .env
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -16,13 +19,17 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
-// Inisialisasi Aplikasi Firebase
 const app = initializeApp(firebaseConfig);
 
-// Inisialisasi Layanan yang akan kita pakai
-export const db = getFirestore(app); // Untuk Database Dosen & Tugas
-export const auth = getAuth(app);    // Untuk Login Pengurus/Admin
-export const analytics = getAnalytics(app); // Untuk memantau trafik web
-export const storage = getStorage(app); // <-- BARU: Layanan penyimpanan file/lampiran tugas
+// Inisialisasi Firestore dengan Persistent Cache (Multi-Tab Support)
+export const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({
+    tabManager: persistentMultipleTabManager()
+  })
+});
+
+export const auth = getAuth(app);
+export const analytics = typeof window !== 'undefined' ? getAnalytics(app) : null;
+export const storage = getStorage(app);
 
 export default app;

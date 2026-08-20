@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus,
@@ -21,12 +21,13 @@ import {
   Circle,
 } from 'lucide-react';
 import { Task, Contact } from '../types';
-import { subscribeUserTaskCompletions, toggleTaskCompletion } from '../services/api';
+import { toggleTaskCompletion } from '../services/api';
 
 interface TaskTrackerViewProps {
   tasks: Task[];
   contacts?: Contact[];
   isOfficer: boolean;
+  completedTaskIds?: string[];
   onAddTask: (task: Omit<Task, 'id'>) => void;
   onUpdateTask?: (id: string, updatedTask: Partial<Task>) => void;
   onUpdateTaskStatus: (
@@ -72,6 +73,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
   tasks,
   contacts = [],
   isOfficer,
+  completedTaskIds = [],
   onAddTask,
   onUpdateTask,
   onDeleteTask,
@@ -83,8 +85,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
   const [activeTab, setActiveTab] = useState<'active' | 'history'>('active');
   const [selectedDetailTask, setSelectedDetailTask] = useState<Task | null>(null);
 
-  // STATE CENTANG SINKRON FIREBASE PER NRP
-  const [completedTaskIds, setCompletedTaskIds] = useState<string[]>([]);
   const currentUserNrp = localStorage.getItem('mymbud_user_nrp') || 'unknown';
   const currentUserName = localStorage.getItem('mymbud_user_name') || 'Aero';
 
@@ -110,20 +110,13 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
     }
   };
 
-  useEffect(() => {
-    const unsub = subscribeUserTaskCompletions(currentUserNrp, (ids) => {
-      setCompletedTaskIds(ids);
-    });
-    return () => unsub();
-  }, [currentUserNrp]);
-
   const handleToggleComplete = async (e: React.MouseEvent, task: Task) => {
     e.stopPropagation();
     const isDone = completedTaskIds.includes(task.id);
     const nextState = !isDone;
 
     try {
-      await toggleTaskCompletion(currentUserNrp, task.id, nextState);
+      await toggleTaskCompletion(currentUserNrp, task.id, nextState);[cite: 2]
 
       if (nextState) {
         setCelebrationTask(task);
@@ -156,7 +149,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
 
-  // FUNGSI FORCE DOWNLOAD
   const handleForceDownload = async (e: React.MouseEvent, url: string, fileName: string) => {
     e.preventDefault();
     e.stopPropagation();

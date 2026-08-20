@@ -210,7 +210,7 @@ export default function App() {
     setIsAuthenticated(false);
   };
 
-  // DETEKSI MOBILE & TABLET SECARA LENGKAP (Termasuk Samsung DeX / Android Tablet)
+  // DETEKSI MOBILE & TABLET SECARA LENGKAP
   const userAgent = (navigator.userAgent || navigator.vendor || (window as any).opera || '').toLowerCase();
   const platform = (navigator.platform || '').toLowerCase();
   const maxTouchPoints = navigator.maxTouchPoints || 0;
@@ -431,18 +431,6 @@ export default function App() {
         console.error('Error listening to materials:', error);
       }
     );
-
-    fetchAppState().then((data) => {
-      if (data) {
-        setAppState((prev) => ({
-          ...data,
-          schedules: prev.schedules.length > 0 ? prev.schedules : data.schedules,
-          contacts: prev.contacts.length > 0 ? prev.contacts : data.contacts,
-          tasks: prev.tasks.length > 0 ? prev.tasks : data.tasks,
-          materials: prev.materials.length > 0 ? prev.materials : data.materials,
-        }));
-      }
-    });
 
     return () => {
       unsubCourses();
@@ -681,6 +669,7 @@ export default function App() {
                     tasks={appState.tasks}
                     contacts={appState.contacts}
                     isOfficer={isOfficer}
+                    completedTaskIds={completedTaskIds}
                     onAddTask={handleAddTask}
                     onUpdateTask={handleUpdateTask}
                     onUpdateTaskStatus={handleUpdateTaskStatus}
