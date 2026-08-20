@@ -491,7 +491,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </motion.div>
       )}
 
-      {/* CLUSTER HEADER & PENGUMUMAN MOBILE DENGAN STREAK PILL BADGE */}
+      {/* CLUSTER HEADER & PENGUMUMAN MOBILE DENGAN OVERFLOW STREAK PILL BADGE */}
       <div className="block lg:hidden space-y-3">
         <div className="flex items-center justify-between gap-3 px-1 pt-1">
           <div>
@@ -503,16 +503,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </p>
           </div>
 
-          {/* PILL BADGE STREAK (MENGGANTIKAN FLIP CALENDAR) */}
+          {/* PILL BADGE STREAK (OVERFLOW FLAME ICON) */}
           <motion.button
             type="button"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsStreakModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-zinc-800/80 hover:bg-slate-200 dark:hover:bg-zinc-700/80 border border-slate-200/80 dark:border-zinc-700/60 shadow-sm transition-all cursor-pointer shrink-0"
+            className="relative flex items-center h-10 sm:h-11 pl-7 sm:pl-8 pr-4 sm:pr-5 rounded-full bg-[#2f3542] hover:bg-[#39404f] border border-white/5 shadow-md transition-all cursor-pointer shrink-0 select-none group"
           >
-            <span className="text-xl leading-none select-none">🔥</span>
-            <span className="text-sm sm:text-base font-extrabold text-slate-800 dark:text-zinc-100 tabular-nums">
+            <span className="absolute -left-3.5 sm:-left-4 -top-1.5 sm:-top-2 text-3xl sm:text-4xl leading-none filter drop-shadow-[0_2px_8px_rgba(249,115,22,0.4)] pointer-events-none group-hover:scale-110 transition-transform">
+              🔥
+            </span>
+            <span className="text-lg sm:text-xl font-black text-white tracking-tight tabular-nums ml-0.5">
               {streakData.currentStreak}
             </span>
           </motion.button>

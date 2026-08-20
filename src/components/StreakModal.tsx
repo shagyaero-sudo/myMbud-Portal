@@ -6,7 +6,6 @@ import {
   Flame,
   Trophy,
   CalendarCheck,
-  Sparkles,
   Loader2,
   ChevronLeft,
 } from 'lucide-react';
@@ -128,9 +127,10 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                 <h2 className="text-3xl font-extrabold text-slate-900 dark:text-zinc-100 tracking-tight">
                   {streak.currentStreak} Hari
                 </h2>
-                <p className="text-xs font-semibold text-amber-600 dark:text-amber-400 mt-0.5 flex items-center gap-1">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  Streak Kamu Sedang Menyala!
+                
+                {/* SUBTITLE BERSIH TANPA ICON SPARKLE */}
+                <p className="text-xs font-semibold text-amber-500 dark:text-amber-400 mt-1 tracking-wide">
+                  Streak Kamu Menyala!
                 </p>
 
                 {/* Progress Mingguan Sen - Min */}
@@ -184,7 +184,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                     </div>
                     <div className="text-left">
                       <p className="text-[10px] font-medium text-slate-400 dark:text-zinc-500">
-                        Rekor Streak Terpanjang
+                        Rekor Streak Terpanjang:
                       </p>
                       <p className="text-xs font-bold text-slate-800 dark:text-zinc-200">
                         {streak.longestStreak} Hari Berturut-turut
@@ -202,7 +202,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                   className="mt-4 w-full py-3 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white font-bold text-xs shadow-md shadow-orange-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer"
                 >
                   <Trophy className="w-4 h-4" />
-                  <span>Lihat Peringkat Streak Kelas 🔥</span>
+                  <span>Leaderboard Streak</span>
                 </motion.button>
               </motion.div>
             )}
