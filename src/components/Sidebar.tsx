@@ -350,9 +350,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </aside>
 
-      {/* MOBILE BOTTOM NAVIGATION */}
+      {/* MOBILE BOTTOM NAVIGATION (TINGGI DINAIKKAN 2PX: h-[70px]) */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 w-full pointer-events-none">
-        <nav aria-label="Mobile Navigation" className="pointer-events-auto w-full h-[4.25rem] bg-white/70 dark:bg-zinc-950/70 backdrop-blur-2xl backdrop-saturate-150 border-t border-slate-200/50 dark:border-zinc-800/80 rounded-t-[22px] px-3 pb-2.5 flex items-center justify-center shadow-[0_-8px_32px_rgba(0,0,0,0.08)] dark:shadow-[0_-8px_32px_rgba(0,0,0,0.5)] relative">
+        <nav aria-label="Mobile Navigation" className="pointer-events-auto w-full h-[70px] bg-white/70 dark:bg-zinc-950/70 backdrop-blur-2xl backdrop-saturate-150 border-t border-slate-200/50 dark:border-zinc-800/80 rounded-t-[22px] px-3 pb-2.5 flex items-center justify-center shadow-[0_-8px_32px_rgba(0,0,0,0.08)] dark:shadow-[0_-8px_32px_rgba(0,0,0,0.5)] relative">
           <div className="w-full flex items-center justify-center gap-4 sm:gap-8 h-full">
             <BottomTabItem
               id="dashboard"
@@ -494,7 +494,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   </div>
                 </div>
 
-                {/* 2. PORTAL myITS (LAMA) - PASTI 1 BARIS HORIZONTAL DI MOBILE & DESKTOP */}
+                {/* 2. PORTAL myITS (LAMA) */}
                 <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-zinc-800">
                   <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-1">
                     PORTAL myITS (LAMA)
