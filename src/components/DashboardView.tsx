@@ -2,35 +2,35 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Clock,
   Calendar as CalendarIcon,
   ChevronLeft,
   ChevronRight,
   Plus,
   Trash2,
   Edit2,
-  ChevronRight as ArrowRight,
   X,
   UserCheck,
   Pencil,
-  BookOpenCheck,
-  CheckCircle2,
-  FolderKanban,
-  RotateCcw,
   Loader2,
   Zap,
   Send,
-  Building2
+  Building2,
 } from 'lucide-react';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../services/firebase';
-import { AppState, DayOfWeek, Task, Announcement } from '../types';
+import { AppState, DayOfWeek, Announcement } from '../types';
 import {
   addAnnouncement,
   updateAnnouncement,
   deleteAnnouncement,
-  subscribeAnnouncements
+  subscribeAnnouncements,
 } from '../services/announcements';
+import {
+  syncUserStreak,
+  getLocalStreak,
+  UserStreak,
+} from '../services/streakService';
+import { StreakModal } from './StreakModal';
 
 // --- CONFIG FRS WAR MODE ---
 const IS_FRS_WAR_ACTIVE = false;
@@ -67,28 +67,6 @@ const NATIONAL_HOLIDAYS_2026: Record<string, string> = {
   '2026-12-25': 'Hari Raya Natal',
 };
 
-// --- WIDGET KALENDER MINI HEADER ---
-const FlipCalendarWidget: React.FC = () => {
-  const now = new Date();
-  const dayNumber = now.getDate();
-  const monthName = now.toLocaleDateString('id-ID', { month: 'short' }).toUpperCase();
-
-  return (
-    <div className="flex flex-col items-center justify-between w-11 h-11 sm:w-13 sm:h-13 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-sm overflow-hidden shrink-0 transition-transform hover:scale-105 select-none">
-      <div className="w-full bg-rose-600 dark:bg-rose-700 py-[3px] text-center shrink-0">
-        <span className="text-[8.5px] font-black text-white tracking-widest uppercase leading-none block">
-          {monthName}
-        </span>
-      </div>
-      <div className="flex-1 w-full flex items-center justify-center leading-none pb-0.5">
-        <span className="text-lg sm:text-xl font-black text-slate-900 dark:text-zinc-100 tracking-tight">
-          {dayNumber}
-        </span>
-      </div>
-    </div>
-  );
-};
-
 const getCurrentAcademicWeek = () => {
   const startDate = new Date('2026-08-31T00:00:00+07:00');
   const now = new Date();
@@ -98,14 +76,14 @@ const getCurrentAcademicWeek = () => {
   if (diffDays < 0) {
     return {
       label: 'mode libur',
-      badgeClass: 'bg-rose-50 dark:bg-rose-950/40 border-rose-100 dark:border-rose-900/50 text-rose-600 dark:text-rose-400'
+      badgeClass: 'bg-rose-50 dark:bg-rose-950/40 border-rose-100 dark:border-rose-900/50 text-rose-600 dark:text-rose-400',
     };
   }
 
   const weekNumber = Math.floor(diffDays / 7) + 1;
   return {
     label: `Minggu ke-${weekNumber}`,
-    badgeClass: 'bg-blue-50 dark:bg-blue-950/60 border-blue-100 dark:border-blue-900/50 text-blue-600 dark:text-blue-400'
+    badgeClass: 'bg-blue-50 dark:bg-blue-950/60 border-blue-100 dark:border-blue-900/50 text-blue-600 dark:text-blue-400',
   };
 };
 
@@ -118,6 +96,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [showAnnModal, setShowAnnModal] = useState(false);
   const [editingAnnId, setEditingAnnId] = useState<string | null>(null);
   const [isSubmittingAnn, setIsSubmittingAnn] = useState(false);
+
+  // --- STATE STREAK HYBRID ---
+  const [streakData, setStreakData] = useState<UserStreak>(getLocalStreak);
+  const [isStreakModalOpen, setIsStreakModalOpen] = useState(false);
 
   // --- STATE KALENDER BUILD-IN ---
   const [currentMonthDate, setCurrentMonthDate] = useState<Date>(new Date());
@@ -145,6 +127,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const userName = typeof window !== 'undefined' ? localStorage.getItem('mymbud_user_name') || 'Mbuders' : 'Mbuders';
 
   useEffect(() => {
+    syncUserStreak(currentUserNrp, userName).then((updated) => {
+      setStreakData(updated);
+    });
+  }, [currentUserNrp, userName]);
+
+  useEffect(() => {
     const handleProfileChange = () => {
       const storedUrl = localStorage.getItem('mymbud_user_photo_url');
       if (storedUrl) setUserAvatarUrl(storedUrl);
@@ -155,17 +143,21 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
     if (currentUserNrp && currentUserNrp !== 'unknown') {
       const userDocRef = doc(db, 'mbudiary_users', currentUserNrp);
-      const unsub = onSnapshot(userDocRef, (snap) => {
-        if (snap.exists()) {
-          const data = snap.data();
-          if (data.photoUrl) {
-            setUserAvatarUrl(data.photoUrl);
-            localStorage.setItem('mymbud_user_photo_url', data.photoUrl);
+      const unsub = onSnapshot(
+        userDocRef,
+        (snap) => {
+          if (snap.exists()) {
+            const data = snap.data();
+            if (data.photoUrl) {
+              setUserAvatarUrl(data.photoUrl);
+              localStorage.setItem('mymbud_user_photo_url', data.photoUrl);
+            }
           }
+        },
+        (err) => {
+          console.warn('[DashboardView] Gagal sync avatar:', err);
         }
-      }, (err) => {
-        console.warn('[DashboardView] Gagal sync avatar:', err);
-      });
+      );
 
       return () => {
         unsub();
@@ -284,7 +276,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     return time >= startOfSemester.getTime() && time <= endOfSemesterLimit.getTime();
   };
 
-  // URUTKAN JADWAL DI KALENDER SECARA KRONOLOGIS
   const selectedDateSchedules = isWithinSemesterPeriod(selectedCalendarDate)
     ? state.schedules
         .filter((s) => s.day === selectedDateDayName)
@@ -372,7 +363,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     });
   };
 
-  // HARI PERKULIAHAN AKTIF: SENIN - KAMIS (HAPUS JUMAT)
   const dayTabs: DayOfWeek[] = ['Senin', 'Selasa', 'Rabu', 'Kamis'];
 
   const filteredSchedule = state.schedules
@@ -501,7 +491,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </motion.div>
       )}
 
-      {/* CLUSTER HEADER & PENGUMUMAN MOBILE */}
+      {/* CLUSTER HEADER & PENGUMUMAN MOBILE DENGAN STREAK PILL BADGE */}
       <div className="block lg:hidden space-y-3">
         <div className="flex items-center justify-between gap-3 px-1 pt-1">
           <div>
@@ -512,7 +502,20 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               Siap untuk produktif hari ini?
             </p>
           </div>
-          <FlipCalendarWidget />
+
+          {/* PILL BADGE STREAK (MENGGANTIKAN FLIP CALENDAR) */}
+          <motion.button
+            type="button"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setIsStreakModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-zinc-800/80 hover:bg-slate-200 dark:hover:bg-zinc-700/80 border border-slate-200/80 dark:border-zinc-700/60 shadow-sm transition-all cursor-pointer shrink-0"
+          >
+            <span className="text-xl leading-none select-none">🔥</span>
+            <span className="text-sm sm:text-base font-extrabold text-slate-800 dark:text-zinc-100 tabular-nums">
+              {streakData.currentStreak}
+            </span>
+          </motion.button>
         </div>
 
         <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-4 sm:p-5 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none transition-colors relative">
@@ -900,7 +903,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
             </div>
 
-            {/* Panel Ringkasan Agenda Tanggal Terpilih (BERSIH & RAMPING) */}
+            {/* Panel Ringkasan Agenda Tanggal Terpilih */}
             <div className="pt-3 border-t border-slate-100 dark:border-zinc-800 space-y-2.5">
               <div className="flex items-center justify-between gap-2 flex-wrap">
                 <span className="text-xs font-bold text-slate-700 dark:text-zinc-300">
@@ -1050,6 +1053,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Modal: Streak Details & Leaderboard */}
+      <StreakModal
+        isOpen={isStreakModalOpen}
+        onClose={() => setIsStreakModalOpen(false)}
+        streak={streakData}
+        userName={userName}
+      />
 
       {/* Modal: Create / Edit Announcement */}
       {typeof document !== 'undefined' &&
