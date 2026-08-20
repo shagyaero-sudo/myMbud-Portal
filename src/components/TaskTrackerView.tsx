@@ -1409,7 +1409,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                     {isUploading ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Mengunggah...</span>
+                        <span>Mengunggah File...</span>
                       </>
                     ) : (
                       'Simpan Tugas'
