@@ -16,7 +16,8 @@ export interface UserStreak {
   longestStreak: number;
   lastActiveDate: string; // Format: "YYYY-MM-DD"
   weeklyActiveDays: number[]; // Index hari (0 = Min, 1 = Sen, ..., 6 = Sab)
-  reviveQuota: number;
+  reviveQuota: number; // 3x jatah per bulan
+  reviveMonth?: string; // Format: "YYYY-MM" penanda bulan kuota
   previousBrokenStreak?: number;
   canRevive?: boolean;
 }
@@ -37,18 +38,31 @@ const STORAGE_KEY = 'mymbud_user_streak';
 const POPUP_SEEN_KEY = 'mymbud_streak_popup_seen_date';
 
 export const getLocalStreak = (): UserStreak => {
+  const currentMonthKey = new Date().toISOString().slice(0, 7); // "YYYY-MM"
   const defaultStreak: UserStreak = {
     currentStreak: 1,
     longestStreak: 1,
     lastActiveDate: '',
     weeklyActiveDays: [new Date().getDay()],
     reviveQuota: 3,
+    reviveMonth: currentMonthKey,
     canRevive: false,
   };
 
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
-    return saved ? JSON.parse(saved) : defaultStreak;
+    if (!saved) return defaultStreak;
+
+    const parsed: UserStreak = JSON.parse(saved);
+
+    // Auto reset kuota jadi 3x jika sudah masuk bulan baru
+    if (parsed.reviveMonth !== currentMonthKey) {
+      parsed.reviveQuota = 3;
+      parsed.reviveMonth = currentMonthKey;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+    }
+
+    return parsed;
   } catch {
     return defaultStreak;
   }
@@ -59,6 +73,7 @@ export const syncUserStreak = async (
   userName: string
 ): Promise<SyncStreakResult> => {
   const today = new Date().toISOString().split('T')[0];
+  const currentMonthKey = today.slice(0, 7); // "YYYY-MM"
   const currentDayIndex = new Date().getDay();
   const normalizedNrp = userNrp.trim().toLowerCase();
 
@@ -66,18 +81,28 @@ export const syncUserStreak = async (
   const lastSeenPopupDate = localStorage.getItem(POPUP_SEEN_KEY);
   const isFirstVisitToday = lastSeenPopupDate !== today;
 
-  // Jika hari ini sudah terhitung di cache lokal
+  // Cek dan reset jatah revive jika berganti bulan kalender
+  let reviveQuota = typeof cached.reviveQuota === 'number' ? cached.reviveQuota : 3;
+  if (cached.reviveMonth !== currentMonthKey) {
+    reviveQuota = 3;
+  }
+
+  // Jika hari ini sudah tercatat di cache lokal
   if (cached.lastActiveDate === today) {
     if (isFirstVisitToday) {
       localStorage.setItem(POPUP_SEEN_KEY, today);
     }
-    return { streak: cached, isFirstVisitToday };
+    const syncedCached: UserStreak = {
+      ...cached,
+      reviveQuota,
+      reviveMonth: currentMonthKey,
+    };
+    return { streak: syncedCached, isFirstVisitToday };
   }
 
   let newCurrent = cached.currentStreak;
   let newLongest = cached.longestStreak || 1;
   let newWeeklyDays = [...(cached.weeklyActiveDays || [])];
-  let reviveQuota = typeof cached.reviveQuota === 'number' ? cached.reviveQuota : 3;
   let canRevive = false;
   let previousBrokenStreak = cached.previousBrokenStreak || 0;
 
@@ -117,6 +142,7 @@ export const syncUserStreak = async (
     lastActiveDate: today,
     weeklyActiveDays: newWeeklyDays,
     reviveQuota,
+    reviveMonth: currentMonthKey,
     canRevive,
     previousBrokenStreak,
   };
@@ -137,6 +163,7 @@ export const syncUserStreak = async (
           lastActiveDate: today,
           weeklyActiveDays: newWeeklyDays,
           reviveQuota,
+          reviveMonth: currentMonthKey,
           updatedAt: serverTimestamp(),
         },
         { merge: true }
@@ -161,6 +188,7 @@ export const useStreakRevive = async (
 
   const normalizedNrp = userNrp.trim().toLowerCase();
   const today = new Date().toISOString().split('T')[0];
+  const currentMonthKey = today.slice(0, 7);
 
   const restoredStreakCount = cached.previousBrokenStreak;
   const newQuota = cached.reviveQuota - 1;
@@ -170,6 +198,7 @@ export const useStreakRevive = async (
     currentStreak: restoredStreakCount,
     longestStreak: Math.max(cached.longestStreak, restoredStreakCount),
     reviveQuota: newQuota,
+    reviveMonth: currentMonthKey,
     canRevive: false,
     previousBrokenStreak: 0,
     lastActiveDate: today,
@@ -188,6 +217,7 @@ export const useStreakRevive = async (
           currentStreak: restoredStreakCount,
           longestStreak: updatedStreak.longestStreak,
           reviveQuota: newQuota,
+          reviveMonth: currentMonthKey,
           lastActiveDate: today,
           updatedAt: serverTimestamp(),
         },

@@ -254,10 +254,10 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                     </div>
                     <div className="text-left min-w-0">
                       <p className="text-[9.5px] font-medium text-slate-400 dark:text-zinc-500 truncate">
-                        Jatah Revive
+                        Restore perbulan
                       </p>
                       <p className="text-xs font-bold text-slate-800 dark:text-zinc-200 truncate">
-                        {streak.reviveQuota ?? 3}x Tersedia
+                        {streak.reviveQuota ?? 3}x Jatah
                       </p>
                     </div>
                   </div>
