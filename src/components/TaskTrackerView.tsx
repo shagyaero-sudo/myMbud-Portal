@@ -116,7 +116,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
     const nextState = !isDone;
 
     try {
-      await toggleTaskCompletion(currentUserNrp, task.id, nextState);[cite: 2]
+      await toggleTaskCompletion(currentUserNrp, task.id, nextState);
 
       if (nextState) {
         setCelebrationTask(task);
