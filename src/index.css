@@ -52,7 +52,9 @@
     --logo-filter: none;
   }
 
-  .dark {
+  :root.dark,
+  html.dark,
+  html[data-mode="dark"] {
     /* Pure Neutral Charcoal Canvas (0% Blue Saturation) */
     --color-slate-950: #121214;
     --color-zinc-950: #121214;
@@ -82,11 +84,12 @@
 }
 
 /* =========================================================
-   2. ACCENT COLORS (Solid, Punchy & Adaptive Logo Filter)
+   2. ACCENT COLORS (Overriding --color-blue-* for Global Theme)
    ========================================================= */
 
 /* BIRU myITS */
-:root[data-accent="blue"] {
+:root[data-accent="blue"],
+html[data-accent="blue"] {
   --color-blue-50: #eff6ff;
   --color-blue-100: #dbeafe;
   --color-blue-200: #bfdbfe;
@@ -100,7 +103,8 @@
 }
 
 /* UNGU */
-:root[data-accent="purple"] {
+:root[data-accent="purple"],
+html[data-accent="purple"] {
   --color-blue-50: #faf5ff;
   --color-blue-100: #f3e8ff;
   --color-blue-200: #e9d5ff;
@@ -114,7 +118,8 @@
 }
 
 /* PINK */
-:root[data-accent="pink"] {
+:root[data-accent="pink"],
+html[data-accent="pink"] {
   --color-blue-50: #fdf2f8;
   --color-blue-100: #fce7f3;
   --color-blue-200: #fbcfe8;
@@ -128,7 +133,8 @@
 }
 
 /* ORANYE */
-:root[data-accent="orange"] {
+:root[data-accent="orange"],
+html[data-accent="orange"] {
   --color-blue-50: #fff7ed;
   --color-blue-100: #ffedd5;
   --color-blue-200: #fed7aa;
@@ -142,7 +148,8 @@
 }
 
 /* HIJAU */
-:root[data-accent="green"] {
+:root[data-accent="green"],
+html[data-accent="green"] {
   --color-blue-50: #f0fdf4;
   --color-blue-100: #dcfce7;
   --color-blue-200: #bbf7d0;
@@ -156,7 +163,8 @@
 }
 
 /* TEAL */
-:root[data-accent="teal"] {
+:root[data-accent="teal"],
+html[data-accent="teal"] {
   --color-blue-50: #f0fdfa;
   --color-blue-100: #ccfbf1;
   --color-blue-200: #99f6e4;
@@ -170,7 +178,8 @@
 }
 
 /* CYAN */
-:root[data-accent="cyan"] {
+:root[data-accent="cyan"],
+html[data-accent="cyan"] {
   --color-blue-50: #ecfeff;
   --color-blue-100: #cffafe;
   --color-blue-200: #a5f3fc;
