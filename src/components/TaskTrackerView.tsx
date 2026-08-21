@@ -43,6 +43,8 @@ interface AttachmentData {
   fileUrl: string;
 }
 
+const DEFAULT_CLASSROOM_URL = 'https://classroom.its.ac.id/auth/oidc';
+
 // HELPER AUTO-DETECT LINK (CLICKABLE & WARNA BIRU)
 const renderTextWithLinks = (text: string) => {
   if (!text) return 'Tidak ada instruksi.';
@@ -448,6 +450,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
       }
 
       const fullIsoDeadline = new Date(`${deadlineDate}T${deadlineTime || '23:59'}:00`).toISOString();
+      const finalClassroomUrl = classroomUrl.trim() || DEFAULT_CLASSROOM_URL;
 
       const taskData: Omit<Task, 'id'> = {
         title: title.trim(),
@@ -458,7 +461,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
         deadline: fullIsoDeadline,
         status: 'todo',
         priority,
-        ...(classroomUrl.trim() ? { classroomUrl: classroomUrl.trim() } : {}),
+        classroomUrl: finalClassroomUrl,
         ...(finalAttachment ? { attachment: finalAttachment } : {})
       };
 
@@ -928,17 +931,15 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                 )}
 
                 <div className="flex items-center gap-2">
-                  {selectedDetailTask.classroomUrl && (
-                    <a
-                      href={selectedDetailTask.classroomUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-xs font-bold transition-colors flex items-center gap-1.5 shadow-sm shadow-blue-500/20 cursor-pointer"
-                    >
-                      <ExternalLink className="w-3.5 h-3.5" />
-                      <span>Link Pengumpulan</span>
-                    </a>
-                  )}
+                  <a
+                    href={selectedDetailTask.classroomUrl || DEFAULT_CLASSROOM_URL}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-xs font-bold transition-colors flex items-center gap-1.5 shadow-sm shadow-blue-500/20 cursor-pointer"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    <span>Link Pengumpulan</span>
+                  </a>
                 </div>
               </div>
             </motion.div>
@@ -1312,13 +1313,13 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
 
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
-                      Link Pengumpulan (Opsional)
+                      Link Gdrive Pengumpulan (Opsional)
                     </label>
                     <input
                       type="url"
                       value={classroomUrl}
                       onChange={(e) => setClassroomUrl(e.target.value)}
-                      placeholder="https://classroom.google.com/..."
+                      placeholder="(Kosongkan jika di Classroom)"
                       className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
