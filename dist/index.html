@@ -2,8 +2,14 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>myMbud Portal</title>
+
+    <!-- PRELOAD BACKSOUND AUDIO UNTUK INSTANT PLAY PAS LOGIN -->
+    <link rel="preload" href="/backsound.mp3" as="audio" type="audio/mpeg" />
+
+    <!-- Font SF Pro via CDN untuk Android & Windows -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sf-font@1.0.0/stylesheet.css">
     
     <!-- Syarat PWA (Manifest KTP Aplikasi) -->
     <link rel="manifest" href="/assets/manifest-u6WIt2P0.json" />
@@ -19,37 +25,34 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="myMbud" />
 
-    <!-- Meta Tag Android Adaptif -->
-    <meta name="theme-color" content="#f8fafc" />
+    <!-- Meta Tag Android / PWA Status Bar Default Charcoal -->
+    <meta name="theme-color" content="#121214" />
+    <meta name="color-scheme" content="dark light" />
 
-    <!-- SCRIPT CEGAH FLICKER & MEMBACA 5 TEMA -->
+    <!-- SCRIPT CEGAH FLICKER & MEMBACA SISTEM TEMA 2-LAYER -->
     <script>
       (function() {
-        const savedTheme = localStorage.getItem('theme');
+        const savedMode = localStorage.getItem('mymbud_theme_mode') || 'dark';
+        const savedAccent = localStorage.getItem('mymbud_theme_accent') || 'blue';
         const root = document.documentElement;
         
-        if (savedTheme === 'green') {
-          root.classList.add('green');
-          root.classList.remove('dark', 'pink', 'purple');
-        } else if (savedTheme === 'purple') {
-          root.classList.add('purple');
-          root.classList.remove('dark', 'pink', 'green');
-        } else if (savedTheme === 'pink') {
-          root.classList.add('pink');
-          root.classList.remove('dark', 'purple', 'green');
-        } else if (savedTheme === 'dark' || savedTheme === null) {
+        root.setAttribute('data-mode', savedMode);
+        root.setAttribute('data-accent', savedAccent);
+
+        if (savedMode === 'dark') {
           root.classList.add('dark');
-          root.classList.remove('pink', 'purple', 'green');
-          if (savedTheme === null) {
-            localStorage.setItem('theme', 'dark');
-          }
         } else {
-          root.classList.remove('dark', 'pink', 'purple', 'green');
+          root.classList.remove('dark');
+        }
+
+        const metaThemeColor = document.querySelector("meta[name='theme-color']");
+        if (metaThemeColor) {
+          metaThemeColor.setAttribute('content', savedMode === 'dark' ? '#121214' : '#ffffff');
         }
       })();
     </script>
-    <script type="module" crossorigin src="/assets/index-BVoJ7-n1.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-fwc-F7z9.css">
+    <script type="module" crossorigin src="/assets/index-BSmIKBtK.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-DSR91Y11.css">
   </head>
   <body class="bg-slate-50 dark:bg-zinc-950 text-slate-800 dark:text-zinc-100 transition-colors duration-200">
     <div id="root"></div>

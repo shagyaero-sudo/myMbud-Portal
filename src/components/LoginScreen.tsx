@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { doc, deleteDoc } from 'firebase/firestore';
-import { db } from '../services/firebase';
+import { supabase } from '../services/supabase';
 import { STUDENTS_DATA } from '../data/studentsData';
 
 interface LoginScreenProps {
@@ -34,8 +33,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
       setIsLoading(true);
       
       try {
-        // Hapus NRP dari daftar revoked_sessions (jika sebelumnya pernah ditendang)
-        await deleteDoc(doc(db, 'revoked_sessions', nrp));
+        // Hapus NRP dari daftar revoked_sessions jika sebelumnya pernah ditendang
+        await supabase.from('revoked_sessions').delete().eq('id', nrp);
       } catch (err) {
         console.error('Gagal membersihkan revoked session:', err);
       } finally {
@@ -43,7 +42,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
       }
 
       localStorage.setItem('mymbud_auth', 'true');
-      localStorage.setItem('mymbud_user_name', student.name); // Simpan nama panggilan
+      localStorage.setItem('mymbud_user_name', student.name);
       localStorage.setItem('mymbud_user_nrp', nrp);
       onLoginSuccess();
     } else {

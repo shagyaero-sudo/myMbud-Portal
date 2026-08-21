@@ -1,18 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { AnimatePresence } from 'framer-motion';
-import {
-  collection,
-  addDoc,
-  deleteDoc,
-  doc,
-  getDoc,
-  Timestamp,
-  onSnapshot,
-  query,
-} from 'firebase/firestore';
 
-import { db } from './services/firebase';
 import { subscribeAnnouncements } from './services/announcements';
+import { supabase } from './services/supabase';
 
 import {
   initOneSignal,
@@ -60,6 +50,12 @@ import {
   saveGroupResultApi,
   subscribeUserTaskCompletions,
 } from './services/api';
+
+import {
+  fetchMaterials,
+  addMaterialToFirestore,
+  deleteMaterialFromFirestore,
+} from './services/materials';
 
 const IS_MAINTENANCE = false;
 
@@ -132,10 +128,13 @@ export default function App() {
 
       if (userNrp && isAuthenticated) {
         try {
-          const revokedRef = doc(db, 'revoked_sessions', userNrp);
-          const revokedDoc = await getDoc(revokedRef);
+          const { data } = await supabase
+            .from('revoked_sessions')
+            .select('id')
+            .eq('id', userNrp)
+            .maybeSingle();
 
-          if (revokedDoc.exists()) {
+          if (data) {
             localStorage.removeItem('mymbud_auth');
             localStorage.removeItem('mymbud_user_name');
             localStorage.removeItem('mymbud_user_nrp');
@@ -145,8 +144,8 @@ export default function App() {
             setIsAuthenticated(false);
             alert('Ada Pembaruan Sistem, Silakan login kembali yaa! ✨');
           }
-        } catch (err) {
-          console.error('Gagal memeriksa status sesi:', err);
+        } catch {
+          // Abaikan jika tabel revoked_sessions belum dipakai
         }
       }
     };
@@ -269,173 +268,120 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  // --- REAL-TIME LISTENERS ---
+  // --- SUPABASE REAL-TIME LISTENERS ---
   useEffect(() => {
     setIsSyncing(true);
 
-    const qCourses = query(collection(db, 'courses'));
-    const qTasks = query(collection(db, 'tasks'));
-    const qMaterials = query(collection(db, 'materials'));
+    const loadCourses = async () => {
+      const { data } = await supabase.from('courses').select('*');
+      if (data) {
+        const supabaseSchedules: ScheduleItem[] = [];
+        const supabaseContacts: Contact[] = [];
 
-    const unsubCourses = onSnapshot(
-      qCourses,
-      (snapshot) => {
-        const firebaseSchedules: ScheduleItem[] = [];
-        const firebaseContacts: Contact[] = [];
+        data.forEach((d: any) => {
+          const scheduleDay = d.day || 'Senin';
+          const scheduleTime = d.time || '';
+          const courseName = d.name || '';
 
-        snapshot.forEach((courseDoc) => {
-          const d = courseDoc.data();
-
-          const scheduleDay =
-            d.scheduleDay ||
-            (d.scheduleDayTime
-              ? String(d.scheduleDayTime).split(',')[0]?.trim()
-              : 'Senin');
-
-          const scheduleTime =
-            d.scheduleTime ||
-            (d.scheduleDayTime
-              ? String(d.scheduleDayTime).split(',').slice(1).join(',').trim()
-              : '');
-
-          const courseName = d.name || d.course || '';
-
-          firebaseSchedules.push({
-            id: courseDoc.id,
+          supabaseSchedules.push({
+            id: d.id,
             day: scheduleDay,
             course: courseName,
             code: d.code || '',
             time: scheduleTime,
             room: d.room || '',
-            lecturer: d.lecturerName || '',
-            lecturer2: d.lecturerName2 || '',
-            pjMatkul: d.pjName ? String(d.pjName).trim() : '',
-            sks: Number(d.sks) || 0,
-            attendanceUrl: d.attendanceUrl || '',
+            lecturer: d.lecturer || '',
+            lecturer2: d.lecturer2 || '',
+            pjMatkul: d.pj_matkul || '',
+            sks: Number(d.credits || d.sks) || 0,
+            attendanceUrl: d.attendance_url || '',
           });
 
-          firebaseContacts.push({
-            id: courseDoc.id,
+          supabaseContacts.push({
+            id: d.id,
             code: d.code || '',
             course: courseName,
-            sks: Number(d.sks) || 0,
-            lecturerName: d.lecturerName || '',
-            lecturerPhone: d.lecturerPhone || '',
-            lecturerName2: d.lecturerName2 || '',
-            lecturerPhone2: d.lecturerPhone2 || '',
-            pjName: d.pjName || '',
-            pjPhone: d.pjPhone || '',
+            sks: Number(d.credits || d.sks) || 0,
+            lecturerName: d.lecturer || '',
+            lecturerPhone: d.lecturer_phone || '',
+            lecturerName2: d.lecturer2 || '',
+            lecturerPhone2: d.lecturer_phone2 || '',
+            pjName: d.pj_name || '',
+            pjPhone: d.pj_phone || '',
             room: d.room || '',
-            scheduleDayTime:
-              d.scheduleDayTime || scheduleDay + ', ' + scheduleTime,
-            attendanceUrl: d.attendanceUrl || '',
+            scheduleDayTime: scheduleDay + ', ' + scheduleTime,
+            attendanceUrl: d.attendance_url || '',
           });
         });
 
         setAppState((prev) => ({
           ...prev,
-          schedules: firebaseSchedules,
-          contacts:
-            firebaseContacts.length > 0 ? firebaseContacts : prev.contacts,
+          schedules: supabaseSchedules,
+          contacts: supabaseContacts.length > 0 ? supabaseContacts : prev.contacts,
           lastUpdated: new Date().toISOString(),
         }));
-        setIsSyncing(false);
-        setIsInitialLoad(false);
-      },
-      (error) => {
-        console.error('Error listening to courses:', error);
-        setIsSyncing(false);
-        setIsInitialLoad(false);
       }
-    );
+      setIsSyncing(false);
+      setIsInitialLoad(false);
+    };
 
-    const unsubTasks = onSnapshot(
-      qTasks,
-      (snapshot) => {
-        const firebaseTasks: Task[] = [];
-
-        snapshot.forEach((taskDoc) => {
-          const d = taskDoc.data();
-
-          firebaseTasks.push({
-            id: taskDoc.id,
-            title: d.title || '',
-            course: d.course || '',
-            description: d.description || '',
-            type: d.type === 'Kelompok' ? 'Kelompok' : 'Individu',
-            assigner: d.assigner || '',
-            deadline: d.deadline || '',
-            status:
-              d.status === 'done'
-                ? 'done'
-                : d.status === 'in_progress'
-                ? 'in_progress'
-                : 'todo',
-            priority:
-              d.priority === 'Low'
-                ? 'Low'
-                : d.priority === 'Medium'
-                ? 'Medium'
-                : 'High',
-            classroomUrl: d.classroomUrl || undefined,
-            attachment: d.attachment
-              ? {
-                  fileName: d.attachment.fileName || '',
-                  fileUrl: d.attachment.fileUrl || '',
-                }
-              : undefined,
-          });
-        });
+    const loadTasks = async () => {
+      const { data } = await supabase.from('tasks').select('*');
+      if (data) {
+        const list: Task[] = data.map((d: any) => ({
+          id: d.id,
+          title: d.title || '',
+          course: d.course_name || d.course || '',
+          description: d.description || '',
+          type: d.type === 'Kelompok' ? 'Kelompok' : 'Individu',
+          assigner: d.assigner || '',
+          deadline: d.deadline || '',
+          status:
+            d.status === 'done'
+              ? 'done'
+              : d.status === 'in_progress'
+              ? 'in_progress'
+              : 'todo',
+          priority:
+            d.priority === 'Low'
+              ? 'Low'
+              : d.priority === 'Medium'
+              ? 'Medium'
+              : 'High',
+          classroomUrl: d.classroom_url || undefined,
+          attachment: d.attachment || undefined,
+        }));
 
         setAppState((prev) => ({
           ...prev,
-          tasks: firebaseTasks,
+          tasks: list,
           lastUpdated: new Date().toISOString(),
         }));
-      },
-      (error) => {
-        console.error('Error listening to tasks:', error);
       }
-    );
+    };
 
-    const unsubMaterials = onSnapshot(
-      qMaterials,
-      (snapshot) => {
-        const firebaseMaterials: MaterialFile[] = [];
+    const loadMaterials = async () => {
+      const mats = await fetchMaterials();
+      setAppState((prev) => ({
+        ...prev,
+        materials: mats,
+        lastUpdated: new Date().toISOString(),
+      }));
+    };
 
-        snapshot.forEach((matDoc) => {
-          const d = matDoc.data();
+    loadCourses();
+    loadTasks();
+    loadMaterials();
 
-          firebaseMaterials.push({
-            id: matDoc.id,
-            courseId: d.courseId || '',
-            courseName: d.courseName || '',
-            session: d.session || '',
-            title: d.title || '',
-            fileUrl: d.fileUrl || '',
-            fileType: 'pdf',
-            fileSize: d.fileSize || '3.0 MB',
-            uploadDate: d.uploadDate || new Date().toISOString(),
-            uploader: d.uploader || 'Pengurus Kelas A',
-            description: d.description || '',
-          });
-        });
-
-        setAppState((prev) => ({
-          ...prev,
-          materials: firebaseMaterials,
-          lastUpdated: new Date().toISOString(),
-        }));
-      },
-      (error) => {
-        console.error('Error listening to materials:', error);
-      }
-    );
+    const channel = supabase
+      .channel(`portal-sync-${Math.random()}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'courses' }, loadCourses)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, loadTasks)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'materials' }, loadMaterials)
+      .subscribe();
 
     return () => {
-      unsubCourses();
-      unsubTasks();
-      unsubMaterials();
+      supabase.removeChannel(channel);
     };
   }, []);
 
@@ -504,14 +450,10 @@ export default function App() {
     material: Omit<MaterialFile, 'id' | 'uploadDate'>
   ) => {
     try {
-      await addDoc(collection(db, 'materials'), {
-        ...material,
-        uploadDate: new Date().toISOString(),
-        createdAt: Timestamp.now(),
-      });
+      await addMaterialToFirestore(material);
     } catch (error) {
       console.error('Gagal menambahkan materi:', error);
-      alert('Gagal menyimpan berkas ke Firebase.');
+      alert('Gagal menyimpan berkas.');
     }
   };
 
@@ -519,7 +461,7 @@ export default function App() {
     if (!confirm('Apakah kamu yakin ingin menghapus berkas materi ini?')) return;
 
     try {
-      await deleteDoc(doc(db, 'materials', id));
+      await deleteMaterialFromFirestore(id);
     } catch (error) {
       console.error('Gagal menghapus materi:', error);
       alert('Gagal menghapus berkas.');

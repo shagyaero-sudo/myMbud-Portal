@@ -16,8 +16,7 @@ import {
   Send,
   Building2,
 } from 'lucide-react';
-import { doc, onSnapshot } from 'firebase/firestore';
-import { db } from '../services/firebase';
+import { supabase } from '../services/supabase';
 import { AppState, DayOfWeek, Announcement } from '../types';
 import {
   addAnnouncement,
@@ -145,25 +144,32 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     window.addEventListener('mbud_users_change', handleProfileChange);
 
     if (currentUserNrp && currentUserNrp !== 'unknown') {
-      const userDocRef = doc(db, 'mbudiary_users', currentUserNrp);
-      const unsub = onSnapshot(
-        userDocRef,
-        (snap) => {
-          if (snap.exists()) {
-            const data = snap.data();
-            if (data.photoUrl) {
-              setUserAvatarUrl(data.photoUrl);
-              localStorage.setItem('mymbud_user_photo_url', data.photoUrl);
-            }
-          }
-        },
-        (err) => {
-          console.warn('[DashboardView] Gagal sync avatar:', err);
+      const fetchAvatar = async () => {
+        const { data } = await supabase
+          .from('mbudiary_users')
+          .select('photo_url')
+          .eq('nrp', currentUserNrp)
+          .maybeSingle();
+
+        if (data && data.photo_url) {
+          setUserAvatarUrl(data.photo_url);
+          localStorage.setItem('mymbud_user_photo_url', data.photo_url);
         }
-      );
+      };
+
+      fetchAvatar();
+
+      const channel = supabase
+        .channel(`dashboard-avatar-${currentUserNrp}-${Math.random()}`)
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'mbudiary_users' },
+          fetchAvatar
+        )
+        .subscribe();
 
       return () => {
-        unsub();
+        supabase.removeChannel(channel);
         window.removeEventListener('mbud_user_change', handleProfileChange);
         window.removeEventListener('mbud_users_change', handleProfileChange);
       };
