@@ -283,9 +283,12 @@ export default function App() {
         const supabaseContacts: Contact[] = [];
 
         data.forEach((d: any) => {
-          const scheduleDay = d.day || 'Senin';
-          const scheduleTime = d.time || '';
-          const courseName = d.name || '';
+          const scheduleDay = d.day || (d.schedule_day_time ? d.schedule_day_time.split(',')[0]?.trim() : 'Senin');
+          const scheduleTime = d.time || (d.schedule_day_time ? d.schedule_day_time.split(',').slice(1).join(',').trim() : '');
+          const courseName = d.name || d.course || '';
+          const pj = d.pj_name || d.pj_matkul || d.pjName || '';
+          const pjTel = d.pj_phone || d.pjPhone || '';
+          const presensi = d.attendance_url || d.attendanceUrl || '';
 
           supabaseSchedules.push({
             id: d.id,
@@ -294,11 +297,11 @@ export default function App() {
             code: d.code || '',
             time: scheduleTime,
             room: d.room || '',
-            lecturer: d.lecturer || '',
-            lecturer2: d.lecturer2 || '',
-            pjMatkul: d.pj_matkul || d.pjName || '',
+            lecturer: d.lecturer || d.lecturerName || '',
+            lecturer2: d.lecturer2 || d.lecturerName2 || '',
+            pjMatkul: pj,
             sks: Number(d.credits || d.sks) || 0,
-            attendanceUrl: d.attendance_url || d.attendanceUrl || '',
+            attendanceUrl: presensi,
           });
 
           supabaseContacts.push({
@@ -306,15 +309,15 @@ export default function App() {
             code: d.code || '',
             course: courseName,
             sks: Number(d.credits || d.sks) || 0,
-            lecturerName: d.lecturer || '',
+            lecturerName: d.lecturer || d.lecturerName || '',
             lecturerPhone: d.lecturer_phone || d.lecturerPhone || '',
-            lecturerName2: d.lecturer2 || '',
+            lecturerName2: d.lecturer2 || d.lecturerName2 || '',
             lecturerPhone2: d.lecturer_phone2 || d.lecturerPhone2 || '',
-            pjName: d.pj_matkul || d.pjName || '',
-            pjPhone: d.pj_phone || d.pjPhone || '',
+            pjName: pj,
+            pjPhone: pjTel,
             room: d.room || '',
-            scheduleDayTime: scheduleDay + (scheduleTime ? ', ' + scheduleTime : ''),
-            attendanceUrl: d.attendance_url || d.attendanceUrl || '',
+            scheduleDayTime: d.schedule_day_time || (scheduleDay + (scheduleTime ? ', ' + scheduleTime : '')),
+            attendanceUrl: presensi,
           });
         });
 
@@ -339,7 +342,7 @@ export default function App() {
         const list: Task[] = data.map((d: any) => ({
           id: d.id,
           title: d.title || '',
-          course: d.course_name || d.course || '',
+          course: d.course || d.course_name || '',
           description: d.description || '',
           type: d.type === 'Kelompok' ? 'Kelompok' : 'Individu',
           assigner: d.assigner || '',
@@ -356,7 +359,7 @@ export default function App() {
               : d.priority === 'Medium'
               ? 'Medium'
               : 'High',
-          classroomUrl: d.classroom_url || undefined,
+          classroomUrl: d.classroom_url || d.classroomUrl || undefined,
           attachment: d.attachment || undefined,
         }));
 
@@ -377,12 +380,10 @@ export default function App() {
       }));
     };
 
-    // Load initial data
     loadCourses();
     loadTasks();
     loadMaterials();
 
-    // Setup Realtime Subscription
     const channel = supabase
       .channel('public:portal_realtime_changes')
       .on(

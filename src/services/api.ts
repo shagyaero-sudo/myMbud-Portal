@@ -74,11 +74,30 @@ export async function deleteAnnouncementApi(id: string): Promise<AppState | null
 export async function addContactApi(contact: Omit<Contact, 'id'>): Promise<AppState | null> {
   try {
     const id = crypto.randomUUID();
+    const scheduleParts = (contact.scheduleDayTime || '').split(',');
+    const day = scheduleParts[0]?.trim() || 'Senin';
+    const time = scheduleParts.slice(1).join(',').trim() || '';
+
     const { error } = await supabase.from('courses').insert({
       id,
-      ...contact,
+      code: contact.code || '',
+      name: contact.course || '',
+      lecturer: contact.lecturerName || '',
+      lecturer_phone: contact.lecturerPhone || '',
+      lecturer2: contact.lecturerName2 || '',
+      lecturer_phone2: contact.lecturerPhone2 || '',
+      pj_name: contact.pjName || '',
+      pj_matkul: contact.pjName || '',
+      pj_phone: contact.pjPhone || '',
+      room: contact.room || '',
+      day,
+      time,
+      schedule_day_time: contact.scheduleDayTime || `${day}, ${time}`,
+      attendance_url: contact.attendanceUrl || '',
+      credits: Number(contact.sks) || 0,
       created_at: new Date().toISOString(),
     });
+
     if (error) throw error;
     return null;
   } catch (err) {
@@ -89,7 +108,28 @@ export async function addContactApi(contact: Omit<Contact, 'id'>): Promise<AppSt
 
 export async function updateContactApi(id: string, contact: Partial<Contact>): Promise<AppState | null> {
   try {
-    const { error } = await supabase.from('courses').update(contact).eq('id', id);
+    const payload: Record<string, any> = {};
+    if (contact.code !== undefined) payload.code = contact.code;
+    if (contact.course !== undefined) payload.name = contact.course;
+    if (contact.lecturerName !== undefined) payload.lecturer = contact.lecturerName;
+    if (contact.lecturerPhone !== undefined) payload.lecturer_phone = contact.lecturerPhone;
+    if (contact.lecturerName2 !== undefined) payload.lecturer2 = contact.lecturerName2;
+    if (contact.lecturerPhone2 !== undefined) payload.lecturer_phone2 = contact.lecturerPhone2;
+    if (contact.pjName !== undefined) {
+      payload.pj_name = contact.pjName;
+      payload.pj_matkul = contact.pjName;
+    }
+    if (contact.pjPhone !== undefined) payload.pj_phone = contact.pjPhone;
+    if (contact.room !== undefined) payload.room = contact.room;
+    if (contact.scheduleDayTime !== undefined) {
+      payload.schedule_day_time = contact.scheduleDayTime;
+      payload.day = contact.scheduleDayTime.split(',')[0]?.trim() || 'Senin';
+      payload.time = contact.scheduleDayTime.split(',').slice(1).join(',').trim() || '';
+    }
+    if (contact.attendanceUrl !== undefined) payload.attendance_url = contact.attendanceUrl;
+    if (contact.sks !== undefined) payload.credits = Number(contact.sks) || 0;
+
+    const { error } = await supabase.from('courses').update(payload).eq('id', id);
     if (error) throw error;
     return null;
   } catch (err) {
@@ -148,16 +188,24 @@ export async function deleteMaterialApi(id: string): Promise<AppState | null> {
 export async function addTaskApi(task: Omit<Task, 'id'>): Promise<AppState | null> {
   try {
     const id = crypto.randomUUID();
+    const courseValue = (task as any).course || (task as any).courseName || '';
+
     const { error } = await supabase.from('tasks').insert({
       id,
-      course_id: task.courseId,
-      course_name: task.courseName,
-      title: task.title,
-      description: task.description,
-      deadline: task.deadline,
-      type: task.type,
+      title: task.title || '',
+      course: courseValue,
+      course_name: courseValue,
+      description: task.description || '',
+      type: task.type || 'Individu',
+      assigner: task.assigner || '',
+      deadline: task.deadline || '',
+      status: task.status || 'todo',
+      priority: task.priority || 'Medium',
+      classroom_url: task.classroomUrl || null,
+      attachment: task.attachment || null,
       created_at: new Date().toISOString(),
     });
+
     if (error) throw error;
     return null;
   } catch (err) {
@@ -170,11 +218,19 @@ export async function updateTaskApi(id: string, updates: Partial<Task>): Promise
   try {
     const payload: Record<string, any> = {};
     if (updates.title !== undefined) payload.title = updates.title;
+    if ((updates as any).course !== undefined || (updates as any).courseName !== undefined) {
+      const courseVal = (updates as any).course || (updates as any).courseName;
+      payload.course = courseVal;
+      payload.course_name = courseVal;
+    }
     if (updates.description !== undefined) payload.description = updates.description;
-    if (updates.deadline !== undefined) payload.deadline = updates.deadline;
     if (updates.type !== undefined) payload.type = updates.type;
-    if (updates.courseId !== undefined) payload.course_id = updates.courseId;
-    if (updates.courseName !== undefined) payload.course_name = updates.courseName;
+    if (updates.assigner !== undefined) payload.assigner = updates.assigner;
+    if (updates.deadline !== undefined) payload.deadline = updates.deadline;
+    if (updates.status !== undefined) payload.status = updates.status;
+    if (updates.priority !== undefined) payload.priority = updates.priority;
+    if (updates.classroomUrl !== undefined) payload.classroom_url = updates.classroomUrl;
+    if (updates.attachment !== undefined) payload.attachment = updates.attachment;
 
     const { error } = await supabase.from('tasks').update(payload).eq('id', id);
     if (error) throw error;
