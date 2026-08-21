@@ -1,83 +1,96 @@
-// src/services/announcements.ts
-import {
-  collection,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  doc,
-  onSnapshot,
-  query,
-  orderBy,
-  Timestamp,
-} from 'firebase/firestore';
-import { db } from './firebase';
+import { supabase } from './supabase';
 import { Announcement } from '../types';
 
-const ANNOUNCEMENTS_COLLECTION = 'announcements';
+const TABLE_NAME = 'announcements';
 
-// 1. Real-time Subscription ke Firestore (Query tunggal tanpa perlu Composite Index)
 export const subscribeAnnouncements = (
   callback: (announcements: Announcement[]) => void
 ) => {
-  const q = query(
-    collection(db, ANNOUNCEMENTS_COLLECTION),
-    orderBy('date', 'desc')
-  );
+  const fetchAnnouncements = async () => {
+    const { data, error } = await supabase
+      .from(TABLE_NAME)
+      .select('*')
+      .order('pinned', { ascending: false })
+      .order('date', { ascending: false });
 
-  return onSnapshot(
-    q,
-    (snapshot) => {
-      const list: Announcement[] = snapshot.docs.map((docSnap) => {
-        const data = docSnap.data();
-        return {
-          id: docSnap.id,
-          title: data.title || '',
-          content: data.content || '',
-          date: data.date || new Date().toISOString().split('T')[0],
-          category: data.category || 'Penting',
-          author: data.author || 'Pengurus Kelas',
-          pinned: Boolean(data.pinned),
-        };
-      });
+    if (error) {
+      console.error('Error fetching announcements from Supabase:', error);
+      return;
+    }
 
-      // Sorting Pinned secara manual di JS biar gak butuh Composite Index Firebase
-      list.sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
+    if (data) {
+      const list: Announcement[] = data.map((item) => ({
+        id: item.id,
+        title: item.title || '',
+        content: item.content || '',
+        date: item.date || new Date().toISOString().split('T')[0],
+        category: item.category || 'Penting',
+        author: item.author || 'Pengurus Kelas',
+        pinned: Boolean(item.pinned),
+      }));
 
       callback(list);
-    },
-    (error) => {
-      console.error('Error subscribe announcements:', error);
     }
-  );
+  };
+
+  fetchAnnouncements();
+
+  const channelId = `announcements-${Math.random().toString(36).substring(2, 9)}`;
+  const channel = supabase
+    .channel(channelId)
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: TABLE_NAME },
+      () => {
+        fetchAnnouncements();
+      }
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
 };
 
-// 2. Tambah Pengumuman Baru
 export const addAnnouncement = async (
   announcement: Omit<Announcement, 'id' | 'date'>
 ) => {
   const todayStr = new Date().toISOString().split('T')[0];
-  const docRef = await addDoc(collection(db, ANNOUNCEMENTS_COLLECTION), {
-    ...announcement,
+  const newId = crypto.randomUUID();
+
+  const { error } = await supabase.from(TABLE_NAME).insert({
+    id: newId,
+    title: announcement.title,
+    content: announcement.content,
+    category: announcement.category || 'Penting',
+    author: announcement.author || 'Pengurus Kelas',
+    pinned: Boolean(announcement.pinned),
     date: todayStr,
-    createdAt: Timestamp.now(),
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   });
-  return docRef.id;
+
+  if (error) throw error;
+  return newId;
 };
 
-// 3. Update / Edit Pengumuman
 export const updateAnnouncement = async (
   id: string,
   updatedData: Partial<Omit<Announcement, 'id'>>
 ) => {
-  const docRef = doc(db, ANNOUNCEMENTS_COLLECTION, id);
-  await updateDoc(docRef, {
-    ...updatedData,
-    updatedAt: Timestamp.now(),
-  });
+  const { error } = await supabase
+    .from(TABLE_NAME)
+    .update({ ...updatedData, updated_at: new Date().toISOString() })
+    .eq('id', id);
+
+  if (error) throw error;
 };
 
-// 4. Hapus Pengumuman
 export const deleteAnnouncement = async (id: string) => {
-  const docRef = doc(db, ANNOUNCEMENTS_COLLECTION, id);
-  await deleteDoc(docRef);
+  const { error } = await supabase
+    .from(TABLE_NAME)
+    .delete()
+    .eq('id', id);
+
+  if (error) throw error;
 };

@@ -1,39 +1,19 @@
-import {
-  collection,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  doc,
-  query,
-  where,
-  onSnapshot,
-  serverTimestamp,
-  writeBatch,
-  getDocs,
-  Timestamp,
-} from 'firebase/firestore';
-
-import { db } from './firebase';
+import { supabase } from './supabase';
 
 export interface AppNotification {
   id: string;
   targetNrp: string;
   title: string;
   message: string;
-  createdAt: Timestamp | null;
+  createdAt: string | null;
   isRead: boolean;
   type?: string;
   data?: Record<string, any>;
   pushStatus?: 'pending' | 'sent' | 'failed';
 }
 
-const NOTIFICATIONS_COLLECTION = 'notifications';
+const NOTIFICATIONS_TABLE = 'notifications';
 
-/**
- * ============================================================
- * REALTIME NOTIFICATION LISTENER
- * ============================================================
- */
 export function subscribeNotifications(
   targetNrp: string,
   callback: (notifications: AppNotification[]) => void
@@ -43,61 +23,49 @@ export function subscribeNotifications(
     return () => {};
   }
 
-  // Mengambil notifikasi user bersangkutan DAN notifikasi global 'ALL'
-  const q = query(
-    collection(db, NOTIFICATIONS_COLLECTION),
-    where('targetNrp', 'in', [targetNrp, 'ALL'])
-  );
+  const normalizedNrp = targetNrp.trim().toLowerCase();
 
-  return onSnapshot(
-    q,
-    (snapshot) => {
-      const notifications: AppNotification[] =
-        snapshot.docs.map((snapshotDoc) => {
-          const data = snapshotDoc.data();
+  const fetchNotifs = async () => {
+    const { data, error } = await supabase
+      .from(NOTIFICATIONS_TABLE)
+      .select('*')
+      .or(`target_nrp.eq.${normalizedNrp},target_nrp.eq.ALL`)
+      .order('created_at', { ascending: false });
 
-          return {
-            id: snapshotDoc.id,
-            targetNrp: data.targetNrp || targetNrp,
-            title: data.title || 'Notifikasi',
-            message: data.message || '',
-            createdAt: data.createdAt || null,
-            isRead: Boolean(data.isRead),
-            type: data.type || undefined,
-            data: data.data || undefined,
-            pushStatus: data.pushStatus || undefined,
-          };
-        });
-
-      /*
-       * Sorting dilakukan di client.
-       * Jadi tidak membutuhkan Composite Index Firestore untuk where + orderBy.
-       */
-      notifications.sort((a, b) => {
-        const aTime = a.createdAt?.toMillis?.() || 0;
-        const bTime = b.createdAt?.toMillis?.() || 0;
-
-        return bTime - aTime;
-      });
-
-      callback(notifications);
-    },
-    (error) => {
-      console.error(
-        '[Notifications] Realtime listener error:',
-        error
-      );
-
+    if (error || !data) {
       callback([]);
+      return;
     }
-  );
+
+    const notifications: AppNotification[] = data.map((item) => ({
+      id: item.id,
+      targetNrp: item.target_nrp,
+      title: item.title || 'Notifikasi',
+      message: item.message || '',
+      createdAt: item.created_at,
+      isRead: Boolean(item.is_read),
+      type: item.type || undefined,
+      data: item.data || undefined,
+      pushStatus: item.push_status || undefined,
+    }));
+
+    callback(notifications);
+  };
+
+  fetchNotifs();
+
+  const channel = supabase
+    .channel(`notifs-sub-${normalizedNrp}-${Math.random()}`)
+    .on('postgres_changes', { event: '*', schema: 'public', table: NOTIFICATIONS_TABLE }, () => {
+      fetchNotifs();
+    })
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
 }
 
-/**
- * ============================================================
- * CREATE NOTIFICATION
- * ============================================================
- */
 export async function createNotification({
   targetNrp,
   title,
@@ -112,113 +80,57 @@ export async function createNotification({
   data?: Record<string, any>;
 }) {
   if (!targetNrp || !title || !message) {
-    throw new Error(
-      'targetNrp, title, dan message wajib diisi.'
-    );
+    throw new Error('targetNrp, title, dan message wajib diisi.');
   }
 
-  const docRef = await addDoc(
-    collection(db, NOTIFICATIONS_COLLECTION),
-    {
-      targetNrp,
-      title,
-      message,
-      createdAt: serverTimestamp(),
-      isRead: false,
-      type: type || 'general',
-      data: data || {},
-      pushStatus: 'pending',
-    }
-  );
-
-  return docRef.id;
-}
-
-/**
- * ============================================================
- * MARK ONE NOTIFICATION AS READ
- * ============================================================
- */
-export async function markNotificationAsRead(
-  notificationId: string
-) {
-  await updateDoc(
-    doc(
-      db,
-      NOTIFICATIONS_COLLECTION,
-      notificationId
-    ),
-    {
-      isRead: true,
-    }
-  );
-}
-
-/**
- * ============================================================
- * MARK ALL AS READ
- * ============================================================
- */
-export async function markAllNotificationsAsRead(
-  targetNrp: string
-) {
-  if (!targetNrp) return;
-
-  const q = query(
-    collection(db, NOTIFICATIONS_COLLECTION),
-    where('targetNrp', 'in', [targetNrp, 'ALL']),
-    where('isRead', '==', false)
-  );
-
-  const snapshot = await getDocs(q);
-
-  if (snapshot.empty) return;
-
-  const batch = writeBatch(db);
-
-  snapshot.docs.forEach((notificationDoc) => {
-    batch.update(notificationDoc.ref, {
-      isRead: true,
-    });
+  const id = crypto.randomUUID();
+  const { error } = await supabase.from(NOTIFICATIONS_TABLE).insert({
+    id,
+    target_nrp: targetNrp.trim().toLowerCase(),
+    title,
+    message,
+    is_read: false,
+    type: type || 'general',
+    data: data || {},
+    push_status: 'pending',
+    created_at: new Date().toISOString(),
   });
 
-  await batch.commit();
+  if (error) throw error;
+  return id;
 }
 
-/**
- * ============================================================
- * UPDATE PUSH STATUS
- * ============================================================
- */
+export async function markNotificationAsRead(notificationId: string) {
+  await supabase
+    .from(NOTIFICATIONS_TABLE)
+    .update({ is_read: true })
+    .eq('id', notificationId);
+}
+
+export async function markAllNotificationsAsRead(targetNrp: string) {
+  if (!targetNrp) return;
+  const normalizedNrp = targetNrp.trim().toLowerCase();
+
+  await supabase
+    .from(NOTIFICATIONS_TABLE)
+    .update({ is_read: true })
+    .or(`target_nrp.eq.${normalizedNrp},target_nrp.eq.ALL`)
+    .eq('is_read', false);
+}
+
 export async function updateNotificationPushStatus(
   notificationId: string,
   status: 'sent' | 'failed'
 ) {
-  await updateDoc(
-    doc(
-      db,
-      NOTIFICATIONS_COLLECTION,
-      notificationId
-    ),
-    {
-      pushStatus: status,
-    }
-  );
+  await supabase
+    .from(NOTIFICATIONS_TABLE)
+    .update({ push_status: status })
+    .eq('id', notificationId);
 }
 
-/**
- * ============================================================
- * DELETE NOTIFICATION
- * ============================================================
- */
-export async function deleteNotification(
-  notificationId: string
-) {
-  await deleteDoc(
-    doc(
-      db,
-      NOTIFICATIONS_COLLECTION,
-      notificationId
-    )
-  );
+export async function deleteNotification(notificationId: string) {
+  await supabase
+    .from(NOTIFICATIONS_TABLE)
+    .delete()
+    .eq('id', notificationId);
 }

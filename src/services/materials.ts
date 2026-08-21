@@ -1,63 +1,62 @@
-// src/services/materials.ts
-import {
-  collection,
-  addDoc,
-  deleteDoc,
-  doc,
-  getDocs,
-  query,
-  orderBy,
-  Timestamp,
-} from 'firebase/firestore';
-import { db } from './firebase';
+import { supabase } from './supabase';
 import { MaterialFile } from '../types';
 
-const MATERIALS_COLLECTION = 'materials';
+const MATERIALS_TABLE = 'materials';
 
-// 1. Fetch seluruh materi dari Firestore
 export const fetchMaterials = async (): Promise<MaterialFile[]> => {
   try {
-    const q = query(
-      collection(db, MATERIALS_COLLECTION),
-      orderBy('createdAt', 'desc')
-    );
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map((docSnap) => {
-      const data = docSnap.data();
-      return {
-        id: docSnap.id,
-        courseId: data.courseId || '',
-        courseName: data.courseName || '',
-        session: data.session || '',
-        title: data.title || '',
-        fileUrl: data.fileUrl || '',
-        fileType: 'pdf',
-        fileSize: data.fileSize || '3.0 MB',
-        uploadDate: data.uploadDate || new Date().toISOString(),
-        uploader: data.uploader || 'Pengurus Kelas A',
-        description: data.description || '',
-      };
-    });
+    const { data, error } = await supabase
+      .from(MATERIALS_TABLE)
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error || !data) return [];
+
+    return data.map((item) => ({
+      id: item.id,
+      courseId: item.course_id || '',
+      courseName: item.course_name || '',
+      session: item.session || '',
+      title: item.title || '',
+      fileUrl: item.file_url || '',
+      fileType: item.file_type || 'pdf',
+      fileSize: item.file_size || '3.0 MB',
+      uploadDate: item.upload_date || new Date().toISOString(),
+      uploader: item.uploader || 'Pengurus Kelas A',
+      description: item.description || '',
+    }));
   } catch (error) {
     console.error('Error fetching materials:', error);
     return [];
   }
 };
 
-// 2. Tambah materi baru ke Firestore
 export const addMaterialToFirestore = async (
   material: Omit<MaterialFile, 'id' | 'uploadDate'>
 ) => {
-  const docRef = await addDoc(collection(db, MATERIALS_COLLECTION), {
-    ...material,
-    uploadDate: new Date().toISOString(),
-    createdAt: Timestamp.now(),
+  const id = crypto.randomUUID();
+  const now = new Date().toISOString();
+
+  const { error } = await supabase.from(MATERIALS_TABLE).insert({
+    id,
+    course_id: material.courseId,
+    course_name: material.courseName,
+    session: material.session,
+    title: material.title,
+    file_url: material.fileUrl,
+    file_type: material.fileType || 'pdf',
+    file_size: material.fileSize || '3.0 MB',
+    uploader: material.uploader || 'Pengurus Kelas A',
+    description: material.description || '',
+    upload_date: now,
+    created_at: now,
   });
-  return docRef.id;
+
+  if (error) throw error;
+  return id;
 };
 
-// 3. Hapus materi dari Firestore
 export const deleteMaterialFromFirestore = async (id: string) => {
-  const docRef = doc(db, MATERIALS_COLLECTION, id);
-  await deleteDoc(docRef);
+  const { error } = await supabase.from(MATERIALS_TABLE).delete().eq('id', id);
+  if (error) throw error;
 };

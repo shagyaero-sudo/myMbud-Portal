@@ -1,22 +1,4 @@
-import {
-  addDoc,
-  collection,
-  deleteDoc,
-  doc,
-  getDoc,
-  getDocs,
-  onSnapshot,
-  orderBy,
-  query,
-  runTransaction,
-  serverTimestamp,
-  setDoc,
-  where,
-  updateDoc,
-} from 'firebase/firestore';
-
-import { db } from '../../../services/firebase';
-
+import { supabase } from '../../../services/supabase';
 import {
   MbudiaryFollow,
   MbudiaryPost,
@@ -34,12 +16,6 @@ export const USER_USERNAME_KEY = 'mymbud_user_username';
 export const USER_PHOTO_URL_KEY = 'mymbud_user_photo_url';
 export const USER_HEADER_URL_KEY = 'mymbud_user_header_url';
 
-const POSTS_COLLECTION = 'mbudiary_posts';
-const REPLIES_COLLECTION = 'mbudiary_replies';
-const FOLLOWS_COLLECTION = 'mbudiary_follows';
-const USERS_COLLECTION = 'mbudiary_users';
-const NOTIFICATIONS_COLLECTION = 'mbudiary_notifications';
-
 let postsCache: MbudiaryPost[] = [];
 let repliesCache: MbudiaryReply[] = [];
 let followsCache: MbudiaryFollow[] = [];
@@ -47,7 +23,7 @@ let usersCache: Record<string, MbudiaryUser> = {};
 let notificationsCache: MbudiaryNotification[] = [];
 
 let initialized = false;
-let unsubscribeAll: (() => void) | null = null;
+let channels: any[] = [];
 
 function emit(name: string) {
   if (typeof window !== 'undefined') {
@@ -55,51 +31,51 @@ function emit(name: string) {
   }
 }
 
-function normalizeUser(nrp: string, data: Record<string, any>): MbudiaryUser {
+function normalizeUser(data: Record<string, any>): MbudiaryUser {
   return {
-    nrp: String(data.nrp || nrp).toLowerCase(),
+    nrp: String(data.nrp || '').toLowerCase(),
     username: String(data.username || 'mbuders').toLowerCase(),
     nickname: String(data.nickname || 'Mbuders'),
-    isOfficer: Boolean(data.isOfficer),
+    isOfficer: Boolean(data.is_officer),
     emoji: String(data.emoji || '😊'),
-    isVerified: Boolean(data.isVerified),
-    photoUrl: data.photoUrl || undefined,
-    headerUrl: data.headerUrl || undefined,
-    updatedAt: data.updatedAt?.toDate?.()?.toISOString?.() || data.updatedAt || undefined,
+    isVerified: Boolean(data.is_verified),
+    photoUrl: data.photo_url || undefined,
+    headerUrl: data.header_url || undefined,
+    updatedAt: data.updated_at || undefined,
   };
 }
 
-function normalizePost(id: string, data: Record<string, any>): MbudiaryPost {
+function normalizePost(data: Record<string, any>): MbudiaryPost {
   return {
-    id,
-    authorNrp: String(data.authorNrp || 'unknown').toLowerCase(),
+    id: data.id,
+    authorNrp: String(data.author_nrp || 'unknown').toLowerCase(),
     content: data.content || '',
     likes: Array.isArray(data.likes) ? data.likes.map((like: string) => String(like).toLowerCase()) : [],
-    replyCount: Number(data.replyCount) || 0,
-    isOfficerPost: Boolean(data.isOfficerPost),
-    imageUrls: Array.isArray(data.imageUrls) ? data.imageUrls : [],
-    isRepost: Boolean(data.isRepost),
-    originalPostId: data.originalPostId || undefined,
-    quoteContent: data.quoteContent || undefined,
-    createdAt: data.createdAt?.toDate?.()?.toISOString?.() || data.createdAt || new Date().toISOString(),
+    replyCount: Number(data.reply_count) || 0,
+    isOfficerPost: Boolean(data.is_officer_post),
+    imageUrls: Array.isArray(data.image_urls) ? data.image_urls : [],
+    isRepost: Boolean(data.is_repost),
+    originalPostId: data.original_post_id || undefined,
+    quoteContent: data.quote_content || undefined,
+    createdAt: data.created_at || new Date().toISOString(),
   };
 }
 
-function normalizeReply(id: string, data: Record<string, any>): MbudiaryReply {
+function normalizeReply(data: Record<string, any>): MbudiaryReply {
   return {
-    id,
-    postId: data.postId || '',
-    authorNrp: String(data.authorNrp || 'unknown').toLowerCase(),
+    id: data.id,
+    postId: data.post_id || '',
+    authorNrp: String(data.author_nrp || 'unknown').toLowerCase(),
     content: data.content || '',
-    createdAt: data.createdAt?.toDate?.()?.toISOString?.() || data.createdAt || new Date().toISOString(),
+    createdAt: data.created_at || new Date().toISOString(),
   };
 }
 
 function normalizeFollow(data: Record<string, any>): MbudiaryFollow {
   return {
-    followerNrp: String(data.followerNrp || '').toLowerCase(),
-    targetNrp: String(data.targetNrp || '').toLowerCase(),
-    createdAt: data.createdAt?.toDate?.()?.toISOString?.() || data.createdAt || new Date().toISOString(),
+    followerNrp: String(data.follower_nrp || '').toLowerCase(),
+    targetNrp: String(data.target_nrp || '').toLowerCase(),
+    createdAt: data.created_at || new Date().toISOString(),
   };
 }
 
@@ -123,12 +99,15 @@ export async function getUserByNrp(userNrp: string): Promise<MbudiaryUser | null
   if (cached) return cached;
 
   try {
-    const userRef = doc(db, USERS_COLLECTION, normalizedNrp);
-    const snapshot = await getDoc(userRef);
+    const { data, error } = await supabase
+      .from('mbudiary_users')
+      .select('*')
+      .eq('nrp', normalizedNrp)
+      .maybeSingle();
 
-    if (!snapshot.exists()) return null;
+    if (error || !data) return null;
 
-    const user = normalizeUser(normalizedNrp, snapshot.data());
+    const user = normalizeUser(data);
     usersCache[normalizedNrp] = user;
     return user;
   } catch (error) {
@@ -146,13 +125,15 @@ export async function getUserByUsername(username: string): Promise<MbudiaryUser 
   const normalizedUsername = username.trim().toLowerCase();
   if (!normalizedUsername) return null;
 
-  const userQuery = query(collection(db, USERS_COLLECTION), where('username', '==', normalizedUsername));
-  const snapshot = await getDocs(userQuery);
+  const { data, error } = await supabase
+    .from('mbudiary_users')
+    .select('*')
+    .eq('username', normalizedUsername)
+    .maybeSingle();
 
-  if (snapshot.empty) return null;
+  if (error || !data) return null;
 
-  const userDoc = snapshot.docs[0];
-  const user = normalizeUser(userDoc.id, userDoc.data());
+  const user = normalizeUser(data);
   usersCache[user.nrp] = user;
   return user;
 }
@@ -162,11 +143,13 @@ export async function isUsernameAvailable(newUsername: string, currentNrp: strin
   const normalizedNrp = currentNrp.trim().toLowerCase();
   if (!normalizedUsername) return false;
 
-  const usernameQuery = query(collection(db, USERS_COLLECTION), where('username', '==', normalizedUsername));
-  const snapshot = await getDocs(usernameQuery);
+  const { data, error } = await supabase
+    .from('mbudiary_users')
+    .select('nrp')
+    .eq('username', normalizedUsername);
 
-  if (snapshot.empty) return true;
-  return snapshot.docs.every((item) => item.id.toLowerCase() === normalizedNrp);
+  if (error || !data || data.length === 0) return true;
+  return data.every((item) => item.nrp.toLowerCase() === normalizedNrp);
 }
 
 export async function syncUserProfileWithFirebase(): Promise<UserProfile> {
@@ -174,13 +157,16 @@ export async function syncUserProfileWithFirebase(): Promise<UserProfile> {
   if (!currentProfile.nrp || currentProfile.nrp === 'unknown') return currentProfile;
 
   const normalizedNrp = currentProfile.nrp.trim().toLowerCase();
-  const userDocRef = doc(db, USERS_COLLECTION, normalizedNrp);
 
   try {
-    const docSnap = await getDoc(userDocRef);
+    const { data: cloudUserRaw } = await supabase
+      .from('mbudiary_users')
+      .select('*')
+      .eq('nrp', normalizedNrp)
+      .maybeSingle();
 
-    if (docSnap.exists()) {
-      const cloudUser = normalizeUser(normalizedNrp, docSnap.data());
+    if (cloudUserRaw) {
+      const cloudUser = normalizeUser(cloudUserRaw);
       usersCache[normalizedNrp] = cloudUser;
 
       const syncedProfile: UserProfile = {
@@ -200,17 +186,11 @@ export async function syncUserProfileWithFirebase(): Promise<UserProfile> {
       localStorage.setItem(USER_OFFICER_KEY, String(syncedProfile.isOfficer));
       localStorage.setItem(USER_EMOJI_KEY, syncedProfile.emoji);
 
-      if (syncedProfile.photoUrl) {
-        localStorage.setItem(USER_PHOTO_URL_KEY, syncedProfile.photoUrl);
-      } else {
-        localStorage.removeItem(USER_PHOTO_URL_KEY);
-      }
+      if (syncedProfile.photoUrl) localStorage.setItem(USER_PHOTO_URL_KEY, syncedProfile.photoUrl);
+      else localStorage.removeItem(USER_PHOTO_URL_KEY);
 
-      if (syncedProfile.headerUrl) {
-        localStorage.setItem(USER_HEADER_URL_KEY, syncedProfile.headerUrl);
-      } else {
-        localStorage.removeItem(USER_HEADER_URL_KEY);
-      }
+      if (syncedProfile.headerUrl) localStorage.setItem(USER_HEADER_URL_KEY, syncedProfile.headerUrl);
+      else localStorage.removeItem(USER_HEADER_URL_KEY);
 
       emit('mbud_user_change');
       return syncedProfile;
@@ -227,11 +207,16 @@ export async function syncUserProfileWithFirebase(): Promise<UserProfile> {
       headerUrl: currentProfile.headerUrl || undefined,
     };
 
-    await setDoc(userDocRef, {
-      ...initialUser,
-      photoUrl: initialUser.photoUrl || null,
-      headerUrl: initialUser.headerUrl || null,
-      updatedAt: serverTimestamp(),
+    await supabase.from('mbudiary_users').upsert({
+      nrp: initialUser.nrp,
+      username: initialUser.username,
+      nickname: initialUser.nickname,
+      is_officer: initialUser.isOfficer,
+      emoji: initialUser.emoji,
+      is_verified: initialUser.isVerified,
+      photo_url: initialUser.photoUrl || null,
+      header_url: initialUser.headerUrl || null,
+      updated_at: new Date().toISOString(),
     });
     usersCache[normalizedNrp] = initialUser;
 
@@ -245,7 +230,7 @@ export async function syncUserProfileWithFirebase(): Promise<UserProfile> {
     emit('mbud_user_change');
     return initialUser;
   } catch (error) {
-    console.error('[mbudiary] Gagal sync profil Firestore:', error);
+    console.error('[mbudiary] Gagal sync profil Supabase:', error);
     return currentProfile;
   }
 }
@@ -260,7 +245,6 @@ export async function saveUserProfile(profile: UserProfile): Promise<void> {
   const available = await isUsernameAvailable(normalizedUsername, normalizedNrp);
   if (!available) throw new Error('Username tersebut sudah digunakan user lain.');
 
-  const userDocRef = doc(db, USERS_COLLECTION, normalizedNrp);
   const cloudUser: MbudiaryUser = {
     nrp: normalizedNrp,
     username: normalizedUsername,
@@ -272,21 +256,19 @@ export async function saveUserProfile(profile: UserProfile): Promise<void> {
     headerUrl: profile.headerUrl || undefined,
   };
 
-  await setDoc(
-    userDocRef,
-    {
-      nrp: cloudUser.nrp,
-      username: cloudUser.username,
-      nickname: cloudUser.nickname,
-      isOfficer: cloudUser.isOfficer,
-      emoji: cloudUser.emoji,
-      isVerified: cloudUser.isVerified,
-      photoUrl: cloudUser.photoUrl || null,
-      headerUrl: cloudUser.headerUrl || null,
-      updatedAt: serverTimestamp(),
-    },
-    { merge: true }
-  );
+  const { error } = await supabase.from('mbudiary_users').upsert({
+    nrp: cloudUser.nrp,
+    username: cloudUser.username,
+    nickname: cloudUser.nickname,
+    is_officer: cloudUser.isOfficer,
+    emoji: cloudUser.emoji,
+    is_verified: cloudUser.isVerified,
+    photo_url: cloudUser.photoUrl || null,
+    header_url: cloudUser.headerUrl || null,
+    updated_at: new Date().toISOString(),
+  });
+
+  if (error) throw error;
   usersCache[normalizedNrp] = cloudUser;
 
   localStorage.setItem(USER_NRP_KEY, normalizedNrp);
@@ -295,17 +277,11 @@ export async function saveUserProfile(profile: UserProfile): Promise<void> {
   localStorage.setItem(USER_OFFICER_KEY, String(cloudUser.isOfficer));
   localStorage.setItem(USER_EMOJI_KEY, cloudUser.emoji);
 
-  if (cloudUser.photoUrl) {
-    localStorage.setItem(USER_PHOTO_URL_KEY, cloudUser.photoUrl);
-  } else {
-    localStorage.removeItem(USER_PHOTO_URL_KEY);
-  }
+  if (cloudUser.photoUrl) localStorage.setItem(USER_PHOTO_URL_KEY, cloudUser.photoUrl);
+  else localStorage.removeItem(USER_PHOTO_URL_KEY);
 
-  if (cloudUser.headerUrl) {
-    localStorage.setItem(USER_HEADER_URL_KEY, cloudUser.headerUrl);
-  } else {
-    localStorage.removeItem(USER_HEADER_URL_KEY);
-  }
+  if (cloudUser.headerUrl) localStorage.setItem(USER_HEADER_URL_KEY, cloudUser.headerUrl);
+  else localStorage.removeItem(USER_HEADER_URL_KEY);
 
   emit('mbud_user_change');
 }
@@ -314,8 +290,10 @@ export async function setUserVerified(userNrp: string, verified: boolean): Promi
   const normalizedNrp = userNrp.trim().toLowerCase();
   if (!normalizedNrp || normalizedNrp === 'unknown') throw new Error('NRP user tidak valid.');
 
-  const userRef = doc(db, USERS_COLLECTION, normalizedNrp);
-  await setDoc(userRef, { isVerified: verified, updatedAt: serverTimestamp() }, { merge: true });
+  await supabase
+    .from('mbudiary_users')
+    .update({ is_verified: verified, updated_at: new Date().toISOString() })
+    .eq('nrp', normalizedNrp);
 
   const cachedUser = usersCache[normalizedNrp];
   if (cachedUser) {
@@ -340,14 +318,14 @@ export async function createNotification({
   if (recipientNrp.toLowerCase() === senderNrp.toLowerCase()) return;
 
   try {
-    await addDoc(collection(db, NOTIFICATIONS_COLLECTION), {
-      recipientNrp: recipientNrp.toLowerCase(),
-      senderNrp: senderNrp.toLowerCase(),
+    await supabase.from('mbudiary_notifications').insert({
+      id: crypto.randomUUID(),
+      recipient_nrp: recipientNrp.toLowerCase(),
+      sender_nrp: senderNrp.toLowerCase(),
       type,
-      postId: postId || null,
-      isRead: false,
-      createdAt: new Date().toISOString(),
-      createdAtServer: serverTimestamp(),
+      post_id: postId || null,
+      is_read: false,
+      created_at: new Date().toISOString(),
     });
   } catch (err) {
     console.error('[mbudiary] Gagal membuat notifikasi:', err);
@@ -366,7 +344,6 @@ export async function processMentionsInContent({
   postId: string;
 }) {
   if (!content) return;
-
   const matches = content.match(/@([a-zA-Z0-9_.]+)/g);
   if (!matches || matches.length === 0) return;
 
@@ -397,16 +374,10 @@ export async function processMentionsInContent({
   }
 }
 
-/**
- * HELPER: Mencari daftar user untuk autocomplete mention berdasarkan kueri teks
- */
 export function searchUsersForMention(queryText: string): MbudiaryUser[] {
   const q = queryText.trim().toLowerCase();
   const allUsers = Object.values(usersCache);
-
-  if (!q) {
-    return allUsers.slice(0, 5);
-  }
+  if (!q) return allUsers.slice(0, 5);
 
   return allUsers
     .filter(
@@ -419,106 +390,116 @@ export function searchUsersForMention(queryText: string): MbudiaryUser[] {
 
 export function subscribeNotifications(userNrp: string, callback: (notifs: MbudiaryNotification[]) => void) {
   const normalizedNrp = userNrp.trim().toLowerCase();
-  const q = query(
-    collection(db, NOTIFICATIONS_COLLECTION),
-    where('recipientNrp', '==', normalizedNrp),
-    orderBy('createdAtServer', 'desc')
-  );
 
-  return onSnapshot(q, (snapshot) => {
-    notificationsCache = snapshot.docs.map((docSnap) => ({
-      id: docSnap.id,
-      recipientNrp: docSnap.data().recipientNrp,
-      senderNrp: docSnap.data().senderNrp,
-      type: docSnap.data().type,
-      postId: docSnap.data().postId,
-      isRead: docSnap.data().isRead || false,
-      createdAt: docSnap.data().createdAt,
-    }));
+  const fetchNotifs = async () => {
+    const { data } = await supabase
+      .from('mbudiary_notifications')
+      .select('*')
+      .eq('recipient_nrp', normalizedNrp)
+      .order('created_at', { ascending: false });
 
-    callback(notificationsCache);
-    window.dispatchEvent(new Event('mbud_notifications_change'));
-  });
+    if (data) {
+      notificationsCache = data.map((item) => ({
+        id: item.id,
+        recipientNrp: item.recipient_nrp,
+        senderNrp: item.sender_nrp,
+        type: item.type,
+        postId: item.post_id,
+        isRead: item.is_read || false,
+        createdAt: item.created_at,
+      }));
+      callback(notificationsCache);
+      window.dispatchEvent(new Event('mbud_notifications_change'));
+    }
+  };
+
+  fetchNotifs();
+
+  const channel = supabase
+    .channel(`notifs-${normalizedNrp}-${Math.random()}`)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'mbudiary_notifications' }, () => {
+      fetchNotifs();
+    })
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
 }
 
 export async function markNotificationAsRead(notifId: string) {
   try {
-    const notifRef = doc(db, NOTIFICATIONS_COLLECTION, notifId);
-    await updateDoc(notifRef, { isRead: true });
+    await supabase.from('mbudiary_notifications').update({ is_read: true }).eq('id', notifId);
   } catch (err) {
     console.error('[mbudiary] Gagal update notifikasi:', err);
   }
 }
 
 export function initializeMbudiary(): () => void {
-  if (initialized && unsubscribeAll) return unsubscribeAll;
+  if (initialized) return () => {};
   initialized = true;
 
   syncUserProfileWithFirebase();
-  const currentNrp = getUserProfile().nrp.trim().toLowerCase();
-  const unsubs: Array<() => void> = [];
 
-  const usersUnsub = onSnapshot(collection(db, USERS_COLLECTION), (snapshot) => {
-    const nextUsers: Record<string, MbudiaryUser> = {};
-    snapshot.docs.forEach((item) => {
-      const user = normalizeUser(item.id, item.data());
-      nextUsers[user.nrp] = user;
-    });
-    usersCache = nextUsers;
-    emit('mbud_users_change');
-    emit('mbud_user_change');
-  });
-  unsubs.push(usersUnsub);
-
-  let currentUserUnsub = () => {};
-  if (currentNrp && currentNrp !== 'unknown') {
-    const currentUserRef = doc(db, USERS_COLLECTION, currentNrp);
-    currentUserUnsub = onSnapshot(currentUserRef, (snapshot) => {
-      if (!snapshot.exists()) return;
-      const user = normalizeUser(currentNrp, snapshot.data());
-      usersCache[currentNrp] = user;
-      localStorage.setItem(USER_USERNAME_KEY, user.username);
-      localStorage.setItem(USER_NAME_KEY, user.nickname);
-      localStorage.setItem(USER_EMOJI_KEY, user.emoji);
-      localStorage.setItem(USER_OFFICER_KEY, String(user.isOfficer));
-      if (user.photoUrl) localStorage.setItem(USER_PHOTO_URL_KEY, user.photoUrl);
-      else localStorage.removeItem(USER_PHOTO_URL_KEY);
-      if (user.headerUrl) localStorage.setItem(USER_HEADER_URL_KEY, user.headerUrl);
-      else localStorage.removeItem(USER_HEADER_URL_KEY);
-      emit('mbud_user_change');
+  const fetchAllUsers = async () => {
+    const { data } = await supabase.from('mbudiary_users').select('*');
+    if (data) {
+      const nextUsers: Record<string, MbudiaryUser> = {};
+      data.forEach((item) => {
+        const user = normalizeUser(item);
+        nextUsers[user.nrp] = user;
+      });
+      usersCache = nextUsers;
       emit('mbud_users_change');
-    });
-  }
-  unsubs.push(currentUserUnsub);
-
-  const postsUnsub = onSnapshot(query(collection(db, POSTS_COLLECTION), orderBy('createdAt', 'desc')), (snapshot) => {
-    postsCache = snapshot.docs.map((item) => normalizePost(item.id, item.data()));
-    emit('mbud_posts_change');
-  });
-  unsubs.push(postsUnsub);
-
-  const repliesUnsub = onSnapshot(query(collection(db, REPLIES_COLLECTION), orderBy('createdAt', 'asc')), (snapshot) => {
-    repliesCache = snapshot.docs.map((item) => normalizeReply(item.id, item.data()));
-    emit('mbud_posts_change');
-    emit('mbud_replies_change');
-  });
-  unsubs.push(repliesUnsub);
-
-  const followsUnsub = onSnapshot(collection(db, FOLLOWS_COLLECTION), (snapshot) => {
-    followsCache = snapshot.docs
-      .map((item) => normalizeFollow(item.data()))
-      .filter((follow) => follow.followerNrp && follow.targetNrp);
-    emit('mbud_follows_change');
-  });
-  unsubs.push(followsUnsub);
-
-  unsubscribeAll = () => {
-    unsubs.forEach((unsubscribe) => unsubscribe());
-    unsubscribeAll = null;
-    initialized = false;
+      emit('mbud_user_change');
+    }
   };
 
-  return unsubscribeAll;
+  const fetchAllPosts = async () => {
+    const { data } = await supabase.from('mbudiary_posts').select('*').order('created_at', { ascending: false });
+    if (data) {
+      postsCache = data.map(normalizePost);
+      emit('mbud_posts_change');
+    }
+  };
+
+  const fetchAllReplies = async () => {
+    const { data } = await supabase.from('mbudiary_replies').select('*').order('created_at', { ascending: true });
+    if (data) {
+      repliesCache = data.map(normalizeReply);
+      emit('mbud_posts_change');
+      emit('mbud_replies_change');
+    }
+  };
+
+  const fetchAllFollows = async () => {
+    const { data } = await supabase.from('mbudiary_follows').select('*');
+    if (data) {
+      followsCache = data.map(normalizeFollow).filter((f) => f.followerNrp && f.targetNrp);
+      emit('mbud_follows_change');
+    }
+  };
+
+  fetchAllUsers();
+  fetchAllPosts();
+  fetchAllReplies();
+  fetchAllFollows();
+
+  const channel = supabase
+    .channel(`mbudiary-sync-${Math.random()}`)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'mbudiary_users' }, fetchAllUsers)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'mbudiary_posts' }, fetchAllPosts)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'mbudiary_replies' }, fetchAllReplies)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'mbudiary_follows' }, fetchAllFollows)
+    .subscribe();
+
+  channels.push(channel);
+
+  return () => {
+    channels.forEach((c) => supabase.removeChannel(c));
+    channels = [];
+    initialized = false;
+  };
 }
 
 export function getPosts(): MbudiaryPost[] {
@@ -531,70 +512,61 @@ export async function savePost(post: Omit<MbudiaryPost, 'id' | 'likes' | 'replyC
   if (!authorNrp || authorNrp === 'unknown') throw new Error('Tidak dapat membuat post: NRP user tidak valid.');
 
   const createdAt = new Date().toISOString();
-  const ref = await addDoc(collection(db, POSTS_COLLECTION), {
-    authorNrp,
+  const id = crypto.randomUUID();
+
+  const { error } = await supabase.from('mbudiary_posts').insert({
+    id,
+    author_nrp: authorNrp,
     content: post.content,
     likes: [],
-    replyCount: 0,
-    isOfficerPost: post.isOfficerPost ?? currentUser.isOfficer,
-    imageUrls: post.imageUrls || [],
-    isRepost: post.isRepost || false,
-    originalPostId: post.originalPostId || null,
-    quoteContent: post.quoteContent || null,
-    createdAt,
-    createdAtServer: serverTimestamp(),
+    reply_count: 0,
+    is_officer_post: post.isOfficerPost ?? currentUser.isOfficer,
+    image_urls: post.imageUrls || [],
+    is_repost: post.isRepost || false,
+    original_post_id: post.originalPostId || null,
+    quote_content: post.quoteContent || null,
+    created_at: createdAt,
   });
 
-  return { ...post, id: ref.id, authorNrp, likes: [], replyCount: 0, createdAt };
+  if (error) throw error;
+  return { ...post, id, authorNrp, likes: [], replyCount: 0, createdAt };
 }
 
 export async function deletePost(postId: string) {
-  const repliesSnapshot = await getDocs(query(collection(db, REPLIES_COLLECTION), where('postId', '==', postId)));
-  await Promise.all(repliesSnapshot.docs.map((reply) => deleteDoc(reply.ref)));
-  await deleteDoc(doc(db, POSTS_COLLECTION, postId));
+  await supabase.from('mbudiary_replies').delete().eq('post_id', postId);
+  await supabase.from('mbudiary_posts').delete().eq('id', postId);
 }
 
 export async function toggleLikePost(postId: string, userNrp: string): Promise<MbudiaryPost | null> {
   const normalizedNrp = userNrp.trim().toLowerCase();
-  const postRef = doc(db, POSTS_COLLECTION, postId);
-  let updatedLikes: string[] | null = null;
+  const current = postsCache.find((p) => p.id === postId);
+  if (!current) return null;
+
+  const likes = [...current.likes];
+  const index = likes.indexOf(normalizedNrp);
   let isNowLiked = false;
-  let postAuthorNrp = '';
 
-  await runTransaction(db, async (transaction) => {
-    const snapshot = await transaction.get(postRef);
-    if (!snapshot.exists()) return;
+  if (index >= 0) {
+    likes.splice(index, 1);
+    isNowLiked = false;
+  } else {
+    likes.push(normalizedNrp);
+    isNowLiked = true;
+  }
 
-    const data = snapshot.data();
-    postAuthorNrp = data.authorNrp || '';
-    const likes: string[] = Array.isArray(data.likes) ? data.likes.map((like: string) => String(like).toLowerCase()) : [];
-    const index = likes.indexOf(normalizedNrp);
+  const { error } = await supabase.from('mbudiary_posts').update({ likes }).eq('id', postId);
+  if (error) return null;
 
-    if (index >= 0) {
-      likes.splice(index, 1);
-      isNowLiked = false;
-    } else {
-      likes.push(normalizedNrp);
-      isNowLiked = true;
-    }
-
-    updatedLikes = likes;
-    transaction.update(postRef, { likes });
-  });
-
-  if (!updatedLikes) return null;
-
-  if (isNowLiked && postAuthorNrp) {
+  if (isNowLiked && current.authorNrp) {
     createNotification({
-      recipientNrp: postAuthorNrp,
+      recipientNrp: current.authorNrp,
       senderNrp: normalizedNrp,
       type: 'like',
       postId: postId,
     });
   }
 
-  const current = postsCache.find((post) => post.id === postId);
-  return current ? { ...current, likes: updatedLikes } : null;
+  return { ...current, likes };
 }
 
 export function getAllReplies(): MbudiaryReply[] {
@@ -611,36 +583,32 @@ export async function addReply(postId: string, content: string): Promise<Mbudiar
   if (!authorNrp || authorNrp === 'unknown') throw new Error('Tidak dapat membuat komentar: NRP tidak valid.');
 
   const createdAt = new Date().toISOString();
-  const replyRef = await addDoc(collection(db, REPLIES_COLLECTION), {
-    postId,
-    authorNrp,
+  const id = crypto.randomUUID();
+
+  const { error } = await supabase.from('mbudiary_replies').insert({
+    id,
+    post_id: postId,
+    author_nrp: authorNrp,
     content,
-    createdAt,
-    createdAtServer: serverTimestamp(),
+    created_at: createdAt,
   });
 
-  let postAuthorNrp = '';
+  if (error) throw error;
 
-  await runTransaction(db, async (transaction) => {
-    const postRef = doc(db, POSTS_COLLECTION, postId);
-    const snapshot = await transaction.get(postRef);
-    if (!snapshot.exists()) return;
+  const currentPost = postsCache.find((p) => p.id === postId);
+  const newReplyCount = (currentPost?.replyCount || 0) + 1;
+  await supabase.from('mbudiary_posts').update({ reply_count: newReplyCount }).eq('id', postId);
 
-    postAuthorNrp = snapshot.data().authorNrp || '';
-    const count = Number(snapshot.data().replyCount) || 0;
-    transaction.update(postRef, { replyCount: count + 1 });
-  });
-
-  if (postAuthorNrp) {
+  if (currentPost?.authorNrp) {
     createNotification({
-      recipientNrp: postAuthorNrp,
+      recipientNrp: currentPost.authorNrp,
       senderNrp: authorNrp,
       type: 'reply',
       postId: postId,
     });
   }
 
-  return { id: replyRef.id, postId, authorNrp, content, createdAt };
+  return { id, postId, authorNrp, content, createdAt };
 }
 
 export function getFollows(): string[] {
@@ -675,15 +643,19 @@ export async function toggleFollow(targetNrp: string): Promise<boolean> {
   if (followerNrp === target) throw new Error('User tidak dapat mengikuti dirinya sendiri.');
 
   const followId = `${followerNrp}__${target}`;
-  const followRef = doc(db, FOLLOWS_COLLECTION, followId);
   const currentlyFollowing = isFollowing(target);
 
   if (currentlyFollowing) {
-    await deleteDoc(followRef);
+    await supabase.from('mbudiary_follows').delete().eq('id', followId);
     return false;
   }
 
-  await setDoc(followRef, { followerNrp, targetNrp: target, createdAt: serverTimestamp() });
+  await supabase.from('mbudiary_follows').insert({
+    id: followId,
+    follower_nrp: followerNrp,
+    target_nrp: target,
+    created_at: new Date().toISOString(),
+  });
 
   createNotification({
     recipientNrp: target,

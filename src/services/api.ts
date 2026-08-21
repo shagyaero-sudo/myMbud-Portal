@@ -7,21 +7,7 @@ import {
   GroupResult,
 } from '../types';
 
-import {
-  collection,
-  addDoc,
-  updateDoc,
-  doc,
-  deleteDoc,
-  setDoc,
-  query,
-  where,
-  onSnapshot,
-  serverTimestamp,
-} from 'firebase/firestore';
-
-import { db } from './firebase';
-
+import { supabase } from './supabase';
 
 // ============================================================
 // APP STATE
@@ -30,11 +16,7 @@ import { db } from './firebase';
 export async function fetchAppState(): Promise<AppState | null> {
   try {
     const res = await fetch('/api/state');
-
-    if (!res.ok) {
-      throw new Error('Failed to fetch state');
-    }
-
+    if (!res.ok) throw new Error('Failed to fetch state');
     return await res.json();
   } catch (err) {
     console.error('API fetchAppState error:', err);
@@ -44,19 +26,14 @@ export async function fetchAppState(): Promise<AppState | null> {
 
 export async function resetAppState(): Promise<AppState | null> {
   try {
-    const res = await fetch('/api/reset', {
-      method: 'POST',
-    });
-
+    const res = await fetch('/api/reset', { method: 'POST' });
     const data = await res.json();
-
     return data.state || data.data;
   } catch (err) {
     console.error('API reset error:', err);
     return null;
   }
 }
-
 
 // ============================================================
 // ANNOUNCEMENTS
@@ -68,14 +45,10 @@ export async function addAnnouncementApi(
   try {
     const res = await fetch('/api/announcements', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(announcement),
     });
-
     const data = await res.json();
-
     return data.state;
   } catch (err) {
     console.error('API addAnnouncement error:', err);
@@ -83,16 +56,10 @@ export async function addAnnouncementApi(
   }
 }
 
-export async function deleteAnnouncementApi(
-  id: string
-): Promise<AppState | null> {
+export async function deleteAnnouncementApi(id: string): Promise<AppState | null> {
   try {
-    const res = await fetch(`/api/announcements/${id}`, {
-      method: 'DELETE',
-    });
-
+    const res = await fetch(`/api/announcements/${id}`, { method: 'DELETE' });
     const data = await res.json();
-
     return data.state;
   } catch (err) {
     console.error('API deleteAnnouncement error:', err);
@@ -100,58 +67,50 @@ export async function deleteAnnouncementApi(
   }
 }
 
-
 // ============================================================
-// COURSES / KONTAK
+// COURSES / KONTAK (SUPABASE)
 // ============================================================
 
-export async function addContactApi(
-  contact: Omit<Contact, 'id'>
-): Promise<AppState | null> {
+export async function addContactApi(contact: Omit<Contact, 'id'>): Promise<AppState | null> {
   try {
-    await addDoc(collection(db, 'courses'), contact);
-
+    const id = crypto.randomUUID();
+    const { error } = await supabase.from('courses').insert({
+      id,
+      ...contact,
+      created_at: new Date().toISOString(),
+    });
+    if (error) throw error;
     return null;
   } catch (err) {
-    console.error('Firebase addContact error:', err);
+    console.error('Supabase addContact error:', err);
     throw err;
   }
 }
 
-export async function updateContactApi(
-  id: string,
-  contact: Partial<Contact>
-): Promise<AppState | null> {
+export async function updateContactApi(id: string, contact: Partial<Contact>): Promise<AppState | null> {
   try {
-    const courseRef = doc(db, 'courses', id);
-
-    await updateDoc(courseRef, contact);
-
+    const { error } = await supabase.from('courses').update(contact).eq('id', id);
+    if (error) throw error;
     return null;
   } catch (err) {
-    console.error('Firebase updateContact error:', err);
+    console.error('Supabase updateContact error:', err);
     throw err;
   }
 }
 
-export async function deleteContactApi(
-  id: string
-): Promise<AppState | null> {
+export async function deleteContactApi(id: string): Promise<AppState | null> {
   try {
-    const courseRef = doc(db, 'courses', id);
-
-    await deleteDoc(courseRef);
-
+    const { error } = await supabase.from('courses').delete().eq('id', id);
+    if (error) throw error;
     return null;
   } catch (err) {
-    console.error('Firebase deleteContact error:', err);
+    console.error('Supabase deleteContact error:', err);
     throw err;
   }
 }
-
 
 // ============================================================
-// MATERIALS
+// MATERIALS (API)
 // ============================================================
 
 export async function addMaterialApi(
@@ -160,14 +119,10 @@ export async function addMaterialApi(
   try {
     const res = await fetch('/api/materials', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(material),
     });
-
     const data = await res.json();
-
     return data.state;
   } catch (err) {
     console.error('API addMaterial error:', err);
@@ -175,16 +130,10 @@ export async function addMaterialApi(
   }
 }
 
-export async function deleteMaterialApi(
-  id: string
-): Promise<AppState | null> {
+export async function deleteMaterialApi(id: string): Promise<AppState | null> {
   try {
-    const res = await fetch(`/api/materials/${id}`, {
-      method: 'DELETE',
-    });
-
+    const res = await fetch(`/api/materials/${id}`, { method: 'DELETE' });
     const data = await res.json();
-
     return data.state;
   } catch (err) {
     console.error('API deleteMaterial error:', err);
@@ -192,69 +141,67 @@ export async function deleteMaterialApi(
   }
 }
 
-
 // ============================================================
-// TASKS — FIREBASE
+// TASKS (SUPABASE)
 // ============================================================
 
-export async function addTaskApi(
-  task: Omit<Task, 'id'>
-): Promise<AppState | null> {
+export async function addTaskApi(task: Omit<Task, 'id'>): Promise<AppState | null> {
   try {
-    await addDoc(collection(db, 'tasks'), task);
-
+    const id = crypto.randomUUID();
+    const { error } = await supabase.from('tasks').insert({
+      id,
+      course_id: task.courseId,
+      course_name: task.courseName,
+      title: task.title,
+      description: task.description,
+      deadline: task.deadline,
+      type: task.type,
+      created_at: new Date().toISOString(),
+    });
+    if (error) throw error;
     return null;
   } catch (err) {
-    console.error('Firebase addTask error:', err);
-
-    // Lempar error supaya App.tsx tahu kalau Firebase gagal
+    console.error('Supabase addTask error:', err);
     throw err;
   }
 }
 
-export async function updateTaskApi(
-  id: string,
-  updates: Partial<Task>
-): Promise<AppState | null> {
+export async function updateTaskApi(id: string, updates: Partial<Task>): Promise<AppState | null> {
   try {
-    const taskRef = doc(db, 'tasks', id);
+    const payload: Record<string, any> = {};
+    if (updates.title !== undefined) payload.title = updates.title;
+    if (updates.description !== undefined) payload.description = updates.description;
+    if (updates.deadline !== undefined) payload.deadline = updates.deadline;
+    if (updates.type !== undefined) payload.type = updates.type;
+    if (updates.courseId !== undefined) payload.course_id = updates.courseId;
+    if (updates.courseName !== undefined) payload.course_name = updates.courseName;
 
-    await updateDoc(taskRef, updates);
-
+    const { error } = await supabase.from('tasks').update(payload).eq('id', id);
+    if (error) throw error;
     return null;
   } catch (err) {
-    console.error('Firebase updateTask error:', err);
-
+    console.error('Supabase updateTask error:', err);
     throw err;
   }
 }
 
-export async function deleteTaskApi(
-  id: string
-): Promise<AppState | null> {
+export async function deleteTaskApi(id: string): Promise<AppState | null> {
   try {
-    const taskRef = doc(db, 'tasks', id);
-
-    await deleteDoc(taskRef);
-
+    const { error } = await supabase.from('tasks').delete().eq('id', id);
+    if (error) throw error;
     return null;
   } catch (err) {
-    console.error('Firebase deleteTask error:', err);
-
+    console.error('Supabase deleteTask error:', err);
     throw err;
   }
 }
 
-
 // ============================================================
-// TASK COMPLETIONS PER USER (NRP) — FIREBASE
+// TASK COMPLETIONS PER USER (NRP) — SUPABASE
 // ============================================================
 
-const TASK_COMPLETIONS_COLLECTION = 'mbud_user_task_completions';
+const TASK_COMPLETIONS_TABLE = 'mbud_user_task_completions';
 
-/**
- * Mendengarkan daftar ID tugas yang SUDAH DICENTANG SELESAI oleh NRP terkait secara Realtime
- */
 export function subscribeUserTaskCompletions(userNrp: string, callback: (completedTaskIds: string[]) => void) {
   const normalizedNrp = userNrp.trim().toLowerCase();
   if (!normalizedNrp || normalizedNrp === 'unknown') {
@@ -262,20 +209,31 @@ export function subscribeUserTaskCompletions(userNrp: string, callback: (complet
     return () => {};
   }
 
-  const q = query(
-    collection(db, TASK_COMPLETIONS_COLLECTION),
-    where('nrp', '==', normalizedNrp)
-  );
+  const fetchCompletions = async () => {
+    const { data } = await supabase
+      .from(TASK_COMPLETIONS_TABLE)
+      .select('task_id')
+      .eq('nrp', normalizedNrp);
 
-  return onSnapshot(q, (snapshot) => {
-    const completedIds = snapshot.docs.map((docSnap) => docSnap.data().taskId as string);
-    callback(completedIds);
-  });
+    if (data) {
+      callback(data.map((item) => item.task_id));
+    }
+  };
+
+  fetchCompletions();
+
+  const channel = supabase
+    .channel(`task-completions-${normalizedNrp}-${Math.random()}`)
+    .on('postgres_changes', { event: '*', schema: 'public', table: TASK_COMPLETIONS_TABLE }, () => {
+      fetchCompletions();
+    })
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
 }
 
-/**
- * Toggle Centang / Uncentang status selesai tugas per NRP
- */
 export async function toggleTaskCompletion(userNrp: string, taskId: string, isCompleted: boolean): Promise<void> {
   const normalizedNrp = userNrp.trim().toLowerCase();
   if (!normalizedNrp || normalizedNrp === 'unknown') {
@@ -283,19 +241,18 @@ export async function toggleTaskCompletion(userNrp: string, taskId: string, isCo
   }
 
   const docId = `${normalizedNrp}_${taskId}`;
-  const docRef = doc(db, TASK_COMPLETIONS_COLLECTION, docId);
 
   if (isCompleted) {
-    await setDoc(docRef, {
+    await supabase.from(TASK_COMPLETIONS_TABLE).upsert({
+      id: docId,
       nrp: normalizedNrp,
-      taskId,
-      completedAt: serverTimestamp(),
+      task_id: taskId,
+      completed_at: new Date().toISOString(),
     });
   } else {
-    await deleteDoc(docRef);
+    await supabase.from(TASK_COMPLETIONS_TABLE).delete().eq('id', docId);
   }
 }
-
 
 // ============================================================
 // GROUP RESULTS
@@ -307,14 +264,10 @@ export async function saveGroupResultApi(
   try {
     const res = await fetch('/api/groups', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(groupResult),
     });
-
     const data = await res.json();
-
     return data.state;
   } catch (err) {
     console.error('API saveGroupResult error:', err);
@@ -322,16 +275,12 @@ export async function saveGroupResultApi(
   }
 }
 
-
 // ============================================================
-// MATERIAL BOOKMARKS PER USER (NRP) — FIREBASE
+// MATERIAL BOOKMARKS PER USER (NRP) — SUPABASE
 // ============================================================
 
-const MATERIAL_BOOKMARKS_COLLECTION = 'mbud_user_material_bookmarks';
+const MATERIAL_BOOKMARKS_TABLE = 'mbud_user_material_bookmarks';
 
-/**
- * Mendengarkan daftar ID materi yang DIBOOKMARK oleh NRP terkait secara Realtime
- */
 export function subscribeUserMaterialBookmarks(userNrp: string, callback: (bookmarkedMaterialIds: string[]) => void) {
   const normalizedNrp = userNrp.trim().toLowerCase();
   if (!normalizedNrp || normalizedNrp === 'unknown') {
@@ -339,20 +288,31 @@ export function subscribeUserMaterialBookmarks(userNrp: string, callback: (bookm
     return () => {};
   }
 
-  const q = query(
-    collection(db, MATERIAL_BOOKMARKS_COLLECTION),
-    where('nrp', '==', normalizedNrp)
-  );
+  const fetchBookmarks = async () => {
+    const { data } = await supabase
+      .from(MATERIAL_BOOKMARKS_TABLE)
+      .select('material_id')
+      .eq('nrp', normalizedNrp);
 
-  return onSnapshot(q, (snapshot) => {
-    const bookmarkedIds = snapshot.docs.map((docSnap) => docSnap.data().materialId as string);
-    callback(bookmarkedIds);
-  });
+    if (data) {
+      callback(data.map((item) => item.material_id));
+    }
+  };
+
+  fetchBookmarks();
+
+  const channel = supabase
+    .channel(`mat-bookmarks-${normalizedNrp}-${Math.random()}`)
+    .on('postgres_changes', { event: '*', schema: 'public', table: MATERIAL_BOOKMARKS_TABLE }, () => {
+      fetchBookmarks();
+    })
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
 }
 
-/**
- * Toggle Bookmark / Unbookmark materi per NRP
- */
 export async function toggleMaterialBookmark(userNrp: string, materialId: string, isBookmarked: boolean): Promise<void> {
   const normalizedNrp = userNrp.trim().toLowerCase();
   if (!normalizedNrp || normalizedNrp === 'unknown') {
@@ -360,15 +320,15 @@ export async function toggleMaterialBookmark(userNrp: string, materialId: string
   }
 
   const docId = `${normalizedNrp}_${materialId}`;
-  const docRef = doc(db, MATERIAL_BOOKMARKS_COLLECTION, docId);
 
   if (isBookmarked) {
-    await setDoc(docRef, {
+    await supabase.from(MATERIAL_BOOKMARKS_TABLE).upsert({
+      id: docId,
       nrp: normalizedNrp,
-      materialId,
-      bookmarkedAt: serverTimestamp(),
+      material_id: materialId,
+      bookmarked_at: new Date().toISOString(),
     });
   } else {
-    await deleteDoc(docRef);
+    await supabase.from(MATERIAL_BOOKMARKS_TABLE).delete().eq('id', docId);
   }
 }

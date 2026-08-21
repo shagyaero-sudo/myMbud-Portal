@@ -1,23 +1,12 @@
-// src/services/streakService.ts
-import {
-  doc,
-  setDoc,
-  collection,
-  query,
-  orderBy,
-  limit,
-  getDocs,
-  serverTimestamp,
-} from 'firebase/firestore';
-import { db } from './firebase';
+import { supabase } from './supabase';
 
 export interface UserStreak {
   currentStreak: number;
   longestStreak: number;
-  lastActiveDate: string; // Format: "YYYY-MM-DD" (Local Timezone)
-  weeklyActiveDays: number[]; // Index hari (0 = Min, 1 = Sen, ..., 6 = Sab)
-  reviveQuota: number; // 3x jatah per bulan
-  reviveMonth?: string; // Format: "YYYY-MM"
+  lastActiveDate: string;
+  weeklyActiveDays: number[];
+  reviveQuota: number;
+  reviveMonth?: string;
   previousBrokenStreak?: number;
   canRevive?: boolean;
 }
@@ -37,7 +26,6 @@ export interface LeaderboardUser {
 const STORAGE_KEY = 'mymbud_user_streak_v1';
 const POPUP_SEEN_KEY = 'mymbud_streak_popup_seen_date';
 
-// HELPER: Tanggal & Bulan berdasarkan Waktu Lokal (WIB / Perangkat)
 const getLocalDateString = (): string => {
   const d = new Date();
   const year = d.getFullYear();
@@ -71,7 +59,6 @@ export const getLocalStreak = (): UserStreak => {
 
     const parsed: UserStreak = JSON.parse(saved);
 
-    // Auto reset kuota jadi 3x jika sudah masuk bulan baru
     if (parsed.reviveMonth !== currentMonthKey) {
       parsed.reviveQuota = 3;
       parsed.reviveMonth = currentMonthKey;
@@ -88,7 +75,7 @@ export const syncUserStreak = async (
   userNrp: string,
   userName: string
 ): Promise<SyncStreakResult> => {
-  const today = getLocalDateString(); // Fix: Waktu lokal hari ini
+  const today = getLocalDateString();
   const currentMonthKey = getLocalMonthString();
   const currentDayIndex = new Date().getDay();
   const normalizedNrp = userNrp.trim().toLowerCase();
@@ -102,7 +89,6 @@ export const syncUserStreak = async (
     reviveQuota = 3;
   }
 
-  // Jika hari ini sudah tercatat di cache lokal (0 READ & 0 WRITE)
   if (cached.lastActiveDate === today) {
     if (isFirstVisitToday) {
       localStorage.setItem(POPUP_SEEN_KEY, today);
@@ -136,14 +122,12 @@ export const syncUserStreak = async (
     const diffDays = Math.round(diffTime / (1000 * 3600 * 24));
 
     if (diffDays === 1) {
-      // Normal berturut-turut
       newCurrent += 1;
       canRevive = false;
       if (!newWeeklyDays.includes(currentDayIndex)) {
         newWeeklyDays.push(currentDayIndex);
       }
     } else if (diffDays > 1) {
-      // Terputus: Simpan streak terakhir sebelum reset ke 1
       previousBrokenStreak = cached.currentStreak;
       canRevive = reviveQuota > 0 && previousBrokenStreak > 1;
       newCurrent = 1;
@@ -171,25 +155,20 @@ export const syncUserStreak = async (
 
   if (normalizedNrp && normalizedNrp !== 'unknown') {
     try {
-      const streakRef = doc(db, 'user_streaks', normalizedNrp);
-      await setDoc(
-        streakRef,
-        {
-          nrp: normalizedNrp,
-          name: userName,
-          currentStreak: newCurrent,
-          longestStreak: newLongest,
-          lastActiveDate: today,
-          weeklyActiveDays: newWeeklyDays,
-          reviveQuota,
-          reviveMonth: currentMonthKey,
-          lastCheckedInAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        },
-        { merge: true }
-      );
+      await supabase.from('user_streaks').upsert({
+        nrp: normalizedNrp,
+        name: userName,
+        current_streak: newCurrent,
+        longest_streak: newLongest,
+        last_active_date: today,
+        weekly_active_days: newWeeklyDays,
+        revive_quota: reviveQuota,
+        revive_month: currentMonthKey,
+        last_checked_in_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
     } catch (err) {
-      console.warn('[Streak] Gagal sinkronisasi Firestore:', err);
+      console.warn('[Streak] Gagal sinkronisasi Supabase:', err);
     }
   }
 
@@ -228,24 +207,19 @@ export const useStreakRevive = async (
 
   if (normalizedNrp && normalizedNrp !== 'unknown') {
     try {
-      const streakRef = doc(db, 'user_streaks', normalizedNrp);
-      await setDoc(
-        streakRef,
-        {
-          nrp: normalizedNrp,
-          name: userName,
-          currentStreak: restoredStreakCount,
-          longestStreak: updatedStreak.longestStreak,
-          reviveQuota: newQuota,
-          reviveMonth: currentMonthKey,
-          lastActiveDate: today,
-          lastCheckedInAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        },
-        { merge: true }
-      );
+      await supabase.from('user_streaks').upsert({
+        nrp: normalizedNrp,
+        name: userName,
+        current_streak: restoredStreakCount,
+        longest_streak: updatedStreak.longestStreak,
+        revive_quota: newQuota,
+        revive_month: currentMonthKey,
+        last_active_date: today,
+        last_checked_in_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
     } catch (err) {
-      console.warn('[Streak] Gagal update revive ke Firestore:', err);
+      console.warn('[Streak] Gagal update revive ke Supabase:', err);
     }
   }
 
@@ -254,51 +228,23 @@ export const useStreakRevive = async (
 
 export const fetchStreakLeaderboard = async (): Promise<LeaderboardUser[]> => {
   try {
-    const q = query(
-      collection(db, 'user_streaks'),
-      orderBy('currentStreak', 'desc'),
-      orderBy('lastCheckedInAt', 'asc'),
-      limit(20)
-    );
-    const snapshot = await getDocs(q);
-    const leaderboard: LeaderboardUser[] = [];
+    const { data, error } = await supabase
+      .from('user_streaks')
+      .select('nrp, name, current_streak, longest_streak')
+      .order('current_streak', { ascending: false })
+      .order('last_checked_in_at', { ascending: true })
+      .limit(20);
 
-    snapshot.forEach((docSnap) => {
-      const data = docSnap.data();
-      leaderboard.push({
-        nrp: data.nrp || docSnap.id,
-        name: data.name || 'Mbuders',
-        currentStreak: data.currentStreak || 1,
-        longestStreak: data.longestStreak || 1,
-      });
-    });
+    if (error || !data) return [];
 
-    return leaderboard;
-  } catch (err: any) {
-    console.warn('[Streak] Fallback ke single index leaderboard:', err?.message);
-    try {
-      const fallbackQuery = query(
-        collection(db, 'user_streaks'),
-        orderBy('currentStreak', 'desc'),
-        limit(20)
-      );
-      const snapshot = await getDocs(fallbackQuery);
-      const leaderboard: LeaderboardUser[] = [];
-
-      snapshot.forEach((docSnap) => {
-        const data = docSnap.data();
-        leaderboard.push({
-          nrp: data.nrp || docSnap.id,
-          name: data.name || 'Mbuders',
-          currentStreak: data.currentStreak || 1,
-          longestStreak: data.longestStreak || 1,
-        });
-      });
-
-      return leaderboard;
-    } catch (fallbackErr) {
-      console.error('[Streak] Gagal mengambil leaderboard:', fallbackErr);
-      return [];
-    }
+    return data.map((item) => ({
+      nrp: item.nrp,
+      name: item.name || 'Mbuders',
+      currentStreak: item.current_streak || 1,
+      longestStreak: item.longest_streak || 1,
+    }));
+  } catch (err) {
+    console.error('[Streak] Gagal mengambil leaderboard:', err);
+    return [];
   }
 };
