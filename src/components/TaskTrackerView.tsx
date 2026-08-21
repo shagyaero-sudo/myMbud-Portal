@@ -892,7 +892,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                     {selectedDetailTask.attachment && (
                       <div className="space-y-2 pt-1">
                         <h4 className="text-[11px] font-bold text-slate-400 dark:text-zinc-400 uppercase tracking-wider">
-                          Lampiran File / Dokumen
+                          Lampiran File PDF
                         </h4>
 
                         {(() => {
@@ -1358,7 +1358,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
 
                       <div>
                         <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
-                          Lampiran File / Gambar (Opsional)
+                          Lampiran File (Opsional)
                         </label>
 
                         <div
@@ -1402,7 +1402,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                                 <UploadCloud className="w-6 h-6 text-slate-600 dark:text-zinc-400" />
                               </div>
                               <p className="text-xs font-bold text-slate-700 dark:text-zinc-300">
-                                Klik atau drop PDF, JPG, PNG ke sini
+                                Klik atau drop PDF ke sini
                               </p>
                               <p className="text-[10px] text-slate-500 dark:text-zinc-400">
                                 File Max 10 MB
