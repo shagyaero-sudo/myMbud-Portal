@@ -11,120 +11,13 @@ import {
   Paperclip,
   Bookmark,
   BookOpen,
+  Plus,
 } from 'lucide-react';
 import { MaterialFile } from '../types';
 import {
   subscribeUserMaterialBookmarks,
   toggleMaterialBookmark,
 } from '../services/api';
-
-interface CourseTheme {
-  border: string;
-  strip: string;
-  badge: string;
-  iconBg: string;
-  iconColor: string;
-  subtext: string;
-  sidebarActive: string;
-}
-
-const COURSE_THEMES: Record<string, CourseTheme> = {
-  'Ekonomi Makro': {
-    border: 'hover:border-blue-500/40 dark:hover:border-blue-500/40',
-    strip: 'bg-blue-500',
-    badge: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
-    iconBg: 'bg-blue-500/10 text-blue-500 dark:text-blue-400',
-    iconColor: 'text-blue-500 dark:text-blue-400',
-    subtext: 'text-blue-600 dark:text-blue-400',
-    sidebarActive: 'bg-blue-600 text-white shadow-md shadow-blue-500/20',
-  },
-  'Dasar-dasar Manajemen': {
-    border: 'hover:border-amber-500/40 dark:hover:border-amber-500/40',
-    strip: 'bg-amber-500',
-    badge: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
-    iconBg: 'bg-amber-500/10 text-amber-500 dark:text-amber-400',
-    iconColor: 'text-amber-500 dark:text-amber-400',
-    subtext: 'text-amber-600 dark:text-amber-400',
-    sidebarActive: 'bg-amber-600 text-white shadow-md shadow-amber-500/20',
-  },
-  'Etika Pembangunan': {
-    border: 'hover:border-emerald-500/40 dark:hover:border-emerald-500/40',
-    strip: 'bg-emerald-500',
-    badge: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
-    iconBg: 'bg-emerald-500/10 text-emerald-500 dark:text-emerald-400',
-    iconColor: 'text-emerald-500 dark:text-emerald-400',
-    subtext: 'text-emerald-600 dark:text-emerald-400',
-    sidebarActive: 'bg-emerald-600 text-white shadow-md shadow-emerald-500/20',
-  },
-  'Gender dan Pembangunan': {
-    border: 'hover:border-pink-500/40 dark:hover:border-pink-500/40',
-    strip: 'bg-pink-500',
-    badge: 'bg-pink-500/10 text-pink-600 dark:text-pink-400 border-pink-500/20',
-    iconBg: 'bg-pink-500/10 text-pink-500 dark:text-pink-400',
-    iconColor: 'text-pink-500 dark:text-pink-400',
-    subtext: 'text-pink-600 dark:text-pink-400',
-    sidebarActive: 'bg-pink-600 text-white shadow-md shadow-pink-500/20',
-  },
-  'Infrastruktur Pembangunan': {
-    border: 'hover:border-orange-500/40 dark:hover:border-orange-500/40',
-    strip: 'bg-orange-500',
-    badge: 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20',
-    iconBg: 'bg-orange-500/10 text-orange-500 dark:text-orange-400',
-    iconColor: 'text-orange-500 dark:text-orange-400',
-    subtext: 'text-orange-600 dark:text-orange-400',
-    sidebarActive: 'bg-orange-600 text-white shadow-md shadow-orange-500/20',
-  },
-  'Kebijakan Publik dan Pembangunan': {
-    border: 'hover:border-teal-500/40 dark:hover:border-teal-500/40',
-    strip: 'bg-teal-500',
-    badge: 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20',
-    iconBg: 'bg-teal-500/10 text-teal-500 dark:text-teal-400',
-    iconColor: 'text-teal-500 dark:text-teal-400',
-    subtext: 'text-teal-600 dark:text-teal-400',
-    sidebarActive: 'bg-teal-600 text-white shadow-md shadow-teal-500/20',
-  },
-  'Komunikasi Pembangunan': {
-    border: 'hover:border-cyan-500/40 dark:hover:border-cyan-500/40',
-    strip: 'bg-cyan-500',
-    badge: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20',
-    iconBg: 'bg-cyan-500/10 text-cyan-500 dark:text-cyan-400',
-    iconColor: 'text-cyan-500 dark:text-cyan-400',
-    subtext: 'text-cyan-600 dark:text-cyan-400',
-    sidebarActive: 'bg-cyan-600 text-white shadow-md shadow-cyan-500/20',
-  },
-  'Manusia dan Ruang': {
-    border: 'hover:border-indigo-500/40 dark:hover:border-indigo-500/40',
-    strip: 'bg-indigo-500',
-    badge: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20',
-    iconBg: 'bg-indigo-500/10 text-indigo-500 dark:text-indigo-400',
-    iconColor: 'text-indigo-500 dark:text-indigo-400',
-    subtext: 'text-indigo-600 dark:text-indigo-400',
-    sidebarActive: 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20',
-  },
-  'Statistik Sosial': {
-    border: 'hover:border-purple-500/40 dark:hover:border-purple-500/40',
-    strip: 'bg-purple-500',
-    badge: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20',
-    iconBg: 'bg-purple-500/10 text-purple-500 dark:text-purple-400',
-    iconColor: 'text-purple-500 dark:text-purple-400',
-    subtext: 'text-purple-600 dark:text-purple-400',
-    sidebarActive: 'bg-purple-600 text-white shadow-md shadow-purple-500/20',
-  },
-};
-
-const DEFAULT_THEME: CourseTheme = {
-  border: 'hover:border-blue-500/40 dark:hover:border-blue-500/40',
-  strip: 'bg-blue-600',
-  badge: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
-  iconBg: 'bg-blue-500/10 text-blue-500 dark:text-blue-400',
-  iconColor: 'text-blue-500 dark:text-blue-400',
-  subtext: 'text-blue-600 dark:text-blue-400',
-  sidebarActive: 'bg-blue-600 text-white shadow-md shadow-blue-500/20',
-};
-
-const getCourseTheme = (courseName: string): CourseTheme => {
-  return COURSE_THEMES[courseName] || DEFAULT_THEME;
-};
 
 interface KnowledgeBaseViewProps {
   materials: MaterialFile[];
@@ -319,10 +212,10 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="space-y-6 pb-12"
+      className="space-y-4 sm:space-y-5 pb-12"
     >
-      {/* HEADER BANNER - Presisi 100% Identik dengan ContactsView */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1 pt-4 sm:pt-6 pb-4 sm:pb-6 mb-2 sm:mb-3">
+      {/* HEADER BANNER */}
+      <div className="flex items-center justify-between gap-3 px-1 pt-4 sm:pt-6 pb-2">
         <div>
           <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
             Bank PDF Matkul
@@ -332,51 +225,66 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
           </p>
         </div>
 
-        {/* Action Controls Desktop */}
-        <div className="hidden sm:flex items-center gap-2.5 shrink-0">
-          <button
-            type="button"
-            onClick={() => setShowOnlyBookmarked((prev) => !prev)}
-            className={`px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 border cursor-pointer ${
-              showOnlyBookmarked
-                ? 'bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-500/25'
-                : 'bg-white dark:bg-zinc-900 border-slate-200/80 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 hover:border-blue-500/50 hover:text-blue-600 dark:hover:text-blue-400 shadow-xs'
+        {/* Action Control: Bookmark Button */}
+        <button
+          type="button"
+          onClick={() => setShowOnlyBookmarked((prev) => !prev)}
+          className={`px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 border cursor-pointer shrink-0 ${
+            showOnlyBookmarked
+              ? 'bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-500/25'
+              : 'bg-white dark:bg-zinc-900 border-slate-200/80 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 hover:border-blue-500/50 hover:text-blue-600 dark:hover:text-blue-400 shadow-xs'
+          }`}
+          title="Tampilkan hanya materi yang disimpan"
+        >
+          <Bookmark
+            className={`w-3.5 h-3.5 ${
+              showOnlyBookmarked ? 'fill-white text-white' : 'text-slate-400 dark:text-zinc-400'
             }`}
-            title="Tampilkan hanya materi yang disimpan"
+          />
+          <span className="hidden sm:inline">Bookmark</span>
+          <span
+            className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
+              showOnlyBookmarked
+                ? 'bg-white/20 text-white'
+                : 'bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300'
+            }`}
           >
-            <Bookmark
-              className={`w-3.5 h-3.5 ${
-                showOnlyBookmarked ? 'fill-white text-white' : 'text-slate-400 dark:text-zinc-400'
-              }`}
-            />
-            <span>Bookmark</span>
-            <span
-              className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
-                showOnlyBookmarked
-                  ? 'bg-white/20 text-white'
-                  : 'bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300'
-              }`}
-            >
-              {bookmarkedIds.length}
-            </span>
-          </button>
-
-          {isOfficer && (
-            <motion.button
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={handleOpenUploadModal}
-              className="px-4 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-semibold text-xs transition-all shadow-md shadow-blue-500/20 flex items-center gap-2 shrink-0 cursor-pointer"
-            >
-              <Upload className="w-3.5 h-3.5" />
-              <span>Unggah PDF</span>
-            </motion.button>
-          )}
-        </div>
+            {bookmarkedIds.length}
+          </span>
+        </button>
       </div>
 
+      {/* DEDICATED UPLOAD BANNER (Tepat di bawah Header, tidak nyempil) */}
+      {isOfficer && (
+        <div className="p-4 sm:p-5 rounded-3xl bg-blue-50/80 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-center gap-3">
+            <div className="p-3 rounded-2xl bg-blue-600 text-white shadow-md shadow-blue-500/20 shrink-0">
+              <Upload className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-zinc-100">
+                Unggah Materi / Slide Perkuliahan
+              </h3>
+              <p className="text-[11px] text-slate-500 dark:text-zinc-400 mt-0.5">
+                Tambahkan berkas PDF baru untuk dapat diakses oleh seluruh mahasiswa.
+              </p>
+            </div>
+          </div>
+
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={handleOpenUploadModal}
+            className="w-full sm:w-auto px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer shrink-0"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Unggah PDF Baru</span>
+          </motion.button>
+        </div>
+      )}
+
       {/* 2-Column Layout */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start pt-1">
         {/* Left Column: Vertical Course Tabs */}
         <div className="hidden md:block md:col-span-4 lg:col-span-3 space-y-2">
           <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-4 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-1.5 transition-colors">
@@ -411,7 +319,6 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
             {dynamicCoursesList.map((course) => {
               const count = materials.filter((m) => m.courseName === course).length;
               const isSelected = selectedCourse === course && !showOnlyBookmarked;
-              const theme = getCourseTheme(course);
 
               return (
                 <button
@@ -422,7 +329,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                   }}
                   className={`w-full text-left px-4 py-3 rounded-2xl text-xs transition-colors flex items-center justify-between cursor-pointer ${
                     isSelected
-                      ? `${theme.sidebarActive} font-bold`
+                      ? 'bg-blue-600 text-white font-bold shadow-md shadow-blue-500/20'
                       : 'text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 font-medium'
                   }`}
                 >
@@ -442,7 +349,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
           </div>
         </div>
 
-        {/* Right Column: List View with Left Color Strip */}
+        {/* Right Column: List View */}
         <div className="md:col-span-8 lg:col-span-9 space-y-4">
           {/* Search Bar Full Width */}
           <div className="relative w-full">
@@ -456,7 +363,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
             />
           </div>
 
-          {/* Mobile Action Controls: Dropdown Bersebelahan dengan Tombol Bookmark */}
+          {/* Mobile Course Dropdown */}
           <div className="flex md:hidden items-center gap-2 w-full">
             <div className="relative flex-1">
               <select
@@ -478,42 +385,6 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                 })}
               </select>
             </div>
-
-            <button
-              type="button"
-              onClick={() => setShowOnlyBookmarked((prev) => !prev)}
-              className={`px-3 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 border shrink-0 cursor-pointer ${
-                showOnlyBookmarked
-                  ? 'bg-blue-600 border-blue-600 text-white shadow-xs'
-                  : 'bg-white dark:bg-zinc-900 border-slate-200/80 dark:border-zinc-800 text-slate-700 dark:text-zinc-300'
-              }`}
-            >
-              <Bookmark
-                className={`w-3.5 h-3.5 ${
-                  showOnlyBookmarked ? 'fill-white text-white' : 'text-slate-400 dark:text-zinc-400'
-                }`}
-              />
-              <span>Bookmark</span>
-              <span
-                className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
-                  showOnlyBookmarked
-                    ? 'bg-white/20 text-white'
-                    : 'bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300'
-                }`}
-              >
-                {bookmarkedIds.length}
-              </span>
-            </button>
-
-            {isOfficer && (
-              <button
-                onClick={handleOpenUploadModal}
-                className="p-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white shadow-xs shrink-0 cursor-pointer"
-                title="Unggah PDF"
-              >
-                <Upload className="w-4 h-4" />
-              </button>
-            )}
           </div>
 
           {/* Main Content: Adaptive List Container */}
@@ -536,32 +407,27 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
               <div className="space-y-2">
                 {filteredMaterials.map((mat) => {
                   const isBookmarked = bookmarkedIds.includes(mat.id);
-                  const theme = getCourseTheme(mat.courseName);
 
                   return (
                     <motion.div
                       key={mat.id}
                       whileHover={{ x: 3 }}
                       onClick={() => onPreviewPdf(mat)}
-                      className={`group relative overflow-hidden p-3 sm:p-3.5 rounded-2xl bg-slate-50/90 dark:bg-zinc-800/60 hover:bg-slate-100/90 dark:hover:bg-zinc-800 cursor-pointer transition-all flex items-center justify-between gap-3 border border-slate-200/60 dark:border-zinc-700/60 ${theme.border} shadow-xs`}
+                      className="group relative overflow-hidden p-3 sm:p-3.5 rounded-2xl bg-slate-50/90 dark:bg-zinc-800/60 hover:bg-slate-100/90 dark:hover:bg-zinc-800 cursor-pointer transition-all flex items-center justify-between gap-3 border border-slate-200/60 dark:border-zinc-700/60 hover:border-blue-500/40 dark:hover:border-blue-500/40 shadow-xs"
                     >
-                      {/* Left Spine Color Strip Accent */}
-                      <div
-                        className={`absolute left-0 top-0 bottom-0 w-1.5 ${theme.strip} group-hover:w-2 transition-all rounded-l-2xl`}
-                      />
+                      {/* Left Spine Strip Accent (Clean Solid Blue) */}
+                      <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-blue-600 group-hover:w-2 transition-all rounded-l-2xl" />
 
                       {/* Content Info */}
                       <div className="flex items-center gap-3 min-w-0 flex-1 pl-1.5">
-                        <div
-                          className={`p-2 rounded-xl ${theme.iconBg} shrink-0`}
-                        >
+                        <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 shrink-0">
                           <FileText className="w-4 h-4" />
                         </div>
                         <div className="min-w-0 flex-1">
                           <h4 className="text-xs font-bold text-slate-800 dark:text-zinc-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
                             {mat.title}
                           </h4>
-                          <p className={`text-[11px] font-semibold truncate ${theme.subtext}`}>
+                          <p className="text-[11px] font-medium text-slate-500 dark:text-zinc-400 truncate">
                             {mat.courseName}
                           </p>
                         </div>
@@ -569,9 +435,8 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
 
                       {/* Right Meta Badges & Actions */}
                       <div className="flex items-center gap-2 shrink-0">
-                        <span
-                          className={`text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-lg border ${theme.badge}`}
-                        >
+                        {/* Session Badge (Clean Netral) */}
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg border bg-slate-100 dark:bg-zinc-800/80 text-slate-600 dark:text-zinc-300 border-slate-200/80 dark:border-zinc-700/80">
                           {mat.session || 'MODUL'}
                         </span>
 
