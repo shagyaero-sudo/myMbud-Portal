@@ -170,7 +170,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
       const blobUrl = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = blobUrl;
-      a.download = fileName.endsWith('.pdf') ? fileName : `${fileName}.pdf`;
+      a.download = fileName;
       document.body.appendChild(a);
       a.click();
 
@@ -486,10 +486,10 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="space-y-6 pb-32 sm:pb-36"
+      className="space-y-4 sm:space-y-5 pb-32 sm:pb-36"
     >
       {/* HEADER BANNER */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1 pt-4 sm:pt-6 pb-4 sm:pb-6 mb-2 sm:mb-3">
+      <div className="flex items-center justify-between gap-3 px-1 pt-4 sm:pt-6 pb-2">
         <div>
           <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
             Tracker Tugas Matkul
@@ -498,22 +498,39 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
             Pantau dan Kelola Deadline Tugas
           </p>
         </div>
+      </div>
 
-        {isOfficer && (
+      {/* DEDICATED UPLOAD / TAMBAH TUGAS BANNER (Tepat di bawah Header) */}
+      {isOfficer && (
+        <div className="p-4 sm:p-5 rounded-3xl bg-blue-50/80 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-center gap-3">
+            <div className="p-3 rounded-2xl bg-blue-600 text-white shadow-md shadow-blue-500/20 shrink-0">
+              <Plus className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-zinc-100">
+                Kelola & Buat Tugas Perkuliahan
+              </h3>
+              <p className="text-[11px] text-slate-500 dark:text-zinc-400 mt-0.5">
+                Tambahkan tugas baru beserta instruksi dan lampiran untuk seluruh mahasiswa.
+              </p>
+            </div>
+          </div>
+
           <motion.button
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={handleOpenAddModal}
-            className="px-4 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-all shadow-md shadow-blue-500/20 flex items-center gap-2 shrink-0 cursor-pointer"
+            className="w-full sm:w-auto px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer shrink-0"
           >
             <Plus className="w-4 h-4" />
             <span>Tambah Tugas Baru</span>
           </motion.button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* FILTER CONTROLS */}
-      <div className="space-y-2.5">
+      <div className="space-y-2.5 pt-1">
         <div className="relative w-full">
           <Search className="w-4 h-4 absolute left-4 top-3 text-slate-400" />
           <input
@@ -1308,7 +1325,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
 
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
-                      Lampiran File (Opsional)
+                      Lampiran File / Gambar (Opsional)
                     </label>
 
                     <div
@@ -1325,7 +1342,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                       <input
                         type="file"
                         ref={fileInputRef}
-                        accept=".pdf"
+                        accept="image/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx"
                         onChange={(e) => {
                           if (e.target.files?.length) {
                             setSelectedFile(e.target.files[0]);
@@ -1352,10 +1369,10 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                             <UploadCloud className="w-6 h-6 text-slate-600 dark:text-zinc-400" />
                           </div>
                           <p className="text-xs font-bold text-slate-700 dark:text-zinc-300">
-                            Klik atau seret file PDF di sini
+                            Klik atau drop PDF, JPG, PNG ke sini
                           </p>
                           <p className="text-[10px] text-slate-500 dark:text-zinc-400">
-                            File PDF maksimal 10 MB
+                            File Max 10 MB
                           </p>
                         </div>
                       )}

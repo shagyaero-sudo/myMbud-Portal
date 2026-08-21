@@ -645,7 +645,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                             Klik atau seret file PDF di sini
                           </p>
                           <p className="text-[10px] text-slate-500 dark:text-zinc-400">
-                            File PDF maksimal 10 MB
+                            Format PDF ONLY dan maks 10 MB
                           </p>
                         </div>
                       )}
