@@ -273,7 +273,11 @@ export default function App() {
     setIsSyncing(true);
 
     const loadCourses = async () => {
-      const { data } = await supabase.from('courses').select('*');
+      const { data, error } = await supabase.from('courses').select('*');
+      if (error) {
+        console.error('Error fetching courses:', error);
+        return;
+      }
       if (data) {
         const supabaseSchedules: ScheduleItem[] = [];
         const supabaseContacts: Contact[] = [];
@@ -292,9 +296,9 @@ export default function App() {
             room: d.room || '',
             lecturer: d.lecturer || '',
             lecturer2: d.lecturer2 || '',
-            pjMatkul: d.pj_matkul || '',
+            pjMatkul: d.pj_matkul || d.pjName || '',
             sks: Number(d.credits || d.sks) || 0,
-            attendanceUrl: d.attendance_url || '',
+            attendanceUrl: d.attendance_url || d.attendanceUrl || '',
           });
 
           supabaseContacts.push({
@@ -303,21 +307,21 @@ export default function App() {
             course: courseName,
             sks: Number(d.credits || d.sks) || 0,
             lecturerName: d.lecturer || '',
-            lecturerPhone: d.lecturer_phone || '',
+            lecturerPhone: d.lecturer_phone || d.lecturerPhone || '',
             lecturerName2: d.lecturer2 || '',
-            lecturerPhone2: d.lecturer_phone2 || '',
-            pjName: d.pj_name || '',
-            pjPhone: d.pj_phone || '',
+            lecturerPhone2: d.lecturer_phone2 || d.lecturerPhone2 || '',
+            pjName: d.pj_matkul || d.pjName || '',
+            pjPhone: d.pj_phone || d.pjPhone || '',
             room: d.room || '',
-            scheduleDayTime: scheduleDay + ', ' + scheduleTime,
-            attendanceUrl: d.attendance_url || '',
+            scheduleDayTime: scheduleDay + (scheduleTime ? ', ' + scheduleTime : ''),
+            attendanceUrl: d.attendance_url || d.attendanceUrl || '',
           });
         });
 
         setAppState((prev) => ({
           ...prev,
           schedules: supabaseSchedules,
-          contacts: supabaseContacts.length > 0 ? supabaseContacts : prev.contacts,
+          contacts: supabaseContacts,
           lastUpdated: new Date().toISOString(),
         }));
       }
@@ -326,7 +330,11 @@ export default function App() {
     };
 
     const loadTasks = async () => {
-      const { data } = await supabase.from('tasks').select('*');
+      const { data, error } = await supabase.from('tasks').select('*');
+      if (error) {
+        console.error('Error fetching tasks:', error);
+        return;
+      }
       if (data) {
         const list: Task[] = data.map((d: any) => ({
           id: d.id,
@@ -369,15 +377,35 @@ export default function App() {
       }));
     };
 
+    // Load initial data
     loadCourses();
     loadTasks();
     loadMaterials();
 
+    // Setup Realtime Subscription
     const channel = supabase
-      .channel(`portal-sync-${Math.random()}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'courses' }, loadCourses)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, loadTasks)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'materials' }, loadMaterials)
+      .channel('public:portal_realtime_changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'courses' },
+        () => {
+          loadCourses();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'tasks' },
+        () => {
+          loadTasks();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'materials' },
+        () => {
+          loadMaterials();
+        }
+      )
       .subscribe();
 
     return () => {
