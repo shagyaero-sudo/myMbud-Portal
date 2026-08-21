@@ -30,7 +30,7 @@ import {
   getLocalStreak,
   UserStreak,
 } from '../services/streakService';
-import { StreakModal } from './StreakModal';
+import { StreakModal, GlossyFlameIcon } from './StreakModal';
 
 // --- CONFIG FRS WAR MODE ---
 const IS_FRS_WAR_ACTIVE = false;
@@ -514,44 +514,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             onClick={() => setIsStreakModalOpen(true)}
             className="relative flex items-center h-9 pl-7 pr-3.5 rounded-full bg-[#2a303c] hover:bg-[#343b49] border border-white/5 shadow-md shadow-black/20 transition-all cursor-pointer shrink-0 select-none group"
           >
-            {/* 3D Glossy Flame Asset (Ukuran Pas & Menutup Kiri) */}
-            <div className="absolute -left-2.5 -top-1.5 w-9 h-11 pointer-events-none group-hover:scale-110 transition-transform filter drop-shadow-[0_2px_6px_rgba(255,100,0,0.45)]">
-              <svg viewBox="0 0 100 120" className="w-full h-full overflow-visible">
-                <defs>
-                  <linearGradient id="flameOuter" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#FF1E00" />
-                    <stop offset="50%" stopColor="#FF4500" />
-                    <stop offset="100%" stopColor="#FF8C00" />
-                  </linearGradient>
-                  <linearGradient id="flameInner" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#FFFFFF" />
-                    <stop offset="35%" stopColor="#FFF200" />
-                    <stop offset="100%" stopColor="#FFAE00" />
-                  </linearGradient>
-                  <linearGradient id="flameGloss" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.8" />
-                    <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
-                  </linearGradient>
-                </defs>
-
-                <path
-                  d="M50 2 C55 24, 78 35, 88 56 C99 77, 92 102, 73 114 C54 125, 26 122, 12 105 C-2 88, 1 65, 15 48 C20 42, 23 48, 25 39 C27 28, 38 18, 50 2 Z"
-                  fill="url(#flameOuter)"
-                />
-                <path
-                  d="M50 28 C56 42, 74 52, 78 68 C83 85, 74 103, 58 110 C42 117, 24 112, 18 97 C12 82, 19 68, 28 58 C33 53, 34 43, 50 28 Z"
-                  fill="#FF5E00"
-                  opacity="0.85"
-                />
-                <path
-                  d="M50 48 C55 58, 67 67, 68 79 C69 92, 60 104, 48 107 C36 110, 26 102, 25 90 C24 78, 32 68, 38 61 C42 56, 43 51, 50 48 Z"
-                  fill="url(#flameInner)"
-                />
-                <path
-                  d="M48 12 C38 24, 25 38, 20 54 C16 68, 18 78, 17 84 C15 76, 16 60, 24 46 C32 32, 42 20, 48 12 Z"
-                  fill="url(#flameGloss)"
-                />
-              </svg>
+            {/* 3D Glossy Flame Asset */}
+            <div className="absolute -left-2.5 -top-1.5 w-9 h-11 pointer-events-none group-hover:scale-110 transition-transform">
+              <GlossyFlameIcon className="w-full h-full" streakCount={streakData.currentStreak} />
             </div>
 
             <span className="text-base font-extrabold text-white tracking-tight tabular-nums ml-0.5">

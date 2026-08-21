@@ -1,4 +1,3 @@
-// src/components/StreakModal.tsx
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -24,47 +23,83 @@ interface StreakModalProps {
   onStreakUpdate?: (updated: UserStreak) => void;
 }
 
-// 3D Glossy Flame Asset Asli
-const GlossyFlameIcon: React.FC<{ className?: string }> = ({ className = "w-20 h-24" }) => (
-  <div className={`relative flex items-center justify-center ${className}`}>
-    <svg viewBox="0 0 100 120" className="w-full h-full overflow-visible filter drop-shadow-[0_4px_16px_rgba(255,80,0,0.5)]">
-      <defs>
-        <linearGradient id="modalFlameOuter" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#FF1E00" />
-          <stop offset="50%" stopColor="#FF4500" />
-          <stop offset="100%" stopColor="#FF8C00" />
-        </linearGradient>
-        <linearGradient id="modalFlameInner" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#FFFFFF" />
-          <stop offset="35%" stopColor="#FFF200" />
-          <stop offset="100%" stopColor="#FFAE00" />
-        </linearGradient>
-        <linearGradient id="modalFlameGloss" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.8" />
-          <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
-        </linearGradient>
-      </defs>
+// 3D Glossy Flame Asset (Auto Mythic Violet & Neon Magenta jika >= 100 Hari)
+export const GlossyFlameIcon: React.FC<{ className?: string; streakCount?: number }> = ({
+  className = "w-20 h-24",
+  streakCount = 1,
+}) => {
+  const isMythic = (streakCount || 0) >= 100;
 
-      <path
-        d="M50 2 C55 24, 78 35, 88 56 C99 77, 92 102, 73 114 C54 125, 26 122, 12 105 C-2 88, 1 65, 15 48 C20 42, 23 48, 25 39 C27 28, 38 18, 50 2 Z"
-        fill="url(#modalFlameOuter)"
-      />
-      <path
-        d="M50 28 C56 42, 74 52, 78 68 C83 85, 74 103, 58 110 C42 117, 24 112, 18 97 C12 82, 19 68, 28 58 C33 53, 34 43, 50 28 Z"
-        fill="#FF5E00"
-        opacity="0.85"
-      />
-      <path
-        d="M50 48 C55 58, 67 67, 68 79 C69 92, 60 104, 48 107 C36 110, 26 102, 25 90 C24 78, 32 68, 38 61 C42 56, 43 51, 50 48 Z"
-        fill="url(#modalFlameInner)"
-      />
-      <path
-        d="M48 12 C38 24, 25 38, 20 54 C16 68, 18 78, 17 84 C15 76, 16 60, 24 46 C32 32, 42 20, 48 12 Z"
-        fill="url(#modalFlameGloss)"
-      />
-    </svg>
-  </div>
-);
+  return (
+    <div className={`relative flex items-center justify-center ${className}`}>
+      <svg
+        viewBox="0 0 100 120"
+        className={`w-full h-full overflow-visible filter ${
+          isMythic
+            ? 'drop-shadow-[0_4px_22px_rgba(168,85,247,0.8)]'
+            : 'drop-shadow-[0_4px_16px_rgba(255,80,0,0.5)]'
+        }`}
+      >
+        <defs>
+          <linearGradient id={`modalFlameOuter-${isMythic ? 'mythic' : 'norm'}`} x1="0%" y1="0%" x2="100%" y2="100%">
+            {isMythic ? (
+              <>
+                <stop offset="0%" stopColor="#7E22CE" />
+                <stop offset="50%" stopColor="#A855F7" />
+                <stop offset="100%" stopColor="#EC4899" />
+              </>
+            ) : (
+              <>
+                <stop offset="0%" stopColor="#FF1E00" />
+                <stop offset="50%" stopColor="#FF4500" />
+                <stop offset="100%" stopColor="#FF8C00" />
+              </>
+            )}
+          </linearGradient>
+
+          <linearGradient id={`modalFlameInner-${isMythic ? 'mythic' : 'norm'}`} x1="0%" y1="0%" x2="0%" y2="100%">
+            {isMythic ? (
+              <>
+                <stop offset="0%" stopColor="#FFFFFF" />
+                <stop offset="35%" stopColor="#F472B6" />
+                <stop offset="100%" stopColor="#C084FC" />
+              </>
+            ) : (
+              <>
+                <stop offset="0%" stopColor="#FFFFFF" />
+                <stop offset="35%" stopColor="#FFF200" />
+                <stop offset="100%" stopColor="#FFAE00" />
+              </>
+            )}
+          </linearGradient>
+
+          <linearGradient id="modalFlameGloss" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.8" />
+            <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+
+        <path
+          d="M50 2 C55 24, 78 35, 88 56 C99 77, 92 102, 73 114 C54 125, 26 122, 12 105 C-2 88, 1 65, 15 48 C20 42, 23 48, 25 39 C27 28, 38 18, 50 2 Z"
+          fill={`url(#modalFlameOuter-${isMythic ? 'mythic' : 'norm'})`}
+        />
+        <path
+          d="M50 28 C56 42, 74 52, 78 68 C83 85, 74 103, 58 110 C42 117, 24 112, 18 97 C12 82, 19 68, 28 58 C33 53, 34 43, 50 28 Z"
+          fill={isMythic ? "#9333EA" : "#FF5E00"}
+          opacity="0.85"
+        />
+        <path
+          d="M50 48 C55 58, 67 67, 68 79 C69 92, 60 104, 48 107 C36 110, 26 102, 25 90 C24 78, 32 68, 38 61 C42 56, 43 51, 50 48 Z"
+          fill={`url(#modalFlameInner-${isMythic ? 'mythic' : 'norm'})`}
+        />
+        <path
+          d="M48 12 C38 24, 25 38, 20 54 C16 68, 18 78, 17 84 C15 76, 16 60, 24 46 C32 32, 42 20, 48 12 Z"
+          fill="url(#modalFlameGloss)"
+        />
+      </svg>
+    </div>
+  );
+};
 
 export const StreakModal: React.FC<StreakModalProps> = ({
   isOpen,
@@ -88,6 +123,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
     { label: 'Min', initial: 'M', jsDay: 0 },
   ];
   const todayJsDay = new Date().getDay();
+  const isMythic = streak.currentStreak >= 100;
 
   const handleOpenLeaderboard = async () => {
     setViewMode('leaderboard');
@@ -141,8 +177,12 @@ export const StreakModal: React.FC<StreakModalProps> = ({
             className="relative max-w-sm sm:max-w-md w-full rounded-3xl bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 shadow-2xl p-6 sm:p-7 text-center overflow-hidden flex flex-col items-center max-h-[88vh]"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Glow Ambient di Belakang Api */}
-            <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-56 h-56 bg-orange-500/20 rounded-full blur-3xl pointer-events-none" />
+            {/* Ambient Glow Oranye / Violet */}
+            <div
+              className={`absolute -top-10 left-1/2 -translate-x-1/2 w-56 h-56 rounded-full blur-3xl pointer-events-none transition-colors ${
+                isMythic ? 'bg-purple-600/30' : 'bg-orange-500/20'
+              }`}
+            />
 
             {/* Header Nav */}
             <div className="w-full flex items-center justify-between z-10 mb-1">
@@ -189,15 +229,22 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                   }}
                   className="my-1 flex items-center justify-center"
                 >
-                  <GlossyFlameIcon className="w-20 h-24" />
+                  <GlossyFlameIcon className="w-20 h-24" streakCount={streak.currentStreak} />
                 </motion.div>
 
                 <h2 className="text-3xl font-extrabold text-slate-900 dark:text-zinc-100 tracking-tight mt-1">
                   {streak.currentStreak} Hari
                 </h2>
 
-                <p className="text-xs font-semibold text-amber-500 dark:text-amber-400 mt-0.5 tracking-wide">
-                  Streak Menyala!
+                {/* TEKS DENGAN NAMA USER */}
+                <p
+                  className={`text-xs font-extrabold mt-0.5 tracking-wide ${
+                    isMythic
+                      ? 'text-purple-600 dark:text-purple-400 drop-shadow-[0_0_8px_rgba(168,85,247,0.4)]'
+                      : 'text-amber-500 dark:text-amber-400'
+                  }`}
+                >
+                  {userName} Menyala!
                 </p>
 
                 {/* BANNER STREAK REVIVE JIKA PUTUS */}
@@ -255,14 +302,16 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                           <div
                             className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold transition-all ${
                               isActive
-                                ? 'bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-xs'
+                                ? isMythic
+                                  ? 'bg-gradient-to-br from-purple-600 to-pink-500 text-white shadow-xs'
+                                  : 'bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-xs'
                                 : isToday
                                 ? 'border-2 border-dashed border-amber-500 text-amber-500 bg-amber-50/50 dark:bg-amber-950/20'
                                 : 'bg-slate-200/70 dark:bg-zinc-700/60 text-slate-400 dark:text-zinc-500'
                             }`}
                           >
                             {isActive ? (
-                              <GlossyFlameIcon className="w-4 h-5" />
+                              <GlossyFlameIcon className="w-4 h-5" streakCount={streak.currentStreak} />
                             ) : (
                               <span>{day.initial}</span>
                             )}
@@ -319,7 +368,11 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                   whileTap={{ scale: 0.98 }}
                   type="button"
                   onClick={handleOpenLeaderboard}
-                  className="mt-4 w-full py-3 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white font-bold text-xs shadow-md shadow-orange-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer"
+                  className={`mt-4 w-full py-3 rounded-2xl text-white font-bold text-xs shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                    isMythic
+                      ? 'bg-gradient-to-r from-purple-600 via-pink-500 to-rose-500 shadow-purple-500/25'
+                      : 'bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 shadow-orange-500/20'
+                  }`}
                 >
                   <Trophy className="w-4 h-4" />
                   <span>Leaderboard Streak</span>
@@ -379,7 +432,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                           </div>
 
                           <div className="flex items-center gap-1.5 shrink-0 bg-white dark:bg-zinc-900 px-2.5 py-1 rounded-xl border border-slate-100 dark:border-zinc-700/50">
-                            <GlossyFlameIcon className="w-3.5 h-4" />
+                            <GlossyFlameIcon className="w-3.5 h-4" streakCount={user.currentStreak} />
                             <span className="text-xs font-extrabold text-slate-900 dark:text-zinc-100 tabular-nums">
                               {user.currentStreak}
                             </span>
