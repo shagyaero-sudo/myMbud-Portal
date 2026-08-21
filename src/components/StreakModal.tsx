@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
-  Flame,
   Trophy,
   CalendarCheck,
   Loader2,
@@ -25,6 +24,38 @@ interface StreakModalProps {
   onStreakUpdate?: (updated: UserStreak) => void;
 }
 
+// Komponen SVG Api Custom yang identik dengan Header Badge
+const StreakFlameIcon: React.FC<{ className?: string }> = ({ className = "w-24 h-24" }) => (
+  <svg
+    viewBox="0 0 64 64"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={`${className} drop-shadow-[0_8px_24px_rgba(249,115,22,0.45)]`}
+  >
+    <defs>
+      <linearGradient id="modalFlameGradOuter" x1="10" y1="60" x2="54" y2="4" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stopColor="#EA580C" />
+        <stop offset="50%" stopColor="#F97316" />
+        <stop offset="100%" stopColor="#FBBF24" />
+      </linearGradient>
+      <linearGradient id="modalFlameGradInner" x1="24" y1="56" x2="40" y2="24" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stopColor="#F59E0B" />
+        <stop offset="100%" stopColor="#FEF08A" />
+      </linearGradient>
+    </defs>
+    {/* Lidah Api Utama Luar */}
+    <path
+      d="M32 4C32 4 39 16 39 24C39 25.5 38.6 27 38 28.3C41.2 24.8 44 20 44 20C44 20 54 31 54 44C54 55.0457 44.1503 64 32 64C19.8497 64 10 55.0457 10 44C10 32 21 21 26 15C26 21 29 25 32 25C32 18 32 4 32 4Z"
+      fill="url(#modalFlameGradOuter)"
+    />
+    {/* Inti Api Kuning Cerah */}
+    <path
+      d="M32 30C32 30 39 37 39 45C39 49.9706 35.866 54 32 54C28.134 54 25 49.9706 25 45C25 37 32 30 32 30Z"
+      fill="url(#modalFlameGradInner)"
+    />
+  </svg>
+);
+
 export const StreakModal: React.FC<StreakModalProps> = ({
   isOpen,
   onClose,
@@ -37,8 +68,19 @@ export const StreakModal: React.FC<StreakModalProps> = ({
   const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState(false);
   const [isReviving, setIsReviving] = useState(false);
 
-  const daysOfWeek = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
-  const todayIndex = new Date().getDay();
+  // Format Hari: Senin -> Minggu
+  // jsDay: indeks getDay() JavaScript (0 = Min, 1 = Sen, ..., 6 = Sab)
+  const daysOfWeek = [
+    { label: 'Sen', initial: 'S', jsDay: 1 },
+    { label: 'Sel', initial: 'S', jsDay: 2 },
+    { label: 'Rab', initial: 'R', jsDay: 3 },
+    { label: 'Kam', initial: 'K', jsDay: 4 },
+    { label: 'Jum', initial: 'J', jsDay: 5 },
+    { label: 'Sab', initial: 'S', jsDay: 6 },
+    { label: 'Min', initial: 'M', jsDay: 0 },
+  ];
+  
+  const todayJsDay = new Date().getDay();
 
   const handleOpenLeaderboard = async () => {
     setViewMode('leaderboard');
@@ -81,7 +123,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[99999] bg-slate-900/60 dark:bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 select-none"
+          className="fixed inset-0 z-[99999] bg-slate-900/60 dark:bg-black/80 backdrop-blur-md flex items-center justify-center p-4 select-none"
           onClick={onClose}
         >
           <motion.div
@@ -92,8 +134,8 @@ export const StreakModal: React.FC<StreakModalProps> = ({
             className="relative max-w-sm sm:max-w-md w-full rounded-3xl bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 shadow-2xl p-6 sm:p-7 text-center overflow-hidden flex flex-col items-center max-h-[88vh]"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Ambient Glow */}
-            <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-48 h-48 bg-gradient-to-b from-amber-500/20 to-orange-500/0 rounded-full blur-3xl pointer-events-none" />
+            {/* Ambient Glow Oranye di Belakang Api */}
+            <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-52 h-52 bg-orange-500/20 rounded-full blur-3xl pointer-events-none" />
 
             {/* Header Navigation */}
             <div className="w-full flex items-center justify-between z-10 mb-1">
@@ -127,26 +169,27 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                 animate={{ opacity: 1, x: 0 }}
                 className="w-full flex flex-col items-center"
               >
+                {/* SVG Api Sesuai Header */}
                 <motion.div
                   animate={{
-                    scale: [1, 1.08, 1],
-                    rotate: [0, -3, 3, 0],
+                    scale: [1, 1.06, 1],
+                    y: [0, -3, 0],
                   }}
                   transition={{
-                    duration: 2,
+                    duration: 2.2,
                     repeat: Infinity,
                     ease: 'easeInOut',
                   }}
-                  className="w-20 h-20 rounded-3xl bg-gradient-to-tr from-amber-500 to-orange-500 flex items-center justify-center text-white shadow-lg shadow-orange-500/30 mb-3"
+                  className="my-1 flex items-center justify-center"
                 >
-                  <Flame className="w-11 h-11 fill-current" />
+                  <StreakFlameIcon className="w-20 h-20" />
                 </motion.div>
 
-                <h2 className="text-3xl font-extrabold text-slate-900 dark:text-zinc-100 tracking-tight">
+                <h2 className="text-3xl font-extrabold text-slate-900 dark:text-zinc-100 tracking-tight mt-1">
                   {streak.currentStreak} Hari
                 </h2>
 
-                <p className="text-xs font-semibold text-amber-500 dark:text-amber-400 mt-1 tracking-wide">
+                <p className="text-xs font-semibold text-amber-500 dark:text-amber-400 mt-0.5 tracking-wide">
                   Streak Menyala!
                 </p>
 
@@ -189,19 +232,19 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                   </motion.div>
                 )}
 
-                {/* Progress Mingguan Sen - Min */}
+                {/* Progress Mingguan: Senin -> Minggu */}
                 <div className="w-full mt-4 p-4 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 space-y-2">
                   <p className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 text-left flex items-center gap-1.5">
                     <CalendarCheck className="w-3.5 h-3.5" />
                     Aktivitas Minggu Ini
                   </p>
                   <div className="grid grid-cols-7 gap-1.5 pt-1">
-                    {daysOfWeek.map((day, idx) => {
-                      const isActive = streak.weeklyActiveDays?.includes(idx);
-                      const isToday = idx === todayIndex;
+                    {daysOfWeek.map((day) => {
+                      const isActive = streak.weeklyActiveDays?.includes(day.jsDay);
+                      const isToday = day.jsDay === todayJsDay;
 
                       return (
-                        <div key={day} className="flex flex-col items-center gap-1">
+                        <div key={day.label} className="flex flex-col items-center gap-1">
                           <div
                             className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold transition-all ${
                               isActive
@@ -212,9 +255,9 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                             }`}
                           >
                             {isActive ? (
-                              <Flame className="w-4 h-4 fill-current" />
+                              <StreakFlameIcon className="w-5 h-5 drop-shadow-none" />
                             ) : (
-                              <span>{day[0]}</span>
+                              <span>{day.initial}</span>
                             )}
                           </div>
                           <span
@@ -224,7 +267,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                                 : 'text-slate-400 dark:text-zinc-500'
                             }`}
                           >
-                            {day}
+                            {day.label}
                           </span>
                         </div>
                       );
@@ -328,8 +371,8 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-1 shrink-0 bg-white dark:bg-zinc-900 px-2.5 py-1 rounded-xl border border-slate-100 dark:border-zinc-700/50">
-                            <span className="text-xs">🔥</span>
+                          <div className="flex items-center gap-1.5 shrink-0 bg-white dark:bg-zinc-900 px-2.5 py-1 rounded-xl border border-slate-100 dark:border-zinc-700/50">
+                            <StreakFlameIcon className="w-3.5 h-3.5 drop-shadow-none" />
                             <span className="text-xs font-extrabold text-slate-900 dark:text-zinc-100 tabular-nums">
                               {user.currentStreak}
                             </span>
