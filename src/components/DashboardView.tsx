@@ -514,7 +514,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             onClick={() => setIsStreakModalOpen(true)}
             className="relative flex items-center h-9 pl-7 pr-3.5 rounded-full bg-[#2a303c] hover:bg-[#343b49] border border-white/5 shadow-md shadow-black/20 transition-all cursor-pointer shrink-0 select-none group"
           >
-            {/* 3D Glossy Flame Asset */}
+            {/* 3D Glossy Flame Asset HP */}
             <div className="absolute -left-2.5 -top-1.5 w-9 h-11 pointer-events-none group-hover:scale-110 transition-transform">
               <GlossyFlameIcon className="w-full h-full" streakCount={streakData.currentStreak} />
             </div>
