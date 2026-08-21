@@ -14,10 +14,10 @@ import { db } from './firebase';
 export interface UserStreak {
   currentStreak: number;
   longestStreak: number;
-  lastActiveDate: string; // Format: "YYYY-MM-DD"
+  lastActiveDate: string; // Format: "YYYY-MM-DD" (Local Timezone)
   weeklyActiveDays: number[]; // Index hari (0 = Min, 1 = Sen, ..., 6 = Sab)
   reviveQuota: number; // 3x jatah per bulan
-  reviveMonth?: string; // Format: "YYYY-MM" penanda bulan kuota
+  reviveMonth?: string; // Format: "YYYY-MM"
   previousBrokenStreak?: number;
   canRevive?: boolean;
 }
@@ -34,11 +34,27 @@ export interface LeaderboardUser {
   longestStreak: number;
 }
 
-const STORAGE_KEY = 'mymbud_user_streak';
+const STORAGE_KEY = 'mymbud_user_streak_v1';
 const POPUP_SEEN_KEY = 'mymbud_streak_popup_seen_date';
 
+// HELPER: Tanggal & Bulan berdasarkan Waktu Lokal (WIB / Perangkat)
+const getLocalDateString = (): string => {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const getLocalMonthString = (): string => {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  return `${year}-${month}`;
+};
+
 export const getLocalStreak = (): UserStreak => {
-  const currentMonthKey = new Date().toISOString().slice(0, 7); // "YYYY-MM"
+  const currentMonthKey = getLocalMonthString();
   const defaultStreak: UserStreak = {
     currentStreak: 1,
     longestStreak: 1,
@@ -72,8 +88,8 @@ export const syncUserStreak = async (
   userNrp: string,
   userName: string
 ): Promise<SyncStreakResult> => {
-  const today = new Date().toISOString().split('T')[0];
-  const currentMonthKey = today.slice(0, 7); // "YYYY-MM"
+  const today = getLocalDateString(); // Fix: Waktu lokal hari ini
+  const currentMonthKey = getLocalMonthString();
   const currentDayIndex = new Date().getDay();
   const normalizedNrp = userNrp.trim().toLowerCase();
 
@@ -81,13 +97,12 @@ export const syncUserStreak = async (
   const lastSeenPopupDate = localStorage.getItem(POPUP_SEEN_KEY);
   const isFirstVisitToday = lastSeenPopupDate !== today;
 
-  // Cek dan reset jatah revive jika berganti bulan kalender
   let reviveQuota = typeof cached.reviveQuota === 'number' ? cached.reviveQuota : 3;
   if (cached.reviveMonth !== currentMonthKey) {
     reviveQuota = 3;
   }
 
-  // Jika hari ini sudah tercatat di cache lokal
+  // Jika hari ini sudah tercatat di cache lokal (0 READ & 0 WRITE)
   if (cached.lastActiveDate === today) {
     if (isFirstVisitToday) {
       localStorage.setItem(POPUP_SEEN_KEY, today);
@@ -111,8 +126,12 @@ export const syncUserStreak = async (
     newLongest = 1;
     newWeeklyDays = [currentDayIndex];
   } else {
-    const lastDate = new Date(cached.lastActiveDate);
-    const currDate = new Date(today);
+    const [ly, lm, ld] = cached.lastActiveDate.split('-').map(Number);
+    const [ty, tm, td] = today.split('-').map(Number);
+
+    const lastDate = new Date(ly, lm - 1, ld);
+    const currDate = new Date(ty, tm - 1, td);
+
     const diffTime = currDate.getTime() - lastDate.getTime();
     const diffDays = Math.round(diffTime / (1000 * 3600 * 24));
 
@@ -164,6 +183,7 @@ export const syncUserStreak = async (
           weeklyActiveDays: newWeeklyDays,
           reviveQuota,
           reviveMonth: currentMonthKey,
+          lastCheckedInAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
         },
         { merge: true }
@@ -187,8 +207,8 @@ export const useStreakRevive = async (
   }
 
   const normalizedNrp = userNrp.trim().toLowerCase();
-  const today = new Date().toISOString().split('T')[0];
-  const currentMonthKey = today.slice(0, 7);
+  const today = getLocalDateString();
+  const currentMonthKey = getLocalMonthString();
 
   const restoredStreakCount = cached.previousBrokenStreak;
   const newQuota = cached.reviveQuota - 1;
@@ -219,6 +239,7 @@ export const useStreakRevive = async (
           reviveQuota: newQuota,
           reviveMonth: currentMonthKey,
           lastActiveDate: today,
+          lastCheckedInAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
         },
         { merge: true }
@@ -236,6 +257,7 @@ export const fetchStreakLeaderboard = async (): Promise<LeaderboardUser[]> => {
     const q = query(
       collection(db, 'user_streaks'),
       orderBy('currentStreak', 'desc'),
+      orderBy('lastCheckedInAt', 'asc'),
       limit(20)
     );
     const snapshot = await getDocs(q);
@@ -252,8 +274,31 @@ export const fetchStreakLeaderboard = async (): Promise<LeaderboardUser[]> => {
     });
 
     return leaderboard;
-  } catch (err) {
-    console.error('[Streak] Gagal mengambil leaderboard:', err);
-    return [];
+  } catch (err: any) {
+    console.warn('[Streak] Fallback ke single index leaderboard:', err?.message);
+    try {
+      const fallbackQuery = query(
+        collection(db, 'user_streaks'),
+        orderBy('currentStreak', 'desc'),
+        limit(20)
+      );
+      const snapshot = await getDocs(fallbackQuery);
+      const leaderboard: LeaderboardUser[] = [];
+
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        leaderboard.push({
+          nrp: data.nrp || docSnap.id,
+          name: data.name || 'Mbuders',
+          currentStreak: data.currentStreak || 1,
+          longestStreak: data.longestStreak || 1,
+        });
+      });
+
+      return leaderboard;
+    } catch (fallbackErr) {
+      console.error('[Streak] Gagal mengambil leaderboard:', fallbackErr);
+      return [];
+    }
   }
 };
