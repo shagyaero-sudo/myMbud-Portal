@@ -24,36 +24,46 @@ interface StreakModalProps {
   onStreakUpdate?: (updated: UserStreak) => void;
 }
 
-// Komponen SVG Api Custom yang identik dengan Header Badge
-const StreakFlameIcon: React.FC<{ className?: string }> = ({ className = "w-24 h-24" }) => (
-  <svg
-    viewBox="0 0 64 64"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    className={`${className} drop-shadow-[0_8px_24px_rgba(249,115,22,0.45)]`}
-  >
-    <defs>
-      <linearGradient id="modalFlameGradOuter" x1="10" y1="60" x2="54" y2="4" gradientUnits="userSpaceOnUse">
-        <stop offset="0%" stopColor="#EA580C" />
-        <stop offset="50%" stopColor="#F97316" />
-        <stop offset="100%" stopColor="#FBBF24" />
-      </linearGradient>
-      <linearGradient id="modalFlameGradInner" x1="24" y1="56" x2="40" y2="24" gradientUnits="userSpaceOnUse">
-        <stop offset="0%" stopColor="#F59E0B" />
-        <stop offset="100%" stopColor="#FEF08A" />
-      </linearGradient>
-    </defs>
-    {/* Lidah Api Utama Luar */}
-    <path
-      d="M32 4C32 4 39 16 39 24C39 25.5 38.6 27 38 28.3C41.2 24.8 44 20 44 20C44 20 54 31 54 44C54 55.0457 44.1503 64 32 64C19.8497 64 10 55.0457 10 44C10 32 21 21 26 15C26 21 29 25 32 25C32 18 32 4 32 4Z"
-      fill="url(#modalFlameGradOuter)"
-    />
-    {/* Inti Api Kuning Cerah */}
-    <path
-      d="M32 30C32 30 39 37 39 45C39 49.9706 35.866 54 32 54C28.134 54 25 49.9706 25 45C25 37 32 30 32 30Z"
-      fill="url(#modalFlameGradInner)"
-    />
-  </svg>
+// 3D Glossy Flame Asset Asli
+const GlossyFlameIcon: React.FC<{ className?: string }> = ({ className = "w-20 h-24" }) => (
+  <div className={`relative flex items-center justify-center ${className}`}>
+    <svg viewBox="0 0 100 120" className="w-full h-full overflow-visible filter drop-shadow-[0_4px_16px_rgba(255,80,0,0.5)]">
+      <defs>
+        <linearGradient id="modalFlameOuter" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#FF1E00" />
+          <stop offset="50%" stopColor="#FF4500" />
+          <stop offset="100%" stopColor="#FF8C00" />
+        </linearGradient>
+        <linearGradient id="modalFlameInner" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#FFFFFF" />
+          <stop offset="35%" stopColor="#FFF200" />
+          <stop offset="100%" stopColor="#FFAE00" />
+        </linearGradient>
+        <linearGradient id="modalFlameGloss" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.8" />
+          <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+
+      <path
+        d="M50 2 C55 24, 78 35, 88 56 C99 77, 92 102, 73 114 C54 125, 26 122, 12 105 C-2 88, 1 65, 15 48 C20 42, 23 48, 25 39 C27 28, 38 18, 50 2 Z"
+        fill="url(#modalFlameOuter)"
+      />
+      <path
+        d="M50 28 C56 42, 74 52, 78 68 C83 85, 74 103, 58 110 C42 117, 24 112, 18 97 C12 82, 19 68, 28 58 C33 53, 34 43, 50 28 Z"
+        fill="#FF5E00"
+        opacity="0.85"
+      />
+      <path
+        d="M50 48 C55 58, 67 67, 68 79 C69 92, 60 104, 48 107 C36 110, 26 102, 25 90 C24 78, 32 68, 38 61 C42 56, 43 51, 50 48 Z"
+        fill="url(#modalFlameInner)"
+      />
+      <path
+        d="M48 12 C38 24, 25 38, 20 54 C16 68, 18 78, 17 84 C15 76, 16 60, 24 46 C32 32, 42 20, 48 12 Z"
+        fill="url(#modalFlameGloss)"
+      />
+    </svg>
+  </div>
 );
 
 export const StreakModal: React.FC<StreakModalProps> = ({
@@ -68,8 +78,6 @@ export const StreakModal: React.FC<StreakModalProps> = ({
   const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState(false);
   const [isReviving, setIsReviving] = useState(false);
 
-  // Format Hari: Senin -> Minggu
-  // jsDay: indeks getDay() JavaScript (0 = Min, 1 = Sen, ..., 6 = Sab)
   const daysOfWeek = [
     { label: 'Sen', initial: 'S', jsDay: 1 },
     { label: 'Sel', initial: 'S', jsDay: 2 },
@@ -79,7 +87,6 @@ export const StreakModal: React.FC<StreakModalProps> = ({
     { label: 'Sab', initial: 'S', jsDay: 6 },
     { label: 'Min', initial: 'M', jsDay: 0 },
   ];
-  
   const todayJsDay = new Date().getDay();
 
   const handleOpenLeaderboard = async () => {
@@ -134,10 +141,10 @@ export const StreakModal: React.FC<StreakModalProps> = ({
             className="relative max-w-sm sm:max-w-md w-full rounded-3xl bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 shadow-2xl p-6 sm:p-7 text-center overflow-hidden flex flex-col items-center max-h-[88vh]"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Ambient Glow Oranye di Belakang Api */}
-            <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-52 h-52 bg-orange-500/20 rounded-full blur-3xl pointer-events-none" />
+            {/* Glow Ambient di Belakang Api */}
+            <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-56 h-56 bg-orange-500/20 rounded-full blur-3xl pointer-events-none" />
 
-            {/* Header Navigation */}
+            {/* Header Nav */}
             <div className="w-full flex items-center justify-between z-10 mb-1">
               {viewMode === 'leaderboard' ? (
                 <button
@@ -169,10 +176,10 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                 animate={{ opacity: 1, x: 0 }}
                 className="w-full flex flex-col items-center"
               >
-                {/* SVG Api Sesuai Header */}
+                {/* 3D Glossy SVG Flame Utama */}
                 <motion.div
                   animate={{
-                    scale: [1, 1.06, 1],
+                    scale: [1, 1.07, 1],
                     y: [0, -3, 0],
                   }}
                   transition={{
@@ -182,7 +189,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                   }}
                   className="my-1 flex items-center justify-center"
                 >
-                  <StreakFlameIcon className="w-20 h-20" />
+                  <GlossyFlameIcon className="w-20 h-24" />
                 </motion.div>
 
                 <h2 className="text-3xl font-extrabold text-slate-900 dark:text-zinc-100 tracking-tight mt-1">
@@ -255,7 +262,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                             }`}
                           >
                             {isActive ? (
-                              <StreakFlameIcon className="w-5 h-5 drop-shadow-none" />
+                              <GlossyFlameIcon className="w-4 h-5" />
                             ) : (
                               <span>{day.initial}</span>
                             )}
@@ -372,7 +379,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                           </div>
 
                           <div className="flex items-center gap-1.5 shrink-0 bg-white dark:bg-zinc-900 px-2.5 py-1 rounded-xl border border-slate-100 dark:border-zinc-700/50">
-                            <StreakFlameIcon className="w-3.5 h-3.5 drop-shadow-none" />
+                            <GlossyFlameIcon className="w-3.5 h-4" />
                             <span className="text-xs font-extrabold text-slate-900 dark:text-zinc-100 tabular-nums">
                               {user.currentStreak}
                             </span>
