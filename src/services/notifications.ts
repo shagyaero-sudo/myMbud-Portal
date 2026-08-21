@@ -18,7 +18,7 @@ export function subscribeNotifications(
   targetNrp: string,
   callback: (notifications: AppNotification[]) => void
 ) {
-  if (!targetNrp) {
+  if (!targetNrp || targetNrp === 'unknown') {
     callback([]);
     return () => {};
   }
@@ -29,7 +29,7 @@ export function subscribeNotifications(
     const { data, error } = await supabase
       .from(NOTIFICATIONS_TABLE)
       .select('*')
-      .or(`target_nrp.eq.${normalizedNrp},target_nrp.eq.ALL`)
+      .or(`target_nrp.eq.${normalizedNrp},target_nrp.eq.all,target_nrp.eq.ALL`)
       .order('created_at', { ascending: false });
 
     if (error || !data) {
@@ -84,9 +84,11 @@ export async function createNotification({
   }
 
   const id = crypto.randomUUID();
+  const normalizedTarget = targetNrp.trim().toLowerCase();
+
   const { error } = await supabase.from(NOTIFICATIONS_TABLE).insert({
     id,
-    target_nrp: targetNrp.trim().toLowerCase(),
+    target_nrp: normalizedTarget,
     title,
     message,
     is_read: false,
@@ -114,7 +116,7 @@ export async function markAllNotificationsAsRead(targetNrp: string) {
   await supabase
     .from(NOTIFICATIONS_TABLE)
     .update({ is_read: true })
-    .or(`target_nrp.eq.${normalizedNrp},target_nrp.eq.ALL`)
+    .or(`target_nrp.eq.${normalizedNrp},target_nrp.eq.all,target_nrp.eq.ALL`)
     .eq('is_read', false);
 }
 
