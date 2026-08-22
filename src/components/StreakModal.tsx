@@ -155,7 +155,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
     if (index === 1) return <span className="text-base">🥈</span>;
     if (index === 2) return <span className="text-base">🥉</span>;
     return (
-      <span className="w-5 h-5 rounded-full bg-slate-100 dark:bg-zinc-800 text-[10px] font-extrabold text-slate-500 dark:text-zinc-400 flex items-center justify-center">
+      <span className="w-5 h-5 rounded-full bg-slate-100 dark:bg-zinc-800 text-[10px] font-bold text-slate-500 dark:text-zinc-400 flex items-center justify-center">
         {index + 1}
       </span>
     );
@@ -234,13 +234,13 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                   <GlossyFlameIcon className="w-20 h-24" streakCount={streak.currentStreak} />
                 </motion.div>
 
-                <h2 className="text-3xl font-extrabold text-slate-900 dark:text-zinc-100 tracking-tight mt-1">
+                <h2 className="text-3xl font-bold text-slate-900 dark:text-zinc-100 tracking-tight mt-1">
                   {streak.currentStreak} Hari
                 </h2>
 
                 {/* TEKS DENGAN NAMA USER */}
                 <p
-                  className={`text-xs font-extrabold mt-0.5 tracking-wide ${
+                  className={`text-xs font-bold mt-0.5 tracking-wide ${
                     isMythic
                       ? 'text-purple-600 dark:text-purple-400 drop-shadow-[0_0_8px_rgba(168,85,247,0.4)]'
                       : 'text-amber-500 dark:text-amber-400'
@@ -274,7 +274,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                       type="button"
                       disabled={isReviving}
                       onClick={handleRevive}
-                      className="w-full py-2 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-600 hover:to-amber-600 text-white font-extrabold text-xs shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60"
+                      className="w-full py-2 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-600 hover:to-amber-600 text-white font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60"
                     >
                       {isReviving ? (
                         <>
@@ -379,6 +379,11 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                   <Trophy className="w-4 h-4" />
                   <span>Leaderboard Streak</span>
                 </motion.button>
+
+                {/* Catatan Pengingat Login Harian */}
+                <p className="mt-2.5 text-[11px] font-normal text-slate-400 dark:text-zinc-500 leading-snug">
+                  Buka myMbud min. 1x/hari untuk mempertahankan streak-mu! 
+                </p>
               </motion.div>
             )}
 
@@ -425,7 +430,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                             {getRankBadge(idx)}
                             <div className="text-left min-w-0">
                               <p className="text-xs font-bold text-slate-800 dark:text-zinc-200 truncate">
-                                {user.name} {isMe && <span className="text-[10px] text-amber-600 dark:text-amber-400 font-extrabold">(Kamu)</span>}
+                                {user.name} {isMe && <span className="text-[10px] text-amber-600 dark:text-amber-400 font-bold">(Kamu)</span>}
                               </p>
                               <p className="text-[10px] text-slate-400 dark:text-zinc-500 truncate">
                                 Rekor: {user.longestStreak} hari
@@ -435,7 +440,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
 
                           <div className="flex items-center gap-1.5 shrink-0 bg-white dark:bg-zinc-900 px-2.5 py-1 rounded-xl border border-slate-100 dark:border-zinc-700/50">
                             <GlossyFlameIcon className="w-3.5 h-4" streakCount={user.currentStreak} />
-                            <span className="text-xs font-extrabold text-slate-900 dark:text-zinc-100 tabular-nums">
+                            <span className="text-xs font-bold text-slate-900 dark:text-zinc-100 tabular-nums">
                               {user.currentStreak}
                             </span>
                           </div>
