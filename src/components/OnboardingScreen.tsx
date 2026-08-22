@@ -130,7 +130,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
           {step > 1 && step < 5 ? (
             <button
               onClick={prevStep}
-              className="p-1.5 -ml-2 rounded-full text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors cursor-pointer flex items-center gap-1 text-xs font-semibold"
+              className="p-1.5 -ml-2 rounded-full text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors cursor-pointer flex items-center gap-1 text-xs font-bold"
             >
               <ChevronLeft className="w-5 h-5" />
               <span>Kembali</span>
@@ -177,10 +177,10 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
                 </div>
 
                 <div className="space-y-2">
-                  <span className="text-xs font-semibold uppercase tracking-widest text-blue-600 dark:text-blue-400 block">
+                  <span className="text-xs font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400 block">
                     Halo, {userName.split(' ')[0]}!
                   </span>
-                  <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">
+                  <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
                     Selamat datang di myMbud.
                   </h1>
                   <p className="text-xs sm:text-sm font-normal text-slate-500 dark:text-zinc-400 leading-relaxed max-w-xs mx-auto">
@@ -202,7 +202,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
                 className="space-y-5 text-center py-2"
               >
                 <div className="space-y-1">
-                  <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
+                  <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
                     Semua kebutuhanmu, <br /> ada di satu tempat.
                   </h2>
                   <p className="text-xs font-normal text-slate-500 dark:text-zinc-400">
@@ -224,7 +224,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
                         <div className={`p-2 rounded-xl shrink-0 ${item.color}`}>
                           <Icon className="w-4 h-4" />
                         </div>
-                        <span className="text-[11px] font-semibold text-slate-800 dark:text-zinc-200 leading-tight">
+                        <span className="text-[11px] font-bold text-slate-800 dark:text-zinc-200 leading-tight">
                           {item.label}
                         </span>
                       </motion.div>
@@ -246,7 +246,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
                 className="space-y-5 py-2 text-left"
               >
                 <div className="text-center space-y-1">
-                  <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
+                  <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
                     Mari siapkan myMbud untukmu.
                   </h2>
                   <p className="text-xs font-normal text-slate-500 dark:text-zinc-400">
@@ -256,14 +256,14 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 
                 <div className="space-y-4 pt-1">
                   <div className="space-y-1.5">
-                    <span className="text-[11px] font-semibold text-slate-400 dark:text-zinc-500 uppercase tracking-wider block">
+                    <span className="text-[11px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider block">
                       Mode Tampilan
                     </span>
                     <div className="grid grid-cols-2 gap-2">
                       <button
                         type="button"
                         onClick={() => handleApplyTheme('light', themeAccent)}
-                        className={`flex items-center justify-center gap-2 py-3 rounded-2xl border text-xs font-semibold transition-all cursor-pointer ${
+                        className={`flex items-center justify-center gap-2 py-3 rounded-2xl border text-xs font-bold transition-all cursor-pointer ${
                           themeMode === 'light'
                             ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 shadow-xs'
                             : 'border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-800/40 text-slate-500 dark:text-zinc-400'
@@ -276,7 +276,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
                       <button
                         type="button"
                         onClick={() => handleApplyTheme('dark', themeAccent)}
-                        className={`flex items-center justify-center gap-2 py-3 rounded-2xl border text-xs font-semibold transition-all cursor-pointer ${
+                        className={`flex items-center justify-center gap-2 py-3 rounded-2xl border text-xs font-bold transition-all cursor-pointer ${
                           themeMode === 'dark'
                             ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 shadow-xs'
                             : 'border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-800/40 text-slate-500 dark:text-zinc-400'
@@ -289,7 +289,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
                   </div>
 
                   <div className="space-y-1.5">
-                    <span className="text-[11px] font-semibold text-slate-400 dark:text-zinc-500 uppercase tracking-wider block">
+                    <span className="text-[11px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider block">
                       Warna Favoritmu
                     </span>
                     <div className="flex items-center justify-between p-2.5 bg-slate-50 dark:bg-zinc-800/40 rounded-2xl border border-slate-200/50 dark:border-zinc-800">
@@ -326,11 +326,11 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
                 className="space-y-5 py-2 text-center"
               >
                 <div className="space-y-1">
-                  <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
+                  <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
                     Jangan sampai ketinggalan.
                   </h2>
                   <p className="text-xs font-normal text-slate-500 dark:text-zinc-400 max-w-xs mx-auto leading-relaxed">
-                    myMbud dapat memberitahumu secara cepat ketika ada pengumuman mendesak atau tugas baru dari kelas.
+                    myMbud dapat memberitahumu ketika ada pengumuman mendesak atau tugas baru dari kelas.
                   </p>
                 </div>
 
@@ -344,14 +344,14 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
                       <div className="w-5 h-5 rounded-lg bg-blue-600 flex items-center justify-center text-white">
                         <Bell className="w-3 h-3" />
                       </div>
-                      <span className="text-[11px] font-semibold text-slate-900 dark:text-white uppercase tracking-wider">
+                      <span className="text-[11px] font-bold text-slate-900 dark:text-white uppercase tracking-wider">
                         myMbud
                       </span>
                     </div>
                     <span className="text-[10px] font-medium text-slate-400">Baru saja</span>
                   </div>
                   <div>
-                    <h3 className="text-xs font-semibold text-slate-900 dark:text-zinc-100">
+                    <h3 className="text-xs font-bold text-slate-900 dark:text-zinc-100">
                       Pengumuman baru telah diposting!
                     </h3>
                     <p className="text-[11px] font-normal text-slate-500 dark:text-zinc-400 leading-snug mt-0.5">
@@ -379,11 +379,11 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
                   transition={{ type: 'spring', stiffness: 400, damping: 25 }}
                   className="mx-auto w-20 h-20 rounded-full bg-[#34C759] text-white flex items-center justify-center shadow-lg shadow-[#34C759]/30"
                 >
-                  <Check className="w-10 h-10 stroke-[2.5]" />
+                  <Check className="w-10 h-10 stroke-[2.8]" />
                 </motion.div>
 
                 <div className="space-y-2">
-                  <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">
+                  <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
                     myMbud siap digunakan.
                   </h2>
                   <p className="text-xs sm:text-sm font-normal text-slate-500 dark:text-zinc-400">
@@ -403,7 +403,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
               whileTap={{ scale: 0.98 }}
               onClick={handlePushActivation}
               disabled={isEnablingPush}
-              className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs sm:text-sm shadow-lg shadow-blue-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm shadow-lg shadow-blue-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
               <BellRing className="w-4 h-4" />
               <span>{isEnablingPush ? 'Mengaktifkan...' : 'Aktifkan Notifikasi'}</span>
@@ -413,7 +413,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
               whileHover={{ scale: 1.015 }}
               whileTap={{ scale: 0.98 }}
               onClick={handleComplete}
-              className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs sm:text-sm shadow-lg shadow-blue-500/25 transition-all cursor-pointer"
+              className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm shadow-lg shadow-blue-500/25 transition-all cursor-pointer"
             >
               Mulai Gunakan
             </motion.button>
@@ -422,7 +422,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
               whileHover={{ scale: 1.015 }}
               whileTap={{ scale: 0.98 }}
               onClick={nextStep}
-              className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs sm:text-sm shadow-lg shadow-blue-500/25 transition-all cursor-pointer"
+              className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm shadow-lg shadow-blue-500/25 transition-all cursor-pointer"
             >
               Lanjutkan
             </motion.button>
