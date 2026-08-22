@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Dices, RefreshCw, Copy, Check, Save, Users, Sparkles, X, RotateCcw, Trophy, UserCheck } from 'lucide-react';
+import { Dices, RefreshCw, Users, Sparkles, X, RotateCcw, Trophy, UserCheck } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { defaultStudentsList } from '../data/mockData';
 import { GroupResult } from '../types';
@@ -152,133 +152,150 @@ export const SpinwheelView: React.FC<SpinwheelViewProps> = ({ onSaveGroupResult,
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="space-y-6 pb-12"
+      className="space-y-4 sm:space-y-5 pb-12 w-full"
     >
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1 pt-4 sm:pt-6 pb-4 sm:pb-6 mb-2 sm:mb-3">
+      {/* HEADER BANNER */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1 pt-4 sm:pt-6 pb-2">
         <div className="space-y-1">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50/80 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 text-[10px] sm:text-xs font-semibold mb-1 border border-blue-100/50 dark:border-blue-900/40">
             <Dices className="w-3.5 h-3.5" />
             <span>Spin The Wheel!</span>
           </div>
           <h2 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-zinc-100 tracking-tight">Spinwheel Individu/Kelompok</h2>
-          <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1">
+          <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
             Sistem pengocokan nama secara acak dan transparan untuk kelompok atau individu.
           </p>
         </div>
       </div>
 
-      {/* CARD UTAMA (GLASSMORPHISM) */}
-      <div className="max-w-3xl mx-auto bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none space-y-6 transition-all">
-        <div className="flex items-center justify-between pb-2 border-b border-slate-200/40 dark:border-white/5 flex-wrap gap-2">
-          <h3 className="text-base font-bold text-slate-800 dark:text-zinc-100 flex items-center gap-2">
-            <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-            <span>Daftar Anggota Kelas A ({studentList.length} Orang)</span>
-          </h3>
-          {isOfficer && (
-            <button
-              onClick={() => setStudentsText(defaultStudentsList.join('\n'))}
-              className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold flex items-center gap-1 cursor-pointer"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-              <span>Reset Daftar</span>
-            </button>
-          )}
-        </div>
+      {/* CARD UTAMA: FULL WIDTH & 2-COLUMN SPLIT */}
+      <div className="w-full bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-5 sm:p-7 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none transition-all">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          
+          {/* SISI KIRI: DAFTAR NAMA MAHASISWA */}
+          <div className="lg:col-span-6 flex flex-col space-y-3">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-200/40 dark:border-white/5 flex-wrap gap-2">
+              <h3 className="text-sm font-bold text-slate-800 dark:text-zinc-100 flex items-center gap-2">
+                <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                <span>Daftar Anggota Kelas A ({studentList.length} Orang)</span>
+              </h3>
+              {isOfficer && (
+                <button
+                  onClick={() => setStudentsText(defaultStudentsList.join('\n'))}
+                  className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold flex items-center gap-1 cursor-pointer"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>Reset</span>
+                </button>
+              )}
+            </div>
 
-        <div>
-          <div className="flex items-center justify-between mb-1.5">
-            <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300">
-              Nama Mahasiswa:
-            </label>
-          </div>
-          <textarea
-            rows={8}
-            readOnly={!isOfficer}
-            value={studentsText}
-            onChange={(e) => setStudentsText(e.target.value)}
-            placeholder="Ahmad Fauzi&#10;Budi Santoso&#10;Citra Dewi..."
-            className={`w-full p-4 rounded-2xl text-xs font-mono focus:outline-none transition-all ${
-              isOfficer
-                ? 'bg-white/60 dark:bg-zinc-800/70 text-slate-800 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 focus:ring-2 focus:ring-blue-500'
-                : 'bg-white/40 dark:bg-zinc-800/40 text-slate-600 dark:text-zinc-400 border border-slate-200/60 dark:border-zinc-800 cursor-not-allowed select-none'
-            }`}
-          />
-        </div>
-
-        <div className="p-5 rounded-2xl bg-white/60 dark:bg-zinc-800/40 border border-slate-200/50 dark:border-white/5 space-y-4">
-          <h4 className="text-xs font-bold text-slate-700 dark:text-zinc-300 uppercase tracking-wider">Metode Pembagian:</h4>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <motion.button
-              whileTap={{ scale: 0.98 }}
-              type="button"
-              onClick={() => setGroupMode('COUNT')}
-              className={`p-3.5 rounded-2xl text-xs font-semibold transition-all cursor-pointer ${
-                groupMode === 'COUNT'
-                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
-                  : 'bg-white/80 dark:bg-zinc-800/80 text-slate-700 dark:text-zinc-300 hover:bg-white dark:hover:bg-zinc-700 border border-slate-200/50 dark:border-white/5'
-              }`}
-            >
-              Berdasarkan Jumlah Kelompok
-            </motion.button>
-            <motion.button
-              whileTap={{ scale: 0.98 }}
-              type="button"
-              onClick={() => setGroupMode('SIZE')}
-              className={`p-3.5 rounded-2xl text-xs font-semibold transition-all cursor-pointer ${
-                groupMode === 'SIZE'
-                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
-                  : 'bg-white/80 dark:bg-zinc-800/80 text-slate-700 dark:text-zinc-300 hover:bg-white dark:hover:bg-zinc-700 border border-slate-200/50 dark:border-white/5'
-              }`}
-            >
-              Berdasarkan Jumlah Anggota per Kelompok
-            </motion.button>
+            <div className="flex-1 flex flex-col">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
+                Nama Mahasiswa (1 baris per nama):
+              </label>
+              <textarea
+                rows={13}
+                readOnly={!isOfficer}
+                value={studentsText}
+                onChange={(e) => setStudentsText(e.target.value)}
+                placeholder="Ahmad Fauzi&#10;Budi Santoso&#10;Citra Dewi..."
+                className={`w-full flex-1 p-4 rounded-2xl text-xs font-mono focus:outline-none transition-all resize-none ${
+                  isOfficer
+                    ? 'bg-white/60 dark:bg-zinc-800/70 text-slate-800 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 focus:ring-2 focus:ring-blue-500 shadow-xs'
+                    : 'bg-white/40 dark:bg-zinc-800/40 text-slate-600 dark:text-zinc-400 border border-slate-200/60 dark:border-zinc-800 cursor-not-allowed select-none'
+                }`}
+              />
+            </div>
           </div>
 
-          <div className="flex items-center gap-3 pt-2">
-            <span className="text-xs text-slate-700 dark:text-zinc-300 font-semibold">
-              {groupMode === 'COUNT' ? 'Target Jumlah Kelompok:' : 'Target Anggota per Kelompok:'}
-            </span>
-            <input
-              type="number"
-              min={1}
-              max={30}
-              value={groupValue}
-              onChange={(e) => setGroupValue(parseInt(e.target.value) || 1)}
-              className="w-24 px-3 py-2 rounded-xl bg-white/80 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 text-xs font-bold text-center focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xs"
-            />
-            <span className="text-xs text-slate-600 dark:text-zinc-400">
-              {groupMode === 'COUNT' ? 'Kelompok' : 'Orang'}
-            </span>
+          {/* SISI KANAN: METODE PEMBAGIAN & TOMBOL KOCOK */}
+          <div className="lg:col-span-6 flex flex-col space-y-4">
+            <div className="pb-2 border-b border-slate-200/40 dark:border-white/5">
+              <h3 className="text-sm font-bold text-slate-800 dark:text-zinc-100">
+                Konfigurasi & Aksi Pengundian
+              </h3>
+            </div>
+
+            <div className="p-5 rounded-2xl bg-white/60 dark:bg-zinc-800/40 border border-slate-200/50 dark:border-white/5 space-y-4">
+              <h4 className="text-xs font-bold text-slate-700 dark:text-zinc-300 uppercase tracking-wider">
+                Metode Pembagian:
+              </h4>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <motion.button
+                  whileTap={{ scale: 0.98 }}
+                  type="button"
+                  onClick={() => setGroupMode('COUNT')}
+                  className={`p-3.5 rounded-2xl text-xs font-semibold transition-all cursor-pointer ${
+                    groupMode === 'COUNT'
+                      ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                      : 'bg-white/80 dark:bg-zinc-800/80 text-slate-700 dark:text-zinc-300 hover:bg-white dark:hover:bg-zinc-700 border border-slate-200/50 dark:border-white/5'
+                  }`}
+                >
+                  Berdasarkan Jumlah Kelompok
+                </motion.button>
+                <motion.button
+                  whileTap={{ scale: 0.98 }}
+                  type="button"
+                  onClick={() => setGroupMode('SIZE')}
+                  className={`p-3.5 rounded-2xl text-xs font-semibold transition-all cursor-pointer ${
+                    groupMode === 'SIZE'
+                      ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                      : 'bg-white/80 dark:bg-zinc-800/80 text-slate-700 dark:text-zinc-300 hover:bg-white dark:hover:bg-zinc-700 border border-slate-200/50 dark:border-white/5'
+                  }`}
+                >
+                  Berdasarkan Jumlah Anggota
+                </motion.button>
+              </div>
+
+              <div className="flex items-center gap-3 pt-1">
+                <span className="text-xs text-slate-700 dark:text-zinc-300 font-semibold">
+                  {groupMode === 'COUNT' ? 'Target Jumlah Kelompok:' : 'Target Anggota per Kelompok:'}
+                </span>
+                <input
+                  type="number"
+                  min={1}
+                  max={30}
+                  value={groupValue}
+                  onChange={(e) => setGroupValue(parseInt(e.target.value) || 1)}
+                  className="w-24 px-3 py-2 rounded-xl bg-white/80 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 text-xs font-bold text-center focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xs"
+                />
+                <span className="text-xs text-slate-600 dark:text-zinc-400">
+                  {groupMode === 'COUNT' ? 'Kelompok' : 'Orang'}
+                </span>
+              </div>
+            </div>
+
+            <div className="space-y-3 pt-2">
+              <motion.button
+                whileHover={{ scale: 1.015 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleStartSpin}
+                disabled={studentList.length === 0}
+                className="w-full py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-all shadow-md shadow-blue-500/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>Mulai Acak Kelompok</span>
+              </motion.button>
+
+              <motion.button
+                whileHover={{ scale: 1.015 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleStartIndividual}
+                disabled={studentList.length === 0}
+                className="w-full py-3 rounded-2xl bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs transition-all shadow-md shadow-sky-500/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              >
+                <UserCheck className="w-4 h-4" />
+                <span>Acak 1 Orang (Individu)</span>
+              </motion.button>
+            </div>
           </div>
-        </div>
 
-        <div className="space-y-3 pt-2">
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={handleStartSpin}
-            disabled={studentList.length === 0}
-            className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-all shadow-md shadow-blue-500/20 flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <Sparkles className="w-4 h-4" />
-            <span>Mulai Acak Kelompok</span>
-          </motion.button>
-
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={handleStartIndividual}
-            disabled={studentList.length === 0}
-            className="w-full py-3.5 rounded-2xl bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs transition-all shadow-md shadow-sky-500/20 flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <UserCheck className="w-4 h-4" />
-            <span>Acak 1 Orang (Individu)</span>
-          </motion.button>
         </div>
       </div>
 
-      {/* POP-UP MODAL */}
+      {/* POP-UP MODAL HASIL PENGUNDIAN */}
       <AnimatePresence>
         {isModalOpen && (
           <motion.div 
