@@ -132,7 +132,7 @@ export const LetterGeneratorView: React.FC = () => {
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1 pt-4 sm:pt-6 pb-4 sm:pb-6 mb-2 sm:mb-3">
         <div className="flex items-start sm:items-center gap-4">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-blue-50/80 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-100/50 dark:border-blue-900/40">
             <FileText className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
           <div>
@@ -148,10 +148,10 @@ export const LetterGeneratorView: React.FC = () => {
 
       <form
         onSubmit={handleGenerate}
-        className="bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 p-6 sm:p-8 rounded-3xl shadow-[0_4px_25px_-5px_rgba(0,0,0,0.03)] dark:shadow-none space-y-6 transition-colors"
+        className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 p-6 sm:p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none space-y-6 transition-all"
       >
         <div className="space-y-5">
-          <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-zinc-800">
+          <div className="flex items-center gap-2 pb-3 border-b border-slate-200/40 dark:border-white/5">
             <Building2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
             <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100 uppercase tracking-wide">
               1. Detail Instansi & Kegiatan
@@ -171,7 +171,7 @@ export const LetterGeneratorView: React.FC = () => {
                   value={pimpinanInstansi}
                   onChange={(e) => setPimpinanInstansi(e.target.value)}
                   placeholder="Misal: Pimpinan Desa Gebang Putih"
-                  className="w-full pl-10 pr-4 py-2.5 text-xs rounded-2xl bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 text-xs rounded-2xl bg-white/70 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                 />
               </div>
             </div>
@@ -188,7 +188,7 @@ export const LetterGeneratorView: React.FC = () => {
                   value={alamatInstansi}
                   onChange={(e) => setAlamatInstansi(e.target.value)}
                   placeholder="Misal: Jl. Gebang Putih No. 5, Gebang Putih, Kec. Sukolilo Surabaya"
-                  className="w-full pl-10 pr-4 py-2.5 text-xs rounded-2xl bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-none"
+                  className="w-full pl-10 pr-4 py-2.5 text-xs rounded-2xl bg-white/70 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-none"
                 />
               </div>
             </div>
@@ -205,7 +205,7 @@ export const LetterGeneratorView: React.FC = () => {
                   value={mataKuliah}
                   onChange={(e) => setMataKuliah(e.target.value)}
                   placeholder="Misal: Sosiologi Pembangunan"
-                  className="w-full pl-10 pr-4 py-2.5 text-xs rounded-2xl bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 text-xs rounded-2xl bg-white/70 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                 />
               </div>
             </div>
@@ -222,7 +222,7 @@ export const LetterGeneratorView: React.FC = () => {
                   value={tanggalKegiatan}
                   onChange={(e) => setTanggalKegiatan(e.target.value)}
                   placeholder="Misal: 12 - 22 Juni 2026"
-                  className="w-full pl-10 pr-4 py-2.5 text-xs rounded-2xl bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 text-xs rounded-2xl bg-white/70 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                 />
               </div>
             </div>
@@ -239,15 +239,15 @@ export const LetterGeneratorView: React.FC = () => {
                   value={temaWawancara}
                   onChange={(e) => setTemaWawancara(e.target.value)}
                   placeholder="Misal: Pembangunan di bidang Pendidikan"
-                  className="w-full pl-10 pr-4 py-2.5 text-xs rounded-2xl bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 text-xs rounded-2xl bg-white/70 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                 />
               </div>
             </div>
           </div>
         </div>
 
-        <div className="border-t border-slate-100 dark:border-zinc-800 pt-6 space-y-5">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-zinc-800">
+        <div className="border-t border-slate-200/40 dark:border-white/5 pt-6 space-y-5">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-200/40 dark:border-white/5">
             <div className="flex items-center gap-2">
               <User className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100 uppercase tracking-wide">
@@ -268,10 +268,10 @@ export const LetterGeneratorView: React.FC = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   key={index}
-                  className="p-4 rounded-2xl bg-slate-50/70 dark:bg-zinc-800/40 border border-slate-100 dark:border-zinc-800/80 space-y-3 sm:space-y-0 sm:flex sm:items-center sm:gap-3 transition-all"
+                  className="p-4 rounded-2xl bg-white/60 dark:bg-zinc-800/40 border border-slate-200/50 dark:border-white/5 space-y-3 sm:space-y-0 sm:flex sm:items-center sm:gap-3 transition-all"
                 >
                   <div className="flex items-center justify-between sm:justify-start gap-2 shrink-0">
-                    <span className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 text-xs font-bold flex items-center justify-center">
+                    <span className="w-6 h-6 rounded-full bg-blue-100/80 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 text-xs font-bold flex items-center justify-center">
                       {index + 1}
                     </span>
                     <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400 sm:hidden">
@@ -336,7 +336,7 @@ export const LetterGeneratorView: React.FC = () => {
                       className={`p-2 rounded-xl transition-all ${
                         index === 0 && members.length === 1
                           ? 'text-slate-300 dark:text-zinc-700 cursor-not-allowed'
-                          : 'text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40'
+                          : 'text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer'
                       }`}
                     >
                       <Trash2 className="w-4 h-4" />
@@ -353,10 +353,10 @@ export const LetterGeneratorView: React.FC = () => {
               type="button"
               disabled={members.length >= 10}
               onClick={handleAddMember}
-              className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-semibold border transition-all ${
+              className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-semibold border transition-all cursor-pointer ${
                 members.length >= 10
                   ? 'bg-slate-100 dark:bg-zinc-800 text-slate-400 dark:text-zinc-600 border-slate-200 dark:border-zinc-800 cursor-not-allowed'
-                  : 'bg-slate-50 dark:bg-zinc-800 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-900/60 hover:bg-blue-50/80 dark:hover:bg-blue-900/40'
+                  : 'bg-white/70 dark:bg-zinc-800/80 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-900/60 hover:bg-blue-50/80 dark:hover:bg-blue-900/40'
               }`}
             >
               <Plus className="w-4 h-4" />
@@ -365,7 +365,7 @@ export const LetterGeneratorView: React.FC = () => {
           </div>
         </div>
 
-        <div className="border-t border-slate-100 dark:border-zinc-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="border-t border-slate-200/40 dark:border-white/5 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="text-xs text-slate-500 dark:text-zinc-400 flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
             <span>
@@ -385,9 +385,9 @@ export const LetterGeneratorView: React.FC = () => {
         </div>
       </form>
 
-      <div className="bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 p-6 sm:p-8 rounded-3xl shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-4 transition-colors">
-        <div className="flex items-center gap-3 pb-3 border-b border-slate-100 dark:border-zinc-800">
-          <div className="w-10 h-10 rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+      <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 p-6 sm:p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none space-y-4 transition-all">
+        <div className="flex items-center gap-3 pb-3 border-b border-slate-200/40 dark:border-white/5">
+          <div className="w-10 h-10 rounded-2xl bg-blue-50/80 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-100/50 dark:border-blue-900/40">
             <ArrowRight className="w-5 h-5" />
           </div>
           <div>
@@ -420,7 +420,7 @@ export const LetterGeneratorView: React.FC = () => {
             href="https://its.id/hasilsuratsp"
             target="_blank"
             rel="noreferrer"
-            className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 border border-slate-200 dark:border-zinc-700 text-xs font-semibold transition-all text-center"
+            className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-white/70 hover:bg-white/90 dark:bg-zinc-800/80 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 border border-slate-200/60 dark:border-white/10 text-xs font-semibold transition-all text-center"
           >
             <FileCheck2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
             <span>Cek Hasil Pengesahan TU</span>
@@ -447,11 +447,11 @@ export const LetterGeneratorView: React.FC = () => {
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.92, opacity: 0, y: 15 }}
               transition={{ type: 'spring', stiffness: 350, damping: 28 }}
-              className="bg-white dark:bg-zinc-900 border dark:border-zinc-800 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl space-y-5 relative max-h-[90vh] overflow-y-auto"
+              className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/60 dark:border-white/10 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl space-y-5 relative max-h-[90vh] overflow-y-auto"
             >
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-zinc-800">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-200/40 dark:border-white/10">
                 <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
+                  <div className="p-2 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/50">
                     <CheckCircle2 className="w-5 h-5" />
                   </div>
                   <div>
@@ -463,7 +463,7 @@ export const LetterGeneratorView: React.FC = () => {
               </div>
 
               <div className="space-y-3 text-xs">
-                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 space-y-1.5 border border-slate-100 dark:border-zinc-800">
+                <div className="p-3.5 rounded-2xl bg-white/60 dark:bg-zinc-800/60 space-y-1.5 border border-slate-200/50 dark:border-white/5">
                   <p className="font-semibold text-slate-700 dark:text-zinc-300">
                     Instansi Tujuan:
                   </p>
@@ -476,13 +476,13 @@ export const LetterGeneratorView: React.FC = () => {
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 text-[11px]">
-                  <div className="p-3 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800">
+                  <div className="p-3 rounded-2xl bg-white/60 dark:bg-zinc-800/60 border border-slate-200/50 dark:border-white/5">
                     <span className="text-slate-400 dark:text-zinc-500 block">Mata Kuliah</span>
                     <span className="font-bold text-slate-800 dark:text-zinc-200">
                       {generatedData.mata_kuliah}
                     </span>
                   </div>
-                  <div className="p-3 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800">
+                  <div className="p-3 rounded-2xl bg-white/60 dark:bg-zinc-800/60 border border-slate-200/50 dark:border-white/5">
                     <span className="text-slate-400 dark:text-zinc-500 block">Tanggal Kegiatan</span>
                     <span className="font-bold text-slate-800 dark:text-zinc-200">
                       {generatedData.tanggal_kegiatan}
@@ -490,7 +490,7 @@ export const LetterGeneratorView: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="p-3 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 space-y-1">
+                <div className="p-3 rounded-2xl bg-white/60 dark:bg-zinc-800/60 border border-slate-200/50 dark:border-white/5 space-y-1">
                   <span className="text-slate-400 dark:text-zinc-500 block text-[11px]">Tema Wawancara</span>
                   <p className="font-medium text-slate-800 dark:text-zinc-200">
                     {generatedData.tema_wawancara}
@@ -501,10 +501,10 @@ export const LetterGeneratorView: React.FC = () => {
                   <span className="text-slate-500 dark:text-zinc-400 font-semibold text-[11px]">
                     Anggota Kelompok ({generatedData.mahasiswa.length}):
                   </span>
-                  <div className="p-3 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 text-[11px] overflow-x-auto space-y-1.5 max-h-36">
+                  <div className="p-3 rounded-2xl bg-white/60 dark:bg-zinc-800/60 border border-slate-200/50 dark:border-white/5 text-[11px] overflow-x-auto space-y-1.5 max-h-36">
                     {generatedData.mahasiswa.map(
                       (m: GroupMember, i: number) => (
-                        <div key={i} className="flex items-center justify-between gap-2 text-slate-800 dark:text-zinc-200 border-b border-slate-200/60 dark:border-zinc-700/60 pb-1.5 last:border-0">
+                        <div key={i} className="flex items-center justify-between gap-2 text-slate-800 dark:text-zinc-200 border-b border-slate-200/50 dark:border-zinc-700/60 pb-1.5 last:border-0">
                           <span className="font-medium">{m.no}. {m.nama || '-'} <span className="text-slate-500 dark:text-zinc-400 font-normal">({m.nrp || '-'})</span></span>
                           <span className="text-slate-500 dark:text-zinc-400 shrink-0">{m.no_hp || '-'}</span>
                         </div>
@@ -527,7 +527,7 @@ export const LetterGeneratorView: React.FC = () => {
                 </motion.button>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-blue-50/60 dark:bg-zinc-800/60 border border-blue-100/80 dark:border-zinc-700/60 text-center">
+              <div className="p-3.5 rounded-2xl bg-blue-50/70 dark:bg-zinc-800/60 border border-blue-100/80 dark:border-zinc-700/60 text-center">
                 <p className="text-xs font-medium text-slate-600 dark:text-zinc-300 leading-relaxed">
                   Silakan unduh draft surat melalui tombol di atas. Setelah selesai, tutup jendela ini dan lanjutkan ke step 'Kirim File Surat ke TU' ya!
                 </p>
@@ -537,7 +537,7 @@ export const LetterGeneratorView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setGeneratedData(null)}
-                  className="w-full py-3 rounded-2xl border border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800/80 text-xs font-semibold transition-all cursor-pointer"
+                  className="w-full py-3 rounded-2xl border border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-zinc-300 hover:bg-white dark:hover:bg-zinc-800/80 text-xs font-semibold transition-all cursor-pointer"
                 >
                   Tutup
                 </button>

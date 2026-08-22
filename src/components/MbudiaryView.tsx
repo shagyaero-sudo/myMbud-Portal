@@ -23,7 +23,6 @@ export const MbudiaryView: React.FC = () => {
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const avatarInputRef = React.useRef<HTMLInputElement>(null);
 
-  // AUTO PROMPT MODAL PROFIL PADA FIRST VISIT
   useEffect(() => {
     const hasPrompted = localStorage.getItem(ONBOARDING_PROFILE_KEY);
     const isDefaultUsername = !currentUser.username || currentUser.username.startsWith('mbuder_') || currentUser.username === 'mbuders';
@@ -155,7 +154,7 @@ export const MbudiaryView: React.FC = () => {
           <div className="space-y-3 sm:space-y-4">
             <button
               onClick={() => setSelectedPostId(null)}
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 sm:px-4 sm:py-2.5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 text-xs font-bold text-slate-700 dark:text-zinc-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-zinc-800/80 transition-all shadow-xs active:scale-95 group ml-1 sm:ml-0 cursor-pointer"
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 sm:px-4 sm:py-2.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 text-xs font-bold text-slate-700 dark:text-zinc-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/90 dark:hover:bg-zinc-800/80 transition-all shadow-xs active:scale-95 group ml-1 sm:ml-0 cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
               <span>Kembali</span>
@@ -173,7 +172,7 @@ export const MbudiaryView: React.FC = () => {
                 isDetailPage
               />
             ) : (
-              <div className="bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 rounded-3xl p-8 text-center text-xs font-medium text-slate-500 dark:text-zinc-400 shadow-xs">
+              <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-8 text-center text-xs font-medium text-slate-500 dark:text-zinc-400 shadow-xs">
                 Postingan tidak ditemukan atau telah dihapus.
               </div>
             )}
@@ -193,7 +192,7 @@ export const MbudiaryView: React.FC = () => {
                 <div className="flex items-center gap-2 shrink-0">
                   <button
                     onClick={() => setSelectedAuthorNrp(currentUser.nrp)}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 text-xs font-bold text-slate-700 dark:text-zinc-200 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-200 dark:hover:border-blue-900/60 hover:bg-blue-50/50 dark:hover:bg-zinc-800/80 transition-all shadow-xs active:scale-95 cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 text-xs font-bold text-slate-700 dark:text-zinc-200 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-200 dark:hover:border-blue-900/60 hover:bg-white/90 dark:hover:bg-zinc-800/80 transition-all shadow-xs active:scale-95 cursor-pointer"
                     title="Lihat Profil Saya"
                   >
                     <User className="w-3.5 h-3.5 text-blue-500" />
@@ -233,7 +232,7 @@ export const MbudiaryView: React.FC = () => {
               initial={{ scale: 0.95, opacity: 0, y: 10 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 10 }}
-              className="bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-5"
+              className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/60 dark:border-white/10 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-5"
             >
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
@@ -254,7 +253,7 @@ export const MbudiaryView: React.FC = () => {
                   <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-2">
                     Foto Profil
                   </label>
-                  <div className="flex items-center gap-4 p-3 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800">
+                  <div className="flex items-center gap-4 p-3 rounded-2xl bg-white/60 dark:bg-zinc-800/60 border border-slate-200/50 dark:border-white/5">
                     <div className="relative w-16 h-16 rounded-2xl overflow-hidden bg-slate-200 dark:bg-zinc-800 flex items-center justify-center shrink-0 border border-slate-200/80 dark:border-zinc-700">
                       {isUploadingAvatar ? (
                         <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
@@ -309,7 +308,7 @@ export const MbudiaryView: React.FC = () => {
                       onChange={(e) => setEditUsername(e.target.value.replace(/\s+/g, '').toLowerCase())}
                       placeholder="usernameunik"
                       maxLength={30}
-                      className="w-full pl-7 pr-3.5 py-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-xs border border-slate-200/80 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full pl-7 pr-3.5 py-2.5 rounded-2xl bg-white/70 dark:bg-zinc-800/80 text-xs border border-slate-200/80 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                 </div>
