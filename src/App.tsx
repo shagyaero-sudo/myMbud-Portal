@@ -568,20 +568,20 @@ export default function App() {
         {showSplash && <SplashScreen key="splash" soundUrl="/splash-sound.mp3" />}
       </AnimatePresence>
 
-      <div className="relative min-h-screen bg-slate-50 dark:bg-[#0e0f12] text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-500">
+      <div className="relative min-h-screen bg-slate-50 dark:bg-[#0c0d10] text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-500 overflow-x-hidden">
         
-        {/* MULTI-ORB ELEGANT MESH GRADIENT */}
+        {/* MULTI-ORB HIGH CONTRAST MESH GRADIENT */}
         <div 
-          className="fixed top-[-20%] left-[-10%] w-[650px] sm:w-[900px] h-[650px] rounded-full blur-[140px] pointer-events-none -z-10 transition-all duration-700" 
-          style={{ background: 'radial-gradient(circle, var(--glow-1) 0%, transparent 70%)' }}
+          className="fixed top-[-10%] left-[-5%] w-[650px] sm:w-[900px] h-[650px] sm:h-[900px] rounded-full blur-[80px] pointer-events-none -z-10 transition-all duration-700" 
+          style={{ background: 'radial-gradient(circle, var(--glow-1) 0%, transparent 60%)' }}
         />
         <div 
-          className="fixed top-[30%] right-[-15%] w-[550px] sm:w-[800px] h-[550px] rounded-full blur-[150px] pointer-events-none -z-10 transition-all duration-700" 
-          style={{ background: 'radial-gradient(circle, var(--glow-2) 0%, transparent 70%)' }}
+          className="fixed top-[30%] right-[-10%] w-[600px] sm:w-[850px] h-[600px] sm:h-[850px] rounded-full blur-[90px] pointer-events-none -z-10 transition-all duration-700" 
+          style={{ background: 'radial-gradient(circle, var(--glow-2) 0%, transparent 60%)' }}
         />
         <div 
-          className="fixed bottom-[-15%] left-[20%] w-[500px] sm:w-[750px] h-[500px] rounded-full blur-[130px] pointer-events-none -z-10 transition-all duration-700" 
-          style={{ background: 'radial-gradient(circle, var(--glow-1) 0%, transparent 75%)' }}
+          className="fixed bottom-[-10%] left-[20%] w-[550px] sm:w-[800px] h-[550px] sm:h-[800px] rounded-full blur-[80px] pointer-events-none -z-10 transition-all duration-700" 
+          style={{ background: 'radial-gradient(circle, var(--glow-1) 0%, transparent 65%)' }}
         />
 
         <Header
