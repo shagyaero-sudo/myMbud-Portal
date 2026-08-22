@@ -568,129 +568,134 @@ export default function App() {
         {showSplash && <SplashScreen key="splash" soundUrl="/splash-sound.mp3" />}
       </AnimatePresence>
 
-      <div className="relative min-h-screen bg-slate-50 dark:bg-[#0c0d10] text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-500 overflow-x-hidden">
+      <div className="relative min-h-screen bg-slate-100 dark:bg-[#0c0d10] text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-500 overflow-x-hidden">
         
-        {/* MULTI-ORB HIGH CONTRAST MESH GRADIENT */}
-        <div 
-          className="fixed top-[-10%] left-[-5%] w-[650px] sm:w-[900px] h-[650px] sm:h-[900px] rounded-full blur-[80px] pointer-events-none -z-10 transition-all duration-700" 
-          style={{ background: 'radial-gradient(circle, var(--glow-1) 0%, transparent 60%)' }}
-        />
-        <div 
-          className="fixed top-[30%] right-[-10%] w-[600px] sm:w-[850px] h-[600px] sm:h-[850px] rounded-full blur-[90px] pointer-events-none -z-10 transition-all duration-700" 
-          style={{ background: 'radial-gradient(circle, var(--glow-2) 0%, transparent 60%)' }}
-        />
-        <div 
-          className="fixed bottom-[-10%] left-[20%] w-[550px] sm:w-[800px] h-[550px] sm:h-[800px] rounded-full blur-[80px] pointer-events-none -z-10 transition-all duration-700" 
-          style={{ background: 'radial-gradient(circle, var(--glow-1) 0%, transparent 65%)' }}
-        />
-
-        <Header
-          isOfficer={isOfficer}
-          setIsOfficer={setIsOfficer}
-          activeTab={activeTab}
-          setActiveTab={(tab) => handleNavigateTab(tab)}
-          isSyncing={isSyncing}
-          lastUpdated={appState.lastUpdated}
-          onRefresh={syncState}
-          urgentTaskCount={urgentTaskCount}
-          onLogout={handleLogout}
-        />
-
-        <div className="relative z-10 flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 flex flex-col lg:flex-row gap-6 pt-6 pb-24 lg:pb-8">
-          <Sidebar
-            activeTab={activeTab}
-            setActiveTab={(tab) => handleNavigateTab(tab)}
-            activeTaskCount={activeTaskCount}
-            onOpenGpaModal={() => setIsGpaModalOpen(true)}
+        {/* MULTI-ORB VISIBLE MESH GRADIENT LAYER */}
+        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+          <div 
+            className="absolute top-[-80px] left-[-80px] w-[500px] sm:w-[700px] h-[500px] sm:h-[700px] rounded-full blur-[110px] transition-all duration-700 opacity-30 dark:opacity-35" 
+            style={{ backgroundColor: 'var(--glow-1)' }}
           />
-
-          <main className="flex-1 space-y-6">
-            {isInitialLoad ? (
-              <AppSkeleton />
-            ) : (
-              <div
-                key={activeTab}
-                className="transition-opacity duration-150 ease-out opacity-100"
-              >
-                {activeTab === 'dashboard' && (
-                  <DashboardView
-                    state={appState}
-                    isOfficer={isOfficer}
-                    onAddAnnouncement={() => {}}
-                    onDeleteAnnouncement={() => {}}
-                    onNavigateTab={handleNavigateTab}
-                  />
-                )}
-
-                {activeTab === 'contacts' && (
-                  <ContactsView
-                    key={`contacts-${selectedContactCourse}`}
-                    contacts={appState.contacts}
-                    isOfficer={isOfficer}
-                    initialCourseFilter={selectedContactCourse}
-                    onAddContact={handleAddContact}
-                    onUpdateContact={handleUpdateContact}
-                    onDeleteContact={handleDeleteContact}
-                  />
-                )}
-
-                {activeTab === 'materials' && (
-                  <KnowledgeBaseView
-                    materials={appState.materials}
-                    isOfficer={isOfficer}
-                    availableCourses={appState.schedules.map((s) => s.course)}
-                    onAddMaterial={handleAddMaterial}
-                    onDeleteMaterial={handleDeleteMaterial}
-                    onPreviewPdf={(material) => setPreviewMaterial(material)}
-                  />
-                )}
-
-                {activeTab === 'tasks' && (
-                  <TaskTrackerView
-                    tasks={appState.tasks}
-                    contacts={appState.contacts}
-                    isOfficer={isOfficer}
-                    completedTaskIds={completedTaskIds}
-                    onAddTask={handleAddTask}
-                    onUpdateTask={handleUpdateTask}
-                    onUpdateTaskStatus={handleUpdateTaskStatus}
-                    onDeleteTask={handleDeleteTask}
-                  />
-                )}
-
-                {activeTab === 'spinwheel' && (
-                  <SpinwheelView
-                    onSaveGroupResult={handleSaveGroupResult}
-                    savedResults={appState.groupResults}
-                    isOfficer={isOfficer}
-                  />
-                )}
-
-                {activeTab === 'calculator' && (
-                  <GradeCalculatorView courseGrades={appState.courseGrades} />
-                )}
-
-                {activeTab === 'letter' && <LetterGeneratorView />}
-
-                {activeTab === 'blockblast' && <BlockBlastView />}
-
-                {activeTab === 'mbudiary' && <MbudiaryView />}
-              </div>
-            )}
-          </main>
+          <div 
+            className="absolute top-[25%] right-[-80px] w-[450px] sm:w-[650px] h-[450px] sm:h-[650px] rounded-full blur-[120px] transition-all duration-700 opacity-25 dark:opacity-30" 
+            style={{ backgroundColor: 'var(--glow-2)' }}
+          />
+          <div 
+            className="absolute bottom-[-80px] left-[15%] w-[450px] sm:w-[650px] h-[450px] sm:h-[650px] rounded-full blur-[110px] transition-all duration-700 opacity-30 dark:opacity-35" 
+            style={{ backgroundColor: 'var(--glow-1)' }}
+          />
         </div>
 
-        <PdfViewerModal
-          material={previewMaterial}
-          onClose={() => setPreviewMaterial(null)}
-        />
+        {/* APPLICATION CONTENT */}
+        <div className="relative z-10 flex flex-col min-h-screen bg-transparent">
+          <Header
+            isOfficer={isOfficer}
+            setIsOfficer={setIsOfficer}
+            activeTab={activeTab}
+            setActiveTab={(tab) => handleNavigateTab(tab)}
+            isSyncing={isSyncing}
+            lastUpdated={appState.lastUpdated}
+            onRefresh={syncState}
+            urgentTaskCount={urgentTaskCount}
+            onLogout={handleLogout}
+          />
 
-        <SoftForceModal />
+          <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 flex flex-col lg:flex-row gap-6 pt-6 pb-24 lg:pb-8">
+            <Sidebar
+              activeTab={activeTab}
+              setActiveTab={(tab) => handleNavigateTab(tab)}
+              activeTaskCount={activeTaskCount}
+              onOpenGpaModal={() => setIsGpaModalOpen(true)}
+            />
 
-        <GpaCalculatorModal
-          isOpen={isGpaModalOpen}
-          onClose={() => setIsGpaModalOpen(false)}
-        />
+            <main className="flex-1 space-y-6">
+              {isInitialLoad ? (
+                <AppSkeleton />
+              ) : (
+                <div
+                  key={activeTab}
+                  className="transition-opacity duration-150 ease-out opacity-100"
+                >
+                  {activeTab === 'dashboard' && (
+                    <DashboardView
+                      state={appState}
+                      isOfficer={isOfficer}
+                      onAddAnnouncement={() => {}}
+                      onDeleteAnnouncement={() => {}}
+                      onNavigateTab={handleNavigateTab}
+                    />
+                  )}
+
+                  {activeTab === 'contacts' && (
+                    <ContactsView
+                      key={`contacts-${selectedContactCourse}`}
+                      contacts={appState.contacts}
+                      isOfficer={isOfficer}
+                      initialCourseFilter={selectedContactCourse}
+                      onAddContact={handleAddContact}
+                      onUpdateContact={handleUpdateContact}
+                      onDeleteContact={handleDeleteContact}
+                    />
+                  )}
+
+                  {activeTab === 'materials' && (
+                    <KnowledgeBaseView
+                      materials={appState.materials}
+                      isOfficer={isOfficer}
+                      availableCourses={appState.schedules.map((s) => s.course)}
+                      onAddMaterial={handleAddMaterial}
+                      onDeleteMaterial={handleDeleteMaterial}
+                      onPreviewPdf={(material) => setPreviewMaterial(material)}
+                    />
+                  )}
+
+                  {activeTab === 'tasks' && (
+                    <TaskTrackerView
+                      tasks={appState.tasks}
+                      contacts={appState.contacts}
+                      isOfficer={isOfficer}
+                      completedTaskIds={completedTaskIds}
+                      onAddTask={handleAddTask}
+                      onUpdateTask={handleUpdateTask}
+                      onUpdateTaskStatus={handleUpdateTaskStatus}
+                      onDeleteTask={handleDeleteTask}
+                    />
+                  )}
+
+                  {activeTab === 'spinwheel' && (
+                    <SpinwheelView
+                      onSaveGroupResult={handleSaveGroupResult}
+                      savedResults={appState.groupResults}
+                      isOfficer={isOfficer}
+                    />
+                  )}
+
+                  {activeTab === 'calculator' && (
+                    <GradeCalculatorView courseGrades={appState.courseGrades} />
+                  )}
+
+                  {activeTab === 'letter' && <LetterGeneratorView />}
+
+                  {activeTab === 'blockblast' && <BlockBlastView />}
+
+                  {activeTab === 'mbudiary' && <MbudiaryView />}
+                </div>
+              )}
+            </main>
+          </div>
+
+          <PdfViewerModal
+            material={previewMaterial}
+            onClose={() => setPreviewMaterial(null)}
+          />
+
+          <SoftForceModal />
+
+          <GpaCalculatorModal
+            isOpen={isGpaModalOpen}
+            onClose={() => setIsGpaModalOpen(false)}
+          />
+        </div>
       </div>
     </>
   );
