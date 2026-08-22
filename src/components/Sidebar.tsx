@@ -19,8 +19,6 @@ import {
   GraduationCap,
   ClipboardList,
   FileSpreadsheet,
-  Sun,
-  Moon,
   type LucideIcon
 } from 'lucide-react';
 
@@ -76,28 +74,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    const userName = localStorage.getItem('mymbud_user_name') || 'Mbuders';
-
-    if (hour >= 4 && hour < 11) return `Selamat Pagi, ${userName}!`;
-    if (hour >= 11 && hour < 15) return `Selamat Siang, ${userName}!`;
-    if (hour >= 15 && hour < 18) return `Selamat Sore, ${userName}!`;
-
-    return `Selamat Malam, ${userName}!`;
-  };
-
-  const getTimeIcon = () => {
-    const hour = new Date().getHours();
-    if (hour >= 4 && hour < 15) {
-      return <Sun className="w-4 h-4 text-amber-500" />;
-    }
-    if (hour >= 15 && hour < 18) {
-      return <Sun className="w-4 h-4 text-orange-500" />;
-    }
-    return <Moon className="w-4 h-4 text-indigo-400" />;
-  };
 
   const menuItems: MenuItem[] = [
     {
@@ -159,7 +135,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <>
-      {/* DESKTOP SIDEBAR (AUTO-EXPANDING HOVER + FROSTED GLASS) */}
+      {/* DESKTOP SIDEBAR (CLEAN NO-GREETING HOVER EXPAND) */}
       <motion.aside
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
@@ -167,37 +143,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         transition={{ type: 'spring', stiffness: 380, damping: 32 }}
         className="hidden lg:flex flex-col bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-3.5 text-slate-700 dark:text-zinc-200 min-h-[calc(100vh-80px)] shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none shrink-0 my-2 transition-colors overflow-hidden select-none z-20"
       >
-        {/* Header Greeting / Time Icon */}
-        <div className="hidden lg:block mb-4 px-2 py-1 transition-all overflow-hidden h-12">
-          {isHovered ? (
-            <motion.div
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <h2 className="text-sm font-bold text-slate-900 dark:text-zinc-100 tracking-tight truncate">
-                {getGreeting()}
-              </h2>
-              <p className="text-xs font-medium text-slate-500 dark:text-zinc-400 mt-0.5 leading-tight truncate">
-                Siap untuk produktif hari ini?
-              </p>
-            </motion.div>
-          ) : (
-            <div className="flex items-center justify-center h-full">
-              <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="p-1.5 rounded-xl bg-white/60 dark:bg-zinc-800/60 border border-slate-200/50 dark:border-white/5 shadow-xs flex items-center justify-center"
-                title={getGreeting()}
-              >
-                {getTimeIcon()}
-              </motion.div>
-            </div>
-          )}
-        </div>
-
-        {/* Navigation Items */}
-        <nav aria-label="Sidebar Navigation" className="flex-1 space-y-1.5 overflow-y-auto overflow-x-hidden pr-0.5 pb-4 custom-scrollbar">
+        {/* Navigation Items (Langsung di atas) */}
+        <nav aria-label="Sidebar Navigation" className="flex-1 space-y-1.5 overflow-y-auto overflow-x-hidden pr-0.5 pt-1 pb-4 custom-scrollbar">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = !item.isModal && activeTab === item.id;
