@@ -37,7 +37,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   notifyPostLiked,
   notifyPostCommented,
-} from '../../../services/oneSignalNotification';
+} from '../../services/oneSignalNotification';
 
 export const VerifiedBadge: React.FC<{ size?: 'sm' | 'md' | 'lg' }> = ({ size = 'md' }) => {
   const sizeClasses = {

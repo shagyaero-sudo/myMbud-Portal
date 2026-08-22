@@ -29,7 +29,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-import { notifyUserFollowed } from '../../../services/oneSignalNotification';
+import { notifyUserFollowed } from '../../services/oneSignalNotification';
 
 interface UserProfileViewProps {
   authorNrp: string;
@@ -173,7 +173,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
         <span>Kembali</span>
       </button>
 
-      {/* CARD PROFIL USER (GLASSMORPHISM) */}
+      {/* CARD PROFIL USER */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
