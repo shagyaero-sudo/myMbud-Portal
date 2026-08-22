@@ -569,18 +569,18 @@ export default function App() {
 
       <div className="relative min-h-screen bg-slate-100 dark:bg-[#0e0f12] text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-500">
         
-        {/* AMBIENT MESH GRADIENT LAYER (40% ACCENT OPACITY) */}
+        {/* SUBTLE AMBIENT MESH GRADIENT (10% ACCENT GLOW) */}
         <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
           <div 
-            className="absolute top-[-100px] left-[-80px] w-[550px] sm:w-[750px] h-[550px] sm:h-[750px] rounded-full blur-[140px] transition-all duration-700 opacity-35 dark:opacity-40" 
+            className="absolute top-[-100px] left-[-80px] w-[600px] sm:w-[850px] h-[600px] sm:h-[850px] rounded-full blur-[160px] transition-all duration-700 opacity-10 dark:opacity-12" 
             style={{ backgroundColor: 'var(--glow-1)' }}
           />
           <div 
-            className="absolute top-[30%] right-[-100px] w-[500px] sm:w-[700px] h-[500px] sm:h-[700px] rounded-full blur-[150px] transition-all duration-700 opacity-30 dark:opacity-35" 
+            className="absolute top-[30%] right-[-100px] w-[550px] sm:w-[800px] h-[550px] sm:h-[800px] rounded-full blur-[170px] transition-all duration-700 opacity-10 dark:opacity-12" 
             style={{ backgroundColor: 'var(--glow-2)' }}
           />
           <div 
-            className="absolute bottom-[-100px] left-[20%] w-[500px] sm:w-[700px] h-[500px] sm:h-[700px] rounded-full blur-[140px] transition-all duration-700 opacity-35 dark:opacity-40" 
+            className="absolute bottom-[-100px] left-[20%] w-[550px] sm:w-[800px] h-[550px] sm:h-[800px] rounded-full blur-[160px] transition-all duration-700 opacity-10 dark:opacity-12" 
             style={{ backgroundColor: 'var(--glow-1)' }}
           />
         </div>
