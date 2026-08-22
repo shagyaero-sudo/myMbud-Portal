@@ -454,7 +454,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="space-y-4 sm:space-y-5 pb-28 sm:pb-32"
+      className="space-y-4 sm:space-y-5 pb-8 lg:pb-2"
     >
       {/* BANNER WAR FRS DIRECT BYPASS */}
       {IS_FRS_WAR_ACTIVE && (
@@ -906,6 +906,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
             </div>
 
+            {/* Panel Ringkasan Agenda */}
             <div className="pt-3 border-t border-slate-200/40 dark:border-white/5 space-y-2.5">
               <div className="flex items-center justify-between gap-2 flex-wrap">
                 <span className="text-xs font-bold text-slate-700 dark:text-zinc-300">
