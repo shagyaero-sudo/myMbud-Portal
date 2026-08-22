@@ -568,11 +568,21 @@ export default function App() {
         {showSplash && <SplashScreen key="splash" soundUrl="/splash-sound.mp3" />}
       </AnimatePresence>
 
-      <div className="relative min-h-screen bg-slate-50 dark:bg-[#0c0e12] text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-300">
+      <div className="relative min-h-screen bg-slate-50 dark:bg-[#0e0f12] text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-500">
         
-        {/* DYNAMIC AMBIENT THEME GLOW */}
-        <div className="fixed top-[-15%] left-1/2 -translate-x-1/2 w-[700px] sm:w-[950px] h-[500px] bg-[radial-gradient(circle,currentColor_0%,transparent_70%)] opacity-[0.06] dark:opacity-[0.11] rounded-full blur-[120px] pointer-events-none -z-10 transition-all duration-700 text-blue-600 dark:text-blue-500" />
-        <div className="fixed bottom-[-10%] right-[-10%] w-[450px] sm:w-[600px] h-[450px] bg-[radial-gradient(circle,currentColor_0%,transparent_70%)] opacity-[0.04] dark:opacity-[0.09] rounded-full blur-[130px] pointer-events-none -z-10 transition-all duration-700 text-indigo-600 dark:text-indigo-500" />
+        {/* MULTI-ORB ELEGANT MESH GRADIENT */}
+        <div 
+          className="fixed top-[-20%] left-[-10%] w-[650px] sm:w-[900px] h-[650px] rounded-full blur-[140px] pointer-events-none -z-10 transition-all duration-700" 
+          style={{ background: 'radial-gradient(circle, var(--glow-1) 0%, transparent 70%)' }}
+        />
+        <div 
+          className="fixed top-[30%] right-[-15%] w-[550px] sm:w-[800px] h-[550px] rounded-full blur-[150px] pointer-events-none -z-10 transition-all duration-700" 
+          style={{ background: 'radial-gradient(circle, var(--glow-2) 0%, transparent 70%)' }}
+        />
+        <div 
+          className="fixed bottom-[-15%] left-[20%] w-[500px] sm:w-[750px] h-[500px] rounded-full blur-[130px] pointer-events-none -z-10 transition-all duration-700" 
+          style={{ background: 'radial-gradient(circle, var(--glow-1) 0%, transparent 75%)' }}
+        />
 
         <Header
           isOfficer={isOfficer}

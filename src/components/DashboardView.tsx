@@ -31,7 +31,6 @@ import {
 } from '../services/streakService';
 import { StreakModal, GlossyFlameIcon } from './StreakModal';
 
-// --- CONFIG FRS WAR MODE ---
 const IS_FRS_WAR_ACTIVE = false;
 const FRS_DIRECT_URL = 'https://mia.its.ac.id/rencana-studi/';
 
@@ -46,7 +45,6 @@ interface DashboardViewProps {
   ) => void;
 }
 
-// --- DAFTAR LIBUR NASIONAL / TANGGAL MERAH INDONESIA 2026 ---
 const NATIONAL_HOLIDAYS_2026: Record<string, string> = {
   '2026-01-01': 'Tahun Baru 2026 Masehi',
   '2026-01-16': 'Isra Mikraj Nabi Muhammad SAW',
@@ -75,14 +73,14 @@ const getCurrentAcademicWeek = () => {
   if (diffDays < 0) {
     return {
       label: 'mode libur',
-      badgeClass: 'bg-rose-50 dark:bg-rose-950/40 border-rose-100 dark:border-rose-900/50 text-rose-600 dark:text-rose-400',
+      badgeClass: 'bg-rose-50/80 dark:bg-rose-950/40 border-rose-200/60 dark:border-rose-900/50 text-rose-600 dark:text-rose-400',
     };
   }
 
   const weekNumber = Math.floor(diffDays / 7) + 1;
   return {
     label: `Minggu ke-${weekNumber}`,
-    badgeClass: 'bg-blue-50 dark:bg-blue-950/60 border-blue-100 dark:border-blue-900/50 text-blue-600 dark:text-blue-400',
+    badgeClass: 'bg-blue-50/80 dark:bg-blue-950/60 border-blue-200/60 dark:border-blue-900/50 text-blue-600 dark:text-blue-400',
   };
 };
 
@@ -96,11 +94,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [editingAnnId, setEditingAnnId] = useState<string | null>(null);
   const [isSubmittingAnn, setIsSubmittingAnn] = useState(false);
 
-  // --- STATE STREAK HYBRID ---
   const [streakData, setStreakData] = useState<UserStreak>(getLocalStreak);
   const [isStreakModalOpen, setIsStreakModalOpen] = useState(false);
 
-  // --- STATE KALENDER BUILD-IN ---
   const [currentMonthDate, setCurrentMonthDate] = useState<Date>(new Date());
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date>(new Date());
 
@@ -117,7 +113,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [isPaused, setIsPaused] = useState(false);
 
-  // --- STATE FOTO PROFIL MBUDIARY USER ---
   const [userAvatarUrl, setUserAvatarUrl] = useState<string | null>(() => {
     return typeof window !== 'undefined' ? localStorage.getItem('mymbud_user_photo_url') || null : null;
   });
@@ -323,7 +318,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
       if (part.startsWith('`') && part.endsWith('`') && part.length > 2) {
         return (
-          <code key={i} className="bg-slate-200 dark:bg-zinc-700 px-1.5 py-0.5 rounded text-[11px] font-mono text-pink-600 dark:text-pink-400">
+          <code key={i} className="bg-slate-200/80 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-[11px] font-mono text-pink-600 dark:text-pink-400">
             {part.slice(1, -1)}
           </code>
         );
@@ -470,7 +465,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-white/20 blur-2xl animate-pulse" />
           <div className="absolute -left-10 -bottom-10 h-32 w-32 rounded-full bg-amber-400/20 blur-2xl animate-pulse" />
 
-          <div className="relative rounded-[22px] bg-slate-950/90 backdrop-blur-xl p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="relative rounded-[22px] bg-slate-950/80 backdrop-blur-xl p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="space-y-1.5 text-center sm:text-left">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-500/20 border border-red-500/30 text-red-400 text-[10px] sm:text-xs font-black uppercase tracking-wider animate-pulse">
                 <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
@@ -512,15 +507,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </p>
           </div>
 
-          {/* PILL BADGE STREAK (COMPACT & SEJAJAR TEKS) */}
           <motion.button
             type="button"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsStreakModalOpen(true)}
-            className="relative flex items-center h-9 pl-7 pr-3.5 rounded-full bg-[#2a303c] hover:bg-[#343b49] border border-white/5 shadow-md shadow-black/20 transition-all cursor-pointer shrink-0 select-none group"
+            className="relative flex items-center h-9 pl-7 pr-3.5 rounded-full bg-slate-900/80 dark:bg-zinc-800/80 backdrop-blur-md hover:bg-slate-900 dark:hover:bg-zinc-700 border border-white/10 shadow-md shadow-black/10 transition-all cursor-pointer shrink-0 select-none group"
           >
-            {/* 3D Glossy Flame Asset HP */}
             <div className="absolute -left-2.5 -top-1.5 w-9 h-11 pointer-events-none group-hover:scale-110 transition-transform">
               <GlossyFlameIcon className="w-full h-full" streakCount={streakData.currentStreak} />
             </div>
@@ -531,7 +524,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </motion.button>
         </div>
 
-        <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-4 sm:p-5 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none transition-colors relative">
+        {/* GLASS CARD PENGUMUMAN MOBILE */}
+        <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-4 sm:p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none transition-all relative">
           {isOfficer && (
             <div className="flex justify-end pb-2">
               <button
@@ -545,7 +539,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           )}
 
           {totalAnn === 0 ? (
-            <div className="p-4 text-center text-slate-400 dark:text-zinc-500 text-xs bg-slate-50/70 dark:bg-zinc-800/40 rounded-2xl">
+            <div className="p-4 text-center text-slate-400 dark:text-zinc-500 text-xs bg-slate-50/50 dark:bg-zinc-800/30 rounded-2xl">
               Belum ada pengumuman kelas.
             </div>
           ) : (
@@ -586,10 +580,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 onMouseLeave={() => setIsPaused(false)}
                 onTouchStart={handleTouchStart}
                 onTouchEnd={handleTouchEnd}
-                className="p-4 sm:p-5 rounded-2xl bg-slate-50/90 dark:bg-zinc-800/70 border border-slate-100 dark:border-zinc-800/80 space-y-2 transition-colors select-none cursor-pointer hover:bg-slate-100/80 dark:hover:bg-zinc-800 active:scale-[0.99]"
+                className="p-4 sm:p-5 rounded-2xl bg-white/60 dark:bg-zinc-800/50 backdrop-blur-sm border border-slate-200/50 dark:border-white/5 space-y-2 transition-colors select-none cursor-pointer hover:bg-white/80 dark:hover:bg-zinc-800/70 active:scale-[0.99]"
               >
                 <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-zinc-400">
-                  <span className="font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2.5 py-0.5 rounded-full text-[10px]">
+                  <span className="font-semibold text-blue-600 dark:text-blue-400 bg-blue-50/80 dark:bg-blue-950/60 px-2.5 py-0.5 rounded-full text-[10px]">
                     {currentMobileAnn?.category}
                   </span>
                   <div className="flex items-center gap-2">
@@ -637,12 +631,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
         <div className="lg:col-span-2 space-y-4 sm:space-y-5">
 
-          {/* MBUDIARY INPUT BAR */}
+          {/* MBUDIARY INPUT BAR (GLASSMORPHISM) */}
           <motion.div
             whileHover={{ scale: 1.004 }}
             whileTap={{ scale: 0.99 }}
             onClick={() => onNavigateTab('mbudiary' as any)}
-            className="group relative overflow-hidden rounded-3xl bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 p-3 sm:p-4 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none cursor-pointer transition-all"
+            className="group relative overflow-hidden rounded-3xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 p-3 sm:p-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none cursor-pointer transition-all"
           >
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-slate-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-slate-200/60 dark:border-zinc-700/60 shrink-0">
@@ -655,7 +649,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 )}
               </div>
 
-              <div className="flex-1 px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/70 border border-slate-100 dark:border-zinc-800 flex items-center gap-2.5 text-slate-400 dark:text-zinc-500 group-hover:border-blue-500/20 group-hover:bg-slate-100/70 dark:group-hover:bg-zinc-800 transition-all">
+              <div className="flex-1 px-4 py-2.5 rounded-2xl bg-slate-50/70 dark:bg-zinc-800/50 border border-slate-200/40 dark:border-white/5 flex items-center gap-2.5 text-slate-400 dark:text-zinc-500 group-hover:border-blue-500/20 group-hover:bg-slate-100/70 dark:group-hover:bg-zinc-800 transition-all">
                 <Pencil className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500 shrink-0" />
                 <span className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 truncate">
                   Ada cerita apa hari ini, {userName.split(' ')[0]}?
@@ -668,8 +662,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
           </motion.div>
 
-          {/* 1. JADWAL PERKULIAHAN */}
-          <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-5 sm:p-7 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-3.5 transition-colors">
+          {/* 1. JADWAL PERKULIAHAN (GLASSMORPHISM) */}
+          <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-5 sm:p-7 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none space-y-3.5 transition-all">
             
             <div className="flex items-center justify-between">
               <h3 className="text-base font-bold text-slate-800 dark:text-zinc-100">
@@ -688,8 +682,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               })()}
             </div>
 
-            {/* TAB HARI STABIL (4 KOLOM: SENIN - KAMIS) */}
-            <div className="grid grid-cols-4 gap-1 p-1 bg-slate-100/80 dark:bg-zinc-800/80 rounded-2xl w-full">
+            {/* TAB HARI STABIL */}
+            <div className="grid grid-cols-4 gap-1 p-1 bg-slate-100/70 dark:bg-zinc-800/60 rounded-2xl w-full border border-slate-200/40 dark:border-white/5">
               {dayTabs.map((day) => {
                 const isActive = selectedDay === day;
                 return (
@@ -710,7 +704,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
             <div className="space-y-2.5 pt-1">
               {filteredSchedule.length === 0 ? (
-                <div className="p-8 text-center text-slate-400 dark:text-zinc-500 text-xs bg-slate-50/70 dark:bg-zinc-800/40 rounded-2xl">
+                <div className="p-8 text-center text-slate-400 dark:text-zinc-500 text-xs bg-slate-50/50 dark:bg-zinc-800/30 rounded-2xl border border-slate-200/30 dark:border-white/5">
                   Tidak ada jadwal perkuliahan untuk hari {selectedDay}.
                 </div>
               ) : (
@@ -727,16 +721,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       <motion.div
                         whileHover={{ scale: 1.005 }}
                         key={item.id}
-                        className="p-4 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/60 hover:bg-slate-100/60 dark:hover:bg-zinc-800 transition-all flex flex-col space-y-3 border border-slate-100 dark:border-zinc-800/80"
+                        className="p-4 rounded-2xl bg-white/60 dark:bg-zinc-800/40 hover:bg-white/90 dark:hover:bg-zinc-800/70 transition-all flex flex-col space-y-3 border border-slate-200/60 dark:border-white/5"
                       >
                         <div className="flex items-stretch justify-between gap-3">
-                          {/* SISI KIRI: NAMA MATKUL, DOSEN, PJ */}
                           <div className="space-y-1 min-w-0 flex-1">
                             <h3 className="text-sm font-bold text-slate-800 dark:text-zinc-100 leading-snug pr-2">
                               {item.course}
                             </h3>
 
-                            {/* FORMAT PENULISAN DOSEN BULLETED LIST JIKA ADA DOSEN 2 */}
                             <div className="text-xs text-slate-500 dark:text-zinc-400">
                               {item.lecturer2 && item.lecturer2.trim() !== '' ? (
                                 <div className="space-y-0.5 pt-0.5">
@@ -762,14 +754,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                             </p>
                           </div>
 
-                          {/* SISI KANAN: SKS DI ATAS SENDIRIAN, RUANG & JAM TURUN KE BAWAH */}
                           <div className="flex flex-col justify-between items-end shrink-0 text-right">
-                            {/* POJOK ATAS SENDIRIAN */}
                             <span className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">
                               {item.sks} SKS
                             </span>
 
-                            {/* DITARUH AGAK KEBAWAH */}
                             <div className="flex flex-col items-end space-y-1">
                               <span className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap">
                                 <Building2 className="w-3.5 h-3.5 shrink-0 stroke-[2.2]" />
@@ -783,7 +772,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2 pt-2 border-t border-slate-200/60 dark:border-zinc-700/60 w-full">
+                        <div className="flex items-center gap-2 pt-2 border-t border-slate-200/50 dark:border-white/5 w-full">
                           <a
                             href={
                               item.attendanceUrl && item.attendanceUrl.trim() !== ''
@@ -800,7 +789,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
                           <button
                             onClick={() => onNavigateTab('contacts', item.course)}
-                            className="shrink-0 px-4 py-2 rounded-xl bg-slate-200/80 dark:bg-zinc-700 hover:bg-slate-200 dark:hover:bg-zinc-600 text-slate-700 dark:text-zinc-200 text-[11px] sm:text-xs font-semibold transition-all flex items-center justify-center gap-1 cursor-pointer"
+                            className="shrink-0 px-4 py-2 rounded-xl bg-slate-200/70 dark:bg-zinc-700/60 hover:bg-slate-200 dark:hover:bg-zinc-600 text-slate-700 dark:text-zinc-200 text-[11px] sm:text-xs font-semibold transition-all flex items-center justify-center gap-1 cursor-pointer"
                           >
                             <span>Kontak</span>
                           </button>
@@ -813,8 +802,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
           </div>
 
-          {/* 2. WIDGET KALENDER BUILD-IN */}
-          <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-5 sm:p-7 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-5 transition-colors">
+          {/* 2. WIDGET KALENDER BUILD-IN (GLASSMORPHISM) */}
+          <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-5 sm:p-7 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none space-y-5 transition-all">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <CalendarIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
@@ -823,7 +812,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 </h3>
               </div>
 
-              <div className="flex items-center bg-slate-100 dark:bg-zinc-800 rounded-xl p-0.5 shrink-0">
+              <div className="flex items-center bg-slate-100/70 dark:bg-zinc-800/60 rounded-xl p-0.5 shrink-0 border border-slate-200/40 dark:border-white/5">
                 <button
                   onClick={handlePrevMonth}
                   className="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white transition-colors cursor-pointer"
@@ -846,7 +835,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
             {/* Grid Kalender Bulanan */}
             <div className="space-y-2">
-              <div className="grid grid-cols-7 gap-1 text-center border-b border-slate-100 dark:border-zinc-800 pb-2">
+              <div className="grid grid-cols-7 gap-1 text-center border-b border-slate-200/40 dark:border-white/5 pb-2">
                 {['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'].map((dayName, idx) => (
                   <span 
                     key={dayName} 
@@ -889,10 +878,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         isSelected
                           ? 'bg-blue-600 text-white font-black border-blue-600 shadow-md shadow-blue-500/30'
                           : isToday
-                          ? 'bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 font-bold border-blue-200 dark:border-blue-800'
+                          ? 'bg-blue-50/80 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 font-bold border-blue-200 dark:border-blue-800'
                           : isHoliday
                           ? 'bg-rose-50/80 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 font-bold border-rose-200/60 dark:border-rose-900/40'
-                          : 'bg-slate-50/60 dark:bg-zinc-800/40 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-800 dark:text-zinc-200 border-transparent'
+                          : 'bg-white/50 dark:bg-zinc-800/40 hover:bg-white/80 dark:hover:bg-zinc-800 text-slate-800 dark:text-zinc-200 border-transparent'
                       }`}
                     >
                       <span className={`text-xs sm:text-sm leading-none ${isHoliday && !isSelected ? 'text-rose-600 dark:text-rose-400 font-bold' : ''}`}>
@@ -916,8 +905,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
             </div>
 
-            {/* Panel Ringkasan Agenda Tanggal Terpilih */}
-            <div className="pt-3 border-t border-slate-100 dark:border-zinc-800 space-y-2.5">
+            {/* Panel Ringkasan Agenda */}
+            <div className="pt-3 border-t border-slate-200/40 dark:border-white/5 space-y-2.5">
               <div className="flex items-center justify-between gap-2 flex-wrap">
                 <span className="text-xs font-bold text-slate-700 dark:text-zinc-300">
                   <span>Agenda: </span>
@@ -935,14 +924,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
 
               {NATIONAL_HOLIDAYS_2026[formatDateKey(selectedCalendarDate)] && (
-                <div className="p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 text-xs text-rose-700 dark:text-rose-300 font-bold flex items-center gap-2">
+                <div className="p-3 rounded-2xl bg-rose-50/80 dark:bg-rose-950/40 border border-rose-200/60 dark:border-rose-900/50 text-xs text-rose-700 dark:text-rose-300 font-bold flex items-center gap-2">
                   <span>🎉 Libur Nasional: {NATIONAL_HOLIDAYS_2026[formatDateKey(selectedCalendarDate)]}</span>
                 </div>
               )}
 
               <div className="space-y-2">
                 {selectedDateSchedules.length === 0 && selectedDateTasks.length === 0 && !NATIONAL_HOLIDAYS_2026[formatDateKey(selectedCalendarDate)] ? (
-                  <div className="p-4 text-center text-slate-400 dark:text-zinc-500 text-xs bg-slate-50/70 dark:bg-zinc-800/40 rounded-2xl">
+                  <div className="p-4 text-center text-slate-400 dark:text-zinc-500 text-xs bg-slate-50/50 dark:bg-zinc-800/30 rounded-2xl border border-slate-200/30 dark:border-white/5">
                     Tiada jadwal kuliah atau deadline di tanggal ini.
                   </div>
                 ) : (
@@ -950,7 +939,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     {selectedDateSchedules.map((s) => (
                       <div
                         key={s.id}
-                        className="p-3 rounded-2xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50 flex items-center justify-between text-xs"
+                        className="p-3 rounded-2xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-100/80 dark:border-blue-900/50 flex items-center justify-between text-xs"
                       >
                         <div className="min-w-0 pr-3">
                           <span className="font-bold text-blue-900 dark:text-blue-200 block truncate">{s.course}</span>
@@ -958,7 +947,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         <div className="text-right shrink-0">
                           <span className="font-bold text-blue-600 dark:text-blue-400 block">{s.time}</span>
                           <span className="inline-flex items-center gap-1 text-[10px] text-slate-500 dark:text-zinc-400 justify-end">
-                            <Building2 className="w-3 h-3 shrink-0" />
+                            <Building2 className="w-3.5 h-3.5 shrink-0 stroke-[2.2]" />
                             <span>{s.room}</span>
                           </span>
                         </div>
@@ -969,7 +958,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       <div
                         key={t.id}
                         onClick={() => onNavigateTab('tasks')}
-                        className="p-3 rounded-2xl bg-rose-50/60 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-900/50 flex items-center justify-between text-xs cursor-pointer hover:bg-rose-100/60 transition-colors"
+                        className="p-3 rounded-2xl bg-rose-50/60 dark:bg-rose-950/30 border border-rose-100/80 dark:border-rose-900/50 flex items-center justify-between text-xs cursor-pointer hover:bg-rose-100/60 transition-colors"
                       >
                         <div className="space-y-0.5 min-w-0 pr-2">
                           <span className="font-bold text-rose-900 dark:text-rose-200 block truncate">{t.title}</span>
@@ -988,9 +977,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
 
-        {/* Right Column: Announcements Desktop */}
+        {/* Right Column: Announcements Desktop (GLASSMORPHISM) */}
         <div className="hidden lg:block space-y-4 sm:space-y-5">
-          <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-5 sm:p-7 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-4 transition-colors">
+          <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-5 sm:p-7 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none space-y-4 transition-all">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-base font-bold text-slate-800 dark:text-zinc-100">
@@ -1011,7 +1000,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
             <div className="space-y-2.5">
               {realAnnouncements.length === 0 ? (
-                <div className="p-6 text-center text-slate-400 dark:text-zinc-500 text-xs bg-slate-50/70 dark:bg-zinc-800/40 rounded-2xl">
+                <div className="p-6 text-center text-slate-400 dark:text-zinc-500 text-xs bg-slate-50/50 dark:bg-zinc-800/30 rounded-2xl border border-slate-200/30 dark:border-white/5">
                   Belum ada pengumuman kelas.
                 </div>
               ) : (
@@ -1021,10 +1010,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     whileTap={{ scale: 0.99 }}
                     key={ann.id}
                     onClick={() => setSelectedAnnModal(ann)}
-                    className="p-4 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/60 space-y-1.5 border border-slate-100 dark:border-zinc-800 cursor-pointer hover:bg-slate-100/90 dark:hover:bg-zinc-800 transition-colors group"
+                    className="p-4 rounded-2xl bg-white/60 dark:bg-zinc-800/40 backdrop-blur-sm space-y-1.5 border border-slate-200/60 dark:border-white/5 cursor-pointer hover:bg-white/90 dark:hover:bg-zinc-800/70 transition-all group"
                   >
                     <div className="flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400">
-                      <span className="font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2.5 py-0.5 rounded-full">
+                      <span className="font-semibold text-blue-600 dark:text-blue-400 bg-blue-50/80 dark:bg-blue-950/60 px-2.5 py-0.5 rounded-full">
                         {ann.category}
                       </span>
                       {isOfficer && (
@@ -1067,7 +1056,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
       </div>
 
-      {/* Modal: Streak Details & Leaderboard */}
+      {/* Modal: Streak Details */}
       <StreakModal
         isOpen={isStreakModalOpen}
         onClose={() => setIsStreakModalOpen(false)}
@@ -1095,9 +1084,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   animate={{ scale: 1, opacity: 1, y: 0 }}
                   exit={{ scale: 0.92, opacity: 0, y: 15 }}
                   transition={{ type: 'spring', stiffness: 350, damping: 28 }}
-                  className="relative z-10 bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"
+                  className="relative z-10 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/40 dark:border-white/10 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"
                 >
-                  <div className="px-6 sm:px-8 py-5 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between shrink-0 bg-white dark:bg-zinc-900">
+                  <div className="px-6 sm:px-8 py-5 border-b border-slate-200/40 dark:border-white/10 flex items-center justify-between shrink-0 bg-white/50 dark:bg-zinc-900/50">
                     <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-100">
                       {editingAnnId ? 'Edit Pengumuman' : 'Buat Pengumuman Baru'}
                     </h3>
@@ -1122,7 +1111,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                           value={newAnnTitle}
                           onChange={(e) => setNewAnnTitle(e.target.value)}
                           placeholder="Misal: Perubahan Jadwal / Info Makrab"
-                          className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-4 py-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/80 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
 
@@ -1133,7 +1122,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         <select
                           value={newAnnCategory}
                           onChange={(e) => setNewAnnCategory(e.target.value as any)}
-                          className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-4 py-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/80 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
                           <option value="Penting">Penting</option>
                           <option value="Akademik">Akademik</option>
@@ -1152,7 +1141,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                           value={newAnnContent}
                           onChange={(e) => setNewAnnContent(e.target.value)}
                           placeholder="Tuliskan instruksi atau pengumuman lengkap untuk teman-teman..."
-                          className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                          className="w-full px-4 py-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/80 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                         />
                       </div>
 
@@ -1170,7 +1159,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       </div>
                     </div>
 
-                    <div className="px-6 sm:px-8 py-4 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-end gap-3 shrink-0 bg-white dark:bg-zinc-900">
+                    <div className="px-6 sm:px-8 py-4 border-t border-slate-200/40 dark:border-white/10 flex items-center justify-end gap-3 shrink-0 bg-white/50 dark:bg-zinc-900/50">
                       <button
                         type="button"
                         disabled={isSubmittingAnn}
@@ -1225,11 +1214,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   animate={{ scale: 1, opacity: 1, y: 0 }}
                   exit={{ scale: 0.92, opacity: 0, y: 15 }}
                   transition={{ type: 'spring', stiffness: 350, damping: 28 }}
-                  className="relative z-10 bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"
+                  className="relative z-10 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/40 dark:border-white/10 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"
                 >
-                  <div className="px-6 sm:px-8 py-5 border-b border-slate-100 dark:border-zinc-800 flex items-start justify-between gap-3 shrink-0 bg-white dark:bg-zinc-900">
+                  <div className="px-6 sm:px-8 py-5 border-b border-slate-200/40 dark:border-white/10 flex items-start justify-between gap-3 shrink-0 bg-white/50 dark:bg-zinc-900/50">
                     <div className="pr-2 space-y-1">
-                      <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-3 py-1 rounded-full">
+                      <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50/80 dark:bg-blue-950/60 px-3 py-1 rounded-full">
                         {selectedAnnModal.category}
                       </span>
                       <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-100 pt-1">
@@ -1249,12 +1238,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   </div>
 
                   <div className="flex-1 overflow-y-auto p-6 sm:p-8 custom-scrollbar">
-                    <div className="text-xs text-slate-600 dark:text-zinc-300 bg-slate-50 dark:bg-zinc-800/80 p-4 rounded-2xl leading-relaxed whitespace-pre-line border border-slate-100 dark:border-zinc-700/60">
+                    <div className="text-xs text-slate-600 dark:text-zinc-300 bg-white/60 dark:bg-zinc-800/60 p-4 rounded-2xl leading-relaxed whitespace-pre-line border border-slate-200/40 dark:border-white/5">
                       {renderFormattedContent(selectedAnnModal.content)}
                     </div>
                   </div>
 
-                  <div className="px-6 sm:px-8 py-4 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-between shrink-0 bg-white dark:bg-zinc-900">
+                  <div className="px-6 sm:px-8 py-4 border-t border-slate-200/40 dark:border-white/10 flex items-center justify-between shrink-0 bg-white/50 dark:bg-zinc-900/50">
                     {isOfficer ? (
                       <div className="flex gap-2">
                         <button
@@ -1263,7 +1252,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                             setSelectedAnnModal(null);
                             handleOpenEditAnn(ann);
                           }}
-                          className="px-3.5 py-2 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 rounded-2xl text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                          className="px-3.5 py-2 bg-slate-100/80 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 rounded-2xl text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
                           Edit
@@ -1275,7 +1264,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                             setSelectedAnnModal(null);
                             handleDeleteAnn(annId);
                           }}
-                          className="px-3.5 py-2 bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/60 rounded-2xl text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                          className="px-3.5 py-2 bg-rose-50/80 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/60 rounded-2xl text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                           Hapus
@@ -1288,7 +1277,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     <button
                       type="button"
                       onClick={() => setSelectedAnnModal(null)}
-                      className="px-5 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 text-xs font-semibold hover:bg-slate-200 dark:hover:bg-zinc-700 transition-all cursor-pointer"
+                      className="px-5 py-2.5 rounded-2xl bg-slate-100/80 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 text-xs font-semibold hover:bg-slate-200 dark:hover:bg-zinc-700 transition-all cursor-pointer"
                     >
                       Tutup
                     </button>
