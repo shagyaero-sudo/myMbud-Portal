@@ -138,6 +138,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }
   ];
 
+  const navigateFromSheet = (tab: TabType) => {
+    setActiveTab(tab);
+    setIsBottomSheetOpen(false);
+  };
+
   return (
     <>
       {/* DESKTOP SIDEBAR (GLASSMORPHISM) */}
@@ -345,61 +350,62 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </aside>
 
-      {/* MOBILE BOTTOM NAVIGATION (GLASSMORPHISM) */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 w-full pointer-events-none">
-        <nav aria-label="Mobile Navigation" className="pointer-events-auto w-full h-[70px] bg-white/75 dark:bg-zinc-950/75 backdrop-blur-xl border-t border-white/40 dark:border-white/10 rounded-t-[24px] px-3 pb-2.5 flex items-center justify-center shadow-[0_-8px_32px_rgba(0,0,0,0.06)] dark:shadow-[0_-8px_32px_rgba(0,0,0,0.4)] relative">
-          <div className="w-full flex items-center justify-center gap-4 sm:gap-8 h-full">
-            <BottomTabItem
-              id="dashboard"
-              label="Jadwal"
-              icon={CalendarDays}
-              activeTab={activeTab}
-              onClick={setActiveTab}
-            />
+      {/* MOBILE/TABLET FLOATING GLASS NAVIGATION BAR */}
+      <div className="lg:hidden fixed bottom-3 sm:bottom-4 left-3 right-3 sm:left-6 sm:right-6 z-40 max-w-md mx-auto pointer-events-none">
+        <nav 
+          aria-label="Mobile Navigation" 
+          className="pointer-events-auto w-full h-[66px] bg-white/70 dark:bg-zinc-950/65 backdrop-blur-2xl backdrop-saturate-150 border border-white/60 dark:border-white/15 rounded-3xl sm:rounded-[32px] px-2.5 sm:px-4 flex items-center justify-between shadow-[0_12px_40px_rgba(0,0,0,0.12)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.6)] relative"
+        >
+          <BottomTabItem
+            id="dashboard"
+            label="Jadwal"
+            icon={CalendarDays}
+            activeTab={activeTab}
+            onClick={setActiveTab}
+          />
 
-            <BottomTabItem
-              id="tasks"
-              label="Tugas"
-              icon={FolderKanban}
-              activeTab={activeTab}
-              onClick={setActiveTab}
-              count={activeTaskCount > 0 ? activeTaskCount : null}
-            />
+          <BottomTabItem
+            id="tasks"
+            label="Tugas"
+            icon={FolderKanban}
+            activeTab={activeTab}
+            onClick={setActiveTab}
+            count={activeTaskCount > 0 ? activeTaskCount : null}
+          />
 
-            {/* TOMBOL MENU TENGAH */}
-            <div className="relative flex flex-col items-center justify-center -top-3 px-1 shrink-0">
-              <div className="p-1 rounded-full bg-slate-50/70 dark:bg-zinc-950/70 backdrop-blur-xl border border-slate-200/40 dark:border-zinc-800/60 shadow-xs">
-                <motion.button
-                  type="button"
-                  aria-label="Buka menu navigasi"
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => setIsBottomSheetOpen(true)}
-                  className="w-11 h-11 bg-blue-600 dark:bg-blue-500 text-white rounded-full flex items-center justify-center shadow-md shadow-blue-500/30 transition-transform cursor-pointer"
-                >
-                  <LayoutGrid className="w-5 h-5" />
-                </motion.button>
-              </div>
-              <span className="text-[9px] font-bold text-slate-500 dark:text-zinc-400 -mt-0.5">
-                Menu
-              </span>
+          {/* TOMBOL MENU TENGAH FLOATING */}
+          <div className="relative flex flex-col items-center justify-center -top-2.5 px-1 shrink-0">
+            <div className="p-1 rounded-full bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-white/80 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/30">
+              <motion.button
+                type="button"
+                aria-label="Buka menu navigasi"
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setIsBottomSheetOpen(true)}
+                className="w-10 h-10 bg-blue-600 dark:bg-blue-500 text-white rounded-full flex items-center justify-center shadow-md shadow-blue-500/30 transition-transform cursor-pointer"
+              >
+                <LayoutGrid className="w-4 h-4" />
+              </motion.button>
             </div>
-
-            <BottomTabItem
-              id="contacts"
-              label="Kontak"
-              icon={Users}
-              activeTab={activeTab}
-              onClick={setActiveTab}
-            />
-
-            <BottomTabItem
-              id="materials"
-              label="Materi"
-              icon={FileText}
-              activeTab={activeTab}
-              onClick={setActiveTab}
-            />
+            <span className="text-[9px] font-bold text-slate-500 dark:text-zinc-400 mt-0.5">
+              Menu
+            </span>
           </div>
+
+          <BottomTabItem
+            id="contacts"
+            label="Kontak"
+            icon={Users}
+            activeTab={activeTab}
+            onClick={setActiveTab}
+          />
+
+          <BottomTabItem
+            id="materials"
+            label="Materi"
+            icon={FileText}
+            activeTab={activeTab}
+            onClick={setActiveTab}
+          />
         </nav>
       </div>
 
@@ -638,7 +644,7 @@ const BottomTabItem: React.FC<BottomTabItemProps> = ({
     <button
       type="button"
       onClick={() => onClick(id)}
-      className={`relative flex flex-col items-center justify-center flex-1 max-w-[72px] h-full transition-all cursor-pointer select-none ${
+      className={`relative flex flex-col items-center justify-center flex-1 max-w-[64px] h-full transition-all cursor-pointer select-none ${
         isActive
           ? 'text-blue-600 dark:text-blue-400 font-bold'
           : 'text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300'
@@ -657,7 +663,7 @@ const BottomTabItem: React.FC<BottomTabItemProps> = ({
         ) : null}
       </div>
 
-      <span className="text-[9.5px] tracking-tight leading-none">
+      <span className="text-[9px] tracking-tight leading-none">
         {label}
       </span>
     </button>
