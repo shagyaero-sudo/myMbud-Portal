@@ -10,10 +10,9 @@ import {
   Sparkles,
   Sun,
   Moon,
+  ChevronLeft,
   Check,
   BellRing,
-  ArrowRight,
-  ChevronLeft,
 } from 'lucide-react';
 import { initOneSignal, requestOneSignalPermission } from '../services/oneSignal';
 import { ThemeMode, ThemeAccent } from './Header';
@@ -23,15 +22,34 @@ interface OnboardingScreenProps {
   onComplete: () => void;
 }
 
+const slideVariants = {
+  enter: (direction: number) => ({
+    x: direction > 0 ? 40 : -40,
+    opacity: 0,
+    scale: 0.98,
+  }),
+  center: {
+    x: 0,
+    opacity: 1,
+    scale: 1,
+    transition: { type: 'spring', stiffness: 350, damping: 30 },
+  },
+  exit: (direction: number) => ({
+    x: direction < 0 ? 40 : -40,
+    opacity: 0,
+    scale: 0.98,
+    transition: { duration: 0.2 },
+  }),
+};
+
 export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
   userName,
   onComplete,
 }) => {
-  const [currentSlide, setCurrentSlide] = useState(0);
+  const [step, setStep] = useState(1);
   const [direction, setDirection] = useState(1);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Personalisasi Theme State (Screen 3)
   const [themeMode, setThemeMode] = useState<ThemeMode>('dark');
   const [themeAccent, setThemeAccent] = useState<ThemeAccent>('blue');
   const [isEnablingPush, setIsEnablingPush] = useState(false);
@@ -44,7 +62,6 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
     { id: 'green' as ThemeAccent, color: '#16A34A', label: 'Green' },
   ];
 
-  // Inisialisasi Audio Backsound
   useEffect(() => {
     const audio = new Audio('/backsound.mp3');
     audio.loop = true;
@@ -53,9 +70,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 
     const promise = audio.play();
     if (promise !== undefined) {
-      promise.catch((error) => {
-        console.log('Autoplay fallback:', error);
-      });
+      promise.catch((error) => console.log('Autoplay fallback:', error));
     }
 
     const savedMode = (localStorage.getItem('mymbud_theme_mode') as ThemeMode) || 'dark';
@@ -86,446 +101,356 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
     }
   };
 
-  const slidesConfig = [
-    {
-      id: 1,
-      gradient: 'from-indigo-400 via-blue-500 to-cyan-400',
-      shadow: 'shadow-blue-500/50',
-      glow: 'bg-blue-500/30',
-      elements: ['bg-indigo-500/30', 'bg-blue-600/30'],
-    },
-    {
-      id: 2,
-      gradient: 'from-cyan-400 to-blue-600',
-      shadow: 'shadow-cyan-500/50',
-      glow: 'bg-cyan-600/20',
-      elements: ['bg-cyan-500/20', 'bg-blue-600/20'],
-    },
-    {
-      id: 3,
-      gradient: 'from-fuchsia-500 via-purple-500 to-pink-500',
-      shadow: 'shadow-purple-500/50',
-      glow: 'bg-purple-600/20',
-      elements: ['bg-fuchsia-500/20', 'bg-purple-600/20'],
-    },
-    {
-      id: 4,
-      gradient: 'from-rose-400 to-red-600',
-      shadow: 'shadow-rose-500/50',
-      glow: 'bg-rose-600/20',
-      elements: ['bg-rose-400/20', 'bg-red-600/20'],
-    },
-    {
-      id: 5,
-      gradient: 'from-emerald-400 via-teal-500 to-blue-500',
-      shadow: 'shadow-emerald-500/50',
-      glow: 'bg-emerald-500/25',
-      elements: ['bg-emerald-400/20', 'bg-teal-600/20'],
-    },
-  ];
-
-  const currentTheme = slidesConfig[currentSlide];
-
-  const handleNext = () => {
-    if (currentSlide < 4) {
-      setDirection(1);
-      setCurrentSlide((prev) => prev + 1);
-    } else {
-      finishOnboarding();
-    }
+  const nextStep = () => {
+    setDirection(1);
+    setStep((prev) => Math.min(5, prev + 1));
   };
 
-  const handlePrev = () => {
-    if (currentSlide > 0) {
-      setDirection(-1);
-      setCurrentSlide((prev) => prev - 1);
-    }
+  const prevStep = () => {
+    setDirection(-1);
+    setStep((prev) => Math.max(1, prev - 1));
   };
 
-  const handleNotificationActivation = async () => {
+  const handlePushActivation = async () => {
     setIsEnablingPush(true);
     try {
       await initOneSignal();
       await requestOneSignalPermission();
     } catch (err) {
-      console.warn('[Onboarding] Error push notif:', err);
+      console.warn('[Onboarding] Push error:', err);
     } finally {
       setIsEnablingPush(false);
-      handleNext();
+      nextStep();
     }
   };
 
-  const finishOnboarding = () => {
+  const handleComplete = () => {
     if (audioRef.current) {
       audioRef.current.pause();
     }
     localStorage.setItem('mymbud_onboarded', 'true');
-    localStorage.setItem('mymbud_onboarding_completed_v2', 'true');
     onComplete();
   };
 
   const featuresList = [
-    { label: 'Jadwal Kuliah', icon: CalendarDays, color: 'text-blue-400 bg-blue-500/20' },
-    { label: 'Tracker Tugas', icon: FolderKanban, color: 'text-rose-400 bg-rose-500/20' },
-    { label: 'Bank Materi PDF', icon: FileText, color: 'text-amber-400 bg-amber-500/20' },
-    { label: 'Pengumuman Kelas', icon: Megaphone, color: 'text-emerald-400 bg-emerald-500/20' },
-    { label: 'Notifikasi Realtime', icon: Bell, color: 'text-indigo-400 bg-indigo-500/20' },
-    { label: 'Catatan Mbudiary', icon: BookOpen, color: 'text-fuchsia-400 bg-fuchsia-500/20' },
+    { label: 'Jadwal Kuliah', icon: CalendarDays, color: 'text-blue-500 bg-blue-500/10' },
+    { label: 'Manajemen Tugas', icon: FolderKanban, color: 'text-rose-500 bg-rose-500/10' },
+    { label: 'Bank Materi PDF', icon: FileText, color: 'text-amber-500 bg-amber-500/10' },
+    { label: 'Pengumuman Kelas', icon: Megaphone, color: 'text-emerald-500 bg-emerald-500/10' },
+    { label: 'Notifikasi Realtime', icon: Bell, color: 'text-indigo-500 bg-indigo-500/10' },
+    { label: 'Catatan Mbudiary', icon: BookOpen, color: 'text-fuchsia-500 bg-fuchsia-500/10' },
   ];
 
   return (
-    <div className="fixed inset-0 min-h-[100dvh] w-screen z-[99999] bg-[#0a0a0a] text-slate-100 flex flex-col justify-between items-center font-sans overflow-y-auto overflow-x-hidden p-4 sm:p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] select-none">
-      
-      {/* --- BACKGROUND GLOW MESH --- */}
-      <AnimatePresence mode="popLayout">
-        <motion.div
-          key={currentTheme.id}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.8 }}
-          className="fixed inset-0 overflow-hidden pointer-events-none -z-10"
-        >
-          <div className={`absolute -top-[20%] -left-[10%] w-[70vw] h-[70vw] rounded-full blur-[100px] ${currentTheme.elements[0]} mix-blend-screen opacity-60 animate-pulse`} />
-          <div className={`absolute top-[40%] -right-[20%] w-[80vw] h-[80vw] rounded-full blur-[120px] ${currentTheme.elements[1]} mix-blend-screen opacity-50`} />
-        </motion.div>
-      </AnimatePresence>
-
-      {/* --- TOP BACK BUTTON --- */}
-      <div className="w-full max-w-md h-8 flex items-center justify-between shrink-0">
-        {currentSlide > 0 && currentSlide < 4 ? (
-          <button
-            onClick={handlePrev}
-            className="p-1.5 -ml-2 text-slate-400 hover:text-white transition-colors cursor-pointer flex items-center gap-1 text-xs font-semibold"
-          >
-            <ChevronLeft className="w-5 h-5" />
-            <span>Kembali</span>
-          </button>
-        ) : (
-          <div />
-        )}
-      </div>
-
-      {/* --- MAIN INTERACTIVE CONTAINER --- */}
-      <div className="relative z-10 my-auto py-4 w-full max-w-md flex flex-col items-center justify-center">
-        <AnimatePresence mode="wait">
-          
-          {/* SCREEN 1: WELCOME */}
-          {currentSlide === 0 && (
-            <motion.div
-              key="slide-1"
-              initial={{ opacity: 0, x: direction > 0 ? 30 : -30, filter: 'blur(8px)' }}
-              animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
-              exit={{ opacity: 0, x: direction > 0 ? -30 : 30, filter: 'blur(8px)' }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="w-full flex flex-col items-center text-center space-y-5"
+    <div className="fixed inset-0 z-[999999] bg-slate-950/95 backdrop-blur-2xl flex items-center justify-center p-4 sm:p-6 overflow-hidden select-none">
+      <div className="relative w-full max-w-md bg-white/95 dark:bg-zinc-900/90 border border-white/60 dark:border-white/10 rounded-[36px] shadow-2xl p-7 sm:p-9 min-h-[580px] flex flex-col justify-between overflow-hidden">
+        
+        {/* Navigation Back */}
+        <div className="h-8 flex items-center justify-between">
+          {step > 1 && step < 5 ? (
+            <button
+              onClick={prevStep}
+              className="p-1.5 -ml-2 rounded-full text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors cursor-pointer flex items-center gap-1 text-xs font-semibold"
             >
-              <div className="relative w-44 h-44 sm:w-52 sm:h-52 flex items-center justify-center">
-                <motion.div
-                  animate={{ y: [-8, 8, -8], rotate: [0, 5, -5, 0] }}
-                  transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-                  className={`absolute top-0 right-4 w-12 h-12 rounded-2xl bg-gradient-to-tr ${currentTheme.gradient} opacity-40 blur-xl pointer-events-none`}
-                />
-                <motion.div
-                  whileHover={{ scale: 1.04, rotateY: 8, rotateX: -8 }}
-                  className={`relative z-10 w-36 h-36 sm:w-44 sm:h-44 rounded-[2rem] bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-2xl border border-white/20 shadow-2xl ${currentTheme.shadow} flex items-center justify-center p-5`}
-                >
-                  <div className={`absolute inset-0 rounded-[2rem] ${currentTheme.glow} blur-2xl opacity-60 pointer-events-none`} />
-                  <img
-                    src="/logombud.png"
-                    alt="myMbud Logo"
-                    className="w-20 h-20 sm:w-24 sm:h-24 object-contain drop-shadow-[0_0_20px_rgba(59,130,246,0.8)] z-10"
-                  />
-                </motion.div>
-              </div>
-
-              <div className="space-y-2 px-2">
-                <span className="text-xs font-extrabold uppercase tracking-widest text-blue-400 block">
-                  Hello, {userName.split(' ')[0]}!
-                </span>
-                <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white leading-tight">
-                  Selamat datang di myMbud.
-                </h2>
-                <p className="text-xs sm:text-sm text-slate-400 leading-relaxed max-w-xs sm:max-w-sm mx-auto">
-                  Ruang digital yang dibuat khusus untuk menemani perjalanan akademikmu di Kelas A.
-                </p>
-              </div>
-            </motion.div>
+              <ChevronLeft className="w-5 h-5" />
+              <span>Kembali</span>
+            </button>
+          ) : (
+            <div />
           )}
 
-          {/* SCREEN 2: WHAT IS MYMBUD? */}
-          {currentSlide === 1 && (
-            <motion.div
-              key="slide-2"
-              initial={{ opacity: 0, x: direction > 0 ? 30 : -30, filter: 'blur(8px)' }}
-              animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
-              exit={{ opacity: 0, x: direction > 0 ? -30 : 30, filter: 'blur(8px)' }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="w-full flex flex-col items-center text-center space-y-4"
-            >
-              <div className="space-y-1.5 px-2">
-                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white leading-snug">
-                  Semua yang kamu butuhkan, <br /> ada di satu tempat.
-                </h2>
-                <p className="text-xs text-slate-400 max-w-xs mx-auto">
-                  Tidak perlu lagi mencari informasi dari satu tempat ke tempat lain.
-                </p>
-              </div>
+          <div className="flex gap-1.5 items-center">
+            {[1, 2, 3, 4, 5].map((s) => (
+              <div
+                key={s}
+                className={`h-1.5 rounded-full transition-all duration-300 ${
+                  s === step
+                    ? 'w-6 bg-blue-600 dark:bg-blue-500'
+                    : 'w-1.5 bg-slate-200 dark:bg-zinc-800'
+                }`}
+              />
+            ))}
+          </div>
+        </div>
 
-              <div className="grid grid-cols-2 gap-2.5 w-full pt-2 text-left">
-                {featuresList.map((item, idx) => {
-                  const FIcon = item.icon;
-                  return (
-                    <motion.div
-                      key={item.label}
-                      initial={{ opacity: 0, y: 15 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: idx * 0.06 + 0.1 }}
-                      className="p-3 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 shadow-lg flex items-center gap-2.5"
-                    >
-                      <div className={`p-2 rounded-xl shrink-0 ${item.color}`}>
-                        <FIcon className="w-4 h-4" />
-                      </div>
-                      <span className="text-[11px] font-bold text-slate-200 leading-tight">
-                        {item.label}
-                      </span>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            </motion.div>
-          )}
-
-          {/* SCREEN 3: MAKE IT YOURS */}
-          {currentSlide === 2 && (
-            <motion.div
-              key="slide-3"
-              initial={{ opacity: 0, x: direction > 0 ? 30 : -30, filter: 'blur(8px)' }}
-              animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
-              exit={{ opacity: 0, x: direction > 0 ? -30 : 30, filter: 'blur(8px)' }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="w-full flex flex-col items-center text-center space-y-4"
-            >
-              <div className="space-y-1 px-2">
-                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white leading-snug">
-                  Mari siapkan myMbud untukmu.
-                </h2>
-                <p className="text-xs text-slate-400">
-                  Pilih tampilan dan suasana warna yang paling nyaman untukmu.
-                </p>
-              </div>
-
-              <div className="w-full space-y-3.5 pt-1 text-left">
-                {/* Mode Selector */}
-                <div className="space-y-1.5">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                    Mode Tampilan
-                  </span>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleApplyTheme('light', themeAccent)}
-                      className={`flex items-center justify-center gap-2 py-3 rounded-2xl border text-xs font-bold transition-all cursor-pointer ${
-                        themeMode === 'light'
-                          ? 'border-blue-500 bg-blue-500/20 text-blue-400 shadow-md'
-                          : 'border-white/10 bg-white/5 text-slate-400 hover:bg-white/10'
-                      }`}
-                    >
-                      <Sun className="w-4 h-4" />
-                      <span>Light</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => handleApplyTheme('dark', themeAccent)}
-                      className={`flex items-center justify-center gap-2 py-3 rounded-2xl border text-xs font-bold transition-all cursor-pointer ${
-                        themeMode === 'dark'
-                          ? 'border-blue-500 bg-blue-500/20 text-blue-400 shadow-md'
-                          : 'border-white/10 bg-white/5 text-slate-400 hover:bg-white/10'
-                      }`}
-                    >
-                      <Moon className="w-4 h-4" />
-                      <span>Dark</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Accent Colors */}
-                <div className="space-y-1.5">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                    Warna Aksen
-                  </span>
-                  <div className="flex items-center justify-between p-2.5 bg-white/5 backdrop-blur-md rounded-2xl border border-white/10">
-                    {accentOptions.map((item) => {
-                      const isSelected = themeAccent === item.id;
-                      return (
-                        <button
-                          key={item.id}
-                          type="button"
-                          onClick={() => handleApplyTheme(themeMode, item.id)}
-                          style={{ backgroundColor: item.color }}
-                          className="w-8 h-8 rounded-full flex items-center justify-center transition-transform hover:scale-110 active:scale-95 shadow-md cursor-pointer relative"
-                          title={item.label}
-                        >
-                          {isSelected && <Check className="w-4 h-4 text-white stroke-[3.5]" />}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          {/* SCREEN 4: STAY IN THE LOOP */}
-          {currentSlide === 3 && (
-            <motion.div
-              key="slide-4"
-              initial={{ opacity: 0, x: direction > 0 ? 30 : -30, filter: 'blur(8px)' }}
-              animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
-              exit={{ opacity: 0, x: direction > 0 ? -30 : 30, filter: 'blur(8px)' }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="w-full flex flex-col items-center text-center space-y-5"
-            >
-              <div className="space-y-1.5 px-2">
-                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white leading-snug">
-                  Jangan sampai ketinggalan.
-                </h2>
-                <p className="text-xs text-slate-400 max-w-xs mx-auto leading-relaxed">
-                  myMbud dapat memberitahumu saat ada pengumuman mendesak atau tugas baru dari kelasmu.
-                </p>
-              </div>
-
-              {/* Mockup Notifikasi iOS Glass Card */}
+        {/* Content Slides */}
+        <div className="flex-1 flex flex-col justify-center my-auto overflow-hidden">
+          <AnimatePresence custom={direction} mode="wait">
+            {step === 1 && (
               <motion.div
-                initial={{ scale: 0.9, y: 10 }}
-                animate={{ scale: 1, y: 0 }}
-                className="w-full p-4 rounded-3xl bg-white/10 backdrop-blur-2xl border border-white/15 shadow-xl text-left space-y-2"
+                key="step1"
+                custom={direction}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                className="space-y-6 text-center py-4"
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-5 h-5 rounded-lg bg-blue-500 flex items-center justify-center text-white">
-                      <Bell className="w-3 h-3" />
-                    </div>
-                    <span className="text-[11px] font-bold text-white uppercase tracking-wider">
-                      myMbud
-                    </span>
-                  </div>
-                  <span className="text-[10px] text-slate-400">Baru saja</span>
+                <div className="w-20 h-20 rounded-3xl bg-blue-500/10 dark:bg-blue-500/15 border border-blue-500/20 mx-auto flex items-center justify-center p-3 shadow-inner">
+                  <img src="/logombud.png" alt="Logo" className="w-full h-full object-contain" />
                 </div>
-                <div>
-                  <h4 className="text-xs font-bold text-white">
-                    Pengumuman baru telah diposting.
-                  </h4>
-                  <p className="text-[11px] text-slate-300 leading-snug mt-0.5">
-                    "Info perkuliahan besok dan update materi presentasi kelompok..."
+
+                <div className="space-y-2">
+                  <span className="text-xs font-extrabold uppercase tracking-widest text-blue-600 dark:text-blue-400 block">
+                    Hello, {userName.split(' ')[0]}!
+                  </span>
+                  <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                    Selamat datang di myMbud.
+                  </h1>
+                  <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 leading-relaxed max-w-xs mx-auto">
+                    Ruang digital yang dibuat khusus untuk menemani perjalanan akademikmu di Kelas A.
                   </p>
                 </div>
               </motion.div>
-            </motion.div>
-          )}
+            )}
 
-          {/* SCREEN 5: YOUR SPACE IS READY */}
-          {currentSlide === 4 && (
-            <motion.div
-              key="slide-5"
-              initial={{ opacity: 0, x: direction > 0 ? 30 : -30, filter: 'blur(8px)' }}
-              animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
-              exit={{ opacity: 0, x: direction > 0 ? -30 : 30, filter: 'blur(8px)' }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="w-full flex flex-col items-center text-center space-y-5"
-            >
-              <div className="relative w-44 h-44 sm:w-52 sm:h-52 flex items-center justify-center">
+            {step === 2 && (
+              <motion.div
+                key="step2"
+                custom={direction}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                className="space-y-5 text-center py-2"
+              >
+                <div className="space-y-1">
+                  <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                    Semua kebutuhanmu, <br /> di satu tempat.
+                  </h2>
+                  <p className="text-xs text-slate-500 dark:text-zinc-400">
+                    Tidak perlu lagi mencari informasi dari satu tempat ke tempat lain.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2.5 pt-2 text-left">
+                  {featuresList.map((item, idx) => {
+                    const Icon = item.icon;
+                    return (
+                      <motion.div
+                        key={item.label}
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: idx * 0.08 + 0.1 }}
+                        className="p-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/50 border border-slate-200/50 dark:border-white/5 flex items-center gap-2.5 shadow-xs"
+                      >
+                        <div className={`p-2 rounded-xl shrink-0 ${item.color}`}>
+                          <Icon className="w-4 h-4" />
+                        </div>
+                        <span className="text-[11px] font-bold text-slate-800 dark:text-zinc-200 leading-tight">
+                          {item.label}
+                        </span>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            )}
+
+            {step === 3 && (
+              <motion.div
+                key="step3"
+                custom={direction}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                className="space-y-5 py-2 text-left"
+              >
+                <div className="text-center space-y-1">
+                  <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                    Mari siapkan myMbud untukmu.
+                  </h2>
+                  <p className="text-xs text-slate-500 dark:text-zinc-400">
+                    Pilih preferensi tema visual yang paling nyaman di matamu.
+                  </p>
+                </div>
+
+                <div className="space-y-4 pt-1">
+                  <div className="space-y-1.5">
+                    <span className="text-[11px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider block">
+                      Mode Tampilan
+                    </span>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleApplyTheme('light', themeAccent)}
+                        className={`flex items-center justify-center gap-2 py-3 rounded-2xl border text-xs font-bold transition-all cursor-pointer ${
+                          themeMode === 'light'
+                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 shadow-xs'
+                            : 'border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-800/40 text-slate-500 dark:text-zinc-400'
+                        }`}
+                      >
+                        <Sun className="w-4 h-4" />
+                        <span>Light Mode</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleApplyTheme('dark', themeAccent)}
+                        className={`flex items-center justify-center gap-2 py-3 rounded-2xl border text-xs font-bold transition-all cursor-pointer ${
+                          themeMode === 'dark'
+                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 shadow-xs'
+                            : 'border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-800/40 text-slate-500 dark:text-zinc-400'
+                        }`}
+                      >
+                        <Moon className="w-4 h-4" />
+                        <span>Dark Mode</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <span className="text-[11px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider block">
+                      Warna Aksen
+                    </span>
+                    <div className="flex items-center justify-between p-2.5 bg-slate-50 dark:bg-zinc-800/40 rounded-2xl border border-slate-200/50 dark:border-zinc-800">
+                      {accentOptions.map((item) => {
+                        const isSelected = themeAccent === item.id;
+                        return (
+                          <button
+                            key={item.id}
+                            type="button"
+                            onClick={() => handleApplyTheme(themeMode, item.id)}
+                            style={{ backgroundColor: item.color }}
+                            className="w-8 h-8 rounded-full flex items-center justify-center transition-transform hover:scale-110 active:scale-95 shadow-xs cursor-pointer relative"
+                            title={item.label}
+                          >
+                            {isSelected && <Check className="w-4 h-4 text-white stroke-[3.5]" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {step === 4 && (
+              <motion.div
+                key="step4"
+                custom={direction}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                className="space-y-5 py-2 text-center"
+              >
+                <div className="space-y-1">
+                  <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                    Jangan sampai ketinggalan.
+                  </h2>
+                  <p className="text-xs text-slate-500 dark:text-zinc-400 max-w-xs mx-auto">
+                    myMbud dapat memberitahumu secara instan ketika ada pengumuman mendesak atau tugas baru dari kelas.
+                  </p>
+                </div>
+
                 <motion.div
-                  animate={{ scale: [1, 1.1, 1], rotate: [0, 10, -10, 0] }}
-                  transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
-                  className={`absolute inset-4 rounded-full ${currentTheme.glow} blur-2xl opacity-60 pointer-events-none`}
-                />
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  className={`relative z-10 w-36 h-36 sm:w-44 sm:h-44 rounded-[2rem] bg-gradient-to-tr from-blue-600/40 via-teal-500/30 to-white/10 backdrop-blur-2xl border border-white/20 shadow-2xl ${currentTheme.shadow} flex items-center justify-center p-5`}
+                  initial={{ scale: 0.9, y: 10 }}
+                  animate={{ scale: 1, y: 0 }}
+                  className="p-4 rounded-3xl bg-white/80 dark:bg-zinc-800/80 border border-slate-200/80 dark:border-white/10 shadow-lg text-left space-y-2 backdrop-blur-md"
                 >
-                  <Sparkles className="w-16 h-16 sm:w-20 sm:h-20 text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.7)]" />
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-5 h-5 rounded-lg bg-blue-600 flex items-center justify-center text-white">
+                        <Bell className="w-3 h-3" />
+                      </div>
+                      <span className="text-[11px] font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                        myMbud
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-slate-400">Baru saja</span>
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-bold text-slate-900 dark:text-zinc-100">
+                      Pengumuman baru telah diposting!
+                    </h3>
+                    <p className="text-[11px] text-slate-500 dark:text-zinc-400 leading-snug mt-0.5">
+                      "Info perubahan jadwal kuliah dan pembagian kelompok tugas besar..."
+                    </p>
+                  </div>
                 </motion.div>
-              </div>
+              </motion.div>
+            )}
 
-              <div className="space-y-2 px-2">
-                <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white leading-tight">
-                  myMbud siap digunakan.
-                </h2>
-                <p className="text-xs sm:text-sm text-slate-400">
-                  Selamat datang di ruang digital Kelas A.
-                </p>
-                <p className="text-[11px] font-extrabold tracking-widest uppercase text-emerald-400 pt-1">
-                  Satu kelas. Satu ruang.
-                </p>
-              </div>
-            </motion.div>
-          )}
+            {step === 5 && (
+              <motion.div
+                key="step5"
+                custom={direction}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                className="space-y-6 text-center py-4"
+              >
+                <div className="relative mx-auto w-24 h-24 flex items-center justify-center">
+                  <div className="absolute inset-0 rounded-full bg-blue-500/20 blur-xl animate-pulse" />
+                  <div className="relative w-20 h-20 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-500 text-white flex items-center justify-center shadow-xl shadow-blue-500/30">
+                    <Sparkles className="w-10 h-10 stroke-[2.2]" />
+                  </div>
+                </div>
 
-        </AnimatePresence>
-      </div>
-
-      {/* --- FOOTER: DOT INDICATOR & ACTION BUTTON --- */}
-      <div className="relative z-20 w-full max-w-xs sm:max-w-sm flex flex-col items-center gap-3 shrink-0 pt-2">
-        
-        {/* Dot Indicators */}
-        <div className="flex items-center gap-1.5 mb-1">
-          {slidesConfig.map((_, index) => (
-            <motion.div
-              key={index}
-              className={`h-1.5 rounded-full transition-all duration-300 ${
-                index === currentSlide ? `w-6 bg-gradient-to-r ${currentTheme.gradient}` : 'w-1.5 bg-white/20'
-              }`}
-            />
-          ))}
+                <div className="space-y-2">
+                  <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
+                    myMbud siap digunakan.
+                  </h2>
+                  <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400">
+                    Selamat datang di ruang digital Kelas A.
+                  </p>
+                  <p className="text-[11px] font-extrabold tracking-widest uppercase text-blue-600 dark:text-blue-400 pt-2">
+                    Satu kelas. Satu ruang.
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        {/* Action Button */}
-        {currentSlide === 3 ? (
-          <div className="w-full space-y-1.5">
+        {/* Action Footer Button */}
+        <div className="pt-4 space-y-2">
+          {step === 4 ? (
+            <>
+              <motion.button
+                whileHover={{ scale: 1.015 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handlePushActivation}
+                disabled={isEnablingPush}
+                className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm shadow-lg shadow-blue-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              >
+                <BellRing className="w-4 h-4" />
+                <span>{isEnablingPush ? 'Mengaktifkan...' : 'Aktifkan Notifikasi'}</span>
+              </motion.button>
+
+              <button
+                type="button"
+                onClick={nextStep}
+                className="w-full py-2 text-xs font-semibold text-slate-400 hover:text-slate-700 dark:hover:text-zinc-300 transition-colors cursor-pointer"
+              >
+                Nanti Saja
+              </button>
+            </>
+          ) : step === 5 ? (
             <motion.button
-              whileHover={{ scale: 1.02 }}
+              whileHover={{ scale: 1.015 }}
               whileTap={{ scale: 0.98 }}
-              onClick={handleNotificationActivation}
-              disabled={isEnablingPush}
-              className={`w-full py-3.5 sm:py-4 rounded-2xl flex items-center justify-center gap-2.5 text-xs sm:text-sm font-bold text-white shadow-xl cursor-pointer bg-gradient-to-r ${currentTheme.gradient} ${currentTheme.shadow} transition-all disabled:opacity-50`}
+              onClick={handleComplete}
+              className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm shadow-lg shadow-blue-500/25 transition-all cursor-pointer"
             >
-              <BellRing className="w-4 h-4" />
-              <span>{isEnablingPush ? 'Mengaktifkan...' : 'Aktifkan Notifikasi'}</span>
+              Mulai Menggunakan myMbud
             </motion.button>
-
-            <button
-              type="button"
-              onClick={handleNext}
-              className="w-full py-1.5 text-xs font-semibold text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
+          ) : (
+            <motion.button
+              whileHover={{ scale: 1.015 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={nextStep}
+              className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm shadow-lg shadow-blue-500/25 transition-all cursor-pointer"
             >
-              Nanti saja
-            </button>
-          </div>
-        ) : (
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={handleNext}
-            className={`w-full py-3.5 sm:py-4 rounded-2xl flex items-center justify-center gap-2.5 text-xs sm:text-sm font-bold text-white shadow-xl cursor-pointer ${
-              currentSlide === 4
-                ? `bg-gradient-to-r ${currentTheme.gradient} ${currentTheme.shadow}`
-                : 'bg-white/10 border border-white/10 backdrop-blur-md hover:bg-white/15'
-            } transition-all`}
-          >
-            {currentSlide === 4 ? (
-              <span>Mulai Menggunakan myMbud</span>
-            ) : (
-              <>
-                <span>Lanjutkan</span>
-                <ArrowRight className="w-4 h-4" />
-              </>
-            )}
-          </motion.button>
-        )}
-      </div>
+              Lanjutkan
+            </motion.button>
+          )}
+        </div>
 
+      </div>
     </div>
   );
 };
