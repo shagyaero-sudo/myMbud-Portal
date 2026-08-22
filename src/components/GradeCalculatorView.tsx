@@ -236,7 +236,7 @@ export const GradeCalculatorView: React.FC<GradeCalculatorViewProps> = () => {
             className="w-full py-3 rounded-2xl bg-white/50 dark:bg-zinc-800/40 hover:bg-white/80 dark:hover:bg-zinc-800 border border-dashed border-slate-300 dark:border-zinc-700 text-slate-700 dark:text-zinc-300 text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
             <Plus className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-            <span>Tambah Komponen Penilaian</span>
+            <span>Tambah Komponen nilai</span>
           </motion.button>
         </div>
 
