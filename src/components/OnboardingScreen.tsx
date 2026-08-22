@@ -31,7 +31,7 @@ const slideVariants = {
     x: 0,
     opacity: 1,
     scale: 1,
-    transition: { type: 'spring', stiffness: 380, damping: 30 },
+    transition: { type: 'spring', stiffness: 350, damping: 30 },
   },
   exit: (direction: number) => ({
     x: direction < 0 ? 40 : -40,
@@ -48,22 +48,23 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
   const [step, setStep] = useState(1);
   const [direction, setDirection] = useState(1);
 
-  // Setup Default Pure White Light iOS Mode
-  const [themeMode, setThemeMode] = useState<ThemeMode>('light');
+  const [themeMode, setThemeMode] = useState<ThemeMode>('dark');
   const [themeAccent, setThemeAccent] = useState<ThemeAccent>('blue');
   const [isEnablingPush, setIsEnablingPush] = useState(false);
 
   const accentOptions = [
-    { id: 'blue' as ThemeAccent, color: '#007AFF', label: 'Blue' },
-    { id: 'purple' as ThemeAccent, color: '#5856D6', label: 'Purple' },
-    { id: 'pink' as ThemeAccent, color: '#FF2D55', label: 'Pink' },
-    { id: 'orange' as ThemeAccent, color: '#FF9500', label: 'Orange' },
-    { id: 'green' as ThemeAccent, color: '#34C759', label: 'Green' },
+    { id: 'blue' as ThemeAccent, color: '#0284C7', label: 'Blue' },
+    { id: 'purple' as ThemeAccent, color: '#7C3AED', label: 'Purple' },
+    { id: 'pink' as ThemeAccent, color: '#DB2777', label: 'Pink' },
+    { id: 'orange' as ThemeAccent, color: '#EA580C', label: 'Orange' },
+    { id: 'green' as ThemeAccent, color: '#16A34A', label: 'Green' },
   ];
 
   useEffect(() => {
-    // Terapkan default light & blue saat onboarding pertama kali
-    handleApplyTheme('light', 'blue');
+    const savedMode = (localStorage.getItem('mymbud_theme_mode') as ThemeMode) || 'dark';
+    const savedAccent = (localStorage.getItem('mymbud_theme_accent') as ThemeAccent) || 'blue';
+    setThemeMode(savedMode);
+    setThemeAccent(savedAccent);
   }, []);
 
   const handleApplyTheme = (mode: ThemeMode, accent: ThemeAccent) => {
@@ -112,27 +113,26 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
   };
 
   const featuresList = [
-    { label: 'Jadwal Kuliah', icon: CalendarDays, color: 'text-[#007AFF] bg-[#007AFF]/10' },
-    { label: 'Manajemen Tugas', icon: FolderKanban, color: 'text-[#FF2D55] bg-[#FF2D55]/10' },
-    { label: 'Bank Materi PDF', icon: FileText, color: 'text-[#FF9500] bg-[#FF9500]/10' },
-    { label: 'Pengumuman Kelas', icon: Megaphone, color: 'text-[#34C759] bg-[#34C759]/10' },
-    { label: 'Notifikasi Realtime', icon: Bell, color: 'text-[#5856D6] bg-[#5856D6]/10' },
-    { label: 'Catatan Mbudiary', icon: BookOpen, color: 'text-[#AF52DE] bg-[#AF52DE]/10' },
+    { label: 'Jadwal Kuliah', icon: CalendarDays, color: 'text-blue-500 bg-blue-500/10' },
+    { label: 'Manajemen Tugas', icon: FolderKanban, color: 'text-rose-500 bg-rose-500/10' },
+    { label: 'Bank Materi PDF', icon: FileText, color: 'text-amber-500 bg-amber-500/10' },
+    { label: 'Pengumuman Kelas', icon: Megaphone, color: 'text-emerald-500 bg-emerald-500/10' },
+    { label: 'Notifikasi Realtime', icon: Bell, color: 'text-indigo-500 bg-indigo-500/10' },
+    { label: 'Catatan Mbudiary', icon: BookOpen, color: 'text-fuchsia-500 bg-fuchsia-500/10' },
   ];
 
   return (
-    <div className="fixed inset-0 z-[999999] bg-[#000000]/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-hidden select-none font-sans">
-      {/* KARTU UTAMA MODAL PUTIH BERSIH */}
-      <div className="relative w-full max-w-[420px] bg-[#ffffff] text-[#1c1c1e] rounded-[38px] shadow-[0_25px_60px_rgba(0,0,0,0.35)] p-7 sm:p-8 min-h-[570px] flex flex-col justify-between overflow-hidden border border-[#e5e5ea]/80">
+    <div className="fixed inset-0 z-[999999] bg-slate-950/95 backdrop-blur-2xl flex items-center justify-center p-4 sm:p-6 overflow-hidden select-none">
+      <div className="relative w-full max-w-md bg-white/95 dark:bg-zinc-900/90 border border-white/60 dark:border-white/10 rounded-[36px] shadow-2xl p-7 sm:p-9 min-h-[580px] flex flex-col justify-between overflow-hidden">
         
-        {/* HEADER & STEP INDICATOR */}
+        {/* Navigation Back */}
         <div className="h-8 flex items-center justify-between shrink-0">
           {step > 1 && step < 5 ? (
             <button
               onClick={prevStep}
-              className="p-1 -ml-2 text-[#007AFF] hover:opacity-75 transition-opacity cursor-pointer flex items-center gap-0.5 text-sm font-semibold"
+              className="p-1.5 -ml-2 rounded-full text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors cursor-pointer flex items-center gap-1 text-xs font-semibold"
             >
-              <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
+              <ChevronLeft className="w-5 h-5" />
               <span>Kembali</span>
             </button>
           ) : (
@@ -144,14 +144,16 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
               <div
                 key={s}
                 className={`h-1.5 rounded-full transition-all duration-300 ${
-                  s === step ? 'w-5 bg-[#007AFF]' : 'w-1.5 bg-[#e5e5ea]'
+                  s === step
+                    ? 'w-6 bg-blue-600 dark:bg-blue-500'
+                    : 'w-1.5 bg-slate-200 dark:bg-zinc-800'
                 }`}
               />
             ))}
           </div>
         </div>
 
-        {/* CONTENT SLIDES */}
+        {/* Content Slides */}
         <div className="flex-1 flex flex-col justify-center my-auto overflow-hidden">
           <AnimatePresence custom={direction} mode="wait">
             
@@ -166,22 +168,23 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
                 exit="exit"
                 className="space-y-6 text-center py-4"
               >
+                {/* Logo Clean Tanpa Container Box */}
                 <div className="mx-auto w-24 h-24 flex items-center justify-center">
                   <img
                     src="/logombud.png"
                     alt="myMbud Logo"
-                    className="w-full h-full object-contain"
+                    className="w-full h-full object-contain drop-shadow-[0_0_20px_rgba(59,130,246,0.35)]"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <span className="text-[11px] font-bold uppercase tracking-widest text-[#007AFF] block">
+                  <span className="text-xs font-extrabold uppercase tracking-widest text-blue-600 dark:text-blue-400 block">
                     Hello, {userName.split(' ')[0]}!
                   </span>
-                  <h1 className="text-2xl sm:text-[28px] font-bold tracking-tight text-[#1c1c1e] leading-tight">
+                  <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                     Selamat datang di myMbud.
                   </h1>
-                  <p className="text-xs sm:text-[13px] text-[#8e8e93] leading-relaxed max-w-xs mx-auto">
+                  <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 leading-relaxed max-w-xs mx-auto">
                     Ruang digital yang dibuat khusus untuk menemani perjalanan akademikmu di Kelas A.
                   </p>
                 </div>
@@ -197,13 +200,13 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
                 initial="enter"
                 animate="center"
                 exit="exit"
-                className="space-y-4 text-center py-2"
+                className="space-y-5 text-center py-2"
               >
                 <div className="space-y-1">
-                  <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[#1c1c1e] leading-snug">
-                    Semua yang kamu butuhkan, <br /> ada di satu tempat.
+                  <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                    Semua kebutuhanmu, <br /> di satu tempat.
                   </h2>
-                  <p className="text-xs text-[#8e8e93]">
+                  <p className="text-xs text-slate-500 dark:text-zinc-400">
                     Tidak perlu lagi mencari informasi dari satu tempat ke tempat lain.
                   </p>
                 </div>
@@ -216,13 +219,13 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
                         key={item.label}
                         initial={{ opacity: 0, y: 15 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: idx * 0.05 + 0.05 }}
-                        className="p-3 rounded-2xl bg-[#f2f2f7] flex items-center gap-2.5 border border-[#e5e5ea]/50"
+                        transition={{ delay: idx * 0.08 + 0.1 }}
+                        className="p-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/50 border border-slate-200/50 dark:border-white/5 flex items-center gap-2.5 shadow-xs"
                       >
                         <div className={`p-2 rounded-xl shrink-0 ${item.color}`}>
                           <Icon className="w-4 h-4" />
                         </div>
-                        <span className="text-[11px] font-semibold text-[#1c1c1e] leading-tight">
+                        <span className="text-[11px] font-bold text-slate-800 dark:text-zinc-200 leading-tight">
                           {item.label}
                         </span>
                       </motion.div>
@@ -241,20 +244,20 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
                 initial="enter"
                 animate="center"
                 exit="exit"
-                className="space-y-4 py-2 text-left"
+                className="space-y-5 py-2 text-left"
               >
                 <div className="text-center space-y-1">
-                  <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[#1c1c1e]">
+                  <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                     Mari siapkan myMbud untukmu.
                   </h2>
-                  <p className="text-xs text-[#8e8e93]">
-                    Pilih tampilan dan warna aksen yang paling kamu sukai.
+                  <p className="text-xs text-slate-500 dark:text-zinc-400">
+                    Pilih preferensi tema visual yang paling nyaman di matamu.
                   </p>
                 </div>
 
-                <div className="space-y-3.5 pt-1">
+                <div className="space-y-4 pt-1">
                   <div className="space-y-1.5">
-                    <span className="text-[10px] font-bold text-[#8e8e93] uppercase tracking-wider block">
+                    <span className="text-[11px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider block">
                       Mode Tampilan
                     </span>
                     <div className="grid grid-cols-2 gap-2">
@@ -263,12 +266,12 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
                         onClick={() => handleApplyTheme('light', themeAccent)}
                         className={`flex items-center justify-center gap-2 py-3 rounded-2xl border text-xs font-bold transition-all cursor-pointer ${
                           themeMode === 'light'
-                            ? 'border-[#007AFF] bg-[#007AFF]/10 text-[#007AFF] shadow-xs'
-                            : 'border-[#e5e5ea] bg-[#f2f2f7] text-[#8e8e93]'
+                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 shadow-xs'
+                            : 'border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-800/40 text-slate-500 dark:text-zinc-400'
                         }`}
                       >
                         <Sun className="w-4 h-4" />
-                        <span>Terang</span>
+                        <span>Light Mode</span>
                       </button>
 
                       <button
@@ -276,21 +279,21 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
                         onClick={() => handleApplyTheme('dark', themeAccent)}
                         className={`flex items-center justify-center gap-2 py-3 rounded-2xl border text-xs font-bold transition-all cursor-pointer ${
                           themeMode === 'dark'
-                            ? 'border-[#007AFF] bg-[#007AFF]/10 text-[#007AFF] shadow-xs'
-                            : 'border-[#e5e5ea] bg-[#f2f2f7] text-[#8e8e93]'
+                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 shadow-xs'
+                            : 'border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-800/40 text-slate-500 dark:text-zinc-400'
                         }`}
                       >
                         <Moon className="w-4 h-4" />
-                        <span>Gelap</span>
+                        <span>Dark Mode</span>
                       </button>
                     </div>
                   </div>
 
                   <div className="space-y-1.5">
-                    <span className="text-[10px] font-bold text-[#8e8e93] uppercase tracking-wider block">
+                    <span className="text-[11px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider block">
                       Warna Aksen
                     </span>
-                    <div className="flex items-center justify-between p-2.5 bg-[#f2f2f7] rounded-2xl border border-[#e5e5ea]/70">
+                    <div className="flex items-center justify-between p-2.5 bg-slate-50 dark:bg-zinc-800/40 rounded-2xl border border-slate-200/50 dark:border-zinc-800">
                       {accentOptions.map((item) => {
                         const isSelected = themeAccent === item.id;
                         return (
@@ -323,37 +326,40 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
                 exit="exit"
                 className="space-y-5 py-2 text-center"
               >
-                <div className="space-y-1.5">
-                  <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[#1c1c1e]">
+                <div className="space-y-1">
+                  <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                     Jangan sampai ketinggalan.
                   </h2>
-                  <p className="text-xs text-[#8e8e93] max-w-xs mx-auto leading-relaxed">
-                    myMbud dapat memberitahumu secara instan ketika ada pengumuman penting atau tugas baru dari kelas.
+                  <p className="text-xs text-slate-500 dark:text-zinc-400 max-w-xs mx-auto leading-relaxed">
+                    myMbud dapat memberitahumu secara instan ketika ada pengumuman mendesak atau tugas baru dari kelas.
                   </p>
                 </div>
 
-                {/* iOS NOTIFICATION BANNER MOCKUP */}
-                <div className="p-4 rounded-3xl bg-[#f2f2f7] border border-[#e5e5ea] text-left space-y-2 shadow-xs">
+                <motion.div
+                  initial={{ scale: 0.9, y: 10 }}
+                  animate={{ scale: 1, y: 0 }}
+                  className="p-4 rounded-3xl bg-white/80 dark:bg-zinc-800/80 border border-slate-200/80 dark:border-white/10 shadow-lg text-left space-y-2 backdrop-blur-md"
+                >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="w-5 h-5 rounded-lg bg-[#007AFF] flex items-center justify-center text-white">
+                      <div className="w-5 h-5 rounded-lg bg-blue-600 flex items-center justify-center text-white">
                         <Bell className="w-3 h-3" />
                       </div>
-                      <span className="text-[11px] font-bold text-[#1c1c1e] uppercase tracking-wider">
+                      <span className="text-[11px] font-bold text-slate-900 dark:text-white uppercase tracking-wider">
                         myMbud
                       </span>
                     </div>
-                    <span className="text-[10px] text-[#8e8e93]">Baru saja</span>
+                    <span className="text-[10px] text-slate-400">Baru saja</span>
                   </div>
                   <div>
-                    <h3 className="text-xs font-bold text-[#1c1c1e]">
+                    <h3 className="text-xs font-bold text-slate-900 dark:text-zinc-100">
                       Pengumuman baru telah diposting!
                     </h3>
-                    <p className="text-[11px] text-[#636366] leading-snug mt-0.5">
+                    <p className="text-[11px] text-slate-500 dark:text-zinc-400 leading-snug mt-0.5">
                       "Info perubahan jadwal kuliah dan pembagian kelompok tugas besar..."
                     </p>
                   </div>
-                </div>
+                </motion.div>
               </motion.div>
             )}
 
@@ -368,21 +374,21 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
                 exit="exit"
                 className="space-y-6 text-center py-4"
               >
-                {/* CENTANG HIJAU BULAT APPLE */}
+                {/* Centang Hijau Bulat Apple */}
                 <motion.div
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ type: 'spring', stiffness: 400, damping: 25 }}
                   className="mx-auto w-20 h-20 rounded-full bg-[#34C759] text-white flex items-center justify-center shadow-lg shadow-[#34C759]/30"
                 >
-                  <Check className="w-10 h-10 stroke-[3]" />
+                  <Check className="w-10 h-10 stroke-[3.2]" />
                 </motion.div>
 
-                <div className="space-y-1.5">
-                  <h2 className="text-2xl sm:text-[28px] font-bold tracking-tight text-[#1c1c1e]">
+                <div className="space-y-2">
+                  <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
                     myMbud siap digunakan.
                   </h2>
-                  <p className="text-xs sm:text-sm text-[#8e8e93]">
+                  <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400">
                     Selamat datang di ruang digital Kelas A.
                   </p>
                 </div>
@@ -391,7 +397,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
           </AnimatePresence>
         </div>
 
-        {/* BOTTOM ACTION BUTTON */}
+        {/* Action Footer Button */}
         <div className="pt-4 shrink-0">
           {step === 4 ? (
             <motion.button
@@ -399,7 +405,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
               whileTap={{ scale: 0.98 }}
               onClick={handlePushActivation}
               disabled={isEnablingPush}
-              className="w-full py-4 rounded-2xl bg-[#007AFF] hover:bg-[#0071eb] text-white font-bold text-sm shadow-md shadow-[#007AFF]/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm shadow-lg shadow-blue-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
               <BellRing className="w-4 h-4" />
               <span>{isEnablingPush ? 'Mengaktifkan...' : 'Aktifkan Notifikasi'}</span>
@@ -409,7 +415,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
               whileHover={{ scale: 1.015 }}
               whileTap={{ scale: 0.98 }}
               onClick={handleComplete}
-              className="w-full py-4 rounded-2xl bg-[#007AFF] hover:bg-[#0071eb] text-white font-bold text-sm shadow-md shadow-[#007AFF]/25 transition-all cursor-pointer"
+              className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm shadow-lg shadow-blue-500/25 transition-all cursor-pointer"
             >
               Mulai Menggunakan myMbud
             </motion.button>
@@ -418,7 +424,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
               whileHover={{ scale: 1.015 }}
               whileTap={{ scale: 0.98 }}
               onClick={nextStep}
-              className="w-full py-4 rounded-2xl bg-[#007AFF] hover:bg-[#0071eb] text-white font-bold text-sm shadow-md shadow-[#007AFF]/25 transition-all cursor-pointer"
+              className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm shadow-lg shadow-blue-500/25 transition-all cursor-pointer"
             >
               Lanjutkan
             </motion.button>
