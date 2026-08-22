@@ -80,39 +80,66 @@ export const syncUserStreak = async (
   const currentDayIndex = new Date().getDay();
   const normalizedNrp = userNrp.trim().toLowerCase();
 
-  const cached = getLocalStreak();
+  let baseStreak = getLocalStreak();
+
+  if (normalizedNrp && normalizedNrp !== 'unknown') {
+    try {
+      const { data } = await supabase
+        .from('user_streaks')
+        .select('*')
+        .eq('nrp', normalizedNrp)
+        .maybeSingle();
+
+      if (data) {
+        baseStreak = {
+          currentStreak: data.current_streak || 1,
+          longestStreak: data.longest_streak || 1,
+          lastActiveDate: data.last_active_date || '',
+          weeklyActiveDays: data.weekly_active_days || [currentDayIndex],
+          reviveQuota: typeof data.revive_quota === 'number' ? data.revive_quota : 3,
+          reviveMonth: data.revive_month || currentMonthKey,
+          canRevive: false,
+          previousBrokenStreak: 0,
+        };
+      }
+    } catch (err) {
+      console.warn('[Streak] Gagal membaca streak dari Supabase:', err);
+    }
+  }
+
   const lastSeenPopupDate = localStorage.getItem(POPUP_SEEN_KEY);
   const isFirstVisitToday = lastSeenPopupDate !== today;
 
-  let reviveQuota = typeof cached.reviveQuota === 'number' ? cached.reviveQuota : 3;
-  if (cached.reviveMonth !== currentMonthKey) {
+  let reviveQuota = typeof baseStreak.reviveQuota === 'number' ? baseStreak.reviveQuota : 3;
+  if (baseStreak.reviveMonth !== currentMonthKey) {
     reviveQuota = 3;
   }
 
-  if (cached.lastActiveDate === today) {
+  if (baseStreak.lastActiveDate === today) {
     if (isFirstVisitToday) {
       localStorage.setItem(POPUP_SEEN_KEY, today);
     }
     const syncedCached: UserStreak = {
-      ...cached,
+      ...baseStreak,
       reviveQuota,
       reviveMonth: currentMonthKey,
     };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(syncedCached));
     return { streak: syncedCached, isFirstVisitToday };
   }
 
-  let newCurrent = cached.currentStreak;
-  let newLongest = cached.longestStreak || 1;
-  let newWeeklyDays = [...(cached.weeklyActiveDays || [])];
+  let newCurrent = baseStreak.currentStreak;
+  let newLongest = baseStreak.longestStreak || 1;
+  let newWeeklyDays = [...(baseStreak.weeklyActiveDays || [])];
   let canRevive = false;
-  let previousBrokenStreak = cached.previousBrokenStreak || 0;
+  let previousBrokenStreak = baseStreak.previousBrokenStreak || 0;
 
-  if (!cached.lastActiveDate) {
+  if (!baseStreak.lastActiveDate) {
     newCurrent = 1;
     newLongest = 1;
     newWeeklyDays = [currentDayIndex];
   } else {
-    const [ly, lm, ld] = cached.lastActiveDate.split('-').map(Number);
+    const [ly, lm, ld] = baseStreak.lastActiveDate.split('-').map(Number);
     const [ty, tm, td] = today.split('-').map(Number);
 
     const lastDate = new Date(ly, lm - 1, ld);
@@ -128,7 +155,7 @@ export const syncUserStreak = async (
         newWeeklyDays.push(currentDayIndex);
       }
     } else if (diffDays > 1) {
-      previousBrokenStreak = cached.currentStreak;
+      previousBrokenStreak = baseStreak.currentStreak;
       canRevive = reviveQuota > 0 && previousBrokenStreak > 1;
       newCurrent = 1;
       newWeeklyDays = [currentDayIndex];

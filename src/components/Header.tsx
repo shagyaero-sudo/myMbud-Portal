@@ -110,24 +110,20 @@ export const Header: React.FC<HeaderProps> = ({
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState(false);
   
-  // DRAWER & MODAL STATES
   const [isQuickDrawerOpen, setIsQuickDrawerOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [isRequestingPush, setIsRequestingPush] = useState(false);
 
-  // STATE STREAK DESKTOP
   const [streakData, setStreakData] = useState<UserStreak>(getLocalStreak);
   const [isStreakModalOpen, setIsStreakModalOpen] = useState(false);
 
-  // STATE FORM OFFICER
   const [isOfficerFormOpen, setIsOfficerFormOpen] = useState(false);
   const [officerTargetNrp, setOfficerTargetNrp] = useState('');
   const [officerTitle, setOfficerTitle] = useState('');
   const [officerMessage, setOfficerMessage] = useState('');
   const [isSendingOfficerNotif, setIsSendingOfficerNotif] = useState(false);
 
-  // --- SEAMLESS POMODORO STATE ---
   const [pomoMode, setPomoMode] = useState<SimplePomodoroMode>('focus');
   const [focusDuration, setFocusDuration] = useState<number>(25);
   const [breakDuration, setBreakDuration] = useState<number>(5);
@@ -137,7 +133,6 @@ export const Header: React.FC<HeaderProps> = ({
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const alarmAudioRef = useRef<HTMLAudioElement | null>(null);
 
-  // --- 2-LAYER THEME STATE ---
   const [themeMode, setThemeMode] = useState<ThemeMode>('dark');
   const [themeAccent, setThemeAccent] = useState<ThemeAccent>('blue');
 
@@ -167,7 +162,6 @@ export const Header: React.FC<HeaderProps> = ({
       document.documentElement.classList.remove('dark');
     }
 
-    // SINKRONKAN STATUS BAR HP & PWA
     const targetColor = mode === 'dark' ? '#0c0d10' : '#ffffff';
     let metaThemeColor = document.querySelector("meta[name='theme-color']");
     if (metaThemeColor) {
@@ -209,6 +203,8 @@ export const Header: React.FC<HeaderProps> = ({
   }, []);
 
   useEffect(() => {
+    if (!targetNrp || targetNrp === 'unknown') return;
+
     syncUserStreak(targetNrp, currentUserName).then(({ streak }) => {
       setStreakData(streak);
     });
@@ -228,7 +224,6 @@ export const Header: React.FC<HeaderProps> = ({
     return notifications.filter((notification) => !notification.isRead).length;
   }, [notifications]);
 
-  // Play Alarm Sound
   const playAlarmSound = () => {
     if (!soundEnabled) return;
     try {
@@ -248,7 +243,6 @@ export const Header: React.FC<HeaderProps> = ({
     }
   };
 
-  // Timer Tick & Window Event Broadcast
   useEffect(() => {
     if (isRunning) {
       timerRef.current = setInterval(() => {
@@ -295,7 +289,6 @@ export const Header: React.FC<HeaderProps> = ({
     };
   }, [isRunning, soundEnabled, pomoMode, timeLeft]);
 
-  // Sync document title
   useEffect(() => {
     const minutes = Math.floor(timeLeft / 60);
     const seconds = timeLeft % 60;
@@ -452,10 +445,8 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <>
-      {/* LOCKED & STIFF FIXED HEADER (GLASSMORPHISM) */}
       <header className="fixed top-0 left-0 right-0 z-30 w-full bg-white/75 dark:bg-zinc-950/75 backdrop-blur-xl border-b border-white/60 dark:border-white/10 text-slate-800 dark:text-zinc-100 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.03)] dark:shadow-none transition-colors pt-[env(safe-area-inset-top)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 py-2.5 sm:py-3.5 flex items-center justify-between">
-          {/* LOGO WITH ADAPTIVE HUE FILTER */}
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={handleLogoClick}
@@ -483,9 +474,7 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </motion.button>
 
-          {/* ACTIONS */}
           <div className="flex items-center gap-2 shrink-0">
-            {/* STREAK BADGE KHUSUS DESKTOP / PC */}
             <motion.button
               type="button"
               whileTap={{ scale: 0.95 }}
@@ -493,7 +482,6 @@ export const Header: React.FC<HeaderProps> = ({
               className="hidden lg:flex relative items-center h-10 pl-7 pr-3.5 rounded-2xl bg-white/70 dark:bg-zinc-800/70 hover:bg-white dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-100 transition-colors cursor-pointer border border-slate-200/50 dark:border-white/5 shrink-0 select-none group mr-1 shadow-xs"
               title="Daily Streak"
             >
-              {/* 3D Glossy Flame Asset */}
               <div className="absolute -left-2.5 -top-1.5 w-9 h-11 pointer-events-none group-hover:scale-110 transition-transform">
                 <GlossyFlameIcon className="w-full h-full" streakCount={streakData.currentStreak} />
               </div>
@@ -503,7 +491,6 @@ export const Header: React.FC<HeaderProps> = ({
               </span>
             </motion.button>
 
-            {/* NOTIFICATION BELL */}
             <div className="relative shrink-0">
               <motion.button
                 whileTap={{ scale: 0.9 }}
@@ -524,7 +511,6 @@ export const Header: React.FC<HeaderProps> = ({
               </motion.button>
             </div>
 
-            {/* ADAPTIVE POMODORO TIMER / HAMBURGER TRIGGER */}
             <motion.button
               whileTap={{ scale: 0.92 }}
               onClick={() => {
@@ -559,10 +545,8 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </header>
 
-      {/* SPACER AGAR KONTEN TIDAK TERTINDIH HEADER FIXED */}
       <div className="h-14 sm:h-16 w-full shrink-0" />
 
-      {/* STREAK MODAL (PORTAL) */}
       <StreakModal
         isOpen={isStreakModalOpen}
         onClose={() => setIsStreakModalOpen(false)}
@@ -571,7 +555,6 @@ export const Header: React.FC<HeaderProps> = ({
         onStreakUpdate={(updated) => setStreakData(updated)}
       />
 
-      {/* NOTIFICATION MODAL (PORTAL) */}
       {typeof document !== 'undefined' &&
         createPortal(
           <AnimatePresence>
@@ -627,7 +610,6 @@ export const Header: React.FC<HeaderProps> = ({
                     )}
                   </div>
 
-                  {/* FORM BROADCAST OFFICER */}
                   <AnimatePresence>
                     {isOfficer && isOfficerFormOpen && (
                       <motion.div
@@ -774,7 +756,6 @@ export const Header: React.FC<HeaderProps> = ({
                   transition={{ type: 'spring', damping: 30, stiffness: 350 }}
                   className="fixed top-0 right-0 bottom-0 z-[99999] w-full max-w-[320px] bg-white/95 dark:bg-zinc-950/95 backdrop-blur-2xl border-l border-white/40 dark:border-zinc-800 shadow-2xl flex flex-col justify-between overflow-hidden"
                 >
-                  {/* Header Drawer */}
                   <div className="px-5 py-4 border-b border-slate-200/40 dark:border-zinc-800 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="w-7 h-7 rounded-xl bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center text-blue-500">
@@ -792,10 +773,7 @@ export const Header: React.FC<HeaderProps> = ({
                     </button>
                   </div>
 
-                  {/* Body Konten Drawer */}
                   <div className="flex-1 overflow-y-auto p-5 space-y-6 custom-scrollbar">
-                    
-                    {/* SECTION 1: SEAMLESS POMODORO */}
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <div className="flex p-1 bg-slate-100/80 dark:bg-zinc-900 rounded-xl border border-slate-200/50 dark:border-zinc-800">
@@ -834,7 +812,6 @@ export const Header: React.FC<HeaderProps> = ({
                         </button>
                       </div>
 
-                      {/* Display Card */}
                       <div className={`p-5 rounded-2xl border flex flex-col items-center justify-center transition-all ${
                         pomoMode === 'focus'
                           ? 'bg-rose-50/40 dark:bg-rose-950/20 border-rose-100 dark:border-rose-900/30 text-rose-600 dark:text-rose-400'
@@ -845,7 +822,6 @@ export const Header: React.FC<HeaderProps> = ({
                           <span>{pomoMode === 'focus' ? 'Belajar' : 'Istirahat'}</span>
                         </div>
 
-                        {/* Digit Countdown & Stepper */}
                         <div className="flex items-center justify-center gap-3 my-2 w-full">
                           {!isRunning ? (
                             <motion.button
@@ -878,7 +854,6 @@ export const Header: React.FC<HeaderProps> = ({
                           )}
                         </div>
 
-                        {/* Action Buttons */}
                         <div className="flex items-center gap-2 mt-2 w-full">
                           <button
                             onClick={() => setIsRunning(!isRunning)}
@@ -903,13 +878,11 @@ export const Header: React.FC<HeaderProps> = ({
                       </div>
                     </div>
 
-                    {/* SECTION 2: 2-LAYER THEME CUSTOMIZER */}
                     <div className="space-y-4 pt-3 border-t border-slate-200/40 dark:border-zinc-800">
                       <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-zinc-500 block text-center">
                         Personalisasi Tampilan
                       </span>
 
-                      {/* 1. Mode Tampilan */}
                       <div className="space-y-1.5">
                         <label className="text-[11px] font-bold text-slate-700 dark:text-zinc-400">
                           Mode Tampilan
@@ -941,7 +914,6 @@ export const Header: React.FC<HeaderProps> = ({
                         </div>
                       </div>
 
-                      {/* 2. Warna Aksen */}
                       <div className="space-y-1.5">
                         <label className="text-[11px] font-bold text-slate-700 dark:text-zinc-400">
                           Warna Aksen
@@ -968,7 +940,6 @@ export const Header: React.FC<HeaderProps> = ({
                     </div>
                   </div>
 
-                  {/* Footer Drawer */}
                   {onLogout && (
                     <div className="p-4 border-t border-slate-200/40 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-950">
                       <button
@@ -990,7 +961,6 @@ export const Header: React.FC<HeaderProps> = ({
           document.body
         )}
 
-      {/* SECRET PIN MODAL */}
       <AnimatePresence>
         {showPinModal && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4">

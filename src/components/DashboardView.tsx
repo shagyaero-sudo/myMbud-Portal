@@ -121,6 +121,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const userName = typeof window !== 'undefined' ? localStorage.getItem('mymbud_user_name') || 'Mbuders' : 'Mbuders';
 
   useEffect(() => {
+    if (!currentUserNrp || currentUserNrp === 'unknown') return;
+
     syncUserStreak(currentUserNrp, userName).then(({ streak, isFirstVisitToday }) => {
       setStreakData(streak);
       if (isFirstVisitToday) {
@@ -833,7 +835,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
             </div>
 
-            {/* Grid Kalender Bulanan */}
             <div className="space-y-2">
               <div className="grid grid-cols-7 gap-1 text-center border-b border-slate-200/40 dark:border-white/5 pb-2">
                 {['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'].map((dayName, idx) => (
@@ -905,7 +906,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
             </div>
 
-            {/* Panel Ringkasan Agenda */}
             <div className="pt-3 border-t border-slate-200/40 dark:border-white/5 space-y-2.5">
               <div className="flex items-center justify-between gap-2 flex-wrap">
                 <span className="text-xs font-bold text-slate-700 dark:text-zinc-300">
@@ -1056,7 +1056,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
       </div>
 
-      {/* Modal: Streak Details */}
       <StreakModal
         isOpen={isStreakModalOpen}
         onClose={() => setIsStreakModalOpen(false)}
@@ -1065,7 +1064,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         onStreakUpdate={(updated) => setStreakData(updated)}
       />
 
-      {/* Modal: Create / Edit Announcement */}
       {typeof document !== 'undefined' &&
         createPortal(
           <AnimatePresence>
@@ -1195,7 +1193,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           document.body
         )}
 
-      {/* Modal: Announcement Detail */}
       {typeof document !== 'undefined' &&
         createPortal(
           <AnimatePresence>
