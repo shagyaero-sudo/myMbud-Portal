@@ -19,6 +19,8 @@ import {
   GraduationCap,
   ClipboardList,
   FileSpreadsheet,
+  Sun,
+  Moon,
   type LucideIcon
 } from 'lucide-react';
 
@@ -84,6 +86,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
     if (hour >= 15 && hour < 18) return `Selamat Sore, ${userName}!`;
 
     return `Selamat Malam, ${userName}!`;
+  };
+
+  const getTimeIcon = () => {
+    const hour = new Date().getHours();
+    if (hour >= 4 && hour < 15) {
+      return <Sun className="w-4 h-4 text-amber-500" />;
+    }
+    if (hour >= 15 && hour < 18) {
+      return <Sun className="w-4 h-4 text-orange-500" />;
+    }
+    return <Moon className="w-4 h-4 text-indigo-400" />;
   };
 
   const menuItems: MenuItem[] = [
@@ -154,7 +167,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         transition={{ type: 'spring', stiffness: 380, damping: 32 }}
         className="hidden lg:flex flex-col bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-3.5 text-slate-700 dark:text-zinc-200 min-h-[calc(100vh-80px)] shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none shrink-0 my-2 transition-colors overflow-hidden select-none z-20"
       >
-        {/* Header Greeting */}
+        {/* Header Greeting / Time Icon */}
         <div className="hidden lg:block mb-4 px-2 py-1 transition-all overflow-hidden h-12">
           {isHovered ? (
             <motion.div
@@ -171,7 +184,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </motion.div>
           ) : (
             <div className="flex items-center justify-center h-full">
-              <div className="w-2.5 h-2.5 rounded-full bg-blue-500/80 animate-pulse" />
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="p-1.5 rounded-xl bg-white/60 dark:bg-zinc-800/60 border border-slate-200/50 dark:border-white/5 shadow-xs flex items-center justify-center"
+                title={getGreeting()}
+              >
+                {getTimeIcon()}
+              </motion.div>
             </div>
           )}
         </div>
@@ -254,7 +274,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   )}
                 </AnimatePresence>
 
-                {/* Dot / Badge saat Sidebar dalam keadaan Idle / Ramping */}
+                {/* Dot Badge saat Collapsed */}
                 {!isHovered && item.count !== null && (
                   <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-rose-500 z-20" />
                 )}
