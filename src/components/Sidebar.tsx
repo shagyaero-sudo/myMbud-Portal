@@ -73,6 +73,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOpenGpaModal
 }) => {
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -145,18 +146,38 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <>
-      {/* DESKTOP SIDEBAR (GLASSMORPHISM) */}
-      <aside className="hidden lg:flex flex-col w-64 bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-5 text-slate-700 dark:text-zinc-200 min-h-[calc(100vh-80px)] shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none shrink-0 my-2 transition-all">
-        <div className="hidden lg:block mb-5 px-2 py-1 transition-all">
-          <h2 className="text-sm font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
-            {getGreeting()}
-          </h2>
-          <p className="text-xs font-medium text-slate-500 dark:text-zinc-400 mt-1 leading-relaxed">
-            Siap untuk produktif hari ini?
-          </p>
+      {/* DESKTOP SIDEBAR (AUTO-EXPANDING HOVER + FROSTED GLASS) */}
+      <motion.aside
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        animate={{ width: isHovered ? 260 : 76 }}
+        transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+        className="hidden lg:flex flex-col bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-3.5 text-slate-700 dark:text-zinc-200 min-h-[calc(100vh-80px)] shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none shrink-0 my-2 transition-colors overflow-hidden select-none z-20"
+      >
+        {/* Header Greeting */}
+        <div className="hidden lg:block mb-4 px-2 py-1 transition-all overflow-hidden h-12">
+          {isHovered ? (
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <h2 className="text-sm font-bold text-slate-900 dark:text-zinc-100 tracking-tight truncate">
+                {getGreeting()}
+              </h2>
+              <p className="text-xs font-medium text-slate-500 dark:text-zinc-400 mt-0.5 leading-tight truncate">
+                Siap untuk produktif hari ini?
+              </p>
+            </motion.div>
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <div className="w-2.5 h-2.5 rounded-full bg-blue-500/80 animate-pulse" />
+            </div>
+          )}
         </div>
 
-        <nav aria-label="Sidebar Navigation" className="flex-1 space-y-2 overflow-y-auto pr-1 pb-4 custom-scrollbar">
+        {/* Navigation Items */}
+        <nav aria-label="Sidebar Navigation" className="flex-1 space-y-1.5 overflow-y-auto overflow-x-hidden pr-0.5 pb-4 custom-scrollbar">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = !item.isModal && activeTab === item.id;
@@ -164,8 +185,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
             return (
               <motion.button
                 type="button"
-                whileTap={{ scale: 0.98 }}
+                whileTap={{ scale: 0.96 }}
                 key={item.id}
+                title={!isHovered ? item.label : undefined}
                 onClick={() => {
                   if (item.isModal) {
                     item.action();
@@ -173,7 +195,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     setActiveTab(item.id);
                   }
                 }}
-                className={`relative w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-medium transition-all cursor-pointer ${
+                className={`relative w-full flex items-center h-11 px-3 rounded-2xl text-xs font-medium transition-all cursor-pointer ${
                   isActive
                     ? 'text-blue-600 dark:text-blue-400 font-semibold'
                     : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100 hover:bg-white/60 dark:hover:bg-zinc-800/50'
@@ -191,164 +213,227 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   />
                 )}
 
-                <div className="relative z-10 flex items-center gap-3">
+                <div className="relative z-10 flex items-center justify-center shrink-0 w-6">
                   <Icon
-                    className={`w-4 h-4 ${
+                    className={`w-5 h-5 transition-transform ${
                       isActive
-                        ? 'text-blue-600 dark:text-blue-400'
+                        ? 'text-blue-600 dark:text-blue-400 scale-105'
                         : 'text-slate-400 dark:text-zinc-500'
                     }`}
                   />
-                  <span>{item.label}</span>
                 </div>
 
-                {item.count !== null ? (
-                  <span
-                    className={`relative z-10 text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
-                      isActive
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-rose-500 text-white shadow-xs'
-                    }`}
-                  >
-                    {item.count}
-                  </span>
-                ) : (
-                  isActive && (
-                    <ChevronRight className="relative z-10 w-4 h-4 text-blue-600 dark:text-blue-400" />
-                  )
+                {/* Expanding Label */}
+                <AnimatePresence>
+                  {isHovered && (
+                    <motion.div
+                      initial={{ opacity: 0, width: 0 }}
+                      animate={{ opacity: 1, width: 'auto' }}
+                      exit={{ opacity: 0, width: 0 }}
+                      transition={{ duration: 0.15 }}
+                      className="relative z-10 flex items-center justify-between flex-1 min-w-0 pl-3 overflow-hidden"
+                    >
+                      <span className="truncate whitespace-nowrap">{item.label}</span>
+
+                      {item.count !== null ? (
+                        <span
+                          className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ml-1.5 shrink-0 ${
+                            isActive
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-rose-500 text-white shadow-xs'
+                          }`}
+                        >
+                          {item.count}
+                        </span>
+                      ) : (
+                        isActive && (
+                          <ChevronRight className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 ml-1" />
+                        )
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Dot / Badge saat Sidebar dalam keadaan Idle / Ramping */}
+                {!isHovered && item.count !== null && (
+                  <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-rose-500 z-20" />
                 )}
               </motion.button>
             );
           })}
 
           {/* Desktop Sidebar: myITS Academics 2.0 */}
-          <div className="pt-4 mt-4 border-t border-slate-200/50 dark:border-white/5 space-y-1.5">
-            <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 tracking-wider px-2 mb-2">
-              <span className="lowercase">my</span>ITS ACADEMICS 2.0
-            </p>
+          <div className="pt-3 mt-3 border-t border-slate-200/50 dark:border-white/5 space-y-1">
+            {isHovered && (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 tracking-wider px-2 mb-1 truncate"
+              >
+                <span className="lowercase">my</span>ITS ACADEMICS 2.0
+              </motion.p>
+            )}
 
             <a
               href="https://mia.its.ac.id/presensi/"
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/60 dark:hover:bg-zinc-800/50 transition-all"
+              title={!isHovered ? 'Presensi' : undefined}
+              className="flex items-center h-10 px-3 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/60 dark:hover:bg-zinc-800/50 transition-all"
             >
-              <ClipboardList className="w-4 h-4" />
-              <span>Presensi</span>
+              <div className="flex items-center justify-center shrink-0 w-6">
+                <ClipboardList className="w-4 h-4" />
+              </div>
+              {isHovered && <span className="pl-3 truncate">Presensi</span>}
             </a>
 
             <a
               href="https://mia.its.ac.id/rencana-studi/"
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/60 dark:hover:bg-zinc-800/50 transition-all"
+              title={!isHovered ? 'Rencana Studi (FRS)' : undefined}
+              className="flex items-center h-10 px-3 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/60 dark:hover:bg-zinc-800/50 transition-all"
             >
-              <GraduationCap className="w-4 h-4" />
-              <span>Rencana Studi (FRS)</span>
+              <div className="flex items-center justify-center shrink-0 w-6">
+                <GraduationCap className="w-4 h-4" />
+              </div>
+              {isHovered && <span className="pl-3 truncate">Rencana Studi (FRS)</span>}
             </a>
 
             <a
               href="https://mia.its.ac.id/penilaian/"
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/60 dark:hover:bg-zinc-800/50 transition-all"
+              title={!isHovered ? 'Transkrip Nilai' : undefined}
+              className="flex items-center h-10 px-3 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/60 dark:hover:bg-zinc-800/50 transition-all"
             >
-              <FileSpreadsheet className="w-4 h-4" />
-              <span>Transkrip Nilai</span>
+              <div className="flex items-center justify-center shrink-0 w-6">
+                <FileSpreadsheet className="w-4 h-4" />
+              </div>
+              {isHovered && <span className="pl-3 truncate">Transkrip Nilai</span>}
             </a>
           </div>
 
           {/* Desktop Sidebar: External Links */}
-          <div className="pt-4 mt-2 border-t border-slate-200/50 dark:border-white/5 space-y-1.5">
-            <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-2 mb-2">
-              Portal Akademik (Lama)
-            </p>
+          <div className="pt-3 mt-2 border-t border-slate-200/50 dark:border-white/5 space-y-1">
+            {isHovered && (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-2 mb-1 truncate"
+              >
+                Portal Akademik (Lama)
+              </motion.p>
+            )}
 
             <a
               href="https://akademik.its.ac.id/home.php"
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/60 dark:hover:bg-zinc-800/50 transition-all"
+              title={!isHovered ? 'myITS SIAKAD' : undefined}
+              className="flex items-center h-10 px-3 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/60 dark:hover:bg-zinc-800/50 transition-all"
             >
-              <Globe className="w-4 h-4" />
-              <span>myITS SIAKAD</span>
+              <div className="flex items-center justify-center shrink-0 w-6">
+                <Globe className="w-4 h-4" />
+              </div>
+              {isHovered && <span className="pl-3 truncate">myITS SIAKAD</span>}
             </a>
 
             <a
               href="https://kemahasiswaan.its.ac.id/beranda"
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/60 dark:hover:bg-zinc-800/50 transition-all"
+              title={!isHovered ? 'myITS StudentConnect' : undefined}
+              className="flex items-center h-10 px-3 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/60 dark:hover:bg-zinc-800/50 transition-all"
             >
-              <Handshake className="w-4 h-4" />
-              <span>myITS StudentConnect</span>
+              <div className="flex items-center justify-center shrink-0 w-6">
+                <Handshake className="w-4 h-4" />
+              </div>
+              {isHovered && <span className="pl-3 truncate">StudentConnect</span>}
             </a>
 
             <a
               href="https://classroom.its.ac.id/auth/oidc"
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/60 dark:hover:bg-zinc-800/50 transition-all"
+              title={!isHovered ? 'myITS Classroom' : undefined}
+              className="flex items-center h-10 px-3 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/60 dark:hover:bg-zinc-800/50 transition-all"
             >
-              <BookOpenCheck className="w-4 h-4" />
-              <span>myITS Classroom</span>
+              <div className="flex items-center justify-center shrink-0 w-6">
+                <BookOpenCheck className="w-4 h-4" />
+              </div>
+              {isHovered && <span className="pl-3 truncate">myITS Classroom</span>}
             </a>
           </div>
 
           {/* Desktop Sidebar: Minigame */}
-          <div className="pt-4 mt-2 border-t border-slate-200/50 dark:border-white/5">
+          <div className="pt-3 mt-2 border-t border-slate-200/50 dark:border-white/5">
             <motion.button
               type="button"
-              whileHover={{ scale: 1.015 }}
-              whileTap={{ scale: 0.98 }}
+              whileTap={{ scale: 0.96 }}
+              title={!isHovered ? 'myMbudblox' : undefined}
               onClick={() => setActiveTab('blockblast')}
-              className={`group relative w-full overflow-hidden rounded-2xl p-3 text-xs font-bold transition-all border ${
+              className={`group relative w-full overflow-hidden rounded-2xl p-2.5 text-xs font-bold transition-all border ${
                 activeTab === 'blockblast'
                   ? 'bg-gradient-to-r from-purple-600 via-fuchsia-500 to-pink-500 text-white border-transparent shadow-lg shadow-purple-500/30'
                   : 'bg-gradient-to-r from-purple-50/80 via-fuchsia-50/80 to-pink-50/80 dark:from-purple-950/40 dark:via-fuchsia-950/30 dark:to-pink-950/30 text-purple-700 dark:text-purple-300 border-purple-200/60 dark:border-purple-800/40 hover:shadow-md hover:shadow-purple-500/10'
               }`}
             >
-              <div className="absolute -right-5 -top-5 w-16 h-16 rounded-full bg-purple-400/10 group-hover:bg-purple-400/20 transition-all" />
-
-              <div className="relative flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`w-8 h-8 rounded-xl flex items-center justify-center ${
+              <div className="relative flex items-center">
+                <div
+                  className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 ${
+                    activeTab === 'blockblast'
+                      ? 'bg-white/20'
+                      : 'bg-white/80 dark:bg-zinc-900/80 shadow-xs'
+                  }`}
+                >
+                  <Gamepad2
+                    className={`w-4 h-4 ${
                       activeTab === 'blockblast'
-                        ? 'bg-white/20'
-                        : 'bg-white/80 dark:bg-zinc-900/80 shadow-xs'
+                        ? 'text-white'
+                        : 'text-purple-500'
                     }`}
-                  >
-                    <Gamepad2
-                      className={`w-4 h-4 ${
-                        activeTab === 'blockblast'
-                          ? 'text-white'
-                          : 'text-purple-500'
-                      }`}
-                    />
-                  </div>
-
-                  <div className="text-left">
-                    <span>myMbudblox</span>
-                  </div>
+                  />
                 </div>
 
-                <ChevronRight className="w-4 h-4 opacity-70 group-hover:translate-x-0.5 transition-transform" />
+                {isHovered && (
+                  <motion.div
+                    initial={{ opacity: 0, width: 0 }}
+                    animate={{ opacity: 1, width: 'auto' }}
+                    exit={{ opacity: 0, width: 0 }}
+                    className="flex items-center justify-between flex-1 min-w-0 pl-3"
+                  >
+                    <span className="truncate">myMbudblox</span>
+                    <ChevronRight className="w-4 h-4 opacity-70 group-hover:translate-x-0.5 transition-transform shrink-0" />
+                  </motion.div>
+                )}
               </div>
             </motion.button>
           </div>
         </nav>
 
-        <div className="mt-2 pt-4 border-t border-slate-200/50 dark:border-white/5 px-2 text-xs text-slate-400 dark:text-zinc-500 shrink-0">
-          <p className="font-bold text-slate-600 dark:text-zinc-300">
-            <span className="font-light">my</span>Mbud
-            <span className="font-light"> Portal</span>
-          </p>
-          <p className="text-[11px] text-slate-400 dark:text-zinc-500">
-            by AER046
-          </p>
+        {/* Footer Brand */}
+        <div className="mt-2 pt-3 border-t border-slate-200/50 dark:border-white/5 px-2 text-xs text-slate-400 dark:text-zinc-500 shrink-0 h-10 flex items-center overflow-hidden">
+          {isHovered ? (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.2 }}
+              className="truncate"
+            >
+              <p className="font-bold text-slate-600 dark:text-zinc-300 truncate">
+                <span className="font-light">my</span>Mbud
+                <span className="font-light"> Portal</span>
+              </p>
+              <p className="text-[10px] text-slate-400 dark:text-zinc-500 truncate">
+                by AER046
+              </p>
+            </motion.div>
+          ) : (
+            <span className="text-[10px] font-bold text-slate-400 text-center w-full">v2.5</span>
+          )}
         </div>
-      </aside>
+      </motion.aside>
 
       {/* MOBILE/TABLET FLOATING GLASS NAVIGATION BAR */}
       <div className="lg:hidden fixed bottom-3 sm:bottom-4 left-3 right-3 sm:left-6 sm:right-6 z-40 max-w-md mx-auto pointer-events-none">

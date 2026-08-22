@@ -83,7 +83,7 @@
 }
 
 /* =========================================================
-   2. ACCENT COLORS (SOLID TOKENS UNTUK AURA 40%)
+   2. ACCENT COLORS
    ========================================================= */
 
 /* BIRU myITS */
@@ -203,4 +203,18 @@ html[data-accent="cyan"] {
   --glow-1: #0891b2;
   --glow-2: #3b82f6;
   --logo-filter: hue-rotate(345deg) saturate(1.1);
+}
+
+/* =========================================================
+   3. HARDWARE ACCELERATION & LOW-END GPU OPTIMIZATION
+   ========================================================= */
+
+@layer utilities {
+  .gpu-layer {
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    will-change: transform, opacity;
+  }
 }

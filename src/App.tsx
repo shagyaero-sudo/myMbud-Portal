@@ -569,26 +569,26 @@ export default function App() {
 
       <div className="relative min-h-screen bg-slate-100 dark:bg-[#0e0f12] text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-500">
         
-        {/* RESPONSIVE GRADIENT SYSTEM */}
-        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        {/* RESPONSIVE GRADIENT SYSTEM (GPU ACCELERATED) */}
+        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden gpu-layer">
           
-          {/* KHUSUS HP/TABLET: Bottom-Center Glow Upward Gradient (Atas tetap dark murni) */}
+          {/* KHUSUS HP/TABLET: Bottom-Center Glow Upward Gradient */}
           <div 
-            className="block lg:hidden absolute -bottom-[10%] left-1/2 -translate-x-1/2 w-[130vw] h-[550px] rounded-[100%] blur-[130px] transition-all duration-700 opacity-20 dark:opacity-22" 
+            className="block lg:hidden absolute -bottom-[10%] left-1/2 -translate-x-1/2 w-[130vw] h-[550px] rounded-[100%] blur-[120px] transition-all duration-700 opacity-20 dark:opacity-22 gpu-layer" 
             style={{ backgroundColor: 'var(--glow-1)' }}
           />
 
           {/* KHUSUS DESKTOP/LAPTOP: Multi-Orb Balanced Ambient Glow */}
           <div 
-            className="hidden lg:block absolute top-[-100px] left-[-80px] w-[850px] h-[850px] rounded-full blur-[160px] transition-all duration-700 opacity-10 dark:opacity-12" 
+            className="hidden lg:block absolute top-[-100px] left-[-80px] w-[850px] h-[850px] rounded-full blur-[140px] transition-all duration-700 opacity-10 dark:opacity-12 gpu-layer" 
             style={{ backgroundColor: 'var(--glow-1)' }}
           />
           <div 
-            className="hidden lg:block absolute top-[30%] right-[-100px] w-[800px] h-[800px] rounded-full blur-[170px] transition-all duration-700 opacity-10 dark:opacity-12" 
+            className="hidden lg:block absolute top-[30%] right-[-100px] w-[800px] h-[800px] rounded-full blur-[150px] transition-all duration-700 opacity-10 dark:opacity-12 gpu-layer" 
             style={{ backgroundColor: 'var(--glow-2)' }}
           />
           <div 
-            className="hidden lg:block absolute bottom-[-100px] left-[20%] w-[800px] h-[800px] rounded-full blur-[160px] transition-all duration-700 opacity-10 dark:opacity-12" 
+            className="hidden lg:block absolute bottom-[-100px] left-[20%] w-[800px] h-[800px] rounded-full blur-[140px] transition-all duration-700 opacity-10 dark:opacity-12 gpu-layer" 
             style={{ backgroundColor: 'var(--glow-1)' }}
           />
         </div>
