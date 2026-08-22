@@ -145,7 +145,7 @@ export default function App() {
             alert('Ada Pembaruan Sistem, Silakan login kembali yaa! ✨');
           }
         } catch {
-          // Abaikan jika tabel revoked_sessions belum dipakai
+          // Ignore
         }
       }
     };
@@ -209,7 +209,6 @@ export default function App() {
     setIsAuthenticated(false);
   };
 
-  // DETEKSI MOBILE & TABLET SECARA LENGKAP
   const userAgent = (navigator.userAgent || navigator.vendor || (window as any).opera || '').toLowerCase();
   const platform = (navigator.platform || '').toLowerCase();
   const maxTouchPoints = navigator.maxTouchPoints || 0;
@@ -568,25 +567,25 @@ export default function App() {
         {showSplash && <SplashScreen key="splash" soundUrl="/splash-sound.mp3" />}
       </AnimatePresence>
 
-      <div className="relative min-h-screen bg-slate-100 dark:bg-[#0c0d10] text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-500 overflow-x-hidden">
+      <div className="relative min-h-screen bg-slate-100 dark:bg-[#0e0f12] text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-500">
         
-        {/* MULTI-ORB VISIBLE MESH GRADIENT LAYER */}
+        {/* AMBIENT MESH GRADIENT LAYER (40% ACCENT OPACITY) */}
         <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
           <div 
-            className="absolute top-[-80px] left-[-80px] w-[500px] sm:w-[700px] h-[500px] sm:h-[700px] rounded-full blur-[110px] transition-all duration-700 opacity-30 dark:opacity-35" 
+            className="absolute top-[-100px] left-[-80px] w-[550px] sm:w-[750px] h-[550px] sm:h-[750px] rounded-full blur-[140px] transition-all duration-700 opacity-35 dark:opacity-40" 
             style={{ backgroundColor: 'var(--glow-1)' }}
           />
           <div 
-            className="absolute top-[25%] right-[-80px] w-[450px] sm:w-[650px] h-[450px] sm:h-[650px] rounded-full blur-[120px] transition-all duration-700 opacity-25 dark:opacity-30" 
+            className="absolute top-[30%] right-[-100px] w-[500px] sm:w-[700px] h-[500px] sm:h-[700px] rounded-full blur-[150px] transition-all duration-700 opacity-30 dark:opacity-35" 
             style={{ backgroundColor: 'var(--glow-2)' }}
           />
           <div 
-            className="absolute bottom-[-80px] left-[15%] w-[450px] sm:w-[650px] h-[450px] sm:h-[650px] rounded-full blur-[110px] transition-all duration-700 opacity-30 dark:opacity-35" 
+            className="absolute bottom-[-100px] left-[20%] w-[500px] sm:w-[700px] h-[500px] sm:h-[700px] rounded-full blur-[140px] transition-all duration-700 opacity-35 dark:opacity-40" 
             style={{ backgroundColor: 'var(--glow-1)' }}
           />
         </div>
 
-        {/* APPLICATION CONTENT */}
+        {/* CONTENT LAYER */}
         <div className="relative z-10 flex flex-col min-h-screen bg-transparent">
           <Header
             isOfficer={isOfficer}
@@ -600,7 +599,7 @@ export default function App() {
             onLogout={handleLogout}
           />
 
-          <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 flex flex-col lg:flex-row gap-6 pt-6 pb-24 lg:pb-8">
+          <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 flex flex-col lg:flex-row gap-6 pt-4 pb-28 lg:pb-8">
             <Sidebar
               activeTab={activeTab}
               setActiveTab={(tab) => handleNavigateTab(tab)}

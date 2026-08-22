@@ -56,18 +56,18 @@
   :root.dark,
   html.dark,
   html[data-mode="dark"] {
-    --color-slate-950: #0c0d10;
-    --color-zinc-950: #0c0d10;
-    --color-black: #0c0d10;
+    --color-slate-950: #0e0f12;
+    --color-zinc-950: #0e0f12;
+    --color-black: #0e0f12;
 
-    --color-zinc-900: #15161a;
-    --color-slate-900: #15161a;
+    --color-zinc-900: #16171b;
+    --color-slate-900: #16171b;
 
-    --color-zinc-800: #1f2026;
-    --color-slate-800: #1f2026;
+    --color-zinc-800: #202126;
+    --color-slate-800: #202126;
 
-    --color-zinc-700: #2a2b33;
-    --color-slate-700: #2a2b33;
+    --color-zinc-700: #2c2d33;
+    --color-slate-700: #2c2d33;
 
     --color-zinc-100: #f4f4f5;
     --color-zinc-200: #e4e4e7;
@@ -83,7 +83,7 @@
 }
 
 /* =========================================================
-   2. ACCENT COLORS + SOLID MESH GLOW TOKENS
+   2. ACCENT COLORS (SOLID TOKENS UNTUK AURA 40%)
    ========================================================= */
 
 /* BIRU myITS */
