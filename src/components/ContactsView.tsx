@@ -37,7 +37,6 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
     initialCourseFilter || 'ALL'
   );
 
-  // FORCE RESET STATE SETIAP KALI TAMPILAN DIMUAT / DITUTUP
   useEffect(() => {
     setSearch('');
     setSelectedCourseFilter(initialCourseFilter || 'ALL');
@@ -283,14 +282,14 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Cari matkul, dosen, atau PJ..."
-            className="w-full pl-11 pr-4 py-2.5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] dark:shadow-none"
+            className="w-full pl-11 pr-4 py-2.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 text-slate-800 dark:text-zinc-100 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none"
           />
         </div>
 
         <select
           value={selectedCourseFilter}
           onChange={(e) => setSelectedCourseFilter(e.target.value)}
-          className="w-full sm:w-auto px-4 py-2.5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] dark:shadow-none"
+          className="w-full sm:w-auto px-4 py-2.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 text-slate-800 dark:text-zinc-100 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none font-semibold"
         >
           <option value="ALL">Semua Mata Kuliah ({contacts.length})</option>
           {uniqueCourses.map((c) => (
@@ -303,7 +302,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {filteredContacts.length === 0 ? (
-          <div className="md:col-span-2 p-12 text-center bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-3xl text-slate-400 dark:text-zinc-500 text-xs shadow-[0_4px_25px_-5px_rgba(0,0,0,0.03)] dark:shadow-none">
+          <div className="md:col-span-2 p-12 text-center bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl text-slate-400 dark:text-zinc-500 text-xs shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none">
             Tidak ada kontak ditemukan untuk pencarian atau filter saat ini.
           </div>
         ) : (
@@ -315,12 +314,12 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 key={c.id}
-                className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-4 flex flex-col justify-between"
+                className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none space-y-4 flex flex-col justify-between transition-all"
               >
                 <div>
                   <div className="flex items-start justify-between gap-2 pb-3 mb-4">
                     <div>
-                      <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-3 py-1 rounded-full">
+                      <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50/80 dark:bg-blue-950/60 px-3 py-1 rounded-full border border-blue-100/50 dark:border-blue-900/40">
                         {c.code || 'Mata Kuliah'} {c.sks ? `• ${c.sks} SKS` : ''}
                       </span>
                       <h3 className="text-base font-bold text-slate-800 dark:text-zinc-100 mt-2">
@@ -337,14 +336,14 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => handleOpenEditModal(c)}
-                          className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-all cursor-pointer"
+                          className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-white/60 dark:hover:bg-zinc-800 transition-all cursor-pointer"
                           title="Edit Kontak"
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => onDeleteContact(c.id)}
-                          className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-all cursor-pointer"
+                          className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-white/60 dark:hover:bg-zinc-800 transition-all cursor-pointer"
                           title="Hapus"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -355,7 +354,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
 
                   <div className="space-y-3">
                     {/* 1. DOSEN 1 */}
-                    <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 space-y-2.5">
+                    <div className="p-3.5 sm:p-4 rounded-2xl bg-white/60 dark:bg-zinc-800/40 border border-slate-200/50 dark:border-white/5 space-y-2.5">
                       <div className="flex items-center gap-1.5 overflow-hidden">
                         <GraduationCap className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
                         <span className="text-xs font-bold text-slate-700 dark:text-zinc-300 shrink-0">
@@ -387,7 +386,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
 
                     {/* 2. DOSEN 2 (JIKA ADA) */}
                     {c.lecturerName2 && c.lecturerName2.trim() !== '' && (
-                      <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 space-y-2.5">
+                      <div className="p-3.5 sm:p-4 rounded-2xl bg-white/60 dark:bg-zinc-800/40 border border-slate-200/50 dark:border-white/5 space-y-2.5">
                         <div className="flex items-center gap-1.5 overflow-hidden">
                           <GraduationCap className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
                           <span className="text-xs font-bold text-slate-700 dark:text-zinc-300 shrink-0">
@@ -419,7 +418,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                     )}
 
                     {/* 3. PJ MATKUL */}
-                    <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-50/50 dark:bg-zinc-800/40 border border-slate-100 dark:border-zinc-800 space-y-2.5">
+                    <div className="p-3.5 sm:p-4 rounded-2xl bg-white/40 dark:bg-zinc-800/30 border border-slate-200/40 dark:border-white/5 space-y-2.5">
                       <div className="flex items-center gap-1.5 overflow-hidden">
                         <UserCheck className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
                         <span className="text-xs font-bold text-slate-700 dark:text-zinc-300 shrink-0">
@@ -441,7 +440,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                           }
                           target="_blank"
                           rel="noreferrer"
-                          className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-slate-100 dark:bg-zinc-700 hover:bg-slate-200 dark:hover:bg-zinc-600 text-slate-800 dark:text-zinc-200 font-semibold text-xs transition-all cursor-pointer"
+                          className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-slate-100/80 dark:bg-zinc-700/60 hover:bg-slate-200 dark:hover:bg-zinc-600 text-slate-800 dark:text-zinc-200 font-semibold text-xs transition-all cursor-pointer"
                         >
                           <MessageSquare className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                           <span>Chat PJ Matkul</span>
@@ -470,9 +469,9 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.92, opacity: 0, y: 15 }}
               transition={{ type: 'spring', stiffness: 350, damping: 28 }}
-              className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"
+              className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/60 dark:border-white/10 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"
             >
-              <div className="px-6 sm:px-8 py-5 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between shrink-0 bg-white dark:bg-zinc-900">
+              <div className="px-6 sm:px-8 py-5 border-b border-slate-200/40 dark:border-white/10 flex items-center justify-between shrink-0 bg-white/50 dark:bg-zinc-900/50">
                 <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-100">
                   {editingId
                     ? 'Edit Data Kontak Matkul'
@@ -502,7 +501,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                         value={formCode}
                         onChange={(e) => setFormCode(e.target.value)}
                         placeholder="DS234316"
-                        className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/80 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                     <div>
@@ -515,7 +514,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                         value={formCourse}
                         onChange={(e) => setFormCourse(e.target.value)}
                         placeholder="Manusia dan Ruang Hidup"
-                        className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/80 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                   </div>
@@ -532,7 +531,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                         value={formLecturerName}
                         onChange={(e) => setFormLecturerName(e.target.value)}
                         placeholder="Prof. Dr. Hendra, M.T."
-                        className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/80 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                     <div>
@@ -545,7 +544,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                         value={formLecturerPhone}
                         onChange={(e) => setFormLecturerPhone(e.target.value)}
                         placeholder="081234567890"
-                        className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/80 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                   </div>
@@ -561,7 +560,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                         value={formLecturerName2}
                         onChange={(e) => setFormLecturerName2(e.target.value)}
                         placeholder="Dr. Suprapto, M.Si."
-                        className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/80 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                     <div>
@@ -573,7 +572,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                         value={formLecturerPhone2}
                         onChange={(e) => setFormLecturerPhone2(e.target.value)}
                         placeholder="081298765432"
-                        className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/80 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                   </div>
@@ -589,7 +588,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                         value={formPjName}
                         onChange={(e) => setFormPjName(e.target.value)}
                         placeholder="Dimas Ardiansyah"
-                        className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/80 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                     <div>
@@ -602,7 +601,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                         value={formPjPhone}
                         onChange={(e) => setFormPjPhone(e.target.value)}
                         placeholder="085712345678"
-                        className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/80 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                   </div>
@@ -617,7 +616,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                         value={formRoom}
                         onChange={(e) => setFormRoom(e.target.value)}
                         placeholder="R. 301 Gedung Utama"
-                        className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/80 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                     <div>
@@ -629,7 +628,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                         value={formScheduleDayTime}
                         onChange={(e) => setFormScheduleDayTime(e.target.value)}
                         placeholder="Senin, 08:00 - 10:30 WIB"
-                        className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/80 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                   </div>
@@ -650,7 +649,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                           )
                         }
                         placeholder="3"
-                        className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/80 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                     <div>
@@ -662,13 +661,13 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                         value={formAttendanceUrl}
                         onChange={(e) => setFormAttendanceUrl(e.target.value)}
                         placeholder="https://mia.its.ac.id/presensi/ atau Google Form"
-                        className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/80 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                   </div>
                 </div>
 
-                <div className="px-6 sm:px-8 py-4 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-end gap-3 shrink-0 bg-white dark:bg-zinc-900">
+                <div className="px-6 sm:px-8 py-4 border-t border-slate-200/40 dark:border-white/10 flex items-center justify-end gap-3 shrink-0 bg-white/50 dark:bg-zinc-900/50">
                   <button
                     type="button"
                     onClick={() => setShowModal(false)}
@@ -705,9 +704,9 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.92, opacity: 0, y: 15 }}
               transition={{ type: 'spring', stiffness: 350, damping: 28 }}
-              className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"
+              className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/60 dark:border-white/10 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"
             >
-              <div className="px-6 sm:px-8 py-5 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between shrink-0 bg-white dark:bg-zinc-900">
+              <div className="px-6 sm:px-8 py-5 border-b border-slate-200/40 dark:border-white/10 flex items-center justify-between shrink-0 bg-white/50 dark:bg-zinc-900/50">
                 <h3 className="text-base font-bold text-slate-900 dark:text-zinc-100">
                   Pilih Template Pesan WA ke Dosen..
                 </h3>
@@ -727,13 +726,13 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                   return (
                     <div
                       key={idx}
-                      className="rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 overflow-hidden transition-all"
+                      className="rounded-2xl bg-white/60 dark:bg-zinc-800/40 border border-slate-200/50 dark:border-white/5 overflow-hidden transition-all"
                     >
                       <button
                         onClick={() =>
                           setOpenTemplateIndex(isOpen ? null : idx)
                         }
-                        className="w-full px-4 py-3.5 text-left flex items-center justify-between gap-3 hover:bg-slate-100/60 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                        className="w-full px-4 py-3.5 text-left flex items-center justify-between gap-3 hover:bg-white/80 dark:hover:bg-zinc-800/70 transition-colors cursor-pointer"
                       >
                         <span className="text-xs font-bold text-blue-600 dark:text-blue-400">
                           {tmpl.title}
@@ -759,8 +758,8 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                             }}
                             className="overflow-hidden"
                           >
-                            <div className="p-4 pt-1 space-y-3 border-t border-slate-100/80 dark:border-zinc-800/80">
-                              <p className="text-xs text-slate-700 dark:text-zinc-300 leading-relaxed italic bg-white dark:bg-zinc-900 p-3 rounded-xl shadow-xs border border-slate-100 dark:border-zinc-800 whitespace-pre-line">
+                            <div className="p-4 pt-1 space-y-3 border-t border-slate-200/40 dark:border-white/5">
+                              <p className="text-xs text-slate-700 dark:text-zinc-300 leading-relaxed italic bg-white/80 dark:bg-zinc-900/80 p-3 rounded-xl shadow-xs border border-slate-200/40 dark:border-white/5 whitespace-pre-line">
                                 "{tmpl.msg}"
                               </p>
 
@@ -788,7 +787,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                 })}
               </div>
 
-              <div className="px-6 sm:px-8 py-4 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-end shrink-0 bg-white dark:bg-zinc-900">
+              <div className="px-6 sm:px-8 py-4 border-t border-slate-200/40 dark:border-white/10 flex items-center justify-end shrink-0 bg-white/50 dark:bg-zinc-900/50">
                 <button
                   onClick={() => setShowTemplateModal(false)}
                   className="px-5 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 text-xs font-semibold hover:bg-slate-200 dark:hover:bg-zinc-700 transition-all cursor-pointer"

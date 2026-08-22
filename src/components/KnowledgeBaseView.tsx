@@ -225,14 +225,14 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
           </p>
         </div>
 
-        {/* Action Control: Bookmark Button */}
+        {/* Action Control: Bookmark Button (GLASSMORPHISM) */}
         <button
           type="button"
           onClick={() => setShowOnlyBookmarked((prev) => !prev)}
           className={`px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 border cursor-pointer shrink-0 ${
             showOnlyBookmarked
               ? 'bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-500/25'
-              : 'bg-white dark:bg-zinc-900 border-slate-200/80 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 hover:border-blue-500/50 hover:text-blue-600 dark:hover:text-blue-400 shadow-xs'
+              : 'bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border-white/60 dark:border-white/10 text-slate-700 dark:text-zinc-300 hover:border-blue-500/50 hover:text-blue-600 dark:hover:text-blue-400 shadow-xs'
           }`}
           title="Tampilkan hanya materi yang disimpan"
         >
@@ -246,7 +246,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
             className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
               showOnlyBookmarked
                 ? 'bg-white/20 text-white'
-                : 'bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300'
+                : 'bg-slate-100/80 dark:bg-zinc-800/80 text-slate-600 dark:text-zinc-300'
             }`}
           >
             {bookmarkedIds.length}
@@ -254,9 +254,9 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
         </button>
       </div>
 
-      {/* DEDICATED UPLOAD BANNER (Tepat di bawah Header, tidak nyempil) */}
+      {/* DEDICATED UPLOAD BANNER (GLASSMORPHISM) */}
       {isOfficer && (
-        <div className="p-4 sm:p-5 rounded-3xl bg-blue-50/80 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+        <div className="p-4 sm:p-5 rounded-3xl bg-blue-50/80 dark:bg-blue-950/30 backdrop-blur-md border border-blue-100/80 dark:border-blue-900/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none">
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-2xl bg-blue-600 text-white shadow-md shadow-blue-500/20 shrink-0">
               <Upload className="w-5 h-5" />
@@ -285,9 +285,9 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
 
       {/* 2-Column Layout */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start pt-1">
-        {/* Left Column: Vertical Course Tabs */}
+        {/* Left Column: Vertical Course Tabs (GLASSMORPHISM) */}
         <div className="hidden md:block md:col-span-4 lg:col-span-3 space-y-2">
-          <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-4 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none space-y-1.5 transition-colors">
+          <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none space-y-1.5 transition-all">
             <div className="px-3 py-2 text-[11px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider flex items-center justify-between">
               <span>Daftar Matkul</span>
               <BookOpen className="w-3.5 h-3.5 text-slate-400" />
@@ -301,7 +301,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
               className={`w-full text-left px-4 py-3 rounded-2xl text-xs transition-colors flex items-center justify-between cursor-pointer ${
                 selectedCourse === 'ALL' && !showOnlyBookmarked
                   ? 'bg-blue-600 text-white font-bold shadow-md shadow-blue-500/20'
-                  : 'text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 font-medium'
+                  : 'text-slate-700 dark:text-zinc-300 hover:bg-white/60 dark:hover:bg-zinc-800/50 font-medium'
               }`}
             >
               <span>Semua Matkul</span>
@@ -309,7 +309,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                 className={`text-[11px] px-2 py-0.5 rounded-full ${
                   selectedCourse === 'ALL' && !showOnlyBookmarked
                     ? 'bg-white/20 text-white'
-                    : 'bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400'
+                    : 'bg-slate-100/80 dark:bg-zinc-800/80 text-slate-500 dark:text-zinc-400'
                 }`}
               >
                 {materials.length}
@@ -330,7 +330,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                   className={`w-full text-left px-4 py-3 rounded-2xl text-xs transition-colors flex items-center justify-between cursor-pointer ${
                     isSelected
                       ? 'bg-blue-600 text-white font-bold shadow-md shadow-blue-500/20'
-                      : 'text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 font-medium'
+                      : 'text-slate-700 dark:text-zinc-300 hover:bg-white/60 dark:hover:bg-zinc-800/50 font-medium'
                   }`}
                 >
                   <span className="truncate pr-2">{course}</span>
@@ -338,7 +338,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                     className={`text-[11px] px-2 py-0.5 rounded-full shrink-0 ${
                       isSelected
                         ? 'bg-white/20 text-white'
-                        : 'bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400'
+                        : 'bg-slate-100/80 dark:bg-zinc-800/80 text-slate-500 dark:text-zinc-400'
                     }`}
                   >
                     {count}
@@ -351,7 +351,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
 
         {/* Right Column: List View */}
         <div className="md:col-span-8 lg:col-span-9 space-y-4">
-          {/* Search Bar Full Width */}
+          {/* Search Bar Full Width (GLASSMORPHISM) */}
           <div className="relative w-full">
             <Search className="w-4 h-4 absolute left-4 top-3 text-slate-400" />
             <input
@@ -359,7 +359,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Cari buku, modul, slide PPT, atau topik..."
-              className="w-full pl-11 pr-4 py-2.5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] dark:shadow-none"
+              className="w-full pl-11 pr-4 py-2.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 text-slate-800 dark:text-zinc-100 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none"
             />
           </div>
 
@@ -372,7 +372,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                   setSelectedCourse(e.target.value);
                   setShowOnlyBookmarked(false);
                 }}
-                className="w-full px-3.5 py-2.5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xs"
+                className="w-full px-3.5 py-2.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 text-slate-800 dark:text-zinc-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xs"
               >
                 <option value="ALL">Semua Matkul ({materials.length})</option>
                 {dynamicCoursesList.map((course) => {
@@ -387,10 +387,10 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
             </div>
           </div>
 
-          {/* Main Content: Adaptive List Container */}
-          <div className="bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-3 sm:p-4 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.04)] dark:shadow-none transition-colors">
+          {/* Main Content: Adaptive List Container (GLASSMORPHISM) */}
+          <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-3 sm:p-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none transition-all">
             {filteredMaterials.length === 0 ? (
-              <div className="p-8 text-center text-slate-400 dark:text-zinc-500 text-xs bg-slate-50/70 dark:bg-zinc-800/50 rounded-2xl space-y-2">
+              <div className="p-8 text-center text-slate-400 dark:text-zinc-500 text-xs bg-slate-50/50 dark:bg-zinc-800/30 rounded-2xl space-y-2 border border-slate-200/30 dark:border-white/5">
                 <BookOpen className="w-8 h-8 mx-auto text-slate-300 dark:text-zinc-600 mb-1" />
                 <p className="font-semibold text-slate-600 dark:text-zinc-300">
                   {showOnlyBookmarked
@@ -413,14 +413,12 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                       key={mat.id}
                       whileHover={{ x: 3 }}
                       onClick={() => onPreviewPdf(mat)}
-                      className="group relative overflow-hidden p-3 sm:p-3.5 rounded-2xl bg-slate-50/90 dark:bg-zinc-800/60 hover:bg-slate-100/90 dark:hover:bg-zinc-800 cursor-pointer transition-all flex items-center justify-between gap-3 border border-slate-200/60 dark:border-zinc-700/60 hover:border-blue-500/40 dark:hover:border-blue-500/40 shadow-xs"
+                      className="group relative overflow-hidden p-3 sm:p-3.5 rounded-2xl bg-white/60 dark:bg-zinc-800/40 hover:bg-white/90 dark:hover:bg-zinc-800/70 backdrop-blur-sm cursor-pointer transition-all flex items-center justify-between gap-3 border border-slate-200/60 dark:border-white/5 hover:border-blue-500/40 dark:hover:border-blue-500/40 shadow-xs"
                     >
-                      {/* Left Spine Strip Accent (Clean Solid Blue) */}
                       <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-blue-600 group-hover:w-2 transition-all rounded-l-2xl" />
 
-                      {/* Content Info */}
                       <div className="flex items-center gap-3 min-w-0 flex-1 pl-1.5">
-                        <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 shrink-0">
+                        <div className="p-2 rounded-xl bg-blue-50/80 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 shrink-0">
                           <FileText className="w-4 h-4" />
                         </div>
                         <div className="min-w-0 flex-1">
@@ -433,10 +431,8 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                         </div>
                       </div>
 
-                      {/* Right Meta Badges & Actions */}
                       <div className="flex items-center gap-2 shrink-0">
-                        {/* Session Badge (Clean Netral) */}
-                        <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg border bg-slate-100 dark:bg-zinc-800/80 text-slate-600 dark:text-zinc-300 border-slate-200/80 dark:border-zinc-700/80">
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg border bg-slate-100/70 dark:bg-zinc-800/60 text-slate-600 dark:text-zinc-300 border-slate-200/60 dark:border-white/5">
                           {mat.session || 'MODUL'}
                         </span>
 
@@ -445,8 +441,8 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                           onClick={(e) => handleToggleBookmark(e, mat.id)}
                           className={`p-1.5 rounded-xl border transition-all cursor-pointer ${
                             isBookmarked
-                              ? 'bg-blue-50 dark:bg-blue-950/60 border-blue-200 dark:border-blue-900/60 text-blue-600 dark:text-blue-400 shadow-xs'
-                              : 'bg-white dark:bg-zinc-800/80 border-slate-200/80 dark:border-zinc-700 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-zinc-700'
+                              ? 'bg-blue-50/90 dark:bg-blue-950/60 border-blue-200 dark:border-blue-900/60 text-blue-600 dark:text-blue-400 shadow-xs'
+                              : 'bg-white/80 dark:bg-zinc-800/80 border-slate-200/70 dark:border-white/10 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white dark:hover:bg-zinc-700'
                           }`}
                           title={isBookmarked ? 'Hapus dari Bookmark' : 'Simpan Materi'}
                         >
@@ -494,9 +490,9 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 10 }}
               transition={{ duration: 0.2 }}
-              className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"
+              className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/60 dark:border-white/10 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"
             >
-              <div className="px-6 sm:px-8 py-5 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between shrink-0 bg-white dark:bg-zinc-900">
+              <div className="px-6 sm:px-8 py-5 border-b border-slate-200/40 dark:border-white/10 flex items-center justify-between shrink-0 bg-white/50 dark:bg-zinc-900/50">
                 <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-100">
                   Unggah Materi / Slide PDF
                 </h3>
@@ -522,7 +518,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                       <select
                         value={formCourseName}
                         onChange={(e) => setFormCourseName(e.target.value)}
-                        className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/80 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         {dynamicCoursesList.map((c) => (
                           <option key={c} value={c}>
@@ -537,7 +533,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                         value={formCourseName}
                         onChange={(e) => setFormCourseName(e.target.value)}
                         placeholder="Masukkan Nama Mata Kuliah"
-                        className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/80 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     )}
                   </div>
@@ -553,7 +549,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                         value={formSession}
                         onChange={(e) => setFormSession(e.target.value)}
                         placeholder="Misal: WEEK 14"
-                        className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/80 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
 
@@ -566,7 +562,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                         required
                         value={formUploader}
                         onChange={(e) => setFormUploader(e.target.value)}
-                        className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/80 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                   </div>
@@ -581,7 +577,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                       value={formTitle}
                       onChange={(e) => setFormTitle(e.target.value)}
                       placeholder="Pengantar Teori Pembangunan.pdf"
-                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/80 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
 
@@ -606,10 +602,10 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                         }
                       }}
                       onClick={() => fileInputRef.current?.click()}
-                      className={`relative border-2 border-dashed rounded-3xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-colors ${
+                      className={`relative border-2 border-dashed rounded-3xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-all ${
                         isDragOver
-                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                          : 'border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 hover:bg-slate-100 dark:hover:bg-zinc-700/50'
+                          ? 'border-blue-500 bg-blue-50/80 dark:bg-blue-900/20'
+                          : 'border-slate-200 dark:border-zinc-700 bg-white/50 dark:bg-zinc-800/40 hover:bg-white/80 dark:hover:bg-zinc-700/50'
                       }`}
                     >
                       <input
@@ -626,7 +622,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
 
                       {selectedFile ? (
                         <div className="flex flex-col items-center gap-2">
-                          <div className="p-3 bg-blue-100 dark:bg-blue-900/40 rounded-full">
+                          <div className="p-3 bg-blue-100/80 dark:bg-blue-900/40 rounded-full">
                             <Paperclip className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                           </div>
                           <p className="text-xs font-bold text-slate-700 dark:text-zinc-300 max-w-[200px] truncate">
@@ -638,7 +634,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                         </div>
                       ) : (
                         <div className="flex flex-col items-center gap-2">
-                          <div className="p-3 bg-slate-200 dark:bg-zinc-700 rounded-full">
+                          <div className="p-3 bg-slate-200/80 dark:bg-zinc-700 rounded-full">
                             <UploadCloud className="w-6 h-6 text-slate-600 dark:text-zinc-400" />
                           </div>
                           <p className="text-xs font-bold text-slate-700 dark:text-zinc-300">
@@ -682,7 +678,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                   </div>
                 </div>
 
-                <div className="px-6 sm:px-8 py-4 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-end gap-3 shrink-0 bg-white dark:bg-zinc-900">
+                <div className="px-6 sm:px-8 py-4 border-t border-slate-200/40 dark:border-white/10 flex items-center justify-end gap-3 shrink-0 bg-white/50 dark:bg-zinc-900/50">
                   <button
                     type="button"
                     disabled={isUploading}

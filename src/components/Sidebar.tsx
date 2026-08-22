@@ -138,15 +138,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }
   ];
 
-  const navigateFromSheet = (tab: TabType) => {
-    setActiveTab(tab);
-    setIsBottomSheetOpen(false);
-  };
-
   return (
     <>
-      {/* DESKTOP SIDEBAR */}
-      <aside className="hidden lg:flex flex-col w-64 bg-white dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-3xl p-5 text-slate-700 dark:text-zinc-200 min-h-[calc(100vh-80px)] shadow-[0_4px_25px_-5px_rgba(0,0,0,0.03)] dark:shadow-none shrink-0 my-2 transition-colors">
+      {/* DESKTOP SIDEBAR (GLASSMORPHISM) */}
+      <aside className="hidden lg:flex flex-col w-64 bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-5 text-slate-700 dark:text-zinc-200 min-h-[calc(100vh-80px)] shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none shrink-0 my-2 transition-all">
         <div className="hidden lg:block mb-5 px-2 py-1 transition-all">
           <h2 className="text-sm font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
             {getGreeting()}
@@ -173,16 +168,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     setActiveTab(item.id);
                   }
                 }}
-                className={`relative w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-medium transition-all ${
+                className={`relative w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-medium transition-all cursor-pointer ${
                   isActive
                     ? 'text-blue-600 dark:text-blue-400 font-semibold'
-                    : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100 hover:bg-slate-50 dark:hover:bg-zinc-800/60'
+                    : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100 hover:bg-white/60 dark:hover:bg-zinc-800/50'
                 }`}
               >
                 {isActive && (
                   <motion.div
                     layoutId="activeSidebarBg"
-                    className="absolute inset-0 bg-blue-50 dark:bg-blue-950/60 rounded-2xl shadow-xs"
+                    className="absolute inset-0 bg-blue-50/80 dark:bg-blue-950/60 rounded-2xl shadow-xs border border-blue-100/50 dark:border-blue-900/40"
                     transition={{
                       type: 'spring',
                       stiffness: 350,
@@ -222,7 +217,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           })}
 
           {/* Desktop Sidebar: myITS Academics 2.0 */}
-          <div className="pt-4 mt-4 border-t border-slate-100 dark:border-zinc-800 space-y-1.5">
+          <div className="pt-4 mt-4 border-t border-slate-200/50 dark:border-white/5 space-y-1.5">
             <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 tracking-wider px-2 mb-2">
               <span className="lowercase">my</span>ITS ACADEMICS 2.0
             </p>
@@ -231,7 +226,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               href="https://mia.its.ac.id/presensi/"
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-all"
+              className="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/60 dark:hover:bg-zinc-800/50 transition-all"
             >
               <ClipboardList className="w-4 h-4" />
               <span>Presensi</span>
@@ -241,7 +236,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               href="https://mia.its.ac.id/rencana-studi/"
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-all"
+              className="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/60 dark:hover:bg-zinc-800/50 transition-all"
             >
               <GraduationCap className="w-4 h-4" />
               <span>Rencana Studi (FRS)</span>
@@ -251,7 +246,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               href="https://mia.its.ac.id/penilaian/"
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-all"
+              className="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/60 dark:hover:bg-zinc-800/50 transition-all"
             >
               <FileSpreadsheet className="w-4 h-4" />
               <span>Transkrip Nilai</span>
@@ -259,7 +254,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
 
           {/* Desktop Sidebar: External Links */}
-          <div className="pt-4 mt-2 border-t border-slate-100 dark:border-zinc-800 space-y-1.5">
+          <div className="pt-4 mt-2 border-t border-slate-200/50 dark:border-white/5 space-y-1.5">
             <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-2 mb-2">
               Portal Akademik (Lama)
             </p>
@@ -268,7 +263,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               href="https://akademik.its.ac.id/home.php"
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-all"
+              className="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/60 dark:hover:bg-zinc-800/50 transition-all"
             >
               <Globe className="w-4 h-4" />
               <span>myITS SIAKAD</span>
@@ -278,7 +273,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               href="https://kemahasiswaan.its.ac.id/beranda"
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-all"
+              className="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/60 dark:hover:bg-zinc-800/50 transition-all"
             >
               <Handshake className="w-4 h-4" />
               <span>myITS StudentConnect</span>
@@ -288,7 +283,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               href="https://classroom.its.ac.id/auth/oidc"
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-all"
+              className="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/60 dark:hover:bg-zinc-800/50 transition-all"
             >
               <BookOpenCheck className="w-4 h-4" />
               <span>myITS Classroom</span>
@@ -296,7 +291,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
 
           {/* Desktop Sidebar: Minigame */}
-          <div className="pt-4 mt-2 border-t border-slate-100 dark:border-zinc-800">
+          <div className="pt-4 mt-2 border-t border-slate-200/50 dark:border-white/5">
             <motion.button
               type="button"
               whileHover={{ scale: 1.015 }}
@@ -305,7 +300,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               className={`group relative w-full overflow-hidden rounded-2xl p-3 text-xs font-bold transition-all border ${
                 activeTab === 'blockblast'
                   ? 'bg-gradient-to-r from-purple-600 via-fuchsia-500 to-pink-500 text-white border-transparent shadow-lg shadow-purple-500/30'
-                  : 'bg-gradient-to-r from-purple-50 via-fuchsia-50 to-pink-50 dark:from-purple-950/40 dark:via-fuchsia-950/30 dark:to-pink-950/30 text-purple-700 dark:text-purple-300 border-purple-200/70 dark:border-purple-800/50 hover:shadow-md hover:shadow-purple-500/10'
+                  : 'bg-gradient-to-r from-purple-50/80 via-fuchsia-50/80 to-pink-50/80 dark:from-purple-950/40 dark:via-fuchsia-950/30 dark:to-pink-950/30 text-purple-700 dark:text-purple-300 border-purple-200/60 dark:border-purple-800/40 hover:shadow-md hover:shadow-purple-500/10'
               }`}
             >
               <div className="absolute -right-5 -top-5 w-16 h-16 rounded-full bg-purple-400/10 group-hover:bg-purple-400/20 transition-all" />
@@ -316,7 +311,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     className={`w-8 h-8 rounded-xl flex items-center justify-center ${
                       activeTab === 'blockblast'
                         ? 'bg-white/20'
-                        : 'bg-white dark:bg-zinc-900 shadow-sm'
+                        : 'bg-white/80 dark:bg-zinc-900/80 shadow-xs'
                     }`}
                   >
                     <Gamepad2
@@ -339,7 +334,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
         </nav>
 
-        <div className="mt-2 pt-4 border-t border-slate-100/60 dark:border-zinc-800 px-2 text-xs text-slate-400 dark:text-zinc-500 shrink-0">
+        <div className="mt-2 pt-4 border-t border-slate-200/50 dark:border-white/5 px-2 text-xs text-slate-400 dark:text-zinc-500 shrink-0">
           <p className="font-bold text-slate-600 dark:text-zinc-300">
             <span className="font-light">my</span>Mbud
             <span className="font-light"> Portal</span>
@@ -350,9 +345,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </aside>
 
-      {/* MOBILE BOTTOM NAVIGATION (TINGGI DINAIKKAN 2PX: h-[70px]) */}
+      {/* MOBILE BOTTOM NAVIGATION (GLASSMORPHISM) */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 w-full pointer-events-none">
-        <nav aria-label="Mobile Navigation" className="pointer-events-auto w-full h-[70px] bg-white/70 dark:bg-zinc-950/70 backdrop-blur-2xl backdrop-saturate-150 border-t border-slate-200/50 dark:border-zinc-800/80 rounded-t-[22px] px-3 pb-2.5 flex items-center justify-center shadow-[0_-8px_32px_rgba(0,0,0,0.08)] dark:shadow-[0_-8px_32px_rgba(0,0,0,0.5)] relative">
+        <nav aria-label="Mobile Navigation" className="pointer-events-auto w-full h-[70px] bg-white/75 dark:bg-zinc-950/75 backdrop-blur-xl border-t border-white/40 dark:border-white/10 rounded-t-[24px] px-3 pb-2.5 flex items-center justify-center shadow-[0_-8px_32px_rgba(0,0,0,0.06)] dark:shadow-[0_-8px_32px_rgba(0,0,0,0.4)] relative">
           <div className="w-full flex items-center justify-center gap-4 sm:gap-8 h-full">
             <BottomTabItem
               id="dashboard"
@@ -408,7 +403,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </nav>
       </div>
 
-      {/* MOBILE BOTTOM SHEET */}
+      {/* MOBILE BOTTOM SHEET (GLASSMORPHISM) */}
       <AnimatePresence>
         {isBottomSheetOpen && (
           <>
@@ -429,9 +424,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 damping: 26,
                 stiffness: 300
               }}
-              className="fixed bottom-0 left-0 right-0 z-50 h-[80vh] bg-white dark:bg-zinc-950 rounded-t-3xl shadow-2xl flex flex-col lg:hidden border-t border-slate-200 dark:border-zinc-800"
+              className="fixed bottom-0 left-0 right-0 z-50 h-[80vh] bg-white/90 dark:bg-zinc-950/90 backdrop-blur-2xl rounded-t-3xl shadow-2xl flex flex-col lg:hidden border-t border-white/60 dark:border-white/10"
             >
-              <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-zinc-800 shrink-0">
+              <div className="flex items-center justify-between p-4 border-b border-slate-200/40 dark:border-white/10 shrink-0">
                 <div className="w-8" />
                 <div className="w-12 h-1.5 bg-slate-200 dark:bg-zinc-800 rounded-full" />
 
@@ -457,7 +452,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       href="https://mia.its.ac.id/presensi/"
                       target="_blank"
                       rel="noreferrer"
-                      className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold"
+                      className="flex items-center justify-between p-2.5 rounded-2xl bg-white/60 dark:bg-zinc-800/50 border border-slate-200/40 dark:border-white/5 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold"
                     >
                       <span className="flex items-center gap-2 truncate">
                         <ClipboardList className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
@@ -470,7 +465,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       href="https://mia.its.ac.id/rencana-studi/"
                       target="_blank"
                       rel="noreferrer"
-                      className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold"
+                      className="flex items-center justify-between p-2.5 rounded-2xl bg-white/60 dark:bg-zinc-800/50 border border-slate-200/40 dark:border-white/5 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold"
                     >
                       <span className="flex items-center gap-2 truncate">
                         <GraduationCap className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
@@ -483,7 +478,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       href="https://mia.its.ac.id/penilaian/"
                       target="_blank"
                       rel="noreferrer"
-                      className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold"
+                      className="flex items-center justify-between p-2.5 rounded-2xl bg-white/60 dark:bg-zinc-800/50 border border-slate-200/40 dark:border-white/5 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold"
                     >
                       <span className="flex items-center gap-2 truncate">
                         <FileSpreadsheet className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
@@ -495,7 +490,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </div>
 
                 {/* 2. PORTAL myITS (LAMA) */}
-                <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-zinc-800">
+                <div className="space-y-2 pt-2 border-t border-slate-200/50 dark:border-white/5">
                   <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-1">
                     PORTAL myITS (LAMA)
                   </p>
@@ -505,7 +500,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       href="https://akademik.its.ac.id/home.php"
                       target="_blank"
                       rel="noreferrer"
-                      className="flex flex-col sm:flex-row items-center justify-center gap-1.5 p-2 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 active:scale-95 transition-all text-[11px] font-semibold text-center border border-slate-100 dark:border-zinc-800/60"
+                      className="flex flex-col sm:flex-row items-center justify-center gap-1.5 p-2 rounded-2xl bg-white/60 dark:bg-zinc-800/50 hover:bg-white/80 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 active:scale-95 transition-all text-[11px] font-semibold text-center border border-slate-200/40 dark:border-white/5"
                     >
                       <Globe className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
                       <span className="truncate">SIAKAD 1.0</span>
@@ -515,7 +510,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       href="https://classroom.its.ac.id/auth/oidc"
                       target="_blank"
                       rel="noreferrer"
-                      className="flex flex-col sm:flex-row items-center justify-center gap-1.5 p-2 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 active:scale-95 transition-all text-[11px] font-semibold text-center border border-slate-100 dark:border-zinc-800/60"
+                      className="flex flex-col sm:flex-row items-center justify-center gap-1.5 p-2 rounded-2xl bg-white/60 dark:bg-zinc-800/50 hover:bg-white/80 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 active:scale-95 transition-all text-[11px] font-semibold text-center border border-slate-200/40 dark:border-white/5"
                     >
                       <BookOpenCheck className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
                       <span className="truncate">Classroom</span>
@@ -525,7 +520,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       href="https://kemahasiswaan.its.ac.id/beranda"
                       target="_blank"
                       rel="noreferrer"
-                      className="flex flex-col sm:flex-row items-center justify-center gap-1.5 p-2 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 active:scale-95 transition-all text-[11px] font-semibold text-center border border-slate-100 dark:border-zinc-800/60"
+                      className="flex flex-col sm:flex-row items-center justify-center gap-1.5 p-2 rounded-2xl bg-white/60 dark:bg-zinc-800/50 hover:bg-white/80 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 active:scale-95 transition-all text-[11px] font-semibold text-center border border-slate-200/40 dark:border-white/5"
                     >
                       <Handshake className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
                       <span className="truncate">StudentConnect</span>
@@ -534,7 +529,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </div>
 
                 {/* 3. TOOLS LAINNYA */}
-                <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-zinc-800">
+                <div className="space-y-2 pt-2 border-t border-slate-200/50 dark:border-white/5">
                   <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-1">
                     TOOLS LAINNYA
                   </p>
@@ -594,7 +589,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </div>
 
                 {/* 4. MINIGAME */}
-                <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-zinc-800">
+                <div className="space-y-2 pt-2 border-t border-slate-200/50 dark:border-white/5">
                   <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-1">
                     MINIGAME
                   </p>
@@ -602,11 +597,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <button
                     type="button"
                     onClick={() => navigateFromSheet('blockblast')}
-                    className="group relative w-full overflow-hidden rounded-2xl p-3 text-xs font-bold transition-all border bg-gradient-to-r from-purple-50 via-fuchsia-50 to-pink-50 dark:from-purple-950/40 dark:via-fuchsia-950/30 dark:to-pink-950/30 text-purple-700 dark:text-purple-300 border-purple-200/70 dark:border-purple-800/50 active:scale-95"
+                    className="group relative w-full overflow-hidden rounded-2xl p-3 text-xs font-bold transition-all border bg-gradient-to-r from-purple-50/80 via-fuchsia-50/80 to-pink-50/80 dark:from-purple-950/40 dark:via-fuchsia-950/30 dark:to-pink-950/30 text-purple-700 dark:text-purple-300 border-purple-200/70 dark:border-purple-800/50 active:scale-95"
                   >
                     <div className="relative flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-white dark:bg-zinc-900 shadow-sm">
+                        <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/80 dark:bg-zinc-900/80 shadow-xs">
                           <Gamepad2 className="w-5 h-5 text-purple-500" />
                         </div>
 
