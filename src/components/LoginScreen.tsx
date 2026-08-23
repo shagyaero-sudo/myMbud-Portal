@@ -12,27 +12,23 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
   const [nrp, setNrp] = useState('');
   const [pin, setPin] = useState('');
   const [error, setError] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [modalState, setModalState] = useState<'idle' | 'loading' | 'success'>('idle');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 1. Validasi Prefix NRP (Harus diawali 5033251 dan total 10 digit)
     if (!nrp.startsWith('5033251') || nrp.length !== 10) {
       setError(true);
       setPin('');
       return;
     }
 
-    // 2. Ambil 3 digit suffix NRP
     const suffix = nrp.slice(-3);
     const student = STUDENTS_DATA[suffix];
 
-    // 3. Cocokkan dengan data mahasiswa dan PIN
     if (student && student.pin === pin) {
       setError(false);
-      setIsLoading(true);
+      setModalState('loading');
 
       try {
         await supabase.from('revoked_sessions').delete().eq('id', nrp);
@@ -45,13 +41,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
       localStorage.setItem('mymbud_user_nrp', nrp);
 
       setTimeout(() => {
-        setIsLoading(false);
-        setIsSuccess(true);
+        setModalState('success');
 
         setTimeout(() => {
           onLoginSuccess();
-        }, 900);
-      }, 850);
+        }, 800);
+      }, 750);
     } else {
       setError(true);
       setPin('');
@@ -59,9 +54,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#09090b] flex flex-col lg:flex-row font-sans selection:bg-blue-500 selection:text-white">
+    <div className="min-h-screen bg-white dark:bg-[#09090b] flex flex-col lg:flex-row font-sans selection:bg-blue-500 selection:text-white relative">
       
-      {/* BAGIAN KIRI / ATAS: GAMBAR SCRAPBOOK (Proporsi Asli) */}
+      {/* BAGIAN KIRI / ATAS: GAMBAR SCRAPBOOK */}
       <div className="w-full lg:w-1/2 h-[58vh] lg:h-screen bg-white relative flex items-center justify-end overflow-hidden">
         <motion.img 
           initial={{ opacity: 0, scale: 0.98 }}
@@ -96,117 +91,109 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
           </div>
 
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-zinc-100 mb-1 tracking-tight">
-            Selamat Datang
+            Selamat Datang!
           </h1>
           <p className="text-xs sm:text-[13px] font-normal text-slate-500 dark:text-zinc-400 mb-6">
-            Masukkan NRP dan PIN untuk masuk ke akunmu
+            Masukkan NRP dan PIN untuk masuk
           </p>
 
-          <AnimatePresence mode="wait">
-            {isSuccess ? (
-              /* PANEL KONFIRMASI LOGIN BERHASIL */
-              <motion.div
-                key="success-panel"
-                initial={{ opacity: 0, scale: 0.92 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ type: 'spring', stiffness: 380, damping: 26 }}
-                className="p-6 rounded-3xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-900/60 text-center space-y-3 shadow-xs"
-              >
-                <div className="w-12 h-12 mx-auto rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-md shadow-emerald-500/25">
-                  <CheckCircle2 className="w-7 h-7" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                    Login Berhasil
-                  </h3>
-                </div>
-                <div className="flex items-center justify-center gap-2 text-[11px] text-slate-400 dark:text-zinc-400 pt-1">
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-500" />
-                  <span>Redirecting...</span>
-                </div>
-              </motion.div>
-            ) : (
-              /* FORM INPUT LOGIN */
-              <motion.form 
-                key="login-form"
-                onSubmit={handleLogin} 
-                className="space-y-3.5"
-                initial={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              >
-                {/* Input NRP */}
-                <div className="space-y-1.5">
-                  <label className="block text-[11px] font-semibold text-slate-600 dark:text-zinc-400">
-                    NRP
-                  </label>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={10}
-                    disabled={isLoading}
-                    value={nrp}
-                    onChange={(e) => setNrp(e.target.value.replace(/\D/g, ''))}
-                    placeholder="5033251xxx"
-                    className="w-full px-4 py-3 rounded-2xl text-xs sm:text-sm font-semibold bg-slate-100 dark:bg-zinc-900/60 text-slate-900 dark:text-zinc-100 placeholder:text-slate-400/60 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-zinc-700 transition-all border-none disabled:opacity-50"
-                  />
-                </div>
-
-                {/* Input PIN */}
-                <div className="space-y-1.5">
-                  <label className="block text-[11px] font-semibold text-slate-600 dark:text-zinc-400">
-                    PIN
-                  </label>
-                  <input
-                    type="password"
-                    inputMode="numeric"
-                    maxLength={4}
-                    disabled={isLoading}
-                    value={pin}
-                    onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
-                    placeholder="••••"
-                    className="w-full px-4 py-3 rounded-2xl text-base sm:text-lg tracking-[0.3em] font-bold bg-slate-100 dark:bg-zinc-900/60 text-slate-900 dark:text-zinc-100 placeholder:text-slate-400/60 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-zinc-700 transition-all border-none disabled:opacity-50"
-                  />
-                </div>
-
-                {error && (
-                  <p className="text-[11px] font-bold text-rose-500 pt-0.5">
-                    NRP atau PIN tidak cocok.
-                  </p>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={nrp.length !== 10 || pin.length !== 4 || isLoading}
-                  className="w-full py-3.5 mt-2 rounded-2xl bg-slate-900 dark:bg-zinc-100 hover:bg-slate-800 dark:hover:bg-white disabled:bg-slate-200 disabled:dark:bg-zinc-800 disabled:text-slate-400 disabled:dark:text-zinc-500 text-white dark:text-slate-900 text-xs sm:text-sm font-bold transition-all active:scale-[0.98] cursor-pointer shadow-xs flex items-center justify-center gap-2"
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Memverifikasi...</span>
-                    </>
-                  ) : (
-                    <span>Masuk</span>
-                  )}
-                </button>
-              </motion.form>
-            )}
-          </AnimatePresence>
-
-          {!isSuccess && (
-            <div className="mt-5 text-center">
-              <a 
-                href="https://wa.me/6285182284769?text=Halo%20Aero,%20aku%20butuh%20bantuan%20akses%20login%20myMbud%20Portal" 
-                target="_blank" 
-                rel="noreferrer"
-                className="text-[11px] font-normal text-slate-400 hover:text-slate-700 dark:hover:text-zinc-300 transition-colors"
-              >
-                Bantuan?
-              </a>
+          {/* Form */}
+          <form onSubmit={handleLogin} className="space-y-3.5">
+            <div className="space-y-1.5">
+              <label className="block text-[11px] font-semibold text-slate-600 dark:text-zinc-400">
+                NRP
+              </label>
+              <input
+                type="text"
+                inputMode="numeric"
+                maxLength={10}
+                value={nrp}
+                onChange={(e) => setNrp(e.target.value.replace(/\D/g, ''))}
+                placeholder="5033251xxx"
+                className="w-full px-4 py-3 rounded-2xl text-xs sm:text-sm font-semibold bg-slate-100 dark:bg-zinc-900/60 text-slate-900 dark:text-zinc-100 placeholder:text-slate-400/60 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-zinc-700 transition-all border-none"
+              />
             </div>
-          )}
+
+            <div className="space-y-1.5">
+              <label className="block text-[11px] font-semibold text-slate-600 dark:text-zinc-400">
+                PIN
+              </label>
+              <input
+                type="password"
+                inputMode="numeric"
+                maxLength={4}
+                value={pin}
+                onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
+                placeholder="••••"
+                className="w-full px-4 py-3 rounded-2xl text-base sm:text-lg tracking-[0.3em] font-bold bg-slate-100 dark:bg-zinc-900/60 text-slate-900 dark:text-zinc-100 placeholder:text-slate-400/60 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-zinc-700 transition-all border-none"
+              />
+            </div>
+
+            {error && (
+              <p className="text-[11px] font-bold text-rose-500 pt-0.5">
+                NRP atau PIN salah/tidak cocok.
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={nrp.length !== 10 || pin.length !== 4}
+              className="w-full py-3.5 mt-2 rounded-2xl bg-slate-900 dark:bg-zinc-100 hover:bg-slate-800 dark:hover:bg-white disabled:bg-slate-200 disabled:dark:bg-zinc-800 disabled:text-slate-400 disabled:dark:text-zinc-500 text-white dark:text-slate-900 text-xs sm:text-sm font-bold transition-all active:scale-[0.98] cursor-pointer shadow-xs"
+            >
+              Masuk
+            </button>
+          </form>
+
+          <div className="mt-5 text-center">
+            <a 
+              href="https://wa.me/6285182284769?text=Halo%20Aero,%20aku%20butuh%20bantuan%20akses%20login%20myMbud%20Portal" 
+              target="_blank" 
+              rel="noreferrer"
+              className="text-[11px] font-normal text-slate-400 hover:text-slate-700 dark:hover:text-zinc-300 transition-colors"
+            >
+              Bantuan?
+            </a>
+          </div>
         </motion.div>
       </div>
+
+      {/* COMPACT POP-UP HUD MODAL */}
+      <AnimatePresence>
+        {modalState !== 'idle' && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/40 backdrop-blur-xs"
+            />
+            
+            <motion.div
+              initial={{ scale: 0.85, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.85, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 450, damping: 26 }}
+              className="relative z-10 w-36 h-36 rounded-3xl bg-white/90 dark:bg-zinc-900/90 backdrop-blur-2xl border border-white/60 dark:border-white/10 shadow-2xl flex flex-col items-center justify-center gap-2 text-center p-3 select-none"
+            >
+              {modalState === 'loading' ? (
+                <>
+                  <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+                  <span className="text-[11px] font-semibold text-slate-700 dark:text-zinc-300">
+                    Memverifikasi...
+                  </span>
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="w-9 h-9 text-emerald-500" />
+                  <span className="text-[11px] font-bold text-slate-900 dark:text-white">
+                    Berhasil
+                  </span>
+                </>
+              )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
