@@ -387,7 +387,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
                     myMbud siap digunakan.
                   </h2>
                   <p className="text-xs sm:text-sm font-normal text-slate-500 dark:text-zinc-400">
-                    Siap eksplorasi dan bertumbuh di Kelas A?
+                    Siap eksplorasi dan bertumbuh bersama Kelas A?
                   </p>
                 </div>
               </motion.div>
@@ -415,7 +415,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
               onClick={handleComplete}
               className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm shadow-lg shadow-blue-500/25 transition-all cursor-pointer"
             >
-              Siap, Mari Mulai
+              Mulai Sekarang
             </motion.button>
           ) : (
             <motion.button
