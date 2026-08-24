@@ -11,6 +11,7 @@ import {
   X,
   ChevronLeft,
   BookOpen,
+  HelpCircle,
 } from 'lucide-react';
 import { supabase } from '../services/supabase';
 
@@ -118,12 +119,13 @@ export const NotebookLmView: React.FC<NotebookLmViewProps> = ({
   const [editingCard, setEditingCard] = useState<CourseCardData | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Welcome Onboarding Modal State
-  const [showWelcomeModal, setShowWelcomeModal] = useState<boolean>(() => {
+  // Info Modal & Onboarding
+  const [showInfoModal, setShowInfoModal] = useState<boolean>(() => {
     return !localStorage.getItem('mymbud_notebooklm_welcomed');
   });
 
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const desktopDropdownRef = useRef<HTMLDivElement>(null);
+  const mobileDropdownRef = useRef<HTMLDivElement>(null);
   const currentUserName = localStorage.getItem('mymbud_user_name') || 'Aero';
 
   // Fetch Data & Supabase Realtime
@@ -178,7 +180,11 @@ export const NotebookLmView: React.FC<NotebookLmViewProps> = ({
       .subscribe();
 
     const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      const isOutsideDesktop = !desktopDropdownRef.current || !desktopDropdownRef.current.contains(target);
+      const isOutsideMobile = !mobileDropdownRef.current || !mobileDropdownRef.current.contains(target);
+
+      if (isOutsideDesktop && isOutsideMobile) {
         setIsDropdownOpen(false);
       }
     };
@@ -190,9 +196,9 @@ export const NotebookLmView: React.FC<NotebookLmViewProps> = ({
     };
   }, [isOfficer]);
 
-  const handleCloseWelcomeModal = () => {
+  const handleCloseInfoModal = () => {
     localStorage.setItem('mymbud_notebooklm_welcomed', 'true');
-    setShowWelcomeModal(false);
+    setShowInfoModal(false);
   };
 
   const handleSelectCourse = (course: CourseCardData) => {
@@ -254,6 +260,7 @@ export const NotebookLmView: React.FC<NotebookLmViewProps> = ({
 
       {/* TOP CONTROLS */}
       <div className="w-full flex items-center justify-between p-4 sm:p-8 z-20 shrink-0">
+        {/* Tombol Back < */}
         <button
           type="button"
           onClick={onBack}
@@ -264,26 +271,39 @@ export const NotebookLmView: React.FC<NotebookLmViewProps> = ({
           <ChevronLeft className="w-5 h-5" />
         </button>
 
-        {isOfficer && (
+        {/* Right Actions: Tombol Bantuan ? & Edit Officer */}
+        <div className="flex items-center gap-2">
+          {isOfficer && (
+            <button
+              type="button"
+              onClick={() => setIsEditMode((prev) => !prev)}
+              className={`px-3.5 py-2 rounded-2xl border text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer backdrop-blur-md ${
+                isEditMode
+                  ? 'bg-blue-600 text-white border-blue-500 shadow-lg shadow-blue-900/40'
+                  : 'bg-zinc-900/80 text-zinc-400 hover:text-white border-zinc-800'
+              }`}
+            >
+              <Pencil className="w-3.5 h-3.5" />
+              <span>{isEditMode ? 'Selesai' : 'Kelola Link'}</span>
+            </button>
+          )}
+
           <button
             type="button"
-            onClick={() => setIsEditMode((prev) => !prev)}
-            className={`px-3.5 py-2 rounded-2xl border text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer backdrop-blur-md ${
-              isEditMode
-                ? 'bg-blue-600 text-white border-blue-500 shadow-lg shadow-blue-900/40'
-                : 'bg-zinc-900/80 text-zinc-400 hover:text-white border-zinc-800'
-            }`}
+            onClick={() => setShowInfoModal(true)}
+            className="w-10 h-10 rounded-full bg-zinc-900/80 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800/80 backdrop-blur-md transition-all cursor-pointer flex items-center justify-center active:scale-95 shadow-md"
+            title="Panduan & Info NotebookLM"
+            aria-label="Info"
           >
-            <Pencil className="w-3.5 h-3.5" />
-            <span>{isEditMode ? 'Selesai' : 'Kelola Link'}</span>
+            <HelpCircle className="w-4 h-4" />
           </button>
-        )}
+        </div>
       </div>
 
-      {/* CENTER INTERACTIVE AREA */}
+      {/* CENTER INTERACTIVE HERO AREA */}
       <div className="flex-1 flex flex-col items-center justify-center text-center max-w-2xl mx-auto w-full px-4 z-10 space-y-4 py-8">
         
-        {/* LOGO BERSEBELAHAN: LOGO MYMBUD + LOGO GEMINI NOTEBOOK (CLEAN, NO X, NO EXTRA BORDER) */}
+        {/* LOGO BERSEBELAHAN: LOGO MYMBUD + LOGO GEMINI NOTEBOOK */}
         <div className="flex items-center justify-center gap-3">
           <img
             src="/logombud.png"
@@ -309,10 +329,10 @@ export const NotebookLmView: React.FC<NotebookLmViewProps> = ({
           </h1>
         </div>
 
-        {/* PROMPT BAR & DROPDOWN CONTAINER */}
-        <div className="w-full max-w-xl relative pt-2" ref={dropdownRef}>
+        {/* DESKTOP INTEGRATED PROMPT BAR (Hanya Tampil di PC / Layar Besar) */}
+        <div className="hidden md:block w-full max-w-xl relative pt-2" ref={desktopDropdownRef}>
           
-          {/* Prompt Bar Box */}
+          {/* Prompt Bar Box Desktop */}
           <div 
             className="relative w-full bg-zinc-900/90 hover:bg-zinc-850 border border-zinc-800/90 rounded-full py-2.5 pl-4 pr-3 flex items-center justify-between gap-3 shadow-2xl backdrop-blur-xl transition-all"
           >
@@ -361,7 +381,7 @@ export const NotebookLmView: React.FC<NotebookLmViewProps> = ({
             </div>
           </div>
 
-          {/* FULL EXPANDABLE DROPDOWN LIST */}
+          {/* DROPDOWN LIST DESKTOP */}
           <AnimatePresence>
             {isDropdownOpen && (
               <motion.div
@@ -457,12 +477,106 @@ export const NotebookLmView: React.FC<NotebookLmViewProps> = ({
         )}
       </div>
 
-      {/* FOOTER PADDING */}
-      <div className="w-full py-4 text-center shrink-0" />
+      {/* MOBILE BOTTOM PROMPT BAR (Diletakkan di bagian bawah khusus layar HP) */}
+      <div className="block md:hidden w-full max-w-xl mx-auto relative z-30 px-4 pb-4" ref={mobileDropdownRef}>
+        
+        {/* Dropdown Popover Mobile (Membuka ke Atas) */}
+        <AnimatePresence>
+          {isDropdownOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: 10, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.98 }}
+              transition={{ duration: 0.15 }}
+              className="absolute bottom-full mb-3 left-4 right-4 bg-zinc-900/95 border border-zinc-800/90 rounded-3xl p-3 shadow-2xl backdrop-blur-2xl max-h-[50vh] overflow-y-auto custom-scrollbar z-40 space-y-1.5 text-left"
+            >
+              <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-zinc-500 flex items-center justify-between">
+                <span>Daftar Mata Kuliah ({courses.length})</span>
+                <BookOpen className="w-3.5 h-3.5 text-zinc-500" />
+              </div>
 
-      {/* OPENING ONBOARDING POPUP MODAL */}
+              {courses.map((course) => (
+                <button
+                  key={course.id}
+                  onClick={() => handleSelectCourse(course)}
+                  className="w-full p-3 rounded-2xl bg-zinc-950/60 hover:bg-blue-600/15 border border-zinc-800/60 hover:border-blue-500/40 transition-all flex items-center justify-between gap-3 group cursor-pointer text-left"
+                >
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-300">
+                        {course.code}
+                      </span>
+                      <h4 className="text-xs font-bold text-zinc-200 group-hover:text-blue-300 transition-colors truncate">
+                        {course.name}
+                      </h4>
+                    </div>
+                    <p className="text-[11px] text-zinc-400 mt-1 line-clamp-1 leading-snug">
+                      {course.description || 'Diskusi materi bersama AI'}
+                    </p>
+                  </div>
+
+                  <div className="p-2 rounded-xl bg-zinc-900 group-hover:bg-blue-600 text-zinc-400 group-hover:text-white transition-colors shrink-0">
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </div>
+                </button>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Fake Input Bar Mobile */}
+        <div 
+          className="relative w-full bg-zinc-900/90 hover:bg-zinc-850 border border-zinc-800/90 rounded-full py-2.5 pl-4 pr-3 flex items-center justify-between gap-3 shadow-2xl backdrop-blur-xl transition-all"
+        >
+          <div 
+            onClick={() => setIsDropdownOpen((prev) => !prev)}
+            className="flex items-center gap-3 min-w-0 flex-1 cursor-pointer"
+          >
+            <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-300 shrink-0">
+              <Plus className="w-4 h-4" />
+            </div>
+            <span className={`text-xs font-medium truncate ${selectedCourse ? 'text-zinc-100 font-semibold' : 'text-zinc-400'}`}>
+              {selectedCourse ? selectedCourse.name : 'Pilih matkul...'}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1.5 shrink-0">
+            {selectedCourse ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setSelectedCourse(null)}
+                  className="p-1.5 rounded-full text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors cursor-pointer"
+                  title="Batal pilih"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleExecuteRedirect}
+                  className="px-3.5 py-1.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-1 shadow-md shadow-blue-900/30 transition-all cursor-pointer active:scale-95"
+                >
+                  <span>Go</span>
+                  <ArrowRight className="w-3 h-3" />
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setIsDropdownOpen((prev) => !prev)}
+                className={`w-8 h-8 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-300 flex items-center justify-center transition-transform duration-200 cursor-pointer ${isDropdownOpen ? 'rotate-180' : ''}`}
+              >
+                <ChevronDown className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* POPUP MODAL ONBOARDING & INFO PANDUAN */}
       <AnimatePresence>
-        {showWelcomeModal && (
+        {showInfoModal && (
           <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
             <motion.div
               initial={{ scale: 0.94, opacity: 0, y: 10 }}
@@ -471,7 +585,17 @@ export const NotebookLmView: React.FC<NotebookLmViewProps> = ({
               transition={{ duration: 0.2 }}
               className="w-full max-w-lg bg-zinc-950 rounded-3xl p-6 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.95)] relative overflow-hidden text-left"
             >
-              {/* Header Co-Branding Modal */}
+              {/* Close Button X */}
+              <button
+                type="button"
+                onClick={handleCloseInfoModal}
+                className="absolute top-5 right-5 p-1.5 text-zinc-400 hover:text-white rounded-full hover:bg-zinc-900 transition-colors cursor-pointer"
+                title="Tutup"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              {/* Header Co-Branding */}
               <div className="flex items-center gap-3 mb-5">
                 <img
                   src="/logombud.png"
@@ -501,11 +625,11 @@ export const NotebookLmView: React.FC<NotebookLmViewProps> = ({
                 </p>
               </div>
 
-              {/* Tombol Mulai Single-Color Biru */}
+              {/* Tombol Mulai */}
               <div className="mt-6 flex justify-start">
                 <button
                   type="button"
-                  onClick={handleCloseWelcomeModal}
+                  onClick={handleCloseInfoModal}
                   className="px-6 py-2 rounded-full bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md shadow-blue-900/30 transition-all cursor-pointer active:scale-95"
                 >
                   Mulai
@@ -532,7 +656,7 @@ export const NotebookLmView: React.FC<NotebookLmViewProps> = ({
                 className="w-12 h-12 object-contain mx-auto animate-pulse"
               />
               <div className="space-y-1">
-                <h3 className="text-base font-bold text-white">Menuju NotebookLM...</h3>
+                <h3 className="text-base font-bold text-white">Membuka Ruang Belajar...</h3>
                 <p className="text-xs text-blue-400 font-medium">{redirectingCourse.name}</p>
               </div>
               <Loader2 className="w-4 h-4 animate-spin text-zinc-500 mx-auto mt-2" />
