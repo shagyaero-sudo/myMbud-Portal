@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
-  Sparkles,
-  ExternalLink,
   ArrowUpRight,
   Settings2,
   Check,
@@ -11,8 +9,7 @@ import {
   Trash2,
   Pencil,
   Loader2,
-  Info,
-  HelpCircle,
+  ChevronDown,
 } from 'lucide-react';
 import { supabase } from '../services/supabase';
 
@@ -126,10 +123,11 @@ export const NotebookLmModal: React.FC<NotebookLmModalProps> = ({
   const [courses, setCourses] = useState<CourseCardData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [isAccordionOpen, setIsAccordionOpen] = useState(false);
   const [editingCard, setEditingCard] = useState<CourseCardData | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Load Data dari Supabase
+  // Fetch Data & Supabase Realtime
   useEffect(() => {
     if (!isOpen) return;
 
@@ -146,14 +144,13 @@ export const NotebookLmModal: React.FC<NotebookLmModalProps> = ({
         if (data && data.length > 0) {
           setCourses(data);
         } else {
-          // Inisialisasi awal default jika database masih kosong
           setCourses(DEFAULT_COURSES);
           if (isOfficer) {
             await supabase.from('notebooklm_courses').upsert(DEFAULT_COURSES);
           }
         }
       } catch (err) {
-        console.warn('Menggunakan fallback data:', err);
+        console.warn('Menggunakan data fallback:', err);
         setCourses(DEFAULT_COURSES);
       } finally {
         setIsLoading(false);
@@ -161,31 +158,51 @@ export const NotebookLmModal: React.FC<NotebookLmModalProps> = ({
     };
 
     fetchCourses();
+
+    // Setup Realtime Listener
+    const channel = supabase
+      .channel('notebooklm_courses_realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'notebooklm_courses' },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            setCourses((prev) => [...prev, payload.new as CourseCardData]);
+          } else if (payload.eventType === 'UPDATE') {
+            setCourses((prev) =>
+              prev.map((c) =>
+                c.id === (payload.new as CourseCardData).id ? (payload.new as CourseCardData) : c
+              )
+            );
+          } else if (payload.eventType === 'DELETE') {
+            setCourses((prev) => prev.filter((c) => c.id !== payload.old.id));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [isOpen, isOfficer]);
 
-  // Simpan / Update satu Kartu
+  // Simpan / Update Kartu
   const handleSaveCard = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingCard) return;
 
     setIsSaving(true);
     try {
-      const updatedList = courses.some((c) => c.id === editingCard.id)
-        ? courses.map((c) => (c.id === editingCard.id ? editingCard : c))
-        : [...courses, editingCard];
-
       const { error } = await supabase.from('notebooklm_courses').upsert({
         ...editingCard,
         updated_at: new Date().toISOString(),
       });
 
       if (error) throw error;
-
-      setCourses(updatedList);
       setEditingCard(null);
     } catch (err) {
       console.error('Gagal menyimpan kartu:', err);
-      alert('Gagal menyimpan perubahan ke cloud.');
+      alert('Gagal menyimpan perubahan ke database.');
     } finally {
       setIsSaving(false);
     }
@@ -202,7 +219,6 @@ export const NotebookLmModal: React.FC<NotebookLmModalProps> = ({
         .eq('id', id);
 
       if (error) throw error;
-      setCourses((prev) => prev.filter((c) => c.id !== id));
     } catch (err) {
       console.error('Gagal menghapus:', err);
       alert('Gagal menghapus data.');
@@ -221,18 +237,13 @@ export const NotebookLmModal: React.FC<NotebookLmModalProps> = ({
           >
             {/* Header Modal */}
             <div className="flex items-start justify-between gap-4 border-b border-zinc-800/80 pb-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-500/20 shrink-0">
-                  <Sparkles className="w-5 h-5 sm:w-6 sm:h-6" />
-                </div>
-                <div>
-                  <h2 className="text-lg sm:text-xl font-bold text-zinc-100 flex items-center gap-2">
-                    NotebookLM Matkul
-                  </h2>
-                  <p className="text-xs text-zinc-400 mt-0.5">
-                    Ruang diskusi AI per mata kuliah yang dipelajari langsung dari kumpulan berkas materi kita.
-                  </p>
-                </div>
+              <div className="space-y-0.5">
+                <h2 className="text-lg sm:text-xl font-bold text-zinc-100">
+                  NotebookLM Matkul
+                </h2>
+                <p className="text-xs text-zinc-400">
+                  Ruang diskusi AI per mata kuliah yang dipelajari langsung dari materi perkuliahan.
+                </p>
               </div>
 
               {/* Action Buttons Header */}
@@ -248,7 +259,7 @@ export const NotebookLmModal: React.FC<NotebookLmModalProps> = ({
                     }`}
                   >
                     <Settings2 className="w-3.5 h-3.5" />
-                    <span>{isEditMode ? 'Selesai Edit' : 'Kelola Kartu'}</span>
+                    <span>{isEditMode ? 'Selesai' : 'Kelola Kartu'}</span>
                   </button>
                 )}
 
@@ -261,19 +272,41 @@ export const NotebookLmModal: React.FC<NotebookLmModalProps> = ({
               </div>
             </div>
 
-            {/* BANNER PENJELASAN NOTEBOOKLM (EASY TO UNDERSTAND) */}
-            <div className="mt-4 p-3.5 rounded-2xl bg-gradient-to-r from-purple-950/40 via-indigo-950/20 to-zinc-900/60 border border-purple-500/20 flex items-start gap-3">
-              <div className="p-1.5 rounded-xl bg-purple-500/20 text-purple-300 shrink-0 mt-0.5">
-                <HelpCircle className="w-4 h-4" />
-              </div>
-              <div className="text-xs text-zinc-300 space-y-1 leading-relaxed">
-                <p>
-                  <strong className="text-purple-300 font-semibold">Apa itu NotebookLM?</strong> Ini adalah AI asisten dari Google yang khusus membaca & memahami slide presentasi serta PDF matkul kita.
-                </p>
-                <p className="text-[11px] text-zinc-400">
-                  Kamu bisa langsung tanya materi, minta buatkan rangkuman ujian, latihan soal, hingga mendengarkan podcast rangkuman audio tanpa takut AI mengarang bebas.
-                </p>
-              </div>
+            {/* ACCORDION / COLLAPSIBLE: APA ITU NOTEBOOKLM */}
+            <div className="mt-3.5 border border-zinc-800/80 rounded-2xl bg-zinc-900/40 overflow-hidden transition-all">
+              <button
+                type="button"
+                onClick={() => setIsAccordionOpen((prev) => !prev)}
+                className="w-full px-4 py-2.5 flex items-center justify-between text-left text-xs font-semibold text-zinc-300 hover:text-zinc-100 transition-colors cursor-pointer"
+              >
+                <span>Apa itu NotebookLM & bagaimana cara kerjanya?</span>
+                <ChevronDown
+                  className={`w-4 h-4 text-zinc-400 transition-transform duration-300 ${
+                    isAccordionOpen ? 'rotate-180 text-purple-400' : ''
+                  }`}
+                />
+              </button>
+
+              <AnimatePresence>
+                {isAccordionOpen && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden border-t border-zinc-800/60 bg-zinc-950/40 px-4 py-3"
+                  >
+                    <div className="text-xs text-zinc-300 space-y-1.5 leading-relaxed">
+                      <p>
+                        <strong className="text-purple-300 font-semibold">NotebookLM</strong> adalah AI asisten dari Google yang khusus membaca dan memahami seluruh slide PPT & dokumen PDF materi kuliah kita.
+                      </p>
+                      <p className="text-[11px] text-zinc-400">
+                        Kamu bisa bertanya konsep yang sulit, minta dibuatkan rangkuman ujian/kisi-kisi, latihan soal, hingga mendengarkan podcast rangkuman audio tanpa khawatir AI menjawab ngawur.
+                      </p>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Content Body: Loading / View / Edit */}
@@ -283,8 +316,8 @@ export const NotebookLmModal: React.FC<NotebookLmModalProps> = ({
                 <span className="text-xs">Menyiapkan daftar ruang belajar...</span>
               </div>
             ) : (
-              <div className="mt-5 max-h-[58vh] overflow-y-auto pr-1">
-                {/* Tombol Tambah Kartu Baru (Hanya Muncul di Mode Edit Pengurus) */}
+              <div className="mt-4 max-h-[58vh] overflow-y-auto pr-1">
+                {/* Tombol Tambah Kartu Baru (Hanya Pengurus) */}
                 {isEditMode && isOfficer && (
                   <div className="mb-4">
                     <button
@@ -313,7 +346,9 @@ export const NotebookLmModal: React.FC<NotebookLmModalProps> = ({
                     const themeClass =
                       THEME_STYLES[course.color_theme || 'blue'] ||
                       THEME_STYLES.blue;
-                    const hasLink = Boolean(course.notebook_url && course.notebook_url.trim() !== '');
+                    const hasLink = Boolean(
+                      course.notebook_url && course.notebook_url.trim() !== ''
+                    );
 
                     return (
                       <div
@@ -321,7 +356,6 @@ export const NotebookLmModal: React.FC<NotebookLmModalProps> = ({
                         className="group relative flex flex-col justify-between p-4 rounded-2xl bg-zinc-900/60 hover:bg-zinc-900 border border-zinc-800/90 hover:border-zinc-700 transition-all duration-200 shadow-sm hover:shadow-xl overflow-hidden"
                       >
                         <div>
-                          {/* Header Kartu: Kode + Action Button */}
                           <div className="flex items-center justify-between gap-2 mb-2">
                             <span
                               className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${themeClass}`}
@@ -329,7 +363,6 @@ export const NotebookLmModal: React.FC<NotebookLmModalProps> = ({
                               {course.code}
                             </span>
 
-                            {/* Tombol Edit/Hapus Pengurus */}
                             {isEditMode && isOfficer && (
                               <div className="flex items-center gap-1">
                                 <button
@@ -356,11 +389,12 @@ export const NotebookLmModal: React.FC<NotebookLmModalProps> = ({
                             {course.name}
                           </h3>
                           <p className="text-[11px] text-zinc-400 mt-1 line-clamp-2 leading-relaxed">
-                            {course.description || 'Diskusi materi kuliah dengan AI yang bersumber dari slide perkuliahan.'}
+                            {course.description ||
+                              'Diskusi materi kuliah dengan AI yang bersumber dari slide perkuliahan.'}
                           </p>
                         </div>
 
-                        {/* Footer Action Button: BUKA */}
+                        {/* Footer Action Button */}
                         <div className="mt-4 pt-3 border-t border-zinc-800/60">
                           {hasLink ? (
                             <a
