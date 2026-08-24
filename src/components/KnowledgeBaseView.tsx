@@ -13,6 +13,8 @@ import {
   BookOpen,
   Plus,
   Sparkles,
+  ArrowRight,
+  ChevronDown,
 } from 'lucide-react';
 import { MaterialFile } from '../types';
 import {
@@ -40,6 +42,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
   onOpenNotebookLm,
 }) => {
   const [search, setSearch] = useState('');
+  const [isMobileSearchExpanded, setIsMobileSearchExpanded] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<string>('ALL');
   const [showOnlyBookmarked, setShowOnlyBookmarked] = useState<boolean>(false);
 
@@ -218,29 +221,70 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
       className="space-y-4 sm:space-y-5 pb-12"
     >
       {/* HEADER BANNER */}
-      <div className="flex items-center justify-between gap-3 px-1 pt-4 sm:pt-6 pb-2">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 px-1 pt-4 sm:pt-6 pb-1">
         <div>
           <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
             Bank PDF Matkul
           </h2>
-          <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1">
+          <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
             Perpustakaan Materi Perkuliahan
           </p>
         </div>
 
-        {/* Action Control: Tombol NotebookLM di Header Kanan Atas (Buka Page Baru) */}
-        <button
-          type="button"
-          onClick={onOpenNotebookLm}
-          className="px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 border cursor-pointer shrink-0 bg-gradient-to-r from-purple-600/20 via-indigo-600/20 to-blue-600/20 hover:from-purple-600/30 hover:via-indigo-600/30 hover:to-blue-600/30 text-purple-700 dark:text-purple-300 border-purple-500/40 shadow-lg shadow-purple-950/20 active:scale-95"
-          title="Buka AI NotebookLM Matkul"
-        >
-          <Sparkles className="w-4 h-4 text-purple-600 dark:text-purple-400 animate-pulse" />
-          <span>NotebookLM</span>
-        </button>
+        {/* DESKTOP/PC ONLY: Horizontal Landscape AI Card */}
+        <div className="hidden md:flex items-center gap-3 p-2 pl-4 rounded-2xl bg-gradient-to-r from-purple-950/40 via-indigo-950/30 to-zinc-900/60 border border-purple-500/30 backdrop-blur-md shadow-xs">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-purple-400 animate-pulse shrink-0" />
+            <div className="text-left leading-tight">
+              <span className="text-xs font-bold text-zinc-100 block">
+                Mau Belajar pakai AI?
+              </span>
+              <span className="text-[10px] text-zinc-400">
+                Diskusi materi & dengarkan podcast kuliah
+              </span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={onOpenNotebookLm}
+            className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow-md shadow-purple-900/30 flex items-center gap-1.5 transition-all cursor-pointer shrink-0 active:scale-95"
+          >
+            <span>NotebookLM</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
 
-      {/* DEDICATED UPLOAD BANNER (GLASSMORPHISM) */}
+      {/* MOBILE/HP ONLY: Top Dedicated AI Card Banner */}
+      <div className="block md:hidden p-4 rounded-3xl bg-gradient-to-br from-purple-950/50 via-indigo-950/30 to-zinc-900/70 border border-purple-500/30 backdrop-blur-md shadow-xs">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="p-2.5 rounded-2xl bg-purple-600/30 text-purple-300 border border-purple-500/40 shrink-0">
+              <Sparkles className="w-5 h-5 animate-pulse" />
+            </div>
+            <div className="min-w-0">
+              <h3 className="text-xs font-bold text-zinc-100 truncate">
+                Mau Belajar pakai AI?
+              </h3>
+              <p className="text-[10px] text-zinc-400 line-clamp-1 mt-0.5">
+                Rangkuman ujian & podcast slide kuliah
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={onOpenNotebookLm}
+            className="px-3 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-bold shrink-0 shadow-md shadow-purple-950/40 active:scale-95 flex items-center gap-1"
+          >
+            <span>Buka</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+
+      {/* DEDICATED UPLOAD BANNER (KHUSUS PENGURUS) */}
       {isOfficer && (
         <div className="p-4 sm:p-5 rounded-3xl bg-blue-50/80 dark:bg-blue-950/30 backdrop-blur-md border border-blue-100/80 dark:border-blue-900/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none">
           <div className="flex items-center gap-3">
@@ -271,7 +315,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
 
       {/* 2-Column Layout */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start pt-1">
-        {/* Left Column: Vertical Course Tabs (GLASSMORPHISM) */}
+        {/* Left Column: Vertical Course Tabs (DESKTOP ONLY) */}
         <div className="hidden md:block md:col-span-4 lg:col-span-3 space-y-2">
           <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none space-y-1.5 transition-all">
             <div className="px-3 py-2 text-[11px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider flex items-center justify-between">
@@ -335,10 +379,11 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
           </div>
         </div>
 
-        {/* Right Column: List View */}
+        {/* Right Column: Controls + List View */}
         <div className="md:col-span-8 lg:col-span-9 space-y-4">
-          {/* Search Bar + Bookmark Button Sejajar (GLASSMORPHISM) */}
-          <div className="flex items-center gap-2.5 sm:gap-3 w-full">
+          
+          {/* DESKTOP CONTROLS: Full Searchbar + Bookmark Sejajar */}
+          <div className="hidden md:flex items-center gap-3 w-full">
             <div className="relative flex-1">
               <Search className="w-4 h-4 absolute left-4 top-3 text-slate-400" />
               <input
@@ -350,7 +395,6 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
               />
             </div>
 
-            {/* Tombol Bookmark Sejajar Searchbar */}
             <button
               type="button"
               onClick={() => setShowOnlyBookmarked((prev) => !prev)}
@@ -379,31 +423,104 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
             </button>
           </div>
 
-          {/* Mobile Course Dropdown */}
+          {/* MOBILE CONTROLS: ONE-LINE ROW (Search Expandable + Dropdown Matkul + Bookmark) */}
           <div className="flex md:hidden items-center gap-2 w-full">
-            <div className="relative flex-1">
-              <select
-                value={selectedCourse}
-                onChange={(e) => {
-                  setSelectedCourse(e.target.value);
-                  setShowOnlyBookmarked(false);
-                }}
-                className="w-full px-3.5 py-2.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 text-slate-800 dark:text-zinc-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xs"
-              >
-                <option value="ALL">Semua Matkul ({materials.length})</option>
-                {dynamicCoursesList.map((course) => {
-                  const count = materials.filter((m) => m.courseName === course).length;
-                  return (
-                    <option key={course} value={course}>
-                      {course} ({count})
-                    </option>
-                  );
-                })}
-              </select>
+            {/* Search Button / Expandable Bar */}
+            <div className={`transition-all duration-300 ease-in-out ${isMobileSearchExpanded ? 'flex-1' : 'w-10 shrink-0'}`}>
+              {isMobileSearchExpanded ? (
+                <div className="relative w-full flex items-center">
+                  <Search className="w-3.5 h-3.5 absolute left-3 text-slate-400 pointer-events-none" />
+                  <input
+                    type="text"
+                    autoFocus
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Cari materi..."
+                    className="w-full pl-8 pr-8 py-2 rounded-2xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border border-blue-500/50 text-slate-800 dark:text-zinc-100 text-xs focus:outline-none shadow-xs"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsMobileSearchExpanded(false);
+                      setSearch('');
+                    }}
+                    className="absolute right-2.5 p-0.5 text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setIsMobileSearchExpanded(true)}
+                  className={`w-10 h-9.5 rounded-2xl border flex items-center justify-center transition-all cursor-pointer shadow-xs ${
+                    search.trim() !== ''
+                      ? 'bg-blue-600 border-blue-600 text-white'
+                      : 'bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border-white/60 dark:border-white/10 text-slate-600 dark:text-zinc-300'
+                  }`}
+                  title="Cari Materi"
+                >
+                  <Search className="w-4 h-4" />
+                </button>
+              )}
             </div>
+
+            {/* Mobile Dropdown Matkul */}
+            {!isMobileSearchExpanded && (
+              <div className="relative flex-1 min-w-0">
+                <select
+                  value={selectedCourse}
+                  onChange={(e) => {
+                    setSelectedCourse(e.target.value);
+                    setShowOnlyBookmarked(false);
+                  }}
+                  className="w-full pl-3 pr-7 py-2 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 text-slate-800 dark:text-zinc-100 text-xs font-semibold focus:outline-none truncate appearance-none shadow-xs"
+                >
+                  <option value="ALL">Semua Matkul ({materials.length})</option>
+                  {dynamicCoursesList.map((course) => {
+                    const count = materials.filter((m) => m.courseName === course).length;
+                    return (
+                      <option key={course} value={course}>
+                        {course} ({count})
+                      </option>
+                    );
+                  })}
+                </select>
+                <ChevronDown className="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              </div>
+            )}
+
+            {/* Mobile Bookmark Button */}
+            {!isMobileSearchExpanded && (
+              <button
+                type="button"
+                onClick={() => setShowOnlyBookmarked((prev) => !prev)}
+                className={`px-3 py-2 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 border cursor-pointer shrink-0 shadow-xs ${
+                  showOnlyBookmarked
+                    ? 'bg-amber-500 border-amber-500 text-white shadow-amber-500/25'
+                    : 'bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border-white/60 dark:border-white/10 text-slate-700 dark:text-zinc-300'
+                }`}
+                title="Tampilkan hanya materi yang disimpan"
+              >
+                <Bookmark
+                  className={`w-3.5 h-3.5 ${
+                    showOnlyBookmarked ? 'fill-white text-white' : 'text-slate-400 dark:text-zinc-400'
+                  }`}
+                />
+                <span
+                  className={`text-[10px] px-1 py-0.2 rounded-full font-extrabold ${
+                    showOnlyBookmarked
+                      ? 'bg-white/20 text-white'
+                      : 'bg-slate-100/80 dark:bg-zinc-800/80 text-slate-600 dark:text-zinc-300'
+                  }`}
+                >
+                  {bookmarkedIds.length}
+                </span>
+              </button>
+            )}
           </div>
 
-          {/* Main Content: Adaptive List Container (GLASSMORPHISM) */}
+          {/* Main Content: Adaptive List Container */}
           <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-3 sm:p-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none transition-all">
             {filteredMaterials.length === 0 ? (
               <div className="p-8 text-center text-slate-400 dark:text-zinc-500 text-xs bg-slate-50/50 dark:bg-zinc-800/30 rounded-2xl space-y-2 border border-slate-200/30 dark:border-white/5">
