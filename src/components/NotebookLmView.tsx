@@ -283,8 +283,13 @@ export const NotebookLmView: React.FC<NotebookLmViewProps> = ({
       {/* CENTER INTERACTIVE AREA */}
       <div className="flex-1 flex flex-col items-center justify-center text-center max-w-2xl mx-auto w-full px-4 z-10 space-y-4 py-8">
         
-        {/* Real Logo Gemini Notebook (Clean) */}
-        <div className="flex items-center justify-center">
+        {/* LOGO BERSEBELAHAN: LOGO MYMBUD + LOGO GEMINI NOTEBOOK (CLEAN, NO X, NO EXTRA BORDER) */}
+        <div className="flex items-center justify-center gap-3">
+          <img
+            src="/logombud.png"
+            alt="myMbud Logo"
+            className="w-10 h-10 object-contain"
+          />
           <img
             src="https://storage.googleapis.com/gweb-uniblog-publish-prod/images/gemini-notebook__full-color.max-1440x810.png"
             alt="Gemini Notebook"
@@ -356,7 +361,7 @@ export const NotebookLmView: React.FC<NotebookLmViewProps> = ({
             </div>
           </div>
 
-          {/* FULL EXPANDABLE DROPDOWN LIST (Scrolls Entire Screen Smoothly) */}
+          {/* FULL EXPANDABLE DROPDOWN LIST */}
           <AnimatePresence>
             {isDropdownOpen && (
               <motion.div
@@ -436,13 +441,13 @@ export const NotebookLmView: React.FC<NotebookLmViewProps> = ({
                       onClick={() => setEditingCard(c)}
                       className="p-1.5 rounded-xl bg-zinc-800 text-zinc-300 hover:text-white cursor-pointer"
                     >
-                      <Pencil className="w-3 h-3" />
+                      <Pencil className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => handleDeleteCard(c.id)}
                       className="p-1.5 rounded-xl bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 cursor-pointer"
                     >
-                      <Trash2 className="w-3 h-3" />
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </div>
@@ -452,7 +457,7 @@ export const NotebookLmView: React.FC<NotebookLmViewProps> = ({
         )}
       </div>
 
-      {/* FOOTER PADDING (Provides bottom spacing when scrolling) */}
+      {/* FOOTER PADDING */}
       <div className="w-full py-4 text-center shrink-0" />
 
       {/* OPENING ONBOARDING POPUP MODAL */}
@@ -466,7 +471,7 @@ export const NotebookLmView: React.FC<NotebookLmViewProps> = ({
               transition={{ duration: 0.2 }}
               className="w-full max-w-lg bg-zinc-950 rounded-3xl p-6 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.95)] relative overflow-hidden text-left"
             >
-              {/* Header Co-Branding: Logo Asli myMbud + Logo Asli Gemini Notebook */}
+              {/* Header Co-Branding Modal */}
               <div className="flex items-center gap-3 mb-5">
                 <img
                   src="/logombud.png"
@@ -527,10 +532,10 @@ export const NotebookLmView: React.FC<NotebookLmViewProps> = ({
                 className="w-12 h-12 object-contain mx-auto animate-pulse"
               />
               <div className="space-y-1">
-                <h3 className="text-base font-bold text-white">Membuka Ruang Belajar...</h3>
+                <h3 className="text-base font-bold text-white">Menuju NotebookLM...</h3>
                 <p className="text-xs text-blue-400 font-medium">{redirectingCourse.name}</p>
               </div>
-              <Loader2 className="w-5 h-5 animate-spin text-zinc-500 mx-auto mt-2" />
+              <Loader2 className="w-4 h-4 animate-spin text-zinc-500 mx-auto mt-2" />
             </motion.div>
           </div>
         )}
