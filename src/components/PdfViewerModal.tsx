@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
@@ -13,6 +13,8 @@ import {
   MessageSquarePlus,
   Trash2,
   Loader2,
+  Hand,
+  Check,
 } from 'lucide-react';
 import { supabase } from '../services/supabase';
 import { MaterialFile } from '../types';
@@ -29,14 +31,23 @@ interface PinComment {
   text: string;
 }
 
-type ToolMode = 'highlighter' | 'pen' | 'eraser' | 'comment';
+type ToolMode = 'pan' | 'highlighter' | 'pen' | 'eraser' | 'comment';
+
+const COLOR_PALETTE = [
+  { id: 'yellow', color: '#EAB308', label: 'Kuning' },
+  { id: 'green', color: '#22C55E', label: 'Hijau' },
+  { id: 'blue', color: '#38BDF8', label: 'Biru' },
+  { id: 'rose', color: '#F43F5E', label: 'Merah' },
+  { id: 'purple', color: '#A855F7', label: 'Ungu' },
+];
 
 export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClose }) => {
   const [zoomLevel, setZoomLevel] = useState(1);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAnnotating, setIsAnnotating] = useState(false);
-  const [activeTool, setActiveTool] = useState<ToolMode>('highlighter');
-  const [color, setColor] = useState('#EAB308');
+  const [activeTool, setActiveTool] = useState<ToolMode>('pen');
+  const [selectedColor, setSelectedColor] = useState('#38BDF8');
+  const [showColorPicker, setShowColorPicker] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   // Sticky comment pins state
@@ -45,7 +56,8 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
 
   // Canvas drawing state
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const viewportRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const lastDrawDataRef = useRef<string | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
 
   const userNrp = localStorage.getItem('mymbud_user_nrp') || 'anonymous';
@@ -62,7 +74,21 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
     pomoMode: 'focus',
   });
 
-  // Load Saved Annotations from Supabase
+  // Gambar ulang canvas dari data Base64
+  const redrawCanvas = useCallback((dataUrl: string | null) => {
+    if (!dataUrl || !canvasRef.current) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const img = new Image();
+    img.src = dataUrl;
+    img.onload = () => {
+      ctx.drawImage(img, 0, 0);
+    };
+  }, []);
+
+  // Muat Anotasi dari Supabase saat modal pertama kali terbuka
   useEffect(() => {
     if (!material) return;
 
@@ -78,31 +104,39 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
         if (error) throw error;
 
         if (data) {
-          if (data.draw_data && canvasRef.current) {
-            const ctx = canvasRef.current.getContext('2d');
-            const img = new Image();
-            img.src = data.draw_data;
-            img.onload = () => ctx?.drawImage(img, 0, 0);
+          if (data.draw_data) {
+            lastDrawDataRef.current = data.draw_data;
+            redrawCanvas(data.draw_data);
           }
           if (data.comments) {
             setComments(data.comments);
           }
         }
       } catch (err) {
-        console.warn('Error loading annotations from Supabase:', err);
+        console.warn('Error loading annotations:', err);
       }
     };
 
     loadAnnotations();
-  }, [material, materialId, userNrp]);
+  }, [material, materialId, userNrp, redrawCanvas]);
 
-  // Sync canvas size
+  // Sync canvas size tanpa merusak coretan
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || !viewportRef.current) return;
-    canvas.width = viewportRef.current.clientWidth || 1200;
-    canvas.height = viewportRef.current.clientHeight || 1800;
-  }, [zoomLevel, isAnnotating]);
+    const container = scrollContainerRef.current;
+    if (!canvas || !container) return;
+
+    const targetWidth = container.scrollWidth || 1200;
+    const targetHeight = container.scrollHeight || 2000;
+
+    if (canvas.width !== targetWidth || canvas.height !== targetHeight) {
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
+      if (lastDrawDataRef.current) {
+        redrawCanvas(lastDrawDataRef.current);
+      }
+    }
+  }, [zoomLevel, redrawCanvas]);
 
   // Listen to pomodoro tick from Header
   useEffect(() => {
@@ -147,7 +181,13 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
   const saveToSupabase = async (updatedComments?: PinComment[], clearDraw = false) => {
     setIsSaving(true);
     try {
-      const drawData = clearDraw ? null : canvasRef.current?.toDataURL() || null;
+      let drawData = clearDraw ? null : canvasRef.current?.toDataURL() || null;
+      if (drawData) {
+        lastDrawDataRef.current = drawData;
+      } else if (clearDraw) {
+        lastDrawDataRef.current = null;
+      }
+
       const currentComments = updatedComments !== undefined ? updatedComments : comments;
 
       await supabase.from('material_annotations').upsert(
@@ -161,18 +201,21 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
         { onConflict: 'user_nrp,material_id' }
       );
     } catch (err) {
-      console.error('Failed to save annotation to Supabase:', err);
+      console.error('Failed to save annotation:', err);
     } finally {
       setIsSaving(false);
     }
   };
 
-  // Canvas Drawing Handlers
-  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!isAnnotating) return;
+  // Touch & Pointer Handlers (Support Layar HP, iPad & Mouse Laptop)
+  const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (!isAnnotating || activeTool === 'pan') return;
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
     if (activeTool === 'comment') {
-      const rect = e.currentTarget.getBoundingClientRect();
+      const rect = canvas.getBoundingClientRect();
       const xPercent = ((e.clientX - rect.left) / rect.width) * 100;
       const yPercent = ((e.clientY - rect.top) / rect.height) * 100;
 
@@ -180,7 +223,7 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
         id: `pin_${Date.now()}`,
         xPercent,
         yPercent,
-        text: 'Tulis catatan...',
+        text: '',
       };
 
       const updated = [...comments, newComment];
@@ -190,10 +233,10 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
       return;
     }
 
-    const canvas = canvasRef.current;
-    if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+
+    canvas.setPointerCapture(e.pointerId);
 
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
@@ -204,26 +247,27 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
 
     if (activeTool === 'eraser') {
       ctx.globalCompositeOperation = 'destination-out';
-      ctx.lineWidth = 22;
+      ctx.lineWidth = 26;
+      ctx.lineCap = 'round';
     } else if (activeTool === 'highlighter') {
       ctx.globalCompositeOperation = 'source-over';
-      ctx.strokeStyle = color;
+      ctx.strokeStyle = selectedColor;
       ctx.globalAlpha = 0.38;
-      ctx.lineWidth = 16;
+      ctx.lineWidth = 20;
       ctx.lineCap = 'square';
     } else {
       ctx.globalCompositeOperation = 'source-over';
-      ctx.strokeStyle = color;
+      ctx.strokeStyle = selectedColor;
       ctx.globalAlpha = 1.0;
-      ctx.lineWidth = 2.5;
+      ctx.lineWidth = 3;
       ctx.lineCap = 'round';
     }
 
     setIsDrawing(true);
   };
 
-  const draw = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!isDrawing || !isAnnotating || activeTool === 'comment') return;
+  const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (!isDrawing || !isAnnotating || activeTool === 'pan' || activeTool === 'comment') return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -234,9 +278,12 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
     ctx.stroke();
   };
 
-  const stopDrawing = () => {
+  const handlePointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!isDrawing) return;
     setIsDrawing(false);
+    if (canvasRef.current?.hasPointerCapture(e.pointerId)) {
+      canvasRef.current.releasePointerCapture(e.pointerId);
+    }
     saveToSupabase();
   };
 
@@ -246,6 +293,7 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    lastDrawDataRef.current = null;
     saveToSupabase(undefined, true);
   };
 
@@ -268,17 +316,17 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
   return (
     <AnimatePresence>
       {material && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 overflow-hidden pointer-events-auto touch-none"
+          className="fixed inset-0 z-50 overflow-hidden pointer-events-auto touch-none select-none"
         >
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="w-full h-full bg-slate-950 dark:bg-black rounded-none flex flex-col shadow-none overflow-hidden relative"
+            className="w-full h-full bg-slate-950 dark:bg-black flex flex-col overflow-hidden relative"
           >
             {/* Header Modal */}
             <div className="absolute top-0 left-0 right-0 z-40 flex items-center justify-between px-3 sm:px-6 py-3 bg-zinc-950/90 backdrop-blur-md border-b border-zinc-800/80 shrink-0">
@@ -319,7 +367,7 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
                             className="w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 text-zinc-200 hover:bg-zinc-800/80 hover:text-white transition-colors cursor-pointer"
                           >
                             <Pencil className="w-3.5 h-3.5 text-amber-400" />
-                            <span>{isAnnotating ? 'Matikan Mode Coret' : 'Mode Coret-Coret'}</span>
+                            <span>{isAnnotating ? 'Tutup Mode Coret' : 'Mode Coret-Coret'}</span>
                           </button>
 
                           <a
@@ -385,7 +433,7 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
                 </div>
               </div>
 
-              {/* Sisi Kanan: Close */}
+              {/* Sisi Kanan: Close Modal */}
               <button
                 onClick={onClose}
                 className="p-2.5 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/30 transition-all shrink-0 cursor-pointer shadow-xs active:scale-95"
@@ -395,13 +443,13 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
               </button>
             </div>
 
-            {/* Viewport Dokumen */}
+            {/* Viewport Dokumen PDF & Scroll Container */}
             <div 
-              ref={viewportRef}
-              className="flex-1 w-full h-full bg-slate-950 dark:bg-black flex flex-col min-h-0 overflow-hidden relative"
+              ref={scrollContainerRef}
+              className="flex-1 w-full h-full bg-slate-950 dark:bg-black overflow-auto flex relative isolate z-10 pt-[60px]"
             >
               {/* Zoom Control */}
-              <div className="absolute top-[78px] right-2 sm:right-4 z-30 flex items-center gap-1.5 bg-zinc-950/90 backdrop-blur-md border border-zinc-800 shadow-[0_8px_30px_rgba(0,0,0,0.8)] px-2.5 py-1.5 rounded-2xl select-none">
+              <div className="fixed top-[78px] right-2 sm:right-4 z-40 flex items-center gap-1.5 bg-zinc-950/90 backdrop-blur-md border border-zinc-800 shadow-[0_8px_30px_rgba(0,0,0,0.8)] px-2.5 py-1.5 rounded-2xl select-none">
                 <button
                   onClick={() => setZoomLevel((prev) => Math.max(prev - 0.25, 0.75))}
                   className="p-1.5 rounded-xl text-zinc-300 hover:text-white hover:bg-zinc-800 transition-all active:scale-95 cursor-pointer"
@@ -433,35 +481,85 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
                 )}
               </div>
 
-              {/* Floating Toolbar Anotasi */}
+              {/* FLOATING TOOLBAR ANOTASI */}
               {isAnnotating && (
-                <div className="absolute top-[78px] left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 p-1.5 rounded-2xl bg-zinc-950/90 border border-zinc-800 shadow-2xl backdrop-blur-xl select-none">
+                <div className="fixed top-[78px] left-1/2 -translate-x-1/2 z-40 flex items-center gap-1.5 p-1.5 rounded-2xl bg-zinc-950/90 border border-zinc-800 shadow-2xl backdrop-blur-xl select-none">
+                  
+                  {/* Tool Scroll / Geser Halaman */}
                   <button
                     type="button"
-                    onClick={() => { setActiveTool('highlighter'); setColor('#EAB308'); }}
+                    onClick={() => setActiveTool('pan')}
                     className={`p-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                      activeTool === 'highlighter'
-                        ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                      activeTool === 'pan'
+                        ? 'bg-zinc-800 text-white border border-zinc-700'
                         : 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'
                     }`}
-                    title="Stabilo Kuning"
+                    title="Mode Scroll / Geser Layar"
                   >
-                    <Highlighter className="w-4 h-4" />
+                    <Hand className="w-4 h-4" />
                   </button>
 
+                  {/* Tool Pulpen */}
                   <button
                     type="button"
-                    onClick={() => { setActiveTool('pen'); setColor('#38BDF8'); }}
+                    onClick={() => setActiveTool('pen')}
                     className={`p-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                       activeTool === 'pen'
                         ? 'bg-sky-500/20 text-sky-400 border border-sky-500/30'
                         : 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'
                     }`}
-                    title="Pulpen Biru"
+                    title="Pulpen"
                   >
                     <Pencil className="w-4 h-4" />
                   </button>
 
+                  {/* Tool Stabilo */}
+                  <button
+                    type="button"
+                    onClick={() => setActiveTool('highlighter')}
+                    className={`p-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                      activeTool === 'highlighter'
+                        ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                        : 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'
+                    }`}
+                    title="Stabilo Highlighter"
+                  >
+                    <Highlighter className="w-4 h-4" />
+                  </button>
+
+                  {/* Palet Pilihan Warna */}
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setShowColorPicker((prev) => !prev)}
+                      style={{ backgroundColor: selectedColor }}
+                      className="w-5 h-5 rounded-full border border-white/60 shadow-xs cursor-pointer hover:scale-110 active:scale-95 transition-all mx-1"
+                      title="Ganti Warna"
+                    />
+
+                    {showColorPicker && (
+                      <div className="absolute top-9 left-1/2 -translate-x-1/2 flex items-center gap-1.5 p-1.5 bg-zinc-900 border border-zinc-700 rounded-xl shadow-xl z-50">
+                        {COLOR_PALETTE.map((item) => (
+                          <button
+                            key={item.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedColor(item.color);
+                              setShowColorPicker(false);
+                            }}
+                            style={{ backgroundColor: item.color }}
+                            className="w-5 h-5 rounded-full border border-white/40 cursor-pointer flex items-center justify-center hover:scale-110 transition-transform"
+                          >
+                            {selectedColor === item.color && (
+                              <Check className="w-3 h-3 text-white stroke-[3]" />
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Pin Catatan */}
                   <button
                     type="button"
                     onClick={() => setActiveTool('comment')}
@@ -475,6 +573,7 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
                     <MessageSquarePlus className="w-4 h-4" />
                   </button>
 
+                  {/* Penghapus */}
                   <button
                     type="button"
                     onClick={() => setActiveTool('eraser')}
@@ -488,8 +587,7 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
                     <Eraser className="w-4 h-4" />
                   </button>
 
-                  <div className="w-[1px] h-4 bg-zinc-800 mx-1" />
-
+                  {/* Hapus Semua */}
                   <button
                     type="button"
                     onClick={clearCanvas}
@@ -498,89 +596,101 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
                   >
                     <RotateCcw className="w-4 h-4" />
                   </button>
+
+                  <div className="w-[1px] h-4 bg-zinc-800 mx-0.5" />
+
+                  {/* Tombol Selesai Coret */}
+                  <button
+                    type="button"
+                    onClick={() => setIsAnnotating(false)}
+                    className="px-2.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition-all cursor-pointer shadow-xs active:scale-95"
+                  >
+                    Selesai
+                  </button>
                 </div>
               )}
 
-              {/* Area Frame PDF & Overlay */}
-              <div className="flex-1 rounded-none bg-slate-950 dark:bg-black overflow-auto shadow-none flex relative isolate z-10 pt-[60px]">
-                <div 
-                  className="w-full h-full min-w-full min-h-full transition-transform duration-200 ease-out origin-top-left relative"
-                  style={{
-                    transform: `scale(${zoomLevel})`,
-                    width: `${100 / zoomLevel}%`,
-                    height: `${100 / zoomLevel}%`,
-                  }}
-                >
-                  <iframe
-                    src={getEmbedUrl(material.fileUrl)}
-                    className="w-full h-full border-0 bg-white"
-                    allow="autoplay"
-                  />
+              {/* Area Frame PDF Dokumen */}
+              <div 
+                className="w-full h-full min-w-full min-h-full transition-transform duration-200 ease-out origin-top-left relative"
+                style={{
+                  transform: `scale(${zoomLevel})`,
+                  width: `${100 / zoomLevel}%`,
+                  height: `${100 / zoomLevel}%`,
+                }}
+              >
+                <iframe
+                  src={getEmbedUrl(material.fileUrl)}
+                  className="w-full h-full border-0 bg-white"
+                  allow="autoplay"
+                />
 
-                  {/* Canvas Drawing Overlay */}
-                  <canvas
-                    ref={canvasRef}
-                    onMouseDown={startDrawing}
-                    onMouseMove={draw}
-                    onMouseUp={stopDrawing}
-                    onMouseLeave={stopDrawing}
-                    className={`absolute inset-0 z-20 ${
-                      isAnnotating ? 'cursor-crosshair pointer-events-auto' : 'pointer-events-none'
-                    }`}
-                  />
+                {/* Canvas Drawing Overlay (Dengan Pointer Events & touch-action: none) */}
+                <canvas
+                  ref={canvasRef}
+                  onPointerDown={handlePointerDown}
+                  onPointerMove={handlePointerMove}
+                  onPointerUp={handlePointerUp}
+                  onPointerCancel={handlePointerUp}
+                  className={`absolute inset-0 z-20 touch-none ${
+                    isAnnotating && activeTool !== 'pan'
+                      ? 'cursor-crosshair pointer-events-auto'
+                      : 'pointer-events-none'
+                  }`}
+                />
 
-                  {/* Sticky Comment Pins */}
-                  {comments.map((item) => (
-                    <div
-                      key={item.id}
-                      style={{ left: `${item.xPercent}%`, top: `${item.yPercent}%` }}
-                      className="absolute z-30 -translate-x-1/2 -translate-y-1/2"
+                {/* Sticky Comment Pins */}
+                {comments.map((item) => (
+                  <div
+                    key={item.id}
+                    style={{ left: `${item.xPercent}%`, top: `${item.yPercent}%` }}
+                    className="absolute z-30 -translate-x-1/2 -translate-y-1/2"
+                  >
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveCommentId(activeCommentId === item.id ? null : item.id);
+                      }}
+                      className="w-7 h-7 rounded-full bg-purple-600 text-white flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-all cursor-pointer border border-white/50"
                     >
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setActiveCommentId(activeCommentId === item.id ? null : item.id);
-                        }}
-                        className="w-7 h-7 rounded-full bg-purple-600 text-white flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-all cursor-pointer border border-white/50"
+                      <MessageSquarePlus className="w-3.5 h-3.5" />
+                    </button>
+
+                    {/* Tooltip Popup Catatan */}
+                    {activeCommentId === item.id && (
+                      <div
+                        className="absolute left-8 top-0 w-60 p-3 rounded-2xl bg-zinc-900/95 border border-zinc-700 shadow-2xl backdrop-blur-xl z-40 text-left space-y-2"
+                        onClick={(e) => e.stopPropagation()}
                       >
-                        <MessageSquarePlus className="w-3.5 h-3.5" />
-                      </button>
-
-                      {/* Tooltip Popup Catatan */}
-                      {activeCommentId === item.id && (
-                        <div
-                          className="absolute left-8 top-0 w-60 p-3 rounded-2xl bg-zinc-900/95 border border-zinc-700 shadow-2xl backdrop-blur-xl z-40 text-left space-y-2"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <textarea
-                            value={item.text}
-                            onChange={(e) => updateCommentText(item.id, e.target.value)}
-                            onBlur={saveCommentOnBlur}
-                            rows={3}
-                            className="w-full bg-zinc-800/80 rounded-xl p-2 text-xs text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-purple-500 resize-none border-none"
-                            placeholder="Tulis catatan..."
-                          />
-                          <div className="flex items-center justify-between pt-1">
-                            <span className="text-[10px] text-zinc-400">Tersinkron di Cloud</span>
-                            <button
-                              type="button"
-                              onClick={() => deleteComment(item.id)}
-                              className="p-1 rounded-lg text-rose-400 hover:bg-rose-500/20 transition-colors cursor-pointer"
-                              title="Hapus Catatan"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
+                        <textarea
+                          value={item.text}
+                          onChange={(e) => updateCommentText(item.id, e.target.value)}
+                          onBlur={saveCommentOnBlur}
+                          rows={3}
+                          autoFocus
+                          className="w-full bg-zinc-800/80 rounded-xl p-2 text-xs text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-purple-500 resize-none border-none"
+                          placeholder="Tulis catatan..."
+                        />
+                        <div className="flex items-center justify-between pt-1">
+                          <span className="text-[10px] text-zinc-400">Tersinkron di Cloud</span>
+                          <button
+                            type="button"
+                            onClick={() => deleteComment(item.id)}
+                            className="p-1 rounded-lg text-rose-400 hover:bg-rose-500/20 transition-colors cursor-pointer"
+                            title="Hapus Catatan"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
                         </div>
-                      )}
-                    </div>
-                  ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
 
-                </div>
               </div>
-
             </div>
+
           </motion.div>
         </motion.div>
       )}
