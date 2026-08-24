@@ -724,9 +724,10 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
         )}
       </AnimatePresence>
 
-      {/* MODAL NOTEBOOKLM */}
+      {/* MODAL NOTEBOOKLM DENGAN PROP ISOFFICER */}
       <NotebookLmModal
         isOpen={showNotebookModal}
+        isOfficer={isOfficer}
         onClose={() => setShowNotebookModal(false)}
       />
     </motion.div>

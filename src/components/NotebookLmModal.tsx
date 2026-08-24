@@ -4,353 +4,534 @@ import {
   X,
   Sparkles,
   ExternalLink,
-  BookOpen,
   ArrowUpRight,
   Settings2,
   Check,
-  Link as LinkIcon,
+  Plus,
+  Trash2,
+  Pencil,
   Loader2,
+  Info,
+  HelpCircle,
 } from 'lucide-react';
 import { supabase } from '../services/supabase';
 
 interface NotebookLmModalProps {
   isOpen: boolean;
+  isOfficer: boolean;
   onClose: () => void;
 }
 
-interface CourseItem {
+export interface CourseCardData {
   id: string;
   name: string;
   code: string;
-  color: string;
-  defaultUrl: string;
   description: string;
+  notebook_url: string;
+  color_theme?: string;
 }
 
-const COURSES_DATA: CourseItem[] = [
+const DEFAULT_COURSES: CourseCardData[] = [
   {
     id: 'ekonomi_makro',
     name: 'Ekonomi Makro',
     code: 'EM-2026',
-    color: 'from-blue-600/20 to-cyan-600/10 border-blue-500/30 text-blue-400',
-    defaultUrl: 'https://notebooklm.google.com/notebook/0042bb0c-47d3-4ab8-a832-e96810af1b29',
-    description: '16 Pertemuan Materi Teori Makro, Kurva IS-LM, dan Kebijakan Fiskal-Moneter.',
+    description: 'Bahas konsep makro, inflasi, kurva IS-LM, hingga kebijakan moneter.',
+    notebook_url: 'https://notebooklm.google.com/notebook/0042bb0c-47d3-4ab8-a832-e96810af1b29',
+    color_theme: 'blue',
   },
   {
     id: 'dasar_manajemen',
     name: 'Dasar-dasar Manajemen',
     code: 'DDM-2026',
-    color: 'from-purple-600/20 to-pink-600/10 border-purple-500/30 text-purple-400',
-    defaultUrl: '',
-    description: 'Konsep POAC, Kepemimpinan Organisasi, dan Manajemen Strategis.',
+    description: 'Diskusi konsep POAC, kepemimpinan, dan manajemen strategis organisasi.',
+    notebook_url: '',
+    color_theme: 'purple',
   },
   {
     id: 'etika_pembangunan',
     name: 'Etika Pembangunan',
     code: 'EP-2026',
-    color: 'from-emerald-600/20 to-teal-600/10 border-emerald-500/30 text-emerald-400',
-    defaultUrl: '',
-    description: 'Filsafat Etika Moral, Keadilan Sosial, dan Dampak Pembangunan.',
+    description: 'Eksplorasi etika moral, filsafat keadilan sosial, dan studi dampak pembangunan.',
+    notebook_url: '',
+    color_theme: 'emerald',
   },
   {
     id: 'gender_pembangunan',
     name: 'Gender dan Pembangunan',
     code: 'GNP-2026',
-    color: 'from-rose-600/20 to-orange-600/10 border-rose-500/30 text-rose-400',
-    defaultUrl: '',
-    description: 'Pengarusutamaan Gender, SDGs 5, dan Inklusivitas Kebijakan.',
+    description: 'Analisis isu pengarusutamaan gender, SDGs 5, dan inklusivitas sosial.',
+    notebook_url: '',
+    color_theme: 'rose',
   },
   {
     id: 'infrastruktur_pembangunan',
     name: 'Infrastruktur Pembangunan',
     code: 'INF-2026',
-    color: 'from-amber-600/20 to-yellow-600/10 border-amber-500/30 text-amber-400',
-    defaultUrl: '',
-    description: 'Perencanaan Infrastruktur Wilayah, Transportasi Publik, dan Energi.',
+    description: 'Perencanaan tata wilayah, transportasi umum, dan proyek infrastruktur.',
+    notebook_url: '',
+    color_theme: 'amber',
   },
   {
     id: 'kebijakan_publik',
     name: 'Kebijakan Publik dan Pem...',
     code: 'KPP-2026',
-    color: 'from-sky-600/20 to-indigo-600/10 border-sky-500/30 text-sky-400',
-    defaultUrl: '',
-    description: 'Siklus Kebijakan, Evaluasi Dampak, dan Administrasi Publik.',
+    description: 'Analisis siklus perumusan kebijakan, advokasi, dan evaluasi dampak.',
+    notebook_url: '',
+    color_theme: 'sky',
   },
   {
     id: 'komunikasi_pembangunan',
     name: 'Komunikasi Pembangunan',
     code: 'KOM-2026',
-    color: 'from-fuchsia-600/20 to-violet-600/10 border-fuchsia-500/30 text-fuchsia-400',
-    defaultUrl: '',
-    description: 'Strategi Kampanye Publik, Partisipasi Komunitas, dan Media.',
+    description: 'Strategi kampanye sosial, partisipasi publik, dan dinamika media komunikasi.',
+    notebook_url: '',
+    color_theme: 'fuchsia',
   },
   {
     id: 'manusia_ruang_hidup',
     name: 'Manusia dan Ruang Hidup',
     code: 'MRH-2026',
-    color: 'from-lime-600/20 to-emerald-600/10 border-lime-500/30 text-lime-400',
-    defaultUrl: '',
-    description: 'Ekologi Manusia, Tata Ruang Spasial, dan Kelestarian Lingkungan.',
+    description: 'Kajian interaksi ekologi manusia, tata kelola lingkungan, dan ruang kota.',
+    notebook_url: '',
+    color_theme: 'lime',
   },
   {
     id: 'statistik_sosial',
     name: 'Statistik Sosial',
     code: 'STA-2026',
-    color: 'from-indigo-600/20 to-blue-600/10 border-indigo-500/30 text-indigo-400',
-    defaultUrl: '',
-    description: 'Uji Hipotesis, Regresi Linear, SPSS, dan Interpretasi Data Sosial.',
+    description: 'Praktik analisis data, uji hipotesis, korelasi, dan interpretasi output SPSS.',
+    notebook_url: '',
+    color_theme: 'indigo',
   },
 ];
 
-export const NotebookLmModal: React.FC<NotebookLmModalProps> = ({ isOpen, onClose }) => {
-  const [links, setLinks] = useState<Record<string, string>>({});
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
+const THEME_STYLES: Record<string, string> = {
+  blue: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
+  purple: 'bg-purple-500/10 text-purple-400 border-purple-500/30',
+  emerald: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
+  rose: 'bg-rose-500/10 text-rose-400 border-rose-500/30',
+  amber: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
+  sky: 'bg-sky-500/10 text-sky-400 border-sky-500/30',
+  fuchsia: 'bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/30',
+  lime: 'bg-lime-500/10 text-lime-400 border-lime-500/30',
+  indigo: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30',
+};
 
-  // Ambil Tautan dari Supabase saat modal dibuka
+export const NotebookLmModal: React.FC<NotebookLmModalProps> = ({
+  isOpen,
+  isOfficer,
+  onClose,
+}) => {
+  const [courses, setCourses] = useState<CourseCardData[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingCard, setEditingCard] = useState<CourseCardData | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Load Data dari Supabase
   useEffect(() => {
     if (!isOpen) return;
 
-    const fetchLinks = async () => {
+    const fetchCourses = async () => {
       setIsLoading(true);
       try {
         const { data, error } = await supabase
-          .from('course_notebook_links')
-          .select('course_id, notebook_url');
+          .from('notebooklm_courses')
+          .select('*')
+          .order('created_at', { ascending: true });
 
         if (error) throw error;
 
-        const linkMap: Record<string, string> = {};
-        // Set default dulu
-        COURSES_DATA.forEach((c) => {
-          linkMap[c.id] = c.defaultUrl;
-        });
-
-        // Timpa dengan data dari Supabase jika sudah ada
         if (data && data.length > 0) {
-          data.forEach((row) => {
-            if (row.notebook_url) {
-              linkMap[row.course_id] = row.notebook_url;
-            }
-          });
+          setCourses(data);
+        } else {
+          // Inisialisasi awal default jika database masih kosong
+          setCourses(DEFAULT_COURSES);
+          if (isOfficer) {
+            await supabase.from('notebooklm_courses').upsert(DEFAULT_COURSES);
+          }
         }
-
-        setLinks(linkMap);
       } catch (err) {
-        console.warn('Gagal memuat link dari Supabase:', err);
+        console.warn('Menggunakan fallback data:', err);
+        setCourses(DEFAULT_COURSES);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchLinks();
-  }, [isOpen]);
+    fetchCourses();
+  }, [isOpen, isOfficer]);
 
-  const handleUrlChange = (id: string, value: string) => {
-    setLinks((prev) => ({
-      ...prev,
-      [id]: value,
-    }));
-  };
+  // Simpan / Update satu Kartu
+  const handleSaveCard = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingCard) return;
 
-  // Simpan massal / Upsert ke Supabase
-  const handleSaveUrls = async () => {
     setIsSaving(true);
     try {
-      const upsertPayload = COURSES_DATA.map((c) => ({
-        course_id: c.id,
-        notebook_url: links[c.id] || '',
-        updated_at: new Date().toISOString(),
-      }));
+      const updatedList = courses.some((c) => c.id === editingCard.id)
+        ? courses.map((c) => (c.id === editingCard.id ? editingCard : c))
+        : [...courses, editingCard];
 
-      const { error } = await supabase
-        .from('course_notebook_links')
-        .upsert(upsertPayload, { onConflict: 'course_id' });
+      const { error } = await supabase.from('notebooklm_courses').upsert({
+        ...editingCard,
+        updated_at: new Date().toISOString(),
+      });
 
       if (error) throw error;
 
-      setSaveSuccess(true);
-      setTimeout(() => {
-        setSaveSuccess(false);
-        setIsEditMode(false);
-      }, 1000);
+      setCourses(updatedList);
+      setEditingCard(null);
     } catch (err) {
-      console.error('Gagal menyimpan ke Supabase:', err);
-      alert('Gagal menyimpan ke cloud. Cek koneksi atau izin database.');
+      console.error('Gagal menyimpan kartu:', err);
+      alert('Gagal menyimpan perubahan ke cloud.');
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  // Hapus Kartu
+  const handleDeleteCard = async (id: string) => {
+    if (!confirm('Hapus mata kuliah ini dari daftar AI Space?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('notebooklm_courses')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      setCourses((prev) => prev.filter((c) => c.id !== id));
+    } catch (err) {
+      console.error('Gagal menghapus:', err);
+      alert('Gagal menghapus data.');
     }
   };
 
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-black/80 backdrop-blur-md">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto bg-black/80 backdrop-blur-md">
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
-            className="w-full max-w-4xl bg-zinc-950 border border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden"
+            className="w-full max-w-4xl bg-zinc-950 border border-zinc-800 rounded-3xl p-5 sm:p-7 shadow-2xl relative overflow-hidden"
           >
             {/* Header Modal */}
-            <div className="flex items-start justify-between gap-4 border-b border-zinc-800/80 pb-5">
+            <div className="flex items-start justify-between gap-4 border-b border-zinc-800/80 pb-4">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-500/20">
-                  <Sparkles className="w-6 h-6" />
+                <div className="p-2.5 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-500/20 shrink-0">
+                  <Sparkles className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-zinc-100 flex items-center gap-2">
+                  <h2 className="text-lg sm:text-xl font-bold text-zinc-100 flex items-center gap-2">
                     NotebookLM Matkul
-                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-400 border border-purple-500/30">
-                      Cloud Sync
-                    </span>
                   </h2>
-                  <p className="text-xs sm:text-sm text-zinc-400 mt-0.5">
-                    {isEditMode
-                      ? 'Tempelkan link share NotebookLM masing-masing mata kuliah untuk disimpan ke database.'
-                      : 'Pilih mata kuliah untuk berdiskusi dengan AI yang menguasai materi 16 pertemuan.'}
+                  <p className="text-xs text-zinc-400 mt-0.5">
+                    Ruang diskusi AI per mata kuliah yang dipelajari langsung dari kumpulan berkas materi kita.
                   </p>
                 </div>
               </div>
 
               {/* Action Buttons Header */}
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsEditMode((prev) => !prev)}
-                  className={`p-2 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
-                    isEditMode
-                      ? 'bg-purple-600 text-white border-purple-500'
-                      : 'bg-zinc-900 text-zinc-300 hover:text-white border-zinc-700 hover:bg-zinc-800'
-                  }`}
-                  title="Atur URL Matkul"
-                >
-                  <Settings2 className="w-4 h-4" />
-                  <span className="hidden sm:inline">{isEditMode ? 'Batal Edit' : 'Atur URL'}</span>
-                </button>
+              <div className="flex items-center gap-2 shrink-0">
+                {isOfficer && (
+                  <button
+                    type="button"
+                    onClick={() => setIsEditMode((prev) => !prev)}
+                    className={`px-3 py-2 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                      isEditMode
+                        ? 'bg-purple-600 text-white border-purple-500 shadow-md shadow-purple-900/30'
+                        : 'bg-zinc-900 text-zinc-300 hover:text-white border-zinc-700 hover:bg-zinc-800'
+                    }`}
+                  >
+                    <Settings2 className="w-3.5 h-3.5" />
+                    <span>{isEditMode ? 'Selesai Edit' : 'Kelola Kartu'}</span>
+                  </button>
+                )}
 
                 <button
                   onClick={onClose}
                   className="p-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800 transition-colors cursor-pointer"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
+              </div>
+            </div>
+
+            {/* BANNER PENJELASAN NOTEBOOKLM (EASY TO UNDERSTAND) */}
+            <div className="mt-4 p-3.5 rounded-2xl bg-gradient-to-r from-purple-950/40 via-indigo-950/20 to-zinc-900/60 border border-purple-500/20 flex items-start gap-3">
+              <div className="p-1.5 rounded-xl bg-purple-500/20 text-purple-300 shrink-0 mt-0.5">
+                <HelpCircle className="w-4 h-4" />
+              </div>
+              <div className="text-xs text-zinc-300 space-y-1 leading-relaxed">
+                <p>
+                  <strong className="text-purple-300 font-semibold">Apa itu NotebookLM?</strong> Ini adalah AI asisten dari Google yang khusus membaca & memahami slide presentasi serta PDF matkul kita.
+                </p>
+                <p className="text-[11px] text-zinc-400">
+                  Kamu bisa langsung tanya materi, minta buatkan rangkuman ujian, latihan soal, hingga mendengarkan podcast rangkuman audio tanpa takut AI mengarang bebas.
+                </p>
               </div>
             </div>
 
             {/* Content Body: Loading / View / Edit */}
             {isLoading ? (
               <div className="py-20 flex flex-col items-center justify-center gap-3 text-zinc-400">
-                <Loader2 className="w-7 h-7 animate-spin text-purple-500" />
-                <span className="text-xs">Memuat daftar tautan cloud...</span>
-              </div>
-            ) : !isEditMode ? (
-              /* VIEW MODE: Grid 9 Kartu Matkul */
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5 mt-6 max-h-[62vh] overflow-y-auto pr-1">
-                {COURSES_DATA.map((course) => {
-                  const targetUrl = links[course.id] || course.defaultUrl || 'https://notebooklm.google.com';
-                  const isConfigured = Boolean(links[course.id] || course.defaultUrl);
-
-                  return (
-                    <a
-                      key={course.id}
-                      href={targetUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="group relative flex flex-col justify-between p-4 rounded-2xl bg-zinc-900/60 hover:bg-zinc-900 border border-zinc-800/90 hover:border-zinc-700 transition-all duration-200 hover:shadow-xl cursor-pointer overflow-hidden"
-                    >
-                      <div>
-                        <div className="flex items-center justify-between gap-2 mb-2.5">
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border bg-zinc-950 ${course.color}`}>
-                            {course.code}
-                          </span>
-                          <ArrowUpRight className="w-4 h-4 text-zinc-500 group-hover:text-purple-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
-                        </div>
-
-                        <h3 className="text-sm font-bold text-zinc-100 group-hover:text-white transition-colors line-clamp-1">
-                          {course.name}
-                        </h3>
-                        <p className="text-[11px] text-zinc-400 mt-1 line-clamp-2 leading-relaxed">
-                          {course.description}
-                        </p>
-                      </div>
-
-                      <div className="mt-3.5 pt-2.5 border-t border-zinc-800/60 flex items-center justify-between text-[10px] text-zinc-500">
-                        <span className="flex items-center gap-1">
-                          <BookOpen className="w-3 h-3" /> 16 Sesi PDF
-                        </span>
-                        <span className={`${isConfigured ? 'text-purple-400' : 'text-zinc-500'} font-medium flex items-center gap-0.5 group-hover:underline`}>
-                          {isConfigured ? 'Buka AI Space' : 'Atur Link'} <ExternalLink className="w-2.5 h-2.5 ml-0.5" />
-                        </span>
-                      </div>
-                    </a>
-                  );
-                })}
+                <Loader2 className="w-6 h-6 animate-spin text-purple-500" />
+                <span className="text-xs">Menyiapkan daftar ruang belajar...</span>
               </div>
             ) : (
-              /* EDIT MODE: Form Isian Input Link 9 Matkul */
-              <div className="mt-6 max-h-[60vh] overflow-y-auto pr-1 space-y-3.5">
-                <div className="flex items-center gap-2 text-xs text-purple-300 bg-purple-500/10 border border-purple-500/20 p-3 rounded-2xl">
-                  <LinkIcon className="w-4 h-4 shrink-0" />
-                  <span>Paste link share NotebookLM masing-masing matkul. Perubahan akan tersimpan ke database Supabase dan langsung aktif untuk semua pengguna:</span>
-                </div>
+              <div className="mt-5 max-h-[58vh] overflow-y-auto pr-1">
+                {/* Tombol Tambah Kartu Baru (Hanya Muncul di Mode Edit Pengurus) */}
+                {isEditMode && isOfficer && (
+                  <div className="mb-4">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setEditingCard({
+                          id: `course_${Date.now()}`,
+                          name: '',
+                          code: 'BARU-2026',
+                          description: '',
+                          notebook_url: '',
+                          color_theme: 'blue',
+                        })
+                      }
+                      className="w-full py-3 rounded-2xl border-2 border-dashed border-purple-500/40 bg-purple-500/5 hover:bg-purple-500/10 text-purple-300 text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>Tambah Mata Kuliah Baru</span>
+                    </button>
+                  </div>
+                )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {COURSES_DATA.map((course) => (
-                    <div key={course.id} className="p-3 rounded-2xl bg-zinc-900/80 border border-zinc-800 space-y-1.5">
-                      <div className="flex items-center justify-between">
-                        <label className="text-xs font-bold text-zinc-200 truncate">
-                          {course.name}
-                        </label>
-                        <span className="text-[10px] text-zinc-500 font-mono">
-                          {course.code}
-                        </span>
+                {/* Grid Kartu Matkul */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
+                  {courses.map((course) => {
+                    const themeClass =
+                      THEME_STYLES[course.color_theme || 'blue'] ||
+                      THEME_STYLES.blue;
+                    const hasLink = Boolean(course.notebook_url && course.notebook_url.trim() !== '');
+
+                    return (
+                      <div
+                        key={course.id}
+                        className="group relative flex flex-col justify-between p-4 rounded-2xl bg-zinc-900/60 hover:bg-zinc-900 border border-zinc-800/90 hover:border-zinc-700 transition-all duration-200 shadow-sm hover:shadow-xl overflow-hidden"
+                      >
+                        <div>
+                          {/* Header Kartu: Kode + Action Button */}
+                          <div className="flex items-center justify-between gap-2 mb-2">
+                            <span
+                              className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${themeClass}`}
+                            >
+                              {course.code}
+                            </span>
+
+                            {/* Tombol Edit/Hapus Pengurus */}
+                            {isEditMode && isOfficer && (
+                              <div className="flex items-center gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() => setEditingCard(course)}
+                                  className="p-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white transition-colors cursor-pointer"
+                                  title="Edit Kartu"
+                                >
+                                  <Pencil className="w-3 h-3" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteCard(course.id)}
+                                  className="p-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition-colors cursor-pointer"
+                                  title="Hapus Kartu"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+
+                          <h3 className="text-sm font-bold text-zinc-100 group-hover:text-white transition-colors line-clamp-1">
+                            {course.name}
+                          </h3>
+                          <p className="text-[11px] text-zinc-400 mt-1 line-clamp-2 leading-relaxed">
+                            {course.description || 'Diskusi materi kuliah dengan AI yang bersumber dari slide perkuliahan.'}
+                          </p>
+                        </div>
+
+                        {/* Footer Action Button: BUKA */}
+                        <div className="mt-4 pt-3 border-t border-zinc-800/60">
+                          {hasLink ? (
+                            <a
+                              href={course.notebook_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="w-full py-2 px-3 rounded-xl bg-zinc-800 hover:bg-purple-600/90 text-zinc-200 hover:text-white font-semibold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer group-hover:border-purple-500/30"
+                            >
+                              <span>Buka Ruang Belajar</span>
+                              <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                            </a>
+                          ) : (
+                            <div className="w-full py-2 px-3 rounded-xl bg-zinc-950/60 border border-zinc-800 text-zinc-500 text-center text-[11px] font-medium">
+                              {isOfficer ? 'Link belum diatur (Klik Kelola)' : 'Segera Hadir'}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <input
-                        type="url"
-                        value={links[course.id] || ''}
-                        onChange={(e) => handleUrlChange(course.id, e.target.value)}
-                        placeholder="https://notebooklm.google.com/notebook/..."
-                        className="w-full bg-zinc-950 border border-zinc-700/80 rounded-xl px-3 py-1.5 text-xs text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-purple-500 font-mono"
-                      />
-                    </div>
-                  ))}
-                </div>
-
-                {/* Tombol Simpan ke Supabase */}
-                <div className="pt-3 flex justify-end gap-2 sticky bottom-0 bg-zinc-950/90 backdrop-blur-md pb-1">
-                  <button
-                    type="button"
-                    onClick={() => setIsEditMode(false)}
-                    className="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 text-xs font-semibold cursor-pointer border border-zinc-700"
-                  >
-                    Batal
-                  </button>
-                  <button
-                    type="button"
-                    disabled={isSaving}
-                    onClick={handleSaveUrls}
-                    className="px-5 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-lg shadow-purple-900/30 cursor-pointer active:scale-95 transition-all disabled:opacity-50"
-                  >
-                    {isSaving ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Menyimpan ke Cloud...
-                      </>
-                    ) : saveSuccess ? (
-                      <>
-                        <Check className="w-4 h-4 text-emerald-300" />
-                        Tersimpan di Cloud!
-                      </>
-                    ) : (
-                      'Simpan ke Supabase'
-                    )}
-                  </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
+
+            {/* MODAL EDIT / FORM KARTU (PENGURUS) */}
+            <AnimatePresence>
+              {editingCard && (
+                <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+                  <motion.div
+                    initial={{ scale: 0.95, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.95, opacity: 0 }}
+                    className="w-full max-w-md bg-zinc-900 border border-zinc-700 rounded-3xl p-5 shadow-2xl text-left"
+                  >
+                    <div className="flex items-center justify-between border-b border-zinc-800 pb-3 mb-4">
+                      <h3 className="text-sm font-bold text-zinc-100 flex items-center gap-2">
+                        <Pencil className="w-4 h-4 text-purple-400" />
+                        Atur Mata Kuliah & Link
+                      </h3>
+                      <button
+                        type="button"
+                        onClick={() => setEditingCard(null)}
+                        className="p-1 text-zinc-400 hover:text-white cursor-pointer"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <form onSubmit={handleSaveCard} className="space-y-3">
+                      <div>
+                        <label className="block text-[11px] font-semibold text-zinc-300 mb-1">
+                          Nama Mata Kuliah
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={editingCard.name}
+                          onChange={(e) =>
+                            setEditingCard({ ...editingCard, name: e.target.value })
+                          }
+                          placeholder="Misal: Ekonomi Makro"
+                          className="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-purple-500"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="block text-[11px] font-semibold text-zinc-300 mb-1">
+                            Kode Singkat
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={editingCard.code}
+                            onChange={(e) =>
+                              setEditingCard({ ...editingCard, code: e.target.value })
+                            }
+                            placeholder="EM-2026"
+                            className="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-purple-500"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-semibold text-zinc-300 mb-1">
+                            Tema Warna
+                          </label>
+                          <select
+                            value={editingCard.color_theme || 'blue'}
+                            onChange={(e) =>
+                              setEditingCard({
+                                ...editingCard,
+                                color_theme: e.target.value,
+                              })
+                            }
+                            className="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-purple-500"
+                          >
+                            <option value="blue">Blue</option>
+                            <option value="purple">Purple</option>
+                            <option value="emerald">Emerald</option>
+                            <option value="rose">Rose</option>
+                            <option value="amber">Amber</option>
+                            <option value="sky">Sky</option>
+                            <option value="fuchsia">Fuchsia</option>
+                            <option value="lime">Lime</option>
+                            <option value="indigo">Indigo</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-semibold text-zinc-300 mb-1">
+                          Deskripsi Singkat Topik
+                        </label>
+                        <textarea
+                          rows={2}
+                          value={editingCard.description}
+                          onChange={(e) =>
+                            setEditingCard({
+                              ...editingCard,
+                              description: e.target.value,
+                            })
+                          }
+                          placeholder="Fokus materi yang dipelajari..."
+                          className="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-purple-500 resize-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-semibold text-zinc-300 mb-1">
+                          Link Share NotebookLM
+                        </label>
+                        <input
+                          type="url"
+                          value={editingCard.notebook_url}
+                          onChange={(e) =>
+                            setEditingCard({
+                              ...editingCard,
+                              notebook_url: e.target.value,
+                            })
+                          }
+                          placeholder="https://notebooklm.google.com/notebook/..."
+                          className="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-purple-500 font-mono"
+                        />
+                      </div>
+
+                      <div className="pt-2 flex justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setEditingCard(null)}
+                          className="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-semibold cursor-pointer"
+                        >
+                          Batal
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={isSaving}
+                          className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-purple-900/30 cursor-pointer disabled:opacity-50"
+                        >
+                          {isSaving ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <Check className="w-3.5 h-3.5" />
+                          )}
+                          <span>Simpan Perubahan</span>
+                        </button>
+                      </div>
+                    </form>
+                  </motion.div>
+                </div>
+              )}
+            </AnimatePresence>
           </motion.div>
         </div>
       )}
