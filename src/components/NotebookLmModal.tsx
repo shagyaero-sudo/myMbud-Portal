@@ -239,10 +239,10 @@ export const NotebookLmModal: React.FC<NotebookLmModalProps> = ({
             <div className="flex items-start justify-between gap-4 border-b border-zinc-800/80 pb-4">
               <div className="space-y-0.5">
                 <h2 className="text-lg sm:text-xl font-bold text-zinc-100">
-                  NotebookLM Matkul
+                  Gemini NotebookLM X myMbud 
                 </h2>
                 <p className="text-xs text-zinc-400">
-                  Ruang diskusi AI per mata kuliah yang dipelajari langsung dari materi perkuliahan.
+                  Fitur diskusi bersama AI per-mata kuliah.
                 </p>
               </div>
 
@@ -279,7 +279,7 @@ export const NotebookLmModal: React.FC<NotebookLmModalProps> = ({
                 onClick={() => setIsAccordionOpen((prev) => !prev)}
                 className="w-full px-4 py-2.5 flex items-center justify-between text-left text-xs font-semibold text-zinc-300 hover:text-zinc-100 transition-colors cursor-pointer"
               >
-                <span>Apa itu NotebookLM & bagaimana cara kerjanya?</span>
+                <span>Apa itu dan bagaimana cara kerjanya?</span>
                 <ChevronDown
                   className={`w-4 h-4 text-zinc-400 transition-transform duration-300 ${
                     isAccordionOpen ? 'rotate-180 text-purple-400' : ''
@@ -298,10 +298,10 @@ export const NotebookLmModal: React.FC<NotebookLmModalProps> = ({
                   >
                     <div className="text-xs text-zinc-300 space-y-1.5 leading-relaxed">
                       <p>
-                        <strong className="text-purple-300 font-semibold">NotebookLM</strong> adalah AI asisten dari Google yang khusus membaca dan memahami seluruh slide PPT & dokumen PDF materi kuliah kita.
+                        <strong className="text-purple-300 font-semibold">Gemini Notebook</strong> adalah AI asisten Google yang khusus membaca dan memahami seluruh slide PPT & dokumen PDF materi kuliah kita.
                       </p>
                       <p className="text-[11px] text-zinc-400">
-                        Kamu bisa bertanya konsep yang sulit, minta dibuatkan rangkuman ujian/kisi-kisi, latihan soal, hingga mendengarkan podcast rangkuman audio tanpa khawatir AI menjawab ngawur.
+                        Kamu bisa bertanya konsep yang sulit, minta dibuatkan rangkuman ujian/kisi-kisi, kuis dan latihan soal, hingga mendengarkan podcast rangkuman audio dari PDF materi perkuliahan.
                       </p>
                     </div>
                   </motion.div>
@@ -403,7 +403,7 @@ export const NotebookLmModal: React.FC<NotebookLmModalProps> = ({
                               rel="noopener noreferrer"
                               className="w-full py-2 px-3 rounded-xl bg-zinc-800 hover:bg-purple-600/90 text-zinc-200 hover:text-white font-semibold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer group-hover:border-purple-500/30"
                             >
-                              <span>Buka Ruang Belajar</span>
+                              <span>Buka Notebook</span>
                               <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                             </a>
                           ) : (
