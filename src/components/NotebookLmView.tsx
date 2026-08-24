@@ -329,7 +329,7 @@ export const NotebookLmView: React.FC<NotebookLmViewProps> = ({
           </h1>
         </div>
 
-        {/* DESKTOP INTEGRATED PROMPT BAR (Hanya Tampil di PC / Layar Besar) */}
+        {/* DESKTOP INTEGRATED PROMPT BAR */}
         <div className="hidden md:block w-full max-w-xl relative pt-2" ref={desktopDropdownRef}>
           
           {/* Prompt Bar Box Desktop */}
@@ -477,10 +477,10 @@ export const NotebookLmView: React.FC<NotebookLmViewProps> = ({
         )}
       </div>
 
-      {/* MOBILE BOTTOM PROMPT BAR (Diletakkan di bagian bawah khusus layar HP) */}
+      {/* MOBILE BOTTOM PROMPT BAR */}
       <div className="block md:hidden w-full max-w-xl mx-auto relative z-30 px-4 pb-4" ref={mobileDropdownRef}>
         
-        {/* Dropdown Popover Mobile (Membuka ke Atas) */}
+        {/* Dropdown Popover Mobile */}
         <AnimatePresence>
           {isDropdownOpen && (
             <motion.div
@@ -574,7 +574,7 @@ export const NotebookLmView: React.FC<NotebookLmViewProps> = ({
         </div>
       </div>
 
-      {/* POPUP MODAL ONBOARDING & INFO PANDUAN */}
+      {/* POPUP MODAL ONBOARDING & INFO PANDUAN (CLEAN, TANPA X DI POJOK) */}
       <AnimatePresence>
         {showInfoModal && (
           <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
@@ -585,16 +585,6 @@ export const NotebookLmView: React.FC<NotebookLmViewProps> = ({
               transition={{ duration: 0.2 }}
               className="w-full max-w-lg bg-zinc-950 rounded-3xl p-6 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.95)] relative overflow-hidden text-left"
             >
-              {/* Close Button X */}
-              <button
-                type="button"
-                onClick={handleCloseInfoModal}
-                className="absolute top-5 right-5 p-1.5 text-zinc-400 hover:text-white rounded-full hover:bg-zinc-900 transition-colors cursor-pointer"
-                title="Tutup"
-              >
-                <X className="w-4 h-4" />
-              </button>
-
               {/* Header Co-Branding */}
               <div className="flex items-center gap-3 mb-5">
                 <img
@@ -618,10 +608,10 @@ export const NotebookLmView: React.FC<NotebookLmViewProps> = ({
               {/* Narasi Opsi 1 */}
               <div className="mt-3.5 space-y-2.5 text-xs text-zinc-300 leading-relaxed">
                 <p>
-                  Sebuah kolaborasi strategis yang dirancang untuk mendefinisikan ulang cara kamu memahami materi perkuliahan. Melalui integrasi kecerdasan buatan berbasis dokumen resmi, seluruh slide dan literatur kelas kini bertransformasi menjadi ruang diskusi interaktif, akurat, dan sepenuhnya bebas dari halusinasi.
+                  Sebuah kolaborasi strategis yang dirancang untuk mendefinisikan ulang cara kamu memahami materi perkuliahan. Melalui integrasi kecerdasan buatan berbasis data faktual, seluruh slide dan literatur kelas kini bertransformasi menjadi ruang diskusi interaktif dan akurat.
                 </p>
                 <p className="text-zinc-400">
-                  Setiap sesi eksplorasi, tanya jawab materi, hingga ringkasan audio berjalan dalam enkripsi privat tanpa akses dari pihak mana pun. Akses materi akademikmu dengan standar belajar yang lebih presisi, efisien, dan mendalam.
+                  Setiap sesi eksplorasi, tanya jawab materi, hingga ringkasan bab berjalan dalam enkripsi privat tanpa interupsi dari pihak mana pun. Akses materi perkuliahan dengan standar belajar yang lebih presisi, efisien, dan mendalam.
                 </p>
               </div>
 
@@ -656,7 +646,7 @@ export const NotebookLmView: React.FC<NotebookLmViewProps> = ({
                 className="w-12 h-12 object-contain mx-auto animate-pulse"
               />
               <div className="space-y-1">
-                <h3 className="text-base font-bold text-white">Membuka Ruang Belajar...</h3>
+                <h3 className="text-base font-bold text-white">Menuju NotebookLM...</h3>
                 <p className="text-xs text-blue-400 font-medium">{redirectingCourse.name}</p>
               </div>
               <Loader2 className="w-4 h-4 animate-spin text-zinc-500 mx-auto mt-2" />
