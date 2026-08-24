@@ -12,12 +12,14 @@ import {
   Bookmark,
   BookOpen,
   Plus,
+  Sparkles,
 } from 'lucide-react';
 import { MaterialFile } from '../types';
 import {
   subscribeUserMaterialBookmarks,
   toggleMaterialBookmark,
 } from '../services/api';
+import { NotebookLmModal } from './NotebookLmModal';
 
 interface KnowledgeBaseViewProps {
   materials: MaterialFile[];
@@ -39,6 +41,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
   const [search, setSearch] = useState('');
   const [selectedCourse, setSelectedCourse] = useState<string>('ALL');
   const [showOnlyBookmarked, setShowOnlyBookmarked] = useState<boolean>(false);
+  const [showNotebookModal, setShowNotebookModal] = useState<boolean>(false);
 
   // Sync Bookmarks per User NRP dari Firestore
   const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
@@ -225,32 +228,15 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
           </p>
         </div>
 
-        {/* Action Control: Bookmark Button (GLASSMORPHISM) */}
+        {/* Action Control: Tombol NotebookLM di Header Kanan Atas */}
         <button
           type="button"
-          onClick={() => setShowOnlyBookmarked((prev) => !prev)}
-          className={`px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 border cursor-pointer shrink-0 ${
-            showOnlyBookmarked
-              ? 'bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-500/25'
-              : 'bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border-white/60 dark:border-white/10 text-slate-700 dark:text-zinc-300 hover:border-blue-500/50 hover:text-blue-600 dark:hover:text-blue-400 shadow-xs'
-          }`}
-          title="Tampilkan hanya materi yang disimpan"
+          onClick={() => setShowNotebookModal(true)}
+          className="px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 border cursor-pointer shrink-0 bg-gradient-to-r from-purple-600/20 via-indigo-600/20 to-blue-600/20 hover:from-purple-600/30 hover:via-indigo-600/30 hover:to-blue-600/30 text-purple-700 dark:text-purple-300 border-purple-500/40 shadow-lg shadow-purple-950/20 active:scale-95"
+          title="Buka AI NotebookLM Matkul"
         >
-          <Bookmark
-            className={`w-3.5 h-3.5 ${
-              showOnlyBookmarked ? 'fill-white text-white' : 'text-slate-400 dark:text-zinc-400'
-            }`}
-          />
-          <span className="hidden sm:inline">Bookmark</span>
-          <span
-            className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
-              showOnlyBookmarked
-                ? 'bg-white/20 text-white'
-                : 'bg-slate-100/80 dark:bg-zinc-800/80 text-slate-600 dark:text-zinc-300'
-            }`}
-          >
-            {bookmarkedIds.length}
-          </span>
+          <Sparkles className="w-4 h-4 text-purple-600 dark:text-purple-400 animate-pulse" />
+          <span>NotebookLM</span>
         </button>
       </div>
 
@@ -351,16 +337,46 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
 
         {/* Right Column: List View */}
         <div className="md:col-span-8 lg:col-span-9 space-y-4">
-          {/* Search Bar Full Width (GLASSMORPHISM) */}
-          <div className="relative w-full">
-            <Search className="w-4 h-4 absolute left-4 top-3 text-slate-400" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Cari buku, modul, slide PPT, atau topik..."
-              className="w-full pl-11 pr-4 py-2.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 text-slate-800 dark:text-zinc-100 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none"
-            />
+          {/* Search Bar + Bookmark Button Sejajar (GLASSMORPHISM) */}
+          <div className="flex items-center gap-2.5 sm:gap-3 w-full">
+            <div className="relative flex-1">
+              <Search className="w-4 h-4 absolute left-4 top-3 text-slate-400" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Cari buku, modul, slide PPT, atau topik..."
+                className="w-full pl-11 pr-4 py-2.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 text-slate-800 dark:text-zinc-100 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none"
+              />
+            </div>
+
+            {/* Tombol Bookmark Sejajar Searchbar */}
+            <button
+              type="button"
+              onClick={() => setShowOnlyBookmarked((prev) => !prev)}
+              className={`px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 border cursor-pointer shrink-0 ${
+                showOnlyBookmarked
+                  ? 'bg-amber-500 border-amber-500 text-white shadow-md shadow-amber-500/25'
+                  : 'bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border-white/60 dark:border-white/10 text-slate-700 dark:text-zinc-300 hover:border-amber-500/50 hover:text-amber-600 dark:hover:text-amber-400 shadow-xs'
+              }`}
+              title="Tampilkan hanya materi yang disimpan"
+            >
+              <Bookmark
+                className={`w-3.5 h-3.5 ${
+                  showOnlyBookmarked ? 'fill-white text-white' : 'text-slate-400 dark:text-zinc-400'
+                }`}
+              />
+              <span className="hidden sm:inline">Bookmark</span>
+              <span
+                className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
+                  showOnlyBookmarked
+                    ? 'bg-white/20 text-white'
+                    : 'bg-slate-100/80 dark:bg-zinc-800/80 text-slate-600 dark:text-zinc-300'
+                }`}
+              >
+                {bookmarkedIds.length}
+              </span>
+            </button>
           </div>
 
           {/* Mobile Course Dropdown */}
@@ -707,6 +723,12 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* MODAL NOTEBOOKLM */}
+      <NotebookLmModal
+        isOpen={showNotebookModal}
+        onClose={() => setShowNotebookModal(false)}
+      />
     </motion.div>
   );
 };
