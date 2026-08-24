@@ -8,6 +8,7 @@ import {
   MoreVertical,
   ExternalLink,
   Sparkles,
+  Check,
 } from 'lucide-react';
 import { MaterialFile } from '../types';
 
@@ -19,6 +20,7 @@ interface PdfViewerModalProps {
 export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClose }) => {
   const [zoomLevel, setZoomLevel] = useState(1);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [copiedPrompt, setCopiedPrompt] = useState(false);
 
   // Real-time Pomodoro Sync State
   const [pomoState, setPomoState] = useState<{
@@ -70,18 +72,23 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
     return url;
   };
 
-  // Shortcut URL ke Gemini dengan konteks mata kuliah & tautan Google Drive
-  const getGeminiUrl = () => {
-    if (!material) return 'https://gemini.google.com/app';
+  // Salin prompt ke clipboard & buka Gemini
+  const handleAskGemini = async () => {
+    if (!material) return;
 
     const directDriveLink = getDirectDriveUrl(material.fileUrl);
-    const promptText = `Halo Gemini, aku sedang mempelajari materi kuliah "${material.courseName}" dengan topik "${material.title}" (${material.session}).
+    const promptText = `Halo Gemini, tolong bantu jelaskan konsep utama dan rangkuman penting dari materi kuliah "${material.courseName}" topik "${material.title}" (${material.session}).\n\nLink referensi dokumen: ${directDriveLink}`;
 
-Berikut link file materi kuliahku: ${directDriveLink}
+    try {
+      await navigator.clipboard.writeText(promptText);
+      setCopiedPrompt(true);
+      setTimeout(() => setCopiedPrompt(false), 4000);
+    } catch (err) {
+      console.warn('Gagal menyalin prompt otomatis:', err);
+    }
 
-Tolong bantu jelaskan poin-poin utama, konsep kunci, dan rangkuman penting dari materi tersebut.`;
-
-    return `https://gemini.google.com/app?prompt=${encodeURIComponent(promptText)}`;
+    setIsMenuOpen(false);
+    window.open('https://gemini.google.com/app', '_blank', 'noopener,noreferrer');
   };
 
   const handleZoomIn = () => setZoomLevel((prev) => Math.min(prev + 0.25, 2.5));
@@ -128,19 +135,17 @@ Tolong bantu jelaskan poin-poin utama, konsep kunci, dan rangkuman penting dari 
                         className="absolute left-0 top-11 z-50 w-60 rounded-2xl bg-zinc-900/95 border border-zinc-800 shadow-2xl p-1.5 backdrop-blur-xl text-left select-none"
                       >
                         {/* Opsi 1: Tanya Gemini */}
-                        <a
-                          href={getGeminiUrl()}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={() => setIsMenuOpen(false)}
-                          className="w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 text-zinc-200 hover:bg-zinc-800/80 hover:text-white transition-colors cursor-pointer group"
+                        <button
+                          type="button"
+                          onClick={handleAskGemini}
+                          className="w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 text-zinc-200 hover:bg-zinc-800/80 hover:text-white transition-colors cursor-pointer group text-left"
                         >
-                          <Sparkles className="w-4 h-4 text-purple-400 group-hover:scale-110 transition-transform" />
+                          <Sparkles className="w-4 h-4 text-purple-400 group-hover:scale-110 transition-transform shrink-0" />
                           <div className="flex flex-col">
                             <span>Tanya Gemini</span>
-                            <span className="text-[10px] text-zinc-400 font-normal">Bahas materi & link file via AI</span>
+                            <span className="text-[10px] text-zinc-400 font-normal">Salin prompt & buka AI</span>
                           </div>
-                        </a>
+                        </button>
 
                         {/* Opsi 2: Buka di Google Drive */}
                         <a
@@ -150,7 +155,7 @@ Tolong bantu jelaskan poin-poin utama, konsep kunci, dan rangkuman penting dari 
                           onClick={() => setIsMenuOpen(false)}
                           className="w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 text-zinc-200 hover:bg-zinc-800/80 hover:text-white transition-colors cursor-pointer group"
                         >
-                          <ExternalLink className="w-4 h-4 text-blue-400 group-hover:scale-110 transition-transform" />
+                          <ExternalLink className="w-4 h-4 text-blue-400 group-hover:scale-110 transition-transform shrink-0" />
                           <div className="flex flex-col">
                             <span>Buka di Google Drive</span>
                             <span className="text-[10px] text-zinc-400 font-normal">File asli & opsi unduh</span>
@@ -213,6 +218,21 @@ Tolong bantu jelaskan poin-poin utama, konsep kunci, dan rangkuman penting dari 
             </button>
           </div>
 
+          {/* Toast Notifikasi Prompt Disalin */}
+          <AnimatePresence>
+            {copiedPrompt && (
+              <motion.div
+                initial={{ opacity: 0, y: -20, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                className="fixed top-16 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-4 py-2 rounded-2xl bg-purple-600/90 text-white border border-purple-400/40 shadow-2xl backdrop-blur-md text-xs font-medium"
+              >
+                <Check className="w-4 h-4 text-emerald-300 stroke-[3]" />
+                <span>Prompt disalin! Tekan <b>Cmd+V</b> / <b>Ctrl+V</b> di Gemini</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* Container Viewport Dokumen */}
           <div className="flex-1 w-full h-full bg-slate-950 dark:bg-black flex flex-col min-h-0 overflow-hidden relative">
             
@@ -249,7 +269,7 @@ Tolong bantu jelaskan poin-poin utama, konsep kunci, dan rangkuman penting dari 
               )}
             </div>
 
-            {/* Viewport PDF Dokumen */}
+            {/* Viewport Dokumen */}
             <div className="flex-1 rounded-none bg-slate-950 dark:bg-black overflow-auto shadow-none flex relative isolate z-10">
               <div 
                 className="w-full h-full min-w-full min-h-full transition-transform duration-200 ease-out origin-top-left"
