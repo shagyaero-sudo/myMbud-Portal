@@ -296,7 +296,7 @@ export const NotebookLmView: React.FC<NotebookLmViewProps> = ({
                   <strong className="text-purple-600 dark:text-purple-300 font-semibold">Gemini NotebookLM</strong> adalah AI asisten Google yang dapat membantumu memahami slide PPT materi perkuliahan.
                 </p>
                 <p className="text-[11px] text-slate-500 dark:text-zinc-400">
-                  Kamu bisa bertanya konsep yang sulit, rangkuman ujian/kisi-kisi, kuis dan latihan soal, hingga mendengarkan audio podcast rangkuman dari PDF materi.
+                  Kamu bisa bertanya konsep yang sulit bahkan tersedia rangkuman ujian/kisi-kisi, kuis dan latihan soal, hingga mendengarkan audio podcast rangkuman dari PDF materi. 
                 </p>
               </div>
             </motion.div>

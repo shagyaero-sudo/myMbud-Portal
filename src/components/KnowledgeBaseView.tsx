@@ -240,7 +240,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                 Mau Belajar pakai AI?
               </span>
               <span className="text-[10px] text-zinc-400">
-                Diskusi materi & dengarkan podcast kuliah
+                Pakai Gemini NotebookLM
               </span>
             </div>
           </div>
@@ -250,7 +250,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
             onClick={onOpenNotebookLm}
             className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow-md shadow-purple-900/30 flex items-center gap-1.5 transition-all cursor-pointer shrink-0 active:scale-95"
           >
-            <span>NotebookLM</span>
+            <span>Buka</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -268,7 +268,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                 Mau Belajar pakai AI?
               </h3>
               <p className="text-[10px] text-zinc-400 line-clamp-1 mt-0.5">
-                Rangkuman ujian & podcast slide kuliah
+                Pakai Gemini NotebookLM
               </p>
             </div>
           </div>

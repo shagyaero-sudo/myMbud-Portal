@@ -10,6 +10,7 @@ import {
   ExternalLink,
   X,
   ChevronRight,
+  ChevronDown,
   Paperclip,
   UploadCloud,
   File as FileIcon,
@@ -114,6 +115,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
   completionSoundUrl = '/task-complete.mp3',
 }) => {
   const [search, setSearch] = useState('');
+  const [isMobileSearchExpanded, setIsMobileSearchExpanded] = useState(false);
   const [filterCourse, setFilterCourse] = useState('ALL');
   const [filterType, setFilterType] = useState<'ALL' | 'Individu' | 'Kelompok'>('ALL');
   const [activeTab, setActiveTab] = useState<'active' | 'history'>('active');
@@ -565,10 +567,11 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
         </div>
       )}
 
-      {/* FILTER CONTROLS */}
-      <div className="space-y-2.5 pt-1">
-        <div className="relative w-full">
-          <Search className="w-4 h-4 absolute left-4 top-3 text-slate-400" />
+      {/* FILTER CONTROLS: SINGLE-LINE ROW */}
+      <div className="flex items-center gap-2 sm:gap-3 w-full pt-1">
+        {/* DESKTOP SEARCH BAR */}
+        <div className="relative flex-1 hidden md:block">
+          <Search className="w-4 h-4 absolute left-4 top-3 text-slate-400 pointer-events-none" />
           <input
             type="text"
             value={search}
@@ -578,24 +581,71 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
           />
         </div>
 
-        <div className="flex flex-row items-center gap-2 sm:gap-3 w-full">
-          <select
-            value={filterCourse}
-            onChange={(e) => setFilterCourse(e.target.value)}
-            className="flex-1 min-w-0 w-full px-3.5 py-2.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 text-slate-800 dark:text-zinc-100 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none truncate font-semibold"
-          >
-            <option value="ALL">Semua Mata Kuliah</option>
-            {uniqueCourses.map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
+        {/* MOBILE EXPANDABLE SEARCH */}
+        <div className={`block md:hidden transition-all duration-300 ease-in-out ${isMobileSearchExpanded ? 'flex-1' : 'w-10 shrink-0'}`}>
+          {isMobileSearchExpanded ? (
+            <div className="relative w-full flex items-center">
+              <Search className="w-3.5 h-3.5 absolute left-3 text-slate-400 pointer-events-none" />
+              <input
+                type="text"
+                autoFocus
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Cari tugas..."
+                className="w-full pl-8 pr-8 py-2 rounded-2xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border border-blue-500/50 text-slate-800 dark:text-zinc-100 text-xs focus:outline-none shadow-xs"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMobileSearchExpanded(false);
+                  setSearch('');
+                }}
+                className="absolute right-2.5 p-0.5 text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setIsMobileSearchExpanded(true)}
+              className={`w-10 h-9.5 rounded-2xl border flex items-center justify-center transition-all cursor-pointer shadow-xs ${
+                search.trim() !== ''
+                  ? 'bg-blue-600 border-blue-600 text-white'
+                  : 'bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border-white/60 dark:border-white/10 text-slate-600 dark:text-zinc-300'
+              }`}
+              title="Cari Tugas"
+            >
+              <Search className="w-4 h-4" />
+            </button>
+          )}
+        </div>
 
-          <div className="flex items-center bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 p-1 rounded-2xl gap-1 shrink-0 overflow-x-auto shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none">
+        {/* DROPDOWN FILTER MATKUL */}
+        {(!isMobileSearchExpanded || typeof window === 'undefined' || window.innerWidth >= 768) && (
+          <div className="relative flex-1 min-w-0">
+            <select
+              value={filterCourse}
+              onChange={(e) => setFilterCourse(e.target.value)}
+              className="w-full pl-3.5 pr-8 py-2 md:py-2.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 text-slate-800 dark:text-zinc-100 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none font-semibold truncate appearance-none cursor-pointer"
+            >
+              <option value="ALL">Semua Mata Kuliah</option>
+              {uniqueCourses.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+            <ChevronDown className="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+          </div>
+        )}
+
+        {/* PILL FILTER JENIS TUGAS */}
+        {(!isMobileSearchExpanded || typeof window === 'undefined' || window.innerWidth >= 768) && (
+          <div className="flex items-center bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 p-1 rounded-2xl gap-0.5 sm:gap-1 shrink-0 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none">
             {(['ALL', 'Individu', 'Kelompok'] as const).map((option) => (
               <button
                 key={option}
                 onClick={() => setFilterType(option)}
-                className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-[11px] sm:text-xs whitespace-nowrap transition-all cursor-pointer ${
+                className={`px-2 sm:px-3 py-1.5 rounded-xl text-[10px] sm:text-xs whitespace-nowrap transition-all cursor-pointer ${
                   filterType === option
                     ? 'bg-blue-600 text-white font-semibold shadow-xs'
                     : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100'
@@ -605,7 +655,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
               </button>
             ))}
           </div>
-        </div>
+        )}
       </div>
 
       {/* TASK LIST */}
@@ -1198,271 +1248,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                       </div>
                     )}
                   </div>
-                </motion.div>
-              </div>
-            )}
-          </AnimatePresence>,
-          document.body
-        )}
-
-      {/* ADD / EDIT MODAL (PORTAL) */}
-      {typeof document !== 'undefined' &&
-        createPortal(
-          <AnimatePresence>
-            {showModal && (
-              <div className="fixed inset-0 z-[99999] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-                <motion.div 
-                  initial={{ scale: 0.92, opacity: 0, y: 15 }}
-                  animate={{ scale: 1, opacity: 1, y: 0 }}
-                  exit={{ scale: 0.92, opacity: 0, y: 15 }}
-                  transition={{ type: 'spring', stiffness: 350, damping: 28 }}
-                  className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/60 dark:border-white/10 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"
-                >
-                  <div className="px-6 sm:px-8 py-5 border-b border-slate-200/40 dark:border-white/10 flex items-center justify-between shrink-0 bg-white/50 dark:bg-zinc-900/50">
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-100">
-                      {editingTaskId ? 'Edit Tugas' : 'Tambah Tugas Baru'}
-                    </h3>
-
-                    <button
-                      type="button"
-                      onClick={() => setShowModal(false)}
-                      className="p-2 rounded-2xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors shrink-0 cursor-pointer"
-                    >
-                      <X className="w-5 h-5" />
-                    </button>
-                  </div>
-
-                  <form
-                    onSubmit={handleTaskFormSubmit}
-                    className="flex flex-col flex-1 overflow-hidden"
-                  >
-                    <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-4">
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
-                          Judul Tugas
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          value={title}
-                          onChange={(e) => setTitle(e.target.value)}
-                          placeholder="Misal: Essay 500 Kata"
-                          className="w-full px-4 py-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/80 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:ring-2 focus:ring-blue-500 outline-none"
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
-                            Mata Kuliah
-                          </label>
-                          {availableCourseOptions.length > 0 ? (
-                            <select
-                              value={course}
-                              onChange={(e) => handleCourseChange(e.target.value)}
-                              className="w-full px-4 py-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/80 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:ring-2 focus:ring-blue-500 outline-none"
-                            >
-                              {availableCourseOptions.map((c) => (
-                                <option key={c} value={c}>
-                                  {c}
-                                </option>
-                              ))}
-                            </select>
-                          ) : (
-                            <input
-                              type="text"
-                              required
-                              value={course}
-                              onChange={(e) => setCourse(e.target.value)}
-                              placeholder="Nama Mata Kuliah"
-                              className="w-full px-4 py-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/80 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:ring-2 focus:ring-blue-500 outline-none"
-                            />
-                          )}
-                        </div>
-
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
-                            Jenis Tugas
-                          </label>
-                          <select
-                            value={type}
-                            onChange={(e) =>
-                              setType(e.target.value as 'Individu' | 'Kelompok')
-                            }
-                            className="w-full px-4 py-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/80 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs outline-none focus:ring-2 focus:ring-blue-500"
-                          >
-                            <option value="Individu">Individu</option>
-                            <option value="Kelompok">Kelompok</option>
-                          </select>
-                        </div>
-                      </div>
-
-                      <input type="hidden" value={assigner} readOnly />
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
-                            Tanggal Deadline
-                          </label>
-                          <input
-                            type="date"
-                            required
-                            value={deadlineDate}
-                            onChange={(e) => setDeadlineDate(e.target.value)}
-                            className="w-full px-4 py-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/80 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs outline-none focus:ring-2 focus:ring-blue-500"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
-                            Jam Deadline
-                          </label>
-                          <input
-                            type="time"
-                            value={deadlineTime}
-                            onChange={(e) => setDeadlineTime(e.target.value)}
-                            className="w-full px-4 py-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/80 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs outline-none focus:ring-2 focus:ring-blue-500"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
-                          Instruksi Tugas
-                        </label>
-                        <textarea
-                          rows={2}
-                          value={description}
-                          onChange={(e) => setDescription(e.target.value)}
-                          placeholder="Rincian instruksi tugas..."
-                          className="w-full px-4 py-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/80 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
-                          Link Pengumpulan (Opsional)
-                        </label>
-                        <input
-                          type="url"
-                          value={classroomUrl}
-                          onChange={(e) => setClassroomUrl(e.target.value)}
-                          placeholder="(Kosongkan jika di Classroom ITS)"
-                          className="w-full px-4 py-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/80 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
-                          Lampiran File (Opsional)
-                        </label>
-
-                        <div
-                          onDragOver={handleDragOver}
-                          onDragLeave={handleDragLeave}
-                          onDrop={handleDrop}
-                          onClick={() => fileInputRef.current?.click()}
-                          className={`relative border-2 border-dashed rounded-3xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-all ${
-                            isDragOver
-                              ? 'border-blue-500 bg-blue-50/80 dark:bg-blue-900/20'
-                              : 'border-slate-200 dark:border-zinc-700 bg-white/50 dark:bg-zinc-800/40 hover:bg-white/80 dark:hover:bg-zinc-700/50'
-                          }`}
-                        >
-                          <input
-                            type="file"
-                            ref={fileInputRef}
-                            accept="image/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx"
-                            onChange={(e) => {
-                              if (e.target.files?.length) {
-                                setSelectedFile(e.target.files[0]);
-                              }
-                            }}
-                            className="hidden"
-                          />
-
-                          {selectedFile ? (
-                            <div className="flex flex-col items-center gap-2">
-                              <div className="p-3 bg-blue-100/80 dark:bg-blue-900/40 rounded-full">
-                                <Paperclip className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                              </div>
-                              <p className="text-xs font-bold text-slate-700 dark:text-zinc-300 max-w-[200px] truncate">
-                                {selectedFile.name}
-                              </p>
-                              <p className="text-[10px] text-slate-500 dark:text-zinc-400">
-                                {(selectedFile.size / 1024 / 1024).toFixed(2)} MB • Siap diunggah
-                              </p>
-                            </div>
-                          ) : (
-                            <div className="flex flex-col items-center gap-2">
-                              <div className="p-3 bg-slate-200/80 dark:bg-zinc-700 rounded-full">
-                                <UploadCloud className="w-6 h-6 text-slate-600 dark:text-zinc-400" />
-                              </div>
-                              <p className="text-xs font-bold text-slate-700 dark:text-zinc-300">
-                                Klik atau drop PDF ke sini
-                              </p>
-                              <p className="text-[10px] text-slate-500 dark:text-zinc-400">
-                                File Max 10 MB
-                              </p>
-                            </div>
-                          )}
-                        </div>
-
-                        {isUploading && (
-                          <div className="mt-3 space-y-1.5 p-3 rounded-2xl bg-blue-50/70 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/40">
-                            <div className="flex items-center justify-between text-[11px] font-semibold text-blue-700 dark:text-blue-400">
-                              <span className="flex items-center gap-1.5">
-                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                {uploadProgress < 30
-                                  ? 'Menyiapkan berkas lampiran...'
-                                  : uploadProgress < 85
-                                  ? 'Mengunggah ke Cloud Storage...'
-                                  : uploadProgress < 100
-                                  ? 'Memproses penyimpanan data...'
-                                  : 'Selesai!'}
-                              </span>
-                              <span className="font-mono text-xs tabular-nums font-bold">
-                                {Math.round(uploadProgress)}%
-                              </span>
-                            </div>
-                            <div className="bg-blue-100 dark:bg-zinc-800 rounded-full h-2 w-full overflow-hidden">
-                              <div
-                                className="h-full bg-blue-600 transition-all duration-300 ease-out"
-                                style={{ width: `${uploadProgress}%` }}
-                              />
-                            </div>
-                            <p className="text-[10px] text-slate-400 dark:text-zinc-500 text-center pt-0.5">
-                              Harap tetap di halaman ini hingga proses unggah tuntas.
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="px-6 sm:px-8 py-4 border-t border-slate-200/40 dark:border-white/10 flex items-center justify-end gap-3 shrink-0 bg-white/50 dark:bg-zinc-900/50">
-                      <button
-                        type="button"
-                        disabled={isUploading}
-                        onClick={() => setShowModal(false)}
-                        className="px-5 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 text-xs font-semibold hover:bg-slate-200 dark:hover:bg-zinc-700 transition-all disabled:opacity-50 cursor-pointer"
-                      >
-                        Batal
-                      </button>
-                      <button
-                        type="submit"
-                        disabled={isUploading}
-                        className="px-5 py-2.5 rounded-2xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 shadow-md shadow-blue-500/20 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-70 cursor-pointer"
-                      >
-                        {isUploading ? (
-                          <>
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                            <span>Mengunggah File...</span>
-                          </>
-                        ) : (
-                          'Simpan Tugas'
-                        )}
-                      </button>
-                    </div>
-                  </form>
                 </motion.div>
               </div>
             )}

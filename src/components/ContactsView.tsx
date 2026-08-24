@@ -33,6 +33,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
   onDeleteContact,
 }) => {
   const [search, setSearch] = useState('');
+  const [isMobileSearchExpanded, setIsMobileSearchExpanded] = useState(false);
   const [selectedCourseFilter, setSelectedCourseFilter] = useState(
     initialCourseFilter || 'ALL'
   );
@@ -249,9 +250,10 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="space-y-6 pb-12"
+      className="space-y-5 sm:space-y-6 pb-12"
     >
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1 pt-4 sm:pt-6 pb-4 sm:pb-6 mb-2 sm:mb-3">
+      {/* HEADER BANNER */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1 pt-4 sm:pt-6 pb-2">
         <div>
           <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
             Kontak Dosen & PJ Matkul
@@ -266,7 +268,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
             onClick={handleOpenAddModal}
-            className="px-4 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition-all shadow-md shadow-blue-500/20 flex items-center gap-2 shrink-0 cursor-pointer"
+            className="px-4 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition-all shadow-md shadow-blue-500/20 flex items-center justify-center gap-2 self-start sm:self-auto cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Tambah Kontak</span>
@@ -274,9 +276,11 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
         )}
       </div>
 
-      <div className="flex flex-col sm:flex-row items-center gap-3">
-        <div className="relative flex-1 w-full">
-          <Search className="w-4 h-4 absolute left-4 top-3 text-slate-400" />
+      {/* SINGLE-LINE SEARCH & FILTER CONTROLS */}
+      <div className="flex items-center gap-2 sm:gap-3 w-full">
+        {/* DESKTOP SEARCH BAR */}
+        <div className="relative flex-1 hidden md:block">
+          <Search className="w-4 h-4 absolute left-4 top-3 text-slate-400 pointer-events-none" />
           <input
             type="text"
             value={search}
@@ -286,21 +290,68 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
           />
         </div>
 
-        <select
-          value={selectedCourseFilter}
-          onChange={(e) => setSelectedCourseFilter(e.target.value)}
-          className="w-full sm:w-auto px-4 py-2.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 text-slate-800 dark:text-zinc-100 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none font-semibold"
-        >
-          <option value="ALL">Semua Mata Kuliah ({contacts.length})</option>
-          {uniqueCourses.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
+        {/* MOBILE EXPANDABLE SEARCH */}
+        <div className={`block md:hidden transition-all duration-300 ease-in-out ${isMobileSearchExpanded ? 'flex-1' : 'w-10 shrink-0'}`}>
+          {isMobileSearchExpanded ? (
+            <div className="relative w-full flex items-center">
+              <Search className="w-3.5 h-3.5 absolute left-3 text-slate-400 pointer-events-none" />
+              <input
+                type="text"
+                autoFocus
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Cari kontak..."
+                className="w-full pl-8 pr-8 py-2 rounded-2xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border border-blue-500/50 text-slate-800 dark:text-zinc-100 text-xs focus:outline-none shadow-xs"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMobileSearchExpanded(false);
+                  setSearch('');
+                }}
+                className="absolute right-2.5 p-0.5 text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setIsMobileSearchExpanded(true)}
+              className={`w-10 h-9.5 rounded-2xl border flex items-center justify-center transition-all cursor-pointer shadow-xs ${
+                search.trim() !== ''
+                  ? 'bg-blue-600 border-blue-600 text-white'
+                  : 'bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border-white/60 dark:border-white/10 text-slate-600 dark:text-zinc-300'
+              }`}
+              title="Cari Kontak"
+            >
+              <Search className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+
+        {/* DROPDOWN FILTER MATKUL */}
+        {(!isMobileSearchExpanded || typeof window === 'undefined' || window.innerWidth >= 768) && (
+          <div className="relative flex-1 md:flex-initial md:min-w-[220px]">
+            <select
+              value={selectedCourseFilter}
+              onChange={(e) => setSelectedCourseFilter(e.target.value)}
+              className="w-full pl-3.5 pr-8 py-2 md:py-2.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 text-slate-800 dark:text-zinc-100 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none font-semibold truncate appearance-none cursor-pointer"
+            >
+              <option value="ALL">Semua Mata Kuliah ({contacts.length})</option>
+              {uniqueCourses.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="w-3.5 h-3.5 absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+          </div>
+        )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* GRID DAFTAR KONTAK */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
         {filteredContacts.length === 0 ? (
           <div className="md:col-span-2 p-12 text-center bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl text-slate-400 dark:text-zinc-500 text-xs shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none">
             Tidak ada kontak ditemukan untuk pencarian atau filter saat ini.
@@ -314,7 +365,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 key={c.id}
-                className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none space-y-4 flex flex-col justify-between transition-all"
+                className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-5 sm:p-7 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none space-y-4 flex flex-col justify-between transition-all"
               >
                 <div>
                   <div className="flex items-start justify-between gap-2 pb-3 mb-4">
@@ -353,7 +404,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                   </div>
 
                   <div className="space-y-3">
-                    {/* 1. DOSEN 1 */}
+                    {/* DOSEN 1 */}
                     <div className="p-3.5 sm:p-4 rounded-2xl bg-white/60 dark:bg-zinc-800/40 border border-slate-200/50 dark:border-white/5 space-y-2.5">
                       <div className="flex items-center gap-1.5 overflow-hidden">
                         <GraduationCap className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
@@ -384,7 +435,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                       </div>
                     </div>
 
-                    {/* 2. DOSEN 2 (JIKA ADA) */}
+                    {/* DOSEN 2 (JIKA ADA) */}
                     {c.lecturerName2 && c.lecturerName2.trim() !== '' && (
                       <div className="p-3.5 sm:p-4 rounded-2xl bg-white/60 dark:bg-zinc-800/40 border border-slate-200/50 dark:border-white/5 space-y-2.5">
                         <div className="flex items-center gap-1.5 overflow-hidden">
@@ -417,7 +468,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                       </div>
                     )}
 
-                    {/* 3. PJ MATKUL */}
+                    {/* PJ MATKUL */}
                     <div className="p-3.5 sm:p-4 rounded-2xl bg-white/40 dark:bg-zinc-800/30 border border-slate-200/40 dark:border-white/5 space-y-2.5">
                       <div className="flex items-center gap-1.5 overflow-hidden">
                         <UserCheck className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
@@ -549,7 +600,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                     </div>
                   </div>
 
-                  {/* DOSEN 2 (OPSIONAL) */}
+                  {/* DOSEN 2 */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
