@@ -338,7 +338,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
               onChange={(e) => setSelectedCourseFilter(e.target.value)}
               className="w-full pl-3.5 pr-8 py-2 md:py-2.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 text-slate-800 dark:text-zinc-100 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none font-semibold truncate appearance-none cursor-pointer"
             >
-              <option value="ALL">Semua Mata Kuliah ({contacts.length})</option>
+              <option value="ALL">Semua Matkul ({contacts.length})</option>
               {uniqueCourses.map((c) => (
                 <option key={c} value={c}>
                   {c}
