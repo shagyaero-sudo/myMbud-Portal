@@ -239,10 +239,10 @@ export const NotebookLmModal: React.FC<NotebookLmModalProps> = ({
             <div className="flex items-start justify-between gap-4 border-b border-zinc-800/80 pb-4">
               <div className="space-y-0.5">
                 <h2 className="text-lg sm:text-xl font-bold text-zinc-100">
-                  Gemini NotebookLM X myMbud 
+                  Gemini Notebook
                 </h2>
                 <p className="text-xs text-zinc-400">
-                  Fitur diskusi bersama AI per-mata kuliah.
+                  Fitur diskusi materi bersama AI
                 </p>
               </div>
 
