@@ -19,7 +19,6 @@ import {
   subscribeUserMaterialBookmarks,
   toggleMaterialBookmark,
 } from '../services/api';
-import { NotebookLmModal } from './NotebookLmModal';
 
 interface KnowledgeBaseViewProps {
   materials: MaterialFile[];
@@ -28,6 +27,7 @@ interface KnowledgeBaseViewProps {
   onAddMaterial: (material: Omit<MaterialFile, 'id' | 'uploadDate'>) => void;
   onDeleteMaterial: (id: string) => void;
   onPreviewPdf: (material: MaterialFile) => void;
+  onOpenNotebookLm: () => void;
 }
 
 export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
@@ -37,11 +37,11 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
   onAddMaterial,
   onDeleteMaterial,
   onPreviewPdf,
+  onOpenNotebookLm,
 }) => {
   const [search, setSearch] = useState('');
   const [selectedCourse, setSelectedCourse] = useState<string>('ALL');
   const [showOnlyBookmarked, setShowOnlyBookmarked] = useState<boolean>(false);
-  const [showNotebookModal, setShowNotebookModal] = useState<boolean>(false);
 
   // Sync Bookmarks per User NRP dari Firestore
   const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
@@ -228,10 +228,10 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
           </p>
         </div>
 
-        {/* Action Control: Tombol NotebookLM di Header Kanan Atas */}
+        {/* Action Control: Tombol NotebookLM di Header Kanan Atas (Buka Page Baru) */}
         <button
           type="button"
-          onClick={() => setShowNotebookModal(true)}
+          onClick={onOpenNotebookLm}
           className="px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 border cursor-pointer shrink-0 bg-gradient-to-r from-purple-600/20 via-indigo-600/20 to-blue-600/20 hover:from-purple-600/30 hover:via-indigo-600/30 hover:to-blue-600/30 text-purple-700 dark:text-purple-300 border-purple-500/40 shadow-lg shadow-purple-950/20 active:scale-95"
           title="Buka AI NotebookLM Matkul"
         >
@@ -723,13 +723,6 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* MODAL NOTEBOOKLM DENGAN PROP ISOFFICER */}
-      <NotebookLmModal
-        isOpen={showNotebookModal}
-        isOfficer={isOfficer}
-        onClose={() => setShowNotebookModal(false)}
-      />
     </motion.div>
   );
 };

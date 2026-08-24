@@ -27,6 +27,7 @@ import { GpaCalculatorModal } from './components/GpaCalculatorModal';
 import { LoginScreen } from './components/LoginScreen';
 import { OnboardingScreen } from './components/OnboardingScreen';
 import { SplashScreen } from './components/SplashScreen';
+import { NotebookLmView } from './components/NotebookLmView';
 
 import {
   AppState,
@@ -653,6 +654,14 @@ export default function App() {
                       onAddMaterial={handleAddMaterial}
                       onDeleteMaterial={handleDeleteMaterial}
                       onPreviewPdf={(material) => setPreviewMaterial(material)}
+                      onOpenNotebookLm={() => handleNavigateTab('notebooklm' as TabType)}
+                    />
+                  )}
+
+                  {activeTab === ('notebooklm' as TabType) && (
+                    <NotebookLmView
+                      isOfficer={isOfficer}
+                      onBack={() => handleNavigateTab('materials')}
                     />
                   )}
 
