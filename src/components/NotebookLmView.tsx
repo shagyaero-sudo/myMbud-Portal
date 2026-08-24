@@ -242,7 +242,7 @@ export const NotebookLmView: React.FC<NotebookLmViewProps> = ({
           </button>
           <div>
             <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
-              Gemini Notebook
+              Gemini NotebookLM
             </h2>
             <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
               Fitur diskusi materi bersama AI
@@ -293,10 +293,10 @@ export const NotebookLmView: React.FC<NotebookLmViewProps> = ({
             >
               <div className="text-xs text-slate-600 dark:text-zinc-300 space-y-1.5 leading-relaxed">
                 <p>
-                  <strong className="text-purple-600 dark:text-purple-300 font-semibold">Gemini Notebook</strong> adalah AI asisten Google yang khusus membaca dan memahami seluruh slide PPT & dokumen PDF materi kuliah kita.
+                  <strong className="text-purple-600 dark:text-purple-300 font-semibold">Gemini NotebookLM</strong> adalah AI asisten Google yang dapat membantumu memahami slide PPT materi perkuliahan.
                 </p>
                 <p className="text-[11px] text-slate-500 dark:text-zinc-400">
-                  Kamu bisa bertanya konsep yang sulit, minta dibuatkan rangkuman ujian/kisi-kisi, kuis dan latihan soal, hingga mendengarkan podcast rangkuman audio dari PDF materi perkuliahan.
+                  Kamu bisa bertanya konsep yang sulit, rangkuman ujian/kisi-kisi, kuis dan latihan soal, hingga mendengarkan audio podcast rangkuman dari PDF materi.
                 </p>
               </div>
             </motion.div>
