@@ -10,7 +10,6 @@ import {
   Check,
   X,
   ChevronLeft,
-  Mic,
   BookOpen,
 } from 'lucide-react';
 import { supabase } from '../services/supabase';
@@ -33,7 +32,7 @@ const DEFAULT_COURSES: CourseCardData[] = [
   {
     id: 'ekonomi_makro',
     name: 'Ekonomi Makro',
-    code: 'EM-2026',
+    code: 'DS234320',
     description: 'Analisis pendapatan nasional, inflasi, kurva IS-LM, pertumbuhan ekonomi, dan kebijakan fiskal-moneter.',
     notebook_url: 'https://notebooklm.google.com/notebook/0042bb0c-47d3-4ab8-a832-e96810af1b29',
     color_theme: 'blue',
@@ -41,7 +40,7 @@ const DEFAULT_COURSES: CourseCardData[] = [
   {
     id: 'dasar_manajemen',
     name: 'Dasar-dasar Manajemen',
-    code: 'DDM-2026',
+    code: 'DS234315',
     description: 'Konsep fungsi manajemen (POAC), kepemimpinan tim, pengambilan keputusan, dan etika organisasi.',
     notebook_url: '',
     color_theme: 'blue',
@@ -49,7 +48,7 @@ const DEFAULT_COURSES: CourseCardData[] = [
   {
     id: 'etika_pembangunan',
     name: 'Etika Pembangunan',
-    code: 'EP-2026',
+    code: 'DS234324',
     description: 'Eksplorasi etika moral, filsafat keadilan sosial, dan studi dampak pembangunan.',
     notebook_url: '',
     color_theme: 'blue',
@@ -57,7 +56,7 @@ const DEFAULT_COURSES: CourseCardData[] = [
   {
     id: 'gender_pembangunan',
     name: 'Gender dan Pembangunan',
-    code: 'GNP-2026',
+    code: 'DS234318',
     description: 'Analisis isu pengarusutamaan gender, SDGs 5, dan inklusivitas sosial.',
     notebook_url: '',
     color_theme: 'blue',
@@ -65,7 +64,7 @@ const DEFAULT_COURSES: CourseCardData[] = [
   {
     id: 'infrastruktur_pembangunan',
     name: 'Infrastruktur Pembangunan',
-    code: 'INF-2026',
+    code: 'DS234326',
     description: 'Perencanaan jaringan infrastruktur wilayah, transportasi publik, utilitas perkotaan, dan proyek strategis.',
     notebook_url: '',
     color_theme: 'blue',
@@ -73,7 +72,7 @@ const DEFAULT_COURSES: CourseCardData[] = [
   {
     id: 'kebijakan_publik',
     name: 'Kebijakan Publik dan Pembangunan',
-    code: 'KPP-2026',
+    code: 'DS234322',
     description: 'Analisis siklus perumusan kebijakan, advokasi, dan evaluasi dampak.',
     notebook_url: '',
     color_theme: 'blue',
@@ -81,7 +80,7 @@ const DEFAULT_COURSES: CourseCardData[] = [
   {
     id: 'komunikasi_pembangunan',
     name: 'Komunikasi Pembangunan',
-    code: 'KOM-2026',
+    code: 'DS234319',
     description: 'Strategi kampanye sosial, partisipasi publik, dan dinamika media komunikasi.',
     notebook_url: '',
     color_theme: 'blue',
@@ -89,7 +88,7 @@ const DEFAULT_COURSES: CourseCardData[] = [
   {
     id: 'manusia_ruang_hidup',
     name: 'Manusia dan Ruang Hidup',
-    code: 'MRH-2026',
+    code: 'DS234316',
     description: 'Kajian interaksi ekologi manusia, tata kelola lingkungan, dan ruang kota.',
     notebook_url: '',
     color_theme: 'blue',
@@ -97,7 +96,7 @@ const DEFAULT_COURSES: CourseCardData[] = [
   {
     id: 'statistik_sosial',
     name: 'Statistik Sosial',
-    code: 'STA-2026',
+    code: 'DS234317',
     description: 'Praktik analisis data, uji hipotesis, korelasi, dan interpretasi output SPSS.',
     notebook_url: '',
     color_theme: 'blue',
@@ -196,13 +195,11 @@ export const NotebookLmView: React.FC<NotebookLmViewProps> = ({
     setShowWelcomeModal(false);
   };
 
-  // Pilih matkul (masuk ke input bar dulu, tidak langsung redirect)
   const handleSelectCourse = (course: CourseCardData) => {
     setSelectedCourse(course);
     setIsDropdownOpen(false);
   };
 
-  // Eksekusi redirect saat tombol Go ditekan
   const handleExecuteRedirect = () => {
     if (!selectedCourse) return;
 
@@ -249,14 +246,14 @@ export const NotebookLmView: React.FC<NotebookLmViewProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#050507] text-zinc-100 flex flex-col justify-between p-4 sm:p-8 select-none overflow-hidden font-sans">
+    <div className="fixed inset-0 z-50 bg-[#000000] text-zinc-100 flex flex-col justify-between overflow-y-auto select-none font-sans custom-scrollbar">
       
-      {/* AMBIENT GLOW BIRU HALUS */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] sm:w-[580px] h-[300px] sm:h-[580px] bg-blue-600/10 rounded-full blur-[130px] pointer-events-none" />
-      <div className="absolute -bottom-20 left-1/2 -translate-x-1/2 w-[80vw] h-[220px] bg-blue-900/15 blur-[100px] pointer-events-none" />
+      {/* ATMOSPHERIC GEMINI-STYLE AMBIENT GLOW */}
+      <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] sm:w-[900px] h-[500px] sm:h-[700px] bg-[radial-gradient(ellipse_at_center,_rgba(29,78,216,0.14)_0%,_rgba(15,23,42,0.06)_50%,_transparent_75%)] pointer-events-none -z-10" />
+      <div className="fixed -bottom-32 left-1/2 -translate-x-1/2 w-[90vw] h-[350px] bg-[radial-gradient(ellipse_at_bottom,_rgba(37,99,235,0.18)_0%,_transparent_70%)] pointer-events-none -z-10" />
 
       {/* TOP CONTROLS */}
-      <div className="w-full flex items-center justify-between z-20">
+      <div className="w-full flex items-center justify-between p-4 sm:p-8 z-20 shrink-0">
         <button
           type="button"
           onClick={onBack}
@@ -283,10 +280,10 @@ export const NotebookLmView: React.FC<NotebookLmViewProps> = ({
         )}
       </div>
 
-      {/* CENTER INTERACTIVE AREA (Desktop: Center Viewport) */}
-      <div className="flex-1 flex flex-col items-center justify-center text-center max-w-2xl mx-auto w-full px-2 z-10 space-y-4 my-auto">
+      {/* CENTER INTERACTIVE AREA */}
+      <div className="flex-1 flex flex-col items-center justify-center text-center max-w-2xl mx-auto w-full px-4 z-10 space-y-4 py-8">
         
-        {/* Real Logo Gemini Notebook (Clean, No Padding/Border) */}
+        {/* Real Logo Gemini Notebook (Clean) */}
         <div className="flex items-center justify-center">
           <img
             src="https://storage.googleapis.com/gweb-uniblog-publish-prod/images/gemini-notebook__full-color.max-1440x810.png"
@@ -295,65 +292,22 @@ export const NotebookLmView: React.FC<NotebookLmViewProps> = ({
           />
         </div>
 
-        {/* Real Text Subtitle Tipis (No Padding, No Border) */}
+        {/* Real Text Subtitle Tipis */}
         <p className="text-xs tracking-wide text-zinc-400 font-normal">
           myMbud x NotebookLM
         </p>
 
-        {/* Dynamic Heading */}
+        {/* Heading Sapaan */}
         <div>
           <h1 className="text-2xl sm:text-4xl font-bold tracking-tight text-zinc-100 leading-snug">
             Mau belajar apa hari ini, <span className="text-blue-400 font-semibold">{currentUserName}</span>?
           </h1>
         </div>
 
-        {/* DESKTOP INTEGRATED PROMPT BAR */}
-        <div className="hidden md:block w-full max-w-xl relative pt-2" ref={dropdownRef}>
-          {/* Dropdown Options List Popover */}
-          <AnimatePresence>
-            {isDropdownOpen && (
-              <motion.div
-                initial={{ opacity: 0, y: 8, scale: 0.98 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 8, scale: 0.98 }}
-                transition={{ duration: 0.15 }}
-                className="absolute top-full mt-3 left-0 right-0 bg-zinc-900/95 border border-zinc-800/90 rounded-3xl p-3 shadow-2xl backdrop-blur-2xl max-h-[36vh] overflow-y-auto custom-scrollbar z-40 space-y-1.5 text-left"
-              >
-                <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-zinc-500 flex items-center justify-between">
-                  <span>Daftar Mata Kuliah ({courses.length})</span>
-                  <BookOpen className="w-3.5 h-3.5 text-zinc-500" />
-                </div>
-
-                {courses.map((course) => (
-                  <button
-                    key={course.id}
-                    onClick={() => handleSelectCourse(course)}
-                    className="w-full p-3 rounded-2xl bg-zinc-950/60 hover:bg-blue-600/20 hover:border-blue-500/40 border border-zinc-800/60 transition-all flex items-center justify-between gap-3 group cursor-pointer"
-                  >
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-300">
-                          {course.code}
-                        </span>
-                        <h4 className="text-xs font-bold text-zinc-200 group-hover:text-blue-300 transition-colors truncate">
-                          {course.name}
-                        </h4>
-                      </div>
-                      <p className="text-[11px] text-zinc-400 mt-1 line-clamp-1 leading-snug">
-                        {course.description || 'Diskusi materi bersama AI'}
-                      </p>
-                    </div>
-
-                    <div className="p-2 rounded-xl bg-zinc-900 group-hover:bg-blue-600 text-zinc-400 group-hover:text-white transition-colors shrink-0">
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </div>
-                  </button>
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Prompt Bar */}
+        {/* PROMPT BAR & DROPDOWN CONTAINER */}
+        <div className="w-full max-w-xl relative pt-2" ref={dropdownRef}>
+          
+          {/* Prompt Bar Box */}
           <div 
             className="relative w-full bg-zinc-900/90 hover:bg-zinc-850 border border-zinc-800/90 rounded-full py-2.5 pl-4 pr-3 flex items-center justify-between gap-3 shadow-2xl backdrop-blur-xl transition-all"
           >
@@ -401,11 +355,55 @@ export const NotebookLmView: React.FC<NotebookLmViewProps> = ({
               )}
             </div>
           </div>
+
+          {/* FULL EXPANDABLE DROPDOWN LIST (Scrolls Entire Screen Smoothly) */}
+          <AnimatePresence>
+            {isDropdownOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: 8, scale: 0.99 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 8, scale: 0.99 }}
+                transition={{ duration: 0.15 }}
+                className="mt-3 w-full bg-zinc-900/95 border border-zinc-800/90 rounded-3xl p-3 shadow-2xl backdrop-blur-2xl space-y-1.5 text-left z-30"
+              >
+                <div className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-zinc-500 flex items-center justify-between border-b border-zinc-800/50 pb-2 mb-1">
+                  <span>Daftar Mata Kuliah ({courses.length})</span>
+                  <BookOpen className="w-3.5 h-3.5 text-zinc-500" />
+                </div>
+
+                {courses.map((course) => (
+                  <button
+                    key={course.id}
+                    onClick={() => handleSelectCourse(course)}
+                    className="w-full p-3 rounded-2xl bg-zinc-950/60 hover:bg-blue-600/15 border border-zinc-800/60 hover:border-blue-500/40 transition-all flex items-center justify-between gap-3 group cursor-pointer text-left"
+                  >
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-300 group-hover:bg-blue-950 group-hover:text-blue-300 group-hover:border group-hover:border-blue-800/40 transition-colors">
+                          {course.code}
+                        </span>
+                        <h4 className="text-xs font-bold text-zinc-200 group-hover:text-blue-300 transition-colors truncate">
+                          {course.name}
+                        </h4>
+                      </div>
+                      <p className="text-[11px] text-zinc-400 mt-1 line-clamp-1 leading-snug">
+                        {course.description || 'Diskusi materi bersama AI'}
+                      </p>
+                    </div>
+
+                    <div className="p-2 rounded-xl bg-zinc-900 group-hover:bg-blue-600 text-zinc-400 group-hover:text-white transition-colors shrink-0">
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </div>
+                  </button>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* OFFICER EDIT PANEL */}
         {isOfficer && isEditMode && (
-          <div className="w-full mt-4 p-4 rounded-3xl bg-zinc-900/90 border border-zinc-800 backdrop-blur-xl text-left max-h-[35vh] overflow-y-auto custom-scrollbar">
+          <div className="w-full mt-4 p-4 rounded-3xl bg-zinc-900/90 border border-zinc-800 backdrop-blur-xl text-left max-h-[40vh] overflow-y-auto custom-scrollbar">
             <div className="flex items-center justify-between mb-3 pb-2 border-b border-zinc-800">
               <span className="text-xs font-bold text-blue-400">Kelola Link Mata Kuliah</span>
               <button
@@ -414,7 +412,7 @@ export const NotebookLmView: React.FC<NotebookLmViewProps> = ({
                   setEditingCard({
                     id: `course_${Date.now()}`,
                     name: '',
-                    code: 'BARU-2026',
+                    code: 'DS234000',
                     description: '',
                     notebook_url: '',
                     color_theme: 'blue',
@@ -454,99 +452,8 @@ export const NotebookLmView: React.FC<NotebookLmViewProps> = ({
         )}
       </div>
 
-      {/* MOBILE BOTTOM PROMPT BAR */}
-      <div className="block md:hidden w-full max-w-xl mx-auto relative z-30 pb-3" ref={dropdownRef}>
-        <AnimatePresence>
-          {isDropdownOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: 8, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 8, scale: 0.98 }}
-              transition={{ duration: 0.15 }}
-              className="absolute bottom-full mb-3 left-0 right-0 bg-zinc-900/95 border border-zinc-800/90 rounded-3xl p-3 shadow-2xl backdrop-blur-2xl max-h-[46vh] overflow-y-auto custom-scrollbar z-40 space-y-1.5 text-left"
-            >
-              <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-zinc-500 flex items-center justify-between">
-                <span>Daftar Mata Kuliah ({courses.length})</span>
-                <BookOpen className="w-3.5 h-3.5 text-zinc-500" />
-              </div>
-
-              {courses.map((course) => (
-                <button
-                  key={course.id}
-                  onClick={() => handleSelectCourse(course)}
-                  className="w-full p-3 rounded-2xl bg-zinc-950/60 hover:bg-blue-600/20 hover:border-blue-500/40 border border-zinc-800/60 transition-all flex items-center justify-between gap-3 group cursor-pointer text-left"
-                >
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-300">
-                        {course.code}
-                      </span>
-                      <h4 className="text-xs font-bold text-zinc-200 group-hover:text-blue-300 transition-colors truncate">
-                        {course.name}
-                      </h4>
-                    </div>
-                    <p className="text-[11px] text-zinc-400 mt-1 line-clamp-1 leading-snug">
-                      {course.description || 'Diskusi materi bersama AI'}
-                    </p>
-                  </div>
-
-                  <div className="p-2 rounded-xl bg-zinc-900 group-hover:bg-blue-600 text-zinc-400 group-hover:text-white transition-colors shrink-0">
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </div>
-                </button>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <div 
-          className="relative w-full bg-zinc-900/90 hover:bg-zinc-850 border border-zinc-800/90 rounded-full py-2.5 pl-4 pr-3 flex items-center justify-between gap-3 shadow-2xl backdrop-blur-xl transition-all"
-        >
-          <div 
-            onClick={() => setIsDropdownOpen((prev) => !prev)}
-            className="flex items-center gap-3 min-w-0 flex-1 cursor-pointer"
-          >
-            <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-300 shrink-0">
-              <Plus className="w-4 h-4" />
-            </div>
-            <span className={`text-xs font-medium truncate ${selectedCourse ? 'text-zinc-100 font-semibold' : 'text-zinc-400'}`}>
-              {selectedCourse ? selectedCourse.name : 'Pilih matkul...'}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-1.5 shrink-0">
-            {selectedCourse ? (
-              <>
-                <button
-                  type="button"
-                  onClick={() => setSelectedCourse(null)}
-                  className="p-1.5 rounded-full text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors cursor-pointer"
-                  title="Batal pilih"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleExecuteRedirect}
-                  className="px-3.5 py-1.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-1 shadow-md shadow-blue-900/30 transition-all cursor-pointer active:scale-95"
-                >
-                  <span>Go</span>
-                  <ArrowRight className="w-3 h-3" />
-                </button>
-              </>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setIsDropdownOpen((prev) => !prev)}
-                className={`w-8 h-8 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-300 flex items-center justify-center transition-transform duration-200 cursor-pointer ${isDropdownOpen ? 'rotate-180' : ''}`}
-              >
-                <ChevronDown className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
+      {/* FOOTER PADDING (Provides bottom spacing when scrolling) */}
+      <div className="w-full py-4 text-center shrink-0" />
 
       {/* OPENING ONBOARDING POPUP MODAL */}
       <AnimatePresence>
@@ -557,7 +464,7 @@ export const NotebookLmView: React.FC<NotebookLmViewProps> = ({
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.94, opacity: 0, y: 10 }}
               transition={{ duration: 0.2 }}
-              className="w-full max-w-lg bg-zinc-950 rounded-3xl p-6 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.9)] relative overflow-hidden text-left"
+              className="w-full max-w-lg bg-zinc-950 rounded-3xl p-6 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.95)] relative overflow-hidden text-left"
             >
               {/* Header Co-Branding: Logo Asli myMbud + Logo Asli Gemini Notebook */}
               <div className="flex items-center gap-3 mb-5">
@@ -623,7 +530,7 @@ export const NotebookLmView: React.FC<NotebookLmViewProps> = ({
                 <h3 className="text-base font-bold text-white">Membuka Ruang Belajar...</h3>
                 <p className="text-xs text-blue-400 font-medium">{redirectingCourse.name}</p>
               </div>
-              <Loader2 className="w-4 h-4 animate-spin text-zinc-500 mx-auto mt-2" />
+              <Loader2 className="w-5 h-5 animate-spin text-zinc-500 mx-auto mt-2" />
             </motion.div>
           </div>
         )}
@@ -682,7 +589,7 @@ export const NotebookLmView: React.FC<NotebookLmViewProps> = ({
                       onChange={(e) =>
                         setEditingCard({ ...editingCard, code: e.target.value })
                       }
-                      placeholder="EM-2026"
+                      placeholder="DS234320"
                       className="w-full bg-zinc-950 border border-zinc-700 rounded-2xl px-3.5 py-2.5 text-xs text-zinc-100 focus:outline-none focus:border-blue-500"
                     />
                   </div>
