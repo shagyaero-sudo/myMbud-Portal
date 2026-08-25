@@ -471,7 +471,13 @@ export default function App() {
   }, [appState.contacts, isOfficer, currentUserNrp, parseTargetNrps]);
 
   const accessibleCourseNames = useMemo(() => {
-    return Array.from(new Set(accessibleContacts.map((c) => c.course)));
+    return Array.from(
+      new Set(
+        accessibleContacts
+          .map((c) => c.course)
+          .filter((name): name is string => Boolean(name && name.trim() !== ''))
+      )
+    );
   }, [accessibleContacts]);
 
   // 2. Filter Tugas: Otomatis sembunyikan jika matkulnya tidak diambil user
@@ -481,8 +487,11 @@ export default function App() {
     return appState.tasks.filter((t) => {
       if (isOfficer) return true;
       
+      const taskCourse = (t.course || '').trim().toLowerCase();
+      if (!taskCourse) return true;
+
       const matchedContact = appState.contacts.find(
-        (c) => c.course.toLowerCase() === t.course.toLowerCase()
+        (c) => (c.course || '').trim().toLowerCase() === taskCourse
       );
 
       if (matchedContact) {
@@ -503,8 +512,11 @@ export default function App() {
     return appState.materials.filter((m) => {
       if (isOfficer) return true;
 
+      const materialCourse = (m.course || '').trim().toLowerCase();
+      if (!materialCourse) return true;
+
       const matchedContact = appState.contacts.find(
-        (c) => c.course.toLowerCase() === m.course.toLowerCase()
+        (c) => (c.course || '').trim().toLowerCase() === materialCourse
       );
 
       if (matchedContact) {
