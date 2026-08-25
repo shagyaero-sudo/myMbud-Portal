@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Users,
   Search,
   MessageSquare,
   Plus,
@@ -11,7 +10,7 @@ import {
   UserCheck,
   X,
   ChevronDown,
-  Link,
+  Users,
 } from 'lucide-react';
 import { Contact } from '../types';
 
@@ -63,6 +62,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
   const [formScheduleDayTime, setFormScheduleDayTime] = useState('');
   const [formSks, setFormSks] = useState<number | ''>('');
   const [formAttendanceUrl, setFormAttendanceUrl] = useState('');
+  const [formTargetNrps, setFormTargetNrps] = useState('');
 
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [templateTarget, setTemplateTarget] = useState<{
@@ -72,6 +72,8 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
   } | null>(null);
 
   const [openTemplateIndex, setOpenTemplateIndex] = useState<number | null>(0);
+
+  const currentUserNrp = typeof window !== 'undefined' ? (localStorage.getItem('mymbud_user_nrp') || '').trim().toLowerCase() : '';
 
   const formatWaNumber = (phoneStr: string) => {
     if (!phoneStr) return '';
@@ -104,7 +106,15 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
   };
 
   const filteredContacts = contacts
-    .filter((c) => {
+    .filter((c: any) => {
+      // Filter hak akses NRP (Officer bisa melihat semua)
+      if (!isOfficer && c.target_nrps && Array.isArray(c.target_nrps) && c.target_nrps.length > 0) {
+        const normalizedTarget = c.target_nrps.map((nrp: string) => nrp.trim().toLowerCase());
+        if (!normalizedTarget.includes(currentUserNrp)) {
+          return false;
+        }
+      }
+
       const matchSearch =
         c.course.toLowerCase().includes(search.toLowerCase()) ||
         (c.code && c.code.toLowerCase().includes(search.toLowerCase())) ||
@@ -143,6 +153,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
     setFormScheduleDayTime('');
     setFormSks('');
     setFormAttendanceUrl('');
+    setFormTargetNrps('');
     setShowModal(true);
   };
 
@@ -160,12 +171,18 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
     setFormScheduleDayTime(c.scheduleDayTime || '');
     setFormSks(c.sks || '');
     setFormAttendanceUrl(c.attendanceUrl || '');
+    setFormTargetNrps(Array.isArray(c.target_nrps) ? c.target_nrps.join(', ') : '');
     setShowModal(true);
   };
 
   const handleSaveContact = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formCourse.trim() || !formLecturerName.trim()) return;
+
+    const parsedNrps = formTargetNrps
+      .split(',')
+      .map((nrp) => nrp.trim())
+      .filter((nrp) => nrp.length > 0);
 
     const payload: any = {
       code: formCode.trim(),
@@ -180,6 +197,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
       scheduleDayTime: formScheduleDayTime.trim(),
       sks: Number(formSks) || 0,
       attendanceUrl: formAttendanceUrl.trim(),
+      target_nrps: parsedNrps.length > 0 ? parsedNrps : null,
     };
 
     if (editingId) {
@@ -278,7 +296,6 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
 
       {/* SINGLE-LINE SEARCH & FILTER CONTROLS */}
       <div className="flex items-center gap-2 sm:gap-3 w-full">
-        {/* DESKTOP SEARCH BAR */}
         <div className="relative flex-1 hidden md:block">
           <Search className="w-4 h-4 absolute left-4 top-3 text-slate-400 pointer-events-none" />
           <input
@@ -290,7 +307,6 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
           />
         </div>
 
-        {/* MOBILE EXPANDABLE SEARCH */}
         <div className={`block md:hidden transition-all duration-300 ease-in-out ${isMobileSearchExpanded ? 'flex-1' : 'w-10 shrink-0'}`}>
           {isMobileSearchExpanded ? (
             <div className="relative w-full flex items-center">
@@ -330,7 +346,6 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
           )}
         </div>
 
-        {/* DROPDOWN FILTER MATKUL */}
         {(!isMobileSearchExpanded || typeof window === 'undefined' || window.innerWidth >= 768) && (
           <div className="relative flex-1 md:flex-initial md:min-w-[220px]">
             <select
@@ -370,9 +385,18 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                 <div>
                   <div className="flex items-start justify-between gap-2 pb-3 mb-4">
                     <div>
-                      <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50/80 dark:bg-blue-950/60 px-3 py-1 rounded-full border border-blue-100/50 dark:border-blue-900/40">
-                        {c.code || 'Mata Kuliah'} {c.sks ? `• ${c.sks} SKS` : ''}
-                      </span>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50/80 dark:bg-blue-950/60 px-3 py-1 rounded-full border border-blue-100/50 dark:border-blue-900/40">
+                          {c.code || 'Mata Kuliah'} {c.sks ? `• ${c.sks} SKS` : ''}
+                        </span>
+
+                        {c.target_nrps && c.target_nrps.length > 0 && isOfficer && (
+                          <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-2.5 py-0.5 rounded-full border border-amber-200 dark:border-amber-900/40">
+                            Khusus ({c.target_nrps.length} NRP)
+                          </span>
+                        )}
+                      </div>
+
                       <h3 className="text-base font-bold text-slate-800 dark:text-zinc-100 mt-2">
                         {c.course}
                       </h3>
@@ -715,6 +739,23 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                         className="w-full px-4 py-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/80 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
+                  </div>
+
+                  {/* FIELD TARGET NRP KHUSUS */}
+                  <div className="p-3.5 rounded-2xl bg-slate-50/60 dark:bg-zinc-800/50 border border-slate-200/60 dark:border-white/5 space-y-1">
+                    <label className="block text-xs font-bold text-slate-700 dark:text-zinc-200">
+                      Target NRP Khusus (Opsional)
+                    </label>
+                    <p className="text-[11px] text-slate-500 dark:text-zinc-400 leading-snug">
+                      Kosongkan jika jadwal ini diambil seluruh kelas. Jika khusus untuk mahasiswa tertentu, tuliskan NRP dipisahkan koma (contoh: <code className="font-mono text-blue-600 dark:text-blue-400">5026211001, 5026211002</code>).
+                    </p>
+                    <input
+                      type="text"
+                      value={formTargetNrps}
+                      onChange={(e) => setFormTargetNrps(e.target.value)}
+                      placeholder="5026211001, 5026211002..."
+                      className="w-full px-4 py-2.5 mt-1 rounded-2xl bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
                   </div>
                 </div>
 

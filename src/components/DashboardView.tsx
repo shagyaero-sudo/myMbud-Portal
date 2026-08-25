@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -120,6 +120,38 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const currentUserNrp = typeof window !== 'undefined' ? (localStorage.getItem('mymbud_user_nrp') || '').trim().toLowerCase() : '';
   const userName = typeof window !== 'undefined' ? localStorage.getItem('mymbud_user_name') || 'Mbuders' : 'Mbuders';
 
+  // 1. Filter hak akses jadwal mahasiswa berdasarkan NRP
+  const visibleSchedules = useMemo(() => {
+    return state.schedules.filter((s: any) => {
+      if (s.target_nrps && Array.isArray(s.target_nrps) && s.target_nrps.length > 0) {
+        const normalizedTargets = s.target_nrps.map((n: string) => n.trim().toLowerCase());
+        return normalizedTargets.includes(currentUserNrp);
+      }
+      return true;
+    });
+  }, [state.schedules, currentUserNrp]);
+
+  // 2. Cek apakah ada jadwal di hari Jumat untuk user ini
+  const hasFridaySchedule = useMemo(() => {
+    return visibleSchedules.some((s) => s.day === 'Jumat');
+  }, [visibleSchedules]);
+
+  // 3. Tab hari adaptif: Jumat hanya muncul jika memang ada matkulnya
+  const dayTabs: DayOfWeek[] = useMemo(() => {
+    const baseDays: DayOfWeek[] = ['Senin', 'Selasa', 'Rabu', 'Kamis'];
+    if (hasFridaySchedule) {
+      return [...baseDays, 'Jumat'];
+    }
+    return baseDays;
+  }, [hasFridaySchedule]);
+
+  // Jaga-jaga jika sedang memilih Jumat tapi jadwal Jumat tidak ada lagi
+  useEffect(() => {
+    if (selectedDay === 'Jumat' && !hasFridaySchedule) {
+      setSelectedDay('Senin');
+    }
+  }, [hasFridaySchedule, selectedDay]);
+
   useEffect(() => {
     if (!currentUserNrp || currentUserNrp === 'unknown') return;
 
@@ -228,12 +260,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     const days: DayOfWeek[] = ['Minggu' as DayOfWeek, 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
     const currentDayIndex = new Date().getDay();
     const todayName = days[currentDayIndex];
-    if (todayName && todayName !== ('Minggu' as DayOfWeek) && todayName !== ('Jumat' as DayOfWeek) && todayName !== ('Sabtu' as DayOfWeek)) {
+    if (todayName && dayTabs.includes(todayName)) {
       setSelectedDay(todayName);
     } else {
       setSelectedDay('Senin');
     }
-  }, []);
+  }, [dayTabs]);
 
   const daysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
   const firstDayOfMonth = (year: number, month: number) => {
@@ -283,7 +315,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   };
 
   const selectedDateSchedules = isWithinSemesterPeriod(selectedCalendarDate)
-    ? state.schedules
+    ? visibleSchedules
         .filter((s) => s.day === selectedDateDayName)
         .sort((a, b) => {
           const startA = a.time.split('-')[0]?.trim() || '';
@@ -369,9 +401,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     });
   };
 
-  const dayTabs: DayOfWeek[] = ['Senin', 'Selasa', 'Rabu', 'Kamis'];
-
-  const filteredSchedule = state.schedules
+  const filteredSchedule = visibleSchedules
     .filter((s) => s.day === selectedDay)
     .sort((a, b) => {
       const startA = a.time.split('-')[0]?.trim() || '';
@@ -633,7 +663,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
         <div className="lg:col-span-2 space-y-4 sm:space-y-5">
 
-          {/* MBUDIARY INPUT BAR (GLASSMORPHISM) */}
+          {/* MBUDIARY INPUT BAR */}
           <motion.div
             whileHover={{ scale: 1.004 }}
             whileTap={{ scale: 0.99 }}
@@ -664,7 +694,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
           </motion.div>
 
-          {/* 1. JADWAL PERKULIAHAN (GLASSMORPHISM) */}
+          {/* 1. JADWAL PERKULIAHAN */}
           <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-5 sm:p-7 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none space-y-3.5 transition-all">
             
             <div className="flex items-center justify-between">
@@ -684,8 +714,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               })()}
             </div>
 
-            {/* TAB HARI STABIL */}
-            <div className="grid grid-cols-4 gap-1 p-1 bg-slate-100/70 dark:bg-zinc-800/60 rounded-2xl w-full border border-slate-200/40 dark:border-white/5">
+            {/* TAB HARI DINAMIS (GRID MENYESUAIKAN 4 ATAU 5 HARI) */}
+            <div className={`grid ${dayTabs.length === 5 ? 'grid-cols-5' : 'grid-cols-4'} gap-1 p-1 bg-slate-100/70 dark:bg-zinc-800/60 rounded-2xl w-full border border-slate-200/40 dark:border-white/5`}>
               {dayTabs.map((day) => {
                 const isActive = selectedDay === day;
                 return (
@@ -804,7 +834,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
           </div>
 
-          {/* 2. WIDGET KALENDER BUILD-IN (GLASSMORPHISM) */}
+          {/* 2. WIDGET KALENDER BUILD-IN */}
           <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-5 sm:p-7 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none space-y-5 transition-all">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
@@ -866,7 +896,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   const hasTasks = dayTasks.length > 0;
                   
                   const dayName = getDayNameFromDate(dateObj);
-                  const hasSchedulesOnDay = state.schedules.some((s) => s.day === dayName);
+                  const hasSchedulesOnDay = visibleSchedules.some((s) => s.day === dayName);
                   const isCourseActive = isWithinSemesterPeriod(dateObj) && hasSchedulesOnDay;
 
                   return (
@@ -978,7 +1008,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
 
-        {/* Right Column: Announcements Desktop (GLASSMORPHISM) */}
+        {/* Right Column: Announcements Desktop */}
         <div className="hidden lg:block space-y-4 sm:space-y-5">
           <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-5 sm:p-7 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none space-y-4 transition-all">
             <div className="flex items-center justify-between">
