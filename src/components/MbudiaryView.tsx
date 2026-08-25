@@ -186,7 +186,7 @@ export const MbudiaryView: React.FC = () => {
                     mbudiary.
                   </h1>
                   <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 mt-0.5 font-medium">
-                    #ruangA-man. 
+                    #Safe(A)rea
                   </p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
