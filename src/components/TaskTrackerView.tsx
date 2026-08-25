@@ -1017,13 +1017,13 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                       {/* Deskripsi & Instruksi */}
                       <div>
                         <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
-                          Instruksi & Keterangan Lengkap
+                          Instruksi & Keterangan
                         </label>
                         <textarea
                           rows={3}
                           value={description}
                           onChange={(e) => setDescription(e.target.value)}
-                          placeholder="Tuliskan format pengumpulan, link referensi, pembagian kelompok, dsb..."
+                          placeholder="Tuliskan format pengerjaan, panduan, dsb..."
                           className="w-full px-4 py-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/80 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                         />
                       </div>
@@ -1031,13 +1031,13 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                       {/* Link Pengumpulan Khusus */}
                       <div>
                         <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
-                          Link Pengumpulan (Opsional)
+                          Link Pengumpulan GDrive (Opsional)
                         </label>
                         <input
                           type="url"
                           value={classroomUrl}
                           onChange={(e) => setClassroomUrl(e.target.value)}
-                          placeholder="Default: myITS Classroom / Form Google"
+                          placeholder="Khusus G-Drive (abaikan jika di Classroom)"
                           className="w-full px-4 py-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/80 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
                         />
                       </div>
@@ -1045,7 +1045,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                       {/* Upload File Lampiran */}
                       <div>
                         <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
-                          Lampiran Berkas Soal / Panduan (Opsional)
+                          Lampiran Soal / Panduan (Opsional)
                         </label>
 
                         <div
@@ -1075,7 +1075,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                             {selectedFile ? selectedFile.name : existingAttachment ? existingAttachment.fileName : 'Pilih atau Tarik File ke Sini'}
                           </p>
                           <p className="text-[10px] text-slate-400 mt-0.5">
-                            PDF, Word, Excel, Gambar (Maks 10MB)
+                            1 File PDF maks 10 MB 
                           </p>
                         </div>
                       </div>
