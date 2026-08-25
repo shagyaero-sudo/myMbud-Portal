@@ -695,7 +695,7 @@ export default function App() {
         </div>
 
         {/* CONTENT LAYER */}
-        <div className="relative z-10 flex flex-col min-h-screen bg-transparent pt-1">
+        <div className="relative z-10 flex flex-col min-h-screen bg-transparent">
           <Header
             isOfficer={isOfficer}
             setIsOfficer={setIsOfficer}
