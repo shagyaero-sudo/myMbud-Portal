@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { AnimatePresence } from 'framer-motion';
 
 import { subscribeAnnouncements } from './services/announcements';
@@ -290,7 +290,6 @@ export default function App() {
           const pjTel = d.pj_phone || d.pjPhone || '';
           const presensi = d.attendance_url || d.attendanceUrl || '';
           
-          // AMBIL TARGET NRPS DARI DATABASE SUPABASE
           const targetNrps = d.target_nrps || d.targetNrps || null;
 
           supabaseSchedules.push({
@@ -433,7 +432,58 @@ export default function App() {
     }
   }, []);
 
-  const activeTaskCount = appState.tasks.filter((task) => {
+
+  // =========================================================================
+  // LOGIKA PEWARISAN HAK AKSES TUGAS (TASK INHERITANCE LOGIC)
+  // =========================================================================
+  
+  const parseTargetNrps = useCallback((raw: any): string[] => {
+    if (!raw) return [];
+    if (Array.isArray(raw)) {
+      return raw.map((item) => {
+        const str = String(item).trim();
+        const match = str.match(/\d{7,14}/);
+        return match ? match[0] : str.toLowerCase();
+      }).filter(Boolean);
+    }
+    if (typeof raw === 'string') {
+      const clean = raw.replace(/[{}"']/g, '');
+      return clean.split(/[\n,]+/).map((item) => {
+        const str = item.trim();
+        const match = str.match(/\d{7,14}/);
+        return match ? match[0] : str.toLowerCase();
+      }).filter(Boolean);
+    }
+    return [];
+  }, []);
+
+  // Filter tugas: otomatis sembunyikan jika matkulnya tidak diambil user
+  const accessibleTasks = useMemo(() => {
+    const cleanUserNrp = currentUserNrp.trim().toLowerCase();
+    
+    return appState.tasks.filter((t) => {
+      if (isOfficer) return true; // Officer berhak melihat semua tugas
+      
+      // Cek apakah mata kuliah tugas ini memiliki daftar target NRP khusus
+      const matchedContact = appState.contacts.find(
+        (c) => c.course.toLowerCase() === t.course.toLowerCase()
+      );
+
+      if (matchedContact) {
+        const targets = parseTargetNrps((matchedContact as any).target_nrps || (matchedContact as any).targetNrps);
+        if (targets.length > 0) {
+          if (!cleanUserNrp || cleanUserNrp === 'unknown') return false;
+          // Hanya tampilkan jika NRP user termasuk di daftar matkul khusus tsb
+          return targets.includes(cleanUserNrp);
+        }
+      }
+      return true; // Tampilkan tugas untuk matkul umum
+    });
+  }, [appState.tasks, appState.contacts, isOfficer, currentUserNrp, parseTargetNrps]);
+
+
+  // Gunakan accessibleTasks untuk menghitung badge notifikasi
+  const activeTaskCount = accessibleTasks.filter((task) => {
     const isExplicitlyDone = completedTaskIds.includes(task.id);
     if (task.status === 'done' || isExplicitlyDone) return false;
 
@@ -443,7 +493,7 @@ export default function App() {
     return deadlineTime > Date.now();
   }).length;
 
-  const urgentTaskCount = appState.tasks.filter((task) => {
+  const urgentTaskCount = accessibleTasks.filter((task) => {
     if (task.status === 'done') return false;
 
     const deadlineTime = new Date(task.deadline).getTime();
@@ -578,13 +628,13 @@ export default function App() {
         {/* RESPONSIVE GRADIENT SYSTEM (GPU ACCELERATED) */}
         <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden gpu-layer">
           
-          {/* KHUSUS HP/TABLET */}
+          {/* KHUSUS HP/TABLET: Bottom-Center Glow Upward Gradient */}
           <div 
             className="block lg:hidden absolute -bottom-[10%] left-1/2 -translate-x-1/2 w-[130vw] h-[550px] rounded-[100%] blur-[120px] transition-all duration-700 opacity-20 dark:opacity-22 gpu-layer" 
             style={{ backgroundColor: 'var(--glow-1)' }}
           />
 
-          {/* KHUSUS DESKTOP/LAPTOP */}
+          {/* KHUSUS DESKTOP/LAPTOP: Multi-Orb Balanced Ambient Glow */}
           <div 
             className="hidden lg:block absolute top-[-100px] left-[-80px] w-[850px] h-[850px] rounded-full blur-[140px] transition-all duration-700 opacity-10 dark:opacity-12 gpu-layer" 
             style={{ backgroundColor: 'var(--glow-1)' }}
@@ -631,7 +681,7 @@ export default function App() {
                 >
                   {activeTab === 'dashboard' && (
                     <DashboardView
-                      state={appState}
+                      state={{ ...appState, tasks: accessibleTasks }}
                       isOfficer={isOfficer}
                       onAddAnnouncement={() => {}}
                       onDeleteAnnouncement={() => {}}
@@ -672,7 +722,7 @@ export default function App() {
 
                   {activeTab === 'tasks' && (
                     <TaskTrackerView
-                      tasks={appState.tasks}
+                      tasks={accessibleTasks}
                       contacts={appState.contacts}
                       isOfficer={isOfficer}
                       completedTaskIds={completedTaskIds}

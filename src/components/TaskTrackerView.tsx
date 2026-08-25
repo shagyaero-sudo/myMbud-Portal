@@ -997,35 +997,21 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                         </div>
                       </div>
 
-                      {/* Dosen Pemberi & Prioritas */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
-                            Dosen Pemberi Tugas
-                          </label>
-                          <input
-                            type="text"
-                            value={assigner}
-                            onChange={(e) => setAssigner(e.target.value)}
-                            placeholder="Nama Dosen Pengampu"
-                            className="w-full px-4 py-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/80 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
-                            Prioritas
-                          </label>
-                          <select
-                            value={priority}
-                            onChange={(e) => setPriority(e.target.value as any)}
-                            className="w-full px-4 py-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/80 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          >
-                            <option value="High">Tinggi (High)</option>
-                            <option value="Medium">Sedang (Medium)</option>
-                            <option value="Low">Rendah (Low)</option>
-                          </select>
-                        </div>
+                      {/* HIDDEN INPUTS: Dosen Pemberi Tugas & Prioritas */}
+                      <div className="hidden">
+                        <input
+                          type="text"
+                          value={assigner}
+                          onChange={(e) => setAssigner(e.target.value)}
+                        />
+                        <select
+                          value={priority}
+                          onChange={(e) => setPriority(e.target.value as any)}
+                        >
+                          <option value="High">High</option>
+                          <option value="Medium">Medium</option>
+                          <option value="Low">Low</option>
+                        </select>
                       </div>
 
                       {/* Deskripsi & Instruksi */}
