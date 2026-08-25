@@ -475,7 +475,7 @@ export default function App() {
       new Set(
         accessibleContacts
           .map((c) => c.course)
-          .filter((name): name is string => Boolean(name && name.trim() !== ''))
+          .filter((name): name is string => Boolean(name && typeof name === 'string' && name.trim() !== ''))
       )
     );
   }, [accessibleContacts]);
@@ -671,9 +671,9 @@ export default function App() {
         {showSplash && <SplashScreen key="splash" soundUrl="/splash-sound.mp3" />}
       </AnimatePresence>
 
-      <div className="relative min-h-screen bg-slate-100 dark:bg-[#0e0f12] text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-500">
+      <div className="relative min-h-[100dvh] bg-slate-100 dark:bg-[#0e0f12] text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-500">
         
-        {/* RESPONSIVE GRADIENT SYSTEM (GPU ACCELERATED) */}
+        {/* RESPONSIVE GRADIENT SYSTEM */}
         <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden gpu-layer">
           <div 
             className="block lg:hidden absolute -bottom-[10%] left-1/2 -translate-x-1/2 w-[130vw] h-[550px] rounded-[100%] blur-[120px] transition-all duration-700 opacity-20 dark:opacity-22 gpu-layer" 
@@ -694,8 +694,8 @@ export default function App() {
           />
         </div>
 
-        {/* CONTENT LAYER */}
-        <div className="relative z-10 flex flex-col min-h-screen bg-transparent">
+        {/* CONTENT LAYER WITH DYNAMIC SAFE-AREA TOP */}
+        <div className="relative z-10 flex flex-col min-h-[100dvh] bg-transparent pt-[env(safe-area-inset-top)]">
           <Header
             isOfficer={isOfficer}
             setIsOfficer={setIsOfficer}
