@@ -671,7 +671,7 @@ export default function App() {
         {showSplash && <SplashScreen key="splash" soundUrl="/splash-sound.mp3" />}
       </AnimatePresence>
 
-      <div className="relative min-h-[100dvh] bg-slate-100 dark:bg-[#0e0f12] text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-500">
+      <div className="relative min-h-screen bg-slate-100 dark:bg-[#0e0f12] text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-500">
         
         {/* RESPONSIVE GRADIENT SYSTEM */}
         <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden gpu-layer">
@@ -694,8 +694,8 @@ export default function App() {
           />
         </div>
 
-        {/* CONTENT LAYER WITH DYNAMIC SAFE-AREA TOP */}
-        <div className="relative z-10 flex flex-col min-h-[100dvh] bg-transparent pt-[env(safe-area-inset-top)]">
+        {/* CONTENT LAYER */}
+        <div className="relative z-10 flex flex-col min-h-screen bg-transparent pt-1">
           <Header
             isOfficer={isOfficer}
             setIsOfficer={setIsOfficer}

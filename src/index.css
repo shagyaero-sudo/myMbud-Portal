@@ -6,18 +6,12 @@
   html {
     scroll-behavior: smooth;
     -webkit-tap-highlight-color: transparent;
-    min-height: 100dvh;
   }
 
   body {
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", "Helvetica Neue", Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    min-height: 100dvh;
-    padding-top: env(safe-area-inset-top, 0px);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-    padding-left: env(safe-area-inset-left, 0px);
-    padding-right: env(safe-area-inset-right, 0px);
   }
 
   /* Custom Soft Scrollbar */
@@ -39,9 +33,7 @@
     background: rgba(150, 150, 150, 0.45);
   }
 
-  /* =========================================================
-     1. BASE SURFACE PALETTE (CLEAN LIGHT vs MATTE CHARCOAL DARK)
-     ========================================================= */
+  /* BASE SURFACE PALETTE */
   :root {
     --color-slate-50: #f8fafc;
     --color-slate-100: #f1f5f9;
@@ -88,11 +80,7 @@
   }
 }
 
-/* =========================================================
-   2. ACCENT COLORS
-   ========================================================= */
-
-/* BIRU myITS */
+/* ACCENT COLORS */
 :root[data-accent="blue"],
 html[data-accent="blue"] {
   --color-blue-50: #eff6ff;
@@ -109,7 +97,6 @@ html[data-accent="blue"] {
   --logo-filter: none;
 }
 
-/* UNGU */
 :root[data-accent="purple"],
 html[data-accent="purple"] {
   --color-blue-50: #faf5ff;
@@ -126,7 +113,6 @@ html[data-accent="purple"] {
   --logo-filter: hue-rotate(50deg) saturate(1.25);
 }
 
-/* PINK */
 :root[data-accent="pink"],
 html[data-accent="pink"] {
   --color-blue-50: #fdf2f8;
@@ -143,7 +129,6 @@ html[data-accent="pink"] {
   --logo-filter: hue-rotate(115deg) saturate(1.35);
 }
 
-/* ORANYE */
 :root[data-accent="orange"],
 html[data-accent="orange"] {
   --color-blue-50: #fff7ed;
@@ -160,7 +145,6 @@ html[data-accent="orange"] {
   --logo-filter: hue-rotate(175deg) saturate(1.4) brightness(1.05);
 }
 
-/* HIJAU */
 :root[data-accent="green"],
 html[data-accent="green"] {
   --color-blue-50: #f0fdf4;
@@ -177,7 +161,6 @@ html[data-accent="green"] {
   --logo-filter: hue-rotate(245deg) saturate(1.25);
 }
 
-/* TEAL */
 :root[data-accent="teal"],
 html[data-accent="teal"] {
   --color-blue-50: #f0fdfa;
@@ -194,7 +177,6 @@ html[data-accent="teal"] {
   --logo-filter: hue-rotate(320deg) saturate(1.15);
 }
 
-/* CYAN */
 :root[data-accent="cyan"],
 html[data-accent="cyan"] {
   --color-blue-50: #ecfeff;
@@ -210,10 +192,6 @@ html[data-accent="cyan"] {
   --glow-2: #3b82f6;
   --logo-filter: hue-rotate(345deg) saturate(1.1);
 }
-
-/* =========================================================
-   3. HARDWARE ACCELERATION & LOW-END GPU OPTIMIZATION
-   ========================================================= */
 
 @layer utilities {
   .gpu-layer {
