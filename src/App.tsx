@@ -432,9 +432,8 @@ export default function App() {
     }
   }, []);
 
-
   // =========================================================================
-  // LOGIKA PEWARISAN HAK AKSES TUGAS (TASK INHERITANCE LOGIC)
+  // LOGIKA PEWARISAN HAK AKSES TUGAS & MATERI (REGION LOCK / INHERITANCE)
   // =========================================================================
   
   const parseTargetNrps = useCallback((raw: any): string[] => {
@@ -457,14 +456,31 @@ export default function App() {
     return [];
   }, []);
 
-  // Filter tugas: otomatis sembunyikan jika matkulnya tidak diambil user
+  // 1. Matkul yang dapat diakses oleh user yang sedang login
+  const accessibleContacts = useMemo(() => {
+    const cleanUserNrp = currentUserNrp.trim().toLowerCase();
+    return appState.contacts.filter((c: any) => {
+      if (isOfficer) return true;
+      const targets = parseTargetNrps(c.target_nrps || c.targetNrps);
+      if (targets.length > 0) {
+        if (!cleanUserNrp || cleanUserNrp === 'unknown') return false;
+        return targets.includes(cleanUserNrp);
+      }
+      return true;
+    });
+  }, [appState.contacts, isOfficer, currentUserNrp, parseTargetNrps]);
+
+  const accessibleCourseNames = useMemo(() => {
+    return Array.from(new Set(accessibleContacts.map((c) => c.course)));
+  }, [accessibleContacts]);
+
+  // 2. Filter Tugas: Otomatis sembunyikan jika matkulnya tidak diambil user
   const accessibleTasks = useMemo(() => {
     const cleanUserNrp = currentUserNrp.trim().toLowerCase();
     
     return appState.tasks.filter((t) => {
-      if (isOfficer) return true; // Officer berhak melihat semua tugas
+      if (isOfficer) return true;
       
-      // Cek apakah mata kuliah tugas ini memiliki daftar target NRP khusus
       const matchedContact = appState.contacts.find(
         (c) => c.course.toLowerCase() === t.course.toLowerCase()
       );
@@ -473,16 +489,36 @@ export default function App() {
         const targets = parseTargetNrps((matchedContact as any).target_nrps || (matchedContact as any).targetNrps);
         if (targets.length > 0) {
           if (!cleanUserNrp || cleanUserNrp === 'unknown') return false;
-          // Hanya tampilkan jika NRP user termasuk di daftar matkul khusus tsb
           return targets.includes(cleanUserNrp);
         }
       }
-      return true; // Tampilkan tugas untuk matkul umum
+      return true;
     });
   }, [appState.tasks, appState.contacts, isOfficer, currentUserNrp, parseTargetNrps]);
 
+  // 3. Filter Materi PDF: Otomatis sembunyikan jika matkulnya tidak diambil user
+  const accessibleMaterials = useMemo(() => {
+    const cleanUserNrp = currentUserNrp.trim().toLowerCase();
 
-  // Gunakan accessibleTasks untuk menghitung badge notifikasi
+    return appState.materials.filter((m) => {
+      if (isOfficer) return true;
+
+      const matchedContact = appState.contacts.find(
+        (c) => c.course.toLowerCase() === m.course.toLowerCase()
+      );
+
+      if (matchedContact) {
+        const targets = parseTargetNrps((matchedContact as any).target_nrps || (matchedContact as any).targetNrps);
+        if (targets.length > 0) {
+          if (!cleanUserNrp || cleanUserNrp === 'unknown') return false;
+          return targets.includes(cleanUserNrp);
+        }
+      }
+      return true;
+    });
+  }, [appState.materials, appState.contacts, isOfficer, currentUserNrp, parseTargetNrps]);
+
+  // Hitung badge tugas
   const activeTaskCount = accessibleTasks.filter((task) => {
     const isExplicitlyDone = completedTaskIds.includes(task.id);
     if (task.status === 'done' || isExplicitlyDone) return false;
@@ -627,14 +663,11 @@ export default function App() {
         
         {/* RESPONSIVE GRADIENT SYSTEM (GPU ACCELERATED) */}
         <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden gpu-layer">
-          
-          {/* KHUSUS HP/TABLET: Bottom-Center Glow Upward Gradient */}
           <div 
             className="block lg:hidden absolute -bottom-[10%] left-1/2 -translate-x-1/2 w-[130vw] h-[550px] rounded-[100%] blur-[120px] transition-all duration-700 opacity-20 dark:opacity-22 gpu-layer" 
             style={{ backgroundColor: 'var(--glow-1)' }}
           />
 
-          {/* KHUSUS DESKTOP/LAPTOP: Multi-Orb Balanced Ambient Glow */}
           <div 
             className="hidden lg:block absolute top-[-100px] left-[-80px] w-[850px] h-[850px] rounded-full blur-[140px] transition-all duration-700 opacity-10 dark:opacity-12 gpu-layer" 
             style={{ backgroundColor: 'var(--glow-1)' }}
@@ -703,9 +736,9 @@ export default function App() {
 
                   {activeTab === 'materials' && (
                     <KnowledgeBaseView
-                      materials={appState.materials}
+                      materials={accessibleMaterials}
                       isOfficer={isOfficer}
-                      availableCourses={appState.schedules.map((s) => s.course)}
+                      availableCourses={accessibleCourseNames}
                       onAddMaterial={handleAddMaterial}
                       onDeleteMaterial={handleDeleteMaterial}
                       onPreviewPdf={(material) => setPreviewMaterial(material)}
@@ -723,7 +756,7 @@ export default function App() {
                   {activeTab === 'tasks' && (
                     <TaskTrackerView
                       tasks={accessibleTasks}
-                      contacts={appState.contacts}
+                      contacts={accessibleContacts}
                       isOfficer={isOfficer}
                       completedTaskIds={completedTaskIds}
                       onAddTask={handleAddTask}
