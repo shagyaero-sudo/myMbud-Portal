@@ -10,7 +10,6 @@ import {
   UserCheck,
   X,
   ChevronDown,
-  Users,
 } from 'lucide-react';
 import { Contact } from '../types';
 
@@ -73,7 +72,10 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
 
   const [openTemplateIndex, setOpenTemplateIndex] = useState<number | null>(0);
 
-  const currentUserNrp = typeof window !== 'undefined' ? (localStorage.getItem('mymbud_user_nrp') || '').trim().toLowerCase() : '';
+  const currentUserNrp =
+    typeof window !== 'undefined'
+      ? (localStorage.getItem('mymbud_user_nrp') || '').trim().toLowerCase()
+      : '';
 
   const formatWaNumber = (phoneStr: string) => {
     if (!phoneStr) return '';
@@ -107,9 +109,11 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
 
   const filteredContacts = contacts
     .filter((c: any) => {
-      // Filter hak akses NRP (Officer bisa melihat semua)
-      if (!isOfficer && c.target_nrps && Array.isArray(c.target_nrps) && c.target_nrps.length > 0) {
-        const normalizedTarget = c.target_nrps.map((nrp: string) => nrp.trim().toLowerCase());
+      const nrps = c.target_nrps || c.targetNrps;
+      if (!isOfficer && nrps && Array.isArray(nrps) && nrps.length > 0) {
+        const normalizedTarget = nrps.map((nrp: string) =>
+          nrp.trim().toLowerCase()
+        );
         if (!normalizedTarget.includes(currentUserNrp)) {
           return false;
         }
@@ -171,7 +175,17 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
     setFormScheduleDayTime(c.scheduleDayTime || '');
     setFormSks(c.sks || '');
     setFormAttendanceUrl(c.attendanceUrl || '');
-    setFormTargetNrps(Array.isArray(c.target_nrps) ? c.target_nrps.join(', ') : '');
+
+    // Memastikan daftar NRP lama tetap muncul dalam format per-baris (enter)
+    const rawTargetNrps = c.target_nrps || c.targetNrps;
+    if (Array.isArray(rawTargetNrps)) {
+      setFormTargetNrps(rawTargetNrps.join('\n'));
+    } else if (typeof rawTargetNrps === 'string') {
+      setFormTargetNrps(rawTargetNrps.split(',').map((s) => s.trim()).join('\n'));
+    } else {
+      setFormTargetNrps('');
+    }
+
     setShowModal(true);
   };
 
@@ -179,8 +193,9 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
     e.preventDefault();
     if (!formCourse.trim() || !formLecturerName.trim()) return;
 
+    // Parsing dari format enter maupun koma
     const parsedNrps = formTargetNrps
-      .split(',')
+      .split(/[\n,]+/)
       .map((nrp) => nrp.trim())
       .filter((nrp) => nrp.length > 0);
 
@@ -198,6 +213,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
       sks: Number(formSks) || 0,
       attendanceUrl: formAttendanceUrl.trim(),
       target_nrps: parsedNrps.length > 0 ? parsedNrps : null,
+      targetNrps: parsedNrps.length > 0 ? parsedNrps : null,
     };
 
     if (editingId) {
@@ -307,7 +323,11 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
           />
         </div>
 
-        <div className={`block md:hidden transition-all duration-300 ease-in-out ${isMobileSearchExpanded ? 'flex-1' : 'w-10 shrink-0'}`}>
+        <div
+          className={`block md:hidden transition-all duration-300 ease-in-out ${
+            isMobileSearchExpanded ? 'flex-1' : 'w-10 shrink-0'
+          }`}
+        >
           {isMobileSearchExpanded ? (
             <div className="relative w-full flex items-center">
               <Search className="w-3.5 h-3.5 absolute left-3 text-slate-400 pointer-events-none" />
@@ -346,7 +366,9 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
           )}
         </div>
 
-        {(!isMobileSearchExpanded || typeof window === 'undefined' || window.innerWidth >= 768) && (
+        {(!isMobileSearchExpanded ||
+          typeof window === 'undefined' ||
+          window.innerWidth >= 768) && (
           <div className="relative flex-1 md:flex-initial md:min-w-[220px]">
             <select
               value={selectedCourseFilter}
@@ -373,102 +395,73 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
           </div>
         ) : (
           <AnimatePresence>
-            {filteredContacts.map((c: any) => (
-              <motion.div
-                layout
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                key={c.id}
-                className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-5 sm:p-7 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none space-y-4 flex flex-col justify-between transition-all"
-              >
-                <div>
-                  <div className="flex items-start justify-between gap-2 pb-3 mb-4">
-                    <div>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50/80 dark:bg-blue-950/60 px-3 py-1 rounded-full border border-blue-100/50 dark:border-blue-900/40">
-                          {c.code || 'Mata Kuliah'} {c.sks ? `• ${c.sks} SKS` : ''}
-                        </span>
-
-                        {c.target_nrps && c.target_nrps.length > 0 && isOfficer && (
-                          <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-2.5 py-0.5 rounded-full border border-amber-200 dark:border-amber-900/40">
-                            Khusus ({c.target_nrps.length} NRP)
+            {filteredContacts.map((c: any) => {
+              const nrps = c.target_nrps || c.targetNrps;
+              return (
+                <motion.div
+                  layout
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  key={c.id}
+                  className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-5 sm:p-7 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none space-y-4 flex flex-col justify-between transition-all"
+                >
+                  <div>
+                    <div className="flex items-start justify-between gap-2 pb-3 mb-4">
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50/80 dark:bg-blue-950/60 px-3 py-1 rounded-full border border-blue-100/50 dark:border-blue-900/40">
+                            {c.code || 'Mata Kuliah'}{' '}
+                            {c.sks ? `• ${c.sks} SKS` : ''}
                           </span>
+
+                          {nrps && nrps.length > 0 && isOfficer && (
+                            <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-2.5 py-0.5 rounded-full border border-amber-200 dark:border-amber-900/40">
+                              Khusus ({nrps.length} NRP)
+                            </span>
+                          )}
+                        </div>
+
+                        <h3 className="text-base font-bold text-slate-800 dark:text-zinc-100 mt-2">
+                          {c.course}
+                        </h3>
+                        {c.scheduleDayTime && (
+                          <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
+                            {c.scheduleDayTime} ({c.room || 'R. Kelas'})
+                          </p>
                         )}
                       </div>
 
-                      <h3 className="text-base font-bold text-slate-800 dark:text-zinc-100 mt-2">
-                        {c.course}
-                      </h3>
-                      {c.scheduleDayTime && (
-                        <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
-                          {c.scheduleDayTime} ({c.room || 'R. Kelas'})
-                        </p>
+                      {isOfficer && (
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleOpenEditModal(c)}
+                            className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-white/60 dark:hover:bg-zinc-800 transition-all cursor-pointer"
+                            title="Edit Kontak"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => onDeleteContact(c.id)}
+                            className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-white/60 dark:hover:bg-zinc-800 transition-all cursor-pointer"
+                            title="Hapus"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       )}
                     </div>
 
-                    {isOfficer && (
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => handleOpenEditModal(c)}
-                          className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-white/60 dark:hover:bg-zinc-800 transition-all cursor-pointer"
-                          title="Edit Kontak"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => onDeleteContact(c.id)}
-                          className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-white/60 dark:hover:bg-zinc-800 transition-all cursor-pointer"
-                          title="Hapus"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="space-y-3">
-                    {/* DOSEN 1 */}
-                    <div className="p-3.5 sm:p-4 rounded-2xl bg-white/60 dark:bg-zinc-800/40 border border-slate-200/50 dark:border-white/5 space-y-2.5">
-                      <div className="flex items-center gap-1.5 overflow-hidden">
-                        <GraduationCap className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
-                        <span className="text-xs font-bold text-slate-700 dark:text-zinc-300 shrink-0">
-                          Dosen{c.lecturerName2 ? ' 1' : ''}:
-                        </span>
-                        <span className="text-xs font-bold text-slate-900 dark:text-zinc-100 truncate">
-                          {c.lecturerName}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-2 pt-0.5">
-                        <motion.button
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          onClick={() =>
-                            openTemplate(
-                              c.lecturerName,
-                              c.lecturerPhone,
-                              c.course
-                            )
-                          }
-                          className="w-full flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition-all shadow-md shadow-blue-500/20 cursor-pointer"
-                        >
-                          <MessageSquare className="w-3.5 h-3.5" />
-                          <span>Chat Dosen{c.lecturerName2 ? ' 1' : ''} (Pilih Template)</span>
-                        </motion.button>
-                      </div>
-                    </div>
-
-                    {/* DOSEN 2 (JIKA ADA) */}
-                    {c.lecturerName2 && c.lecturerName2.trim() !== '' && (
+                    <div className="space-y-3">
+                      {/* DOSEN 1 */}
                       <div className="p-3.5 sm:p-4 rounded-2xl bg-white/60 dark:bg-zinc-800/40 border border-slate-200/50 dark:border-white/5 space-y-2.5">
                         <div className="flex items-center gap-1.5 overflow-hidden">
                           <GraduationCap className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
                           <span className="text-xs font-bold text-slate-700 dark:text-zinc-300 shrink-0">
-                            Dosen 2:
+                            Dosen{c.lecturerName2 ? ' 1' : ''}:
                           </span>
                           <span className="text-xs font-bold text-slate-900 dark:text-zinc-100 truncate">
-                            {c.lecturerName2}
+                            {c.lecturerName}
                           </span>
                         </div>
 
@@ -478,54 +471,89 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                             whileTap={{ scale: 0.98 }}
                             onClick={() =>
                               openTemplate(
-                                c.lecturerName2,
-                                c.lecturerPhone2 || '',
+                                c.lecturerName,
+                                c.lecturerPhone,
                                 c.course
                               )
                             }
                             className="w-full flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition-all shadow-md shadow-blue-500/20 cursor-pointer"
                           >
                             <MessageSquare className="w-3.5 h-3.5" />
-                            <span>Chat Dosen 2 (Pilih Template)</span>
+                            <span>
+                              Chat Dosen{c.lecturerName2 ? ' 1' : ''} (Pilih Template)
+                            </span>
                           </motion.button>
                         </div>
                       </div>
-                    )}
 
-                    {/* PJ MATKUL */}
-                    <div className="p-3.5 sm:p-4 rounded-2xl bg-white/40 dark:bg-zinc-800/30 border border-slate-200/40 dark:border-white/5 space-y-2.5">
-                      <div className="flex items-center gap-1.5 overflow-hidden">
-                        <UserCheck className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
-                        <span className="text-xs font-bold text-slate-700 dark:text-zinc-300 shrink-0">
-                          PJ Matkul:
-                        </span>
-                        <span className="text-xs font-bold text-slate-900 dark:text-zinc-100 truncate">
-                          {c.pjName}
-                        </span>
-                      </div>
+                      {/* DOSEN 2 */}
+                      {c.lecturerName2 && c.lecturerName2.trim() !== '' && (
+                        <div className="p-3.5 sm:p-4 rounded-2xl bg-white/60 dark:bg-zinc-800/40 border border-slate-200/50 dark:border-white/5 space-y-2.5">
+                          <div className="flex items-center gap-1.5 overflow-hidden">
+                            <GraduationCap className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                            <span className="text-xs font-bold text-slate-700 dark:text-zinc-300 shrink-0">
+                              Dosen 2:
+                            </span>
+                            <span className="text-xs font-bold text-slate-900 dark:text-zinc-100 truncate">
+                              {c.lecturerName2}
+                            </span>
+                          </div>
 
-                      <div className="flex items-center gap-2 pt-0.5">
-                        <motion.a
-                          whileHover={{ scale: 1.01 }}
-                          whileTap={{ scale: 0.99 }}
-                          href={
-                            formatWaNumber(c.pjPhone)
-                              ? `https://wa.me/${formatWaNumber(c.pjPhone)}`
-                              : '#'
-                          }
-                          target="_blank"
-                          rel="noreferrer"
-                          className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-slate-100/80 dark:bg-zinc-700/60 hover:bg-slate-200 dark:hover:bg-zinc-600 text-slate-800 dark:text-zinc-200 font-semibold text-xs transition-all cursor-pointer"
-                        >
-                          <MessageSquare className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-                          <span>Chat PJ Matkul</span>
-                        </motion.a>
+                          <div className="flex items-center gap-2 pt-0.5">
+                            <motion.button
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              onClick={() =>
+                                openTemplate(
+                                  c.lecturerName2,
+                                  c.lecturerPhone2 || '',
+                                  c.course
+                                )
+                              }
+                              className="w-full flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition-all shadow-md shadow-blue-500/20 cursor-pointer"
+                            >
+                              <MessageSquare className="w-3.5 h-3.5" />
+                              <span>Chat Dosen 2 (Pilih Template)</span>
+                            </motion.button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* PJ MATKUL */}
+                      <div className="p-3.5 sm:p-4 rounded-2xl bg-white/40 dark:bg-zinc-800/30 border border-slate-200/40 dark:border-white/5 space-y-2.5">
+                        <div className="flex items-center gap-1.5 overflow-hidden">
+                          <UserCheck className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                          <span className="text-xs font-bold text-slate-700 dark:text-zinc-300 shrink-0">
+                            PJ Matkul:
+                          </span>
+                          <span className="text-xs font-bold text-slate-900 dark:text-zinc-100 truncate">
+                            {c.pjName}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2 pt-0.5">
+                          <motion.a
+                            whileHover={{ scale: 1.01 }}
+                            whileTap={{ scale: 0.99 }}
+                            href={
+                              formatWaNumber(c.pjPhone)
+                                ? `https://wa.me/${formatWaNumber(c.pjPhone)}`
+                                : '#'
+                            }
+                            target="_blank"
+                            rel="noreferrer"
+                            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-slate-100/80 dark:bg-zinc-700/60 hover:bg-slate-200 dark:hover:bg-zinc-600 text-slate-800 dark:text-zinc-200 font-semibold text-xs transition-all cursor-pointer"
+                          >
+                            <MessageSquare className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                            <span>Chat PJ Matkul</span>
+                          </motion.a>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              );
+            })}
           </AnimatePresence>
         )}
       </div>
@@ -741,20 +769,20 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                     </div>
                   </div>
 
-                  {/* FIELD TARGET NRP KHUSUS */}
-                  <div className="p-3.5 rounded-2xl bg-slate-50/60 dark:bg-zinc-800/50 border border-slate-200/60 dark:border-white/5 space-y-1">
+                  {/* FIELD TARGET NRP KHUSUS (TEXTAREA ENTER-ENTER) */}
+                  <div className="p-4 rounded-2xl bg-slate-50/70 dark:bg-zinc-800/50 border border-slate-200/60 dark:border-white/5 space-y-2">
                     <label className="block text-xs font-bold text-slate-700 dark:text-zinc-200">
                       Target NRP Khusus (Opsional)
                     </label>
-                    <p className="text-[11px] text-slate-500 dark:text-zinc-400 leading-snug">
-                      Kosongkan jika jadwal ini diambil seluruh kelas. Jika khusus untuk mahasiswa tertentu, tuliskan NRP dipisahkan koma (contoh: <code className="font-mono text-blue-600 dark:text-blue-400">5026211001, 5026211002</code>).
+                    <p className="text-[11px] text-slate-500 dark:text-zinc-400 leading-relaxed">
+                      Kosongkan jika matkul ini untuk seluruh kelas. Tulis <strong>1 NRP per baris (tekan Enter)</strong> jika hanya untuk mahasiswa tertentu.
                     </p>
-                    <input
-                      type="text"
+                    <textarea
+                      rows={4}
                       value={formTargetNrps}
                       onChange={(e) => setFormTargetNrps(e.target.value)}
-                      placeholder="5026211001, 5026211002..."
-                      className="w-full px-4 py-2.5 mt-1 rounded-2xl bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder={`5026211001\n5026211002\n5026211003`}
+                      className="w-full px-4 py-3 rounded-2xl bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs font-mono leading-relaxed focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
                     />
                   </div>
                 </div>
