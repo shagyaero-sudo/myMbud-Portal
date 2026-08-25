@@ -289,6 +289,9 @@ export default function App() {
           const pj = d.pj_name || d.pj_matkul || d.pjName || '';
           const pjTel = d.pj_phone || d.pjPhone || '';
           const presensi = d.attendance_url || d.attendanceUrl || '';
+          
+          // AMBIL TARGET NRPS DARI DATABASE SUPABASE
+          const targetNrps = d.target_nrps || d.targetNrps || null;
 
           supabaseSchedules.push({
             id: d.id,
@@ -302,7 +305,8 @@ export default function App() {
             pjMatkul: pj,
             sks: Number(d.credits || d.sks) || 0,
             attendanceUrl: presensi,
-          });
+            target_nrps: targetNrps,
+          } as any);
 
           supabaseContacts.push({
             id: d.id,
@@ -318,7 +322,8 @@ export default function App() {
             room: d.room || '',
             scheduleDayTime: d.schedule_day_time || (scheduleDay + (scheduleTime ? ', ' + scheduleTime : '')),
             attendanceUrl: presensi,
-          });
+            target_nrps: targetNrps,
+          } as any);
         });
 
         setAppState((prev) => ({
@@ -573,13 +578,13 @@ export default function App() {
         {/* RESPONSIVE GRADIENT SYSTEM (GPU ACCELERATED) */}
         <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden gpu-layer">
           
-          {/* KHUSUS HP/TABLET: Bottom-Center Glow Upward Gradient */}
+          {/* KHUSUS HP/TABLET */}
           <div 
             className="block lg:hidden absolute -bottom-[10%] left-1/2 -translate-x-1/2 w-[130vw] h-[550px] rounded-[100%] blur-[120px] transition-all duration-700 opacity-20 dark:opacity-22 gpu-layer" 
             style={{ backgroundColor: 'var(--glow-1)' }}
           />
 
-          {/* KHUSUS DESKTOP/LAPTOP: Multi-Orb Balanced Ambient Glow */}
+          {/* KHUSUS DESKTOP/LAPTOP */}
           <div 
             className="hidden lg:block absolute top-[-100px] left-[-80px] w-[850px] h-[850px] rounded-full blur-[140px] transition-all duration-700 opacity-10 dark:opacity-12 gpu-layer" 
             style={{ backgroundColor: 'var(--glow-1)' }}

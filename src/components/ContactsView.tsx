@@ -107,14 +107,37 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
     return { dayOrder, startTime };
   };
 
+  const parseTargetNrps = (raw: any): string[] => {
+    if (!raw) return [];
+    if (Array.isArray(raw)) {
+      return raw
+        .map((item) => {
+          const str = String(item).trim();
+          const match = str.match(/\d{7,14}/);
+          return match ? match[0] : str.toLowerCase();
+        })
+        .filter(Boolean);
+    }
+    if (typeof raw === 'string') {
+      const clean = raw.replace(/[{}"']/g, '');
+      return clean
+        .split(/[\n,]+/)
+        .map((item) => {
+          const str = item.trim();
+          const match = str.match(/\d{7,14}/);
+          return match ? match[0] : str.toLowerCase();
+        })
+        .filter(Boolean);
+    }
+    return [];
+  };
+
   const filteredContacts = contacts
     .filter((c: any) => {
-      const nrps = c.target_nrps || c.targetNrps;
-      if (!isOfficer && nrps && Array.isArray(nrps) && nrps.length > 0) {
-        const normalizedTarget = nrps.map((nrp: string) =>
-          nrp.trim().toLowerCase()
-        );
-        if (!normalizedTarget.includes(currentUserNrp)) {
+      const nrps = parseTargetNrps(c.target_nrps || c.targetNrps);
+
+      if (!isOfficer && nrps.length > 0) {
+        if (!currentUserNrp || currentUserNrp === 'unknown' || !nrps.includes(currentUserNrp)) {
           return false;
         }
       }
@@ -176,12 +199,12 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
     setFormSks(c.sks || '');
     setFormAttendanceUrl(c.attendanceUrl || '');
 
-    // Memastikan daftar NRP lama tetap muncul dalam format per-baris (enter)
     const rawTargetNrps = c.target_nrps || c.targetNrps;
     if (Array.isArray(rawTargetNrps)) {
       setFormTargetNrps(rawTargetNrps.join('\n'));
     } else if (typeof rawTargetNrps === 'string') {
-      setFormTargetNrps(rawTargetNrps.split(',').map((s) => s.trim()).join('\n'));
+      const clean = rawTargetNrps.replace(/[{}"']/g, '');
+      setFormTargetNrps(clean.split(',').map((s) => s.trim()).join('\n'));
     } else {
       setFormTargetNrps('');
     }
@@ -193,10 +216,13 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
     e.preventDefault();
     if (!formCourse.trim() || !formLecturerName.trim()) return;
 
-    // Parsing dari format enter maupun koma
+    // OTOMATIS AMBIL DIGIT ANGKA NRP DARI TIAP BARIS (Abaikan Nama dan Huruf)
     const parsedNrps = formTargetNrps
       .split(/[\n,]+/)
-      .map((nrp) => nrp.trim())
+      .map((line) => {
+        const match = line.match(/\d{7,14}/);
+        return match ? match[0].trim() : '';
+      })
       .filter((nrp) => nrp.length > 0);
 
     const payload: any = {
@@ -396,7 +422,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
         ) : (
           <AnimatePresence>
             {filteredContacts.map((c: any) => {
-              const nrps = c.target_nrps || c.targetNrps;
+              const nrps = parseTargetNrps(c.target_nrps || c.targetNrps);
               return (
                 <motion.div
                   layout
@@ -775,13 +801,13 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
                       Target NRP Khusus (Opsional)
                     </label>
                     <p className="text-[11px] text-slate-500 dark:text-zinc-400 leading-relaxed">
-                      Kosongkan jika matkul ini untuk seluruh kelas. Tulis <strong>1 NRP per baris (tekan Enter)</strong> jika hanya untuk mahasiswa tertentu.
+                      Kosongkan jika matkul ini untuk seluruh kelas. Tulis <strong>1 NRP per baris (tekan Enter)</strong> jika hanya untuk mahasiswa tertentu. Nama setelah NRP akan diabaikan secara otomatis.
                     </p>
                     <textarea
                       rows={4}
                       value={formTargetNrps}
                       onChange={(e) => setFormTargetNrps(e.target.value)}
-                      placeholder={`5026211001\n5026211002\n5026211003`}
+                      placeholder={`5026211001\n5026211002 NARA\n5026211003`}
                       className="w-full px-4 py-3 rounded-2xl bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs font-mono leading-relaxed focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
                     />
                   </div>

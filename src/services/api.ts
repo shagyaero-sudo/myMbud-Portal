@@ -78,6 +78,9 @@ export async function addContactApi(contact: Omit<Contact, 'id'>): Promise<AppSt
     const day = scheduleParts[0]?.trim() || 'Senin';
     const time = scheduleParts.slice(1).join(',').trim() || '';
 
+    // Handle target_nrps
+    const targetNrps = (contact as any).target_nrps || (contact as any).targetNrps || null;
+
     const { error } = await supabase.from('courses').insert({
       id,
       code: contact.code || '',
@@ -95,6 +98,7 @@ export async function addContactApi(contact: Omit<Contact, 'id'>): Promise<AppSt
       schedule_day_time: contact.scheduleDayTime || `${day}, ${time}`,
       attendance_url: contact.attendanceUrl || '',
       credits: Number(contact.sks) || 0,
+      target_nrps: targetNrps, // <-- DIPERBAIKI: Disimpan ke database
       created_at: new Date().toISOString(),
     });
 
@@ -128,6 +132,11 @@ export async function updateContactApi(id: string, contact: Partial<Contact>): P
     }
     if (contact.attendanceUrl !== undefined) payload.attendance_url = contact.attendanceUrl;
     if (contact.sks !== undefined) payload.credits = Number(contact.sks) || 0;
+
+    // DIPERBAIKI: Handle update target_nrps
+    if ((contact as any).target_nrps !== undefined || (contact as any).targetNrps !== undefined) {
+      payload.target_nrps = (contact as any).target_nrps ?? (contact as any).targetNrps ?? null;
+    }
 
     const { error } = await supabase.from('courses').update(payload).eq('id', id);
     if (error) throw error;

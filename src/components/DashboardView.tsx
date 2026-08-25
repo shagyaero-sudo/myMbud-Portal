@@ -120,13 +120,46 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const currentUserNrp = typeof window !== 'undefined' ? (localStorage.getItem('mymbud_user_nrp') || '').trim().toLowerCase() : '';
   const userName = typeof window !== 'undefined' ? localStorage.getItem('mymbud_user_name') || 'Mbuders' : 'Mbuders';
 
+  // Helper untuk membersihkan & menormalkan target NRP
+  const parseTargetNrps = (raw: any): string[] => {
+    if (!raw) return [];
+    if (Array.isArray(raw)) {
+      return raw
+        .map((item) => {
+          const str = String(item).trim();
+          const match = str.match(/\d{7,14}/);
+          return match ? match[0] : str.toLowerCase();
+        })
+        .filter(Boolean);
+    }
+    if (typeof raw === 'string') {
+      const clean = raw.replace(/[{}"']/g, '');
+      return clean
+        .split(/[\n,]+/)
+        .map((item) => {
+          const str = item.trim();
+          const match = str.match(/\d{7,14}/);
+          return match ? match[0] : str.toLowerCase();
+        })
+        .filter(Boolean);
+    }
+    return [];
+  };
+
   // 1. Filter hak akses jadwal mahasiswa berdasarkan NRP
   const visibleSchedules = useMemo(() => {
+    const cleanUserNrp = currentUserNrp.trim().toLowerCase();
+
     return state.schedules.filter((s: any) => {
-      if (s.target_nrps && Array.isArray(s.target_nrps) && s.target_nrps.length > 0) {
-        const normalizedTargets = s.target_nrps.map((n: string) => n.trim().toLowerCase());
-        return normalizedTargets.includes(currentUserNrp);
+      const targets = parseTargetNrps(s.target_nrps || s.targetNrps);
+
+      // JIKA ADA TARGET NRP KHUSUS:
+      if (targets.length > 0) {
+        if (!cleanUserNrp || cleanUserNrp === 'unknown') return false;
+        return targets.includes(cleanUserNrp);
       }
+
+      // JIKA KOSONG -> Jadwal umum kelas
       return true;
     });
   }, [state.schedules, currentUserNrp]);
@@ -145,7 +178,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     return baseDays;
   }, [hasFridaySchedule]);
 
-  // Jaga-jaga jika sedang memilih Jumat tapi jadwal Jumat tidak ada lagi
   useEffect(() => {
     if (selectedDay === 'Jumat' && !hasFridaySchedule) {
       setSelectedDay('Senin');
