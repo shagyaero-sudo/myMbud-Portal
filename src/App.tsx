@@ -694,8 +694,11 @@ export default function App() {
           />
         </div>
 
-        {/* CONTENT LAYER */}
-        <div className="relative z-10 flex flex-col min-h-screen bg-transparent">
+        {/* CONTENT LAYER WITH EXACT 1x SAFE AREA */}
+        <div 
+          className="relative z-10 flex flex-col min-h-screen bg-transparent"
+          style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 12px)' }}
+        >
           <Header
             isOfficer={isOfficer}
             setIsOfficer={setIsOfficer}
