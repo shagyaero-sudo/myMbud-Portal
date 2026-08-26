@@ -31,12 +31,17 @@ function emit(name: string) {
   }
 }
 
+// DUKUNG TIPE VERIFIKASI STRING ('gold' | 'blue' | false) DENGAN STRICT PARSING
 function normalizeUser(data: Record<string, any>): MbudiaryUser {
-  let isVerifiedValue: any = false;
-  if (data.is_verified === 'gold' || data.is_verified === 'blue') {
-    isVerifiedValue = data.is_verified;
+  let isVerifiedValue: 'gold' | 'blue' | false = false;
+
+  const rawVerified = data.is_verified;
+  if (rawVerified === 'gold') {
+    isVerifiedValue = 'gold';
+  } else if (rawVerified === 'blue' || rawVerified === true || rawVerified === 'true') {
+    isVerifiedValue = 'blue';
   } else {
-    isVerifiedValue = Boolean(data.is_verified);
+    isVerifiedValue = false; // "false", null, undefined, "", 0 dinilai false
   }
 
   return {
@@ -214,13 +219,15 @@ export async function syncUserProfileWithFirebase(): Promise<UserProfile> {
       headerUrl: currentProfile.headerUrl || undefined,
     };
 
+    const initialPayloadVerified = initialUser.isVerified === 'gold' ? 'gold' : initialUser.isVerified === 'blue' || initialUser.isVerified === true ? 'blue' : null;
+
     await supabase.from('mbudiary_users').upsert({
       nrp: initialUser.nrp,
       username: initialUser.username,
       nickname: initialUser.nickname,
       is_officer: initialUser.isOfficer,
       emoji: initialUser.emoji,
-      is_verified: initialUser.isVerified,
+      is_verified: initialPayloadVerified,
       photo_url: initialUser.photoUrl || null,
       header_url: initialUser.headerUrl || null,
       updated_at: new Date().toISOString(),
@@ -263,13 +270,15 @@ export async function saveUserProfile(profile: UserProfile): Promise<void> {
     headerUrl: profile.headerUrl || undefined,
   };
 
+  const payloadVerified = cloudUser.isVerified === 'gold' ? 'gold' : cloudUser.isVerified === 'blue' || cloudUser.isVerified === true ? 'blue' : null;
+
   const { error } = await supabase.from('mbudiary_users').upsert({
     nrp: cloudUser.nrp,
     username: cloudUser.username,
     nickname: cloudUser.nickname,
     is_officer: cloudUser.isOfficer,
     emoji: cloudUser.emoji,
-    is_verified: cloudUser.isVerified,
+    is_verified: payloadVerified,
     photo_url: cloudUser.photoUrl || null,
     header_url: cloudUser.headerUrl || null,
     updated_at: new Date().toISOString(),
@@ -293,13 +302,15 @@ export async function saveUserProfile(profile: UserProfile): Promise<void> {
   emit('mbud_user_change');
 }
 
-export async function setUserVerified(userNrp: string, verified: boolean | string): Promise<void> {
+export async function setUserVerified(userNrp: string, verified: boolean | string | null): Promise<void> {
   const normalizedNrp = userNrp.trim().toLowerCase();
   if (!normalizedNrp || normalizedNrp === 'unknown') throw new Error('NRP user tidak valid.');
 
+  const payloadValue = verified === 'gold' ? 'gold' : verified === 'blue' || verified === true || verified === 'true' ? 'blue' : null;
+
   const { error } = await supabase
     .from('mbudiary_users')
-    .update({ is_verified: verified, updated_at: new Date().toISOString() })
+    .update({ is_verified: payloadValue, updated_at: new Date().toISOString() })
     .eq('nrp', normalizedNrp);
 
   if (error) {
@@ -308,7 +319,7 @@ export async function setUserVerified(userNrp: string, verified: boolean | strin
 
   const cachedUser = usersCache[normalizedNrp];
   if (cachedUser) {
-    usersCache[normalizedNrp] = { ...cachedUser, isVerified: verified as any };
+    usersCache[normalizedNrp] = { ...cachedUser, isVerified: (payloadValue || false) as any };
   }
 
   emit('mbud_users_change');
