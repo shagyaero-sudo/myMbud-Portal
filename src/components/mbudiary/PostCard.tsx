@@ -129,14 +129,12 @@ const formatThreadsTime = (timestamp?: string | number | Date | null): string =>
   return `${diffYears}thn`;
 };
 
-// KOMPONEN MEDIA GAMBAR (FIT RAPAT MENGIKUTI UKURAN ASLI)
+// KOMPONEN MEDIA GAMBAR INSTAN (ZERO DELAY & ZERO SKELETON FLASH)
 const PostImageItem: React.FC<{
   imageUrl: string;
   layoutType: 'single' | 'grid' | 'carousel' | 'quote';
   onImageClick: (e: React.MouseEvent) => void;
 }> = ({ imageUrl, layoutType, onImageClick }) => {
-  const [isLoaded, setIsLoaded] = useState(false);
-
   if (layoutType === 'single' || layoutType === 'quote') {
     return (
       <button
@@ -144,17 +142,12 @@ const PostImageItem: React.FC<{
         onClick={onImageClick}
         className="relative block w-full overflow-hidden rounded-2xl border border-slate-200/60 dark:border-white/10 cursor-zoom-in group text-left leading-none bg-transparent"
       >
-        {!isLoaded && (
-          <div className="w-full aspect-[16/9] bg-slate-200 dark:bg-zinc-800 animate-pulse rounded-2xl" />
-        )}
         <img
           src={getOptimizedImageUrl(imageUrl)}
           alt="Post media"
           loading="lazy"
-          onLoad={() => setIsLoaded(true)}
-          className={`w-full h-auto max-h-[600px] object-cover block rounded-2xl transition-all duration-300 group-hover:scale-[1.01] ${
-            isLoaded ? 'opacity-100' : 'opacity-0 absolute inset-0'
-          }`}
+          decoding="async"
+          className="w-full h-auto max-h-[600px] object-cover block rounded-2xl transition-transform duration-200 group-hover:scale-[1.01]"
         />
       </button>
     );
@@ -170,20 +163,14 @@ const PostImageItem: React.FC<{
     <button
       type="button"
       onClick={onImageClick}
-      className={`relative overflow-hidden rounded-xl bg-slate-200 dark:bg-zinc-800 border border-slate-200/50 dark:border-white/5 cursor-zoom-in group ${containerClasses[layoutType]}`}
+      className={`relative overflow-hidden rounded-xl bg-slate-100 dark:bg-zinc-800/60 border border-slate-200/50 dark:border-white/5 cursor-zoom-in group ${containerClasses[layoutType]}`}
     >
-      {!isLoaded && (
-        <div className="absolute inset-0 bg-slate-200 dark:bg-zinc-800 animate-pulse" />
-      )}
-
       <img
         src={getOptimizedImageUrl(imageUrl)}
         alt="Post media"
         loading="lazy"
-        onLoad={() => setIsLoaded(true)}
-        className={`w-full h-full object-cover transition-all duration-300 group-hover:scale-[1.02] ${
-          isLoaded ? 'opacity-100' : 'opacity-0'
-        }`}
+        decoding="async"
+        className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-[1.02]"
       />
     </button>
   );
