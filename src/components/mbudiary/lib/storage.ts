@@ -31,7 +31,6 @@ function emit(name: string) {
   }
 }
 
-// 1. DUKUNG TIPE VERIFIKASI STRING ('gold' | 'blue') MAUPUN BOOLEAN
 function normalizeUser(data: Record<string, any>): MbudiaryUser {
   let isVerifiedValue: any = false;
   if (data.is_verified === 'gold' || data.is_verified === 'blue') {
@@ -294,7 +293,6 @@ export async function saveUserProfile(profile: UserProfile): Promise<void> {
   emit('mbud_user_change');
 }
 
-// 2. TERIMA STATUS MULTI-TIER ('gold' | 'blue' | boolean) & UPDATE REALTIME KE SUPABASE
 export async function setUserVerified(userNrp: string, verified: boolean | string): Promise<void> {
   const normalizedNrp = userNrp.trim().toLowerCase();
   if (!normalizedNrp || normalizedNrp === 'unknown') throw new Error('NRP user tidak valid.');
