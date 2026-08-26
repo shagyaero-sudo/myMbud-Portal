@@ -233,7 +233,27 @@ export default function App() {
   const requiresLogin =
     !isAuthenticated && (!isMobileOrTabletOS || isStandalone);
 
-  const [activeTab, setActiveTab] = useState<TabType>('dashboard');
+  // Inisialisasi activeTab dari URL hash jika ada (misal: /#tasks)
+  const [activeTab, setActiveTab] = useState<TabType>(() => {
+    const hash = window.location.hash.replace('#', '');
+    return (hash as TabType) || 'dashboard';
+  });
+
+  // Listener tombol Back / Forward browser & gesture swipe HP
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      if (event.state && event.state.tab) {
+        setActiveTab(event.state.tab as TabType);
+      } else {
+        const hash = window.location.hash.replace('#', '');
+        setActiveTab((hash as TabType) || 'dashboard');
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   const [selectedContactCourse, setSelectedContactCourse] = useState<string>('ALL');
   const [isOfficer, setIsOfficer] = useState<boolean>(false);
   const [isGpaModalOpen, setIsGpaModalOpen] = useState<boolean>(false);
@@ -242,6 +262,11 @@ export default function App() {
     (tab: TabType, courseFilter?: string) => {
       setSelectedContactCourse(courseFilter || 'ALL');
       setActiveTab(tab);
+
+      // Catat perpindahan tab ke riwayat browser tanpa reload
+      if (window.history.state?.tab !== tab) {
+        window.history.pushState({ tab }, '', `#${tab}`);
+      }
     },
     []
   );
