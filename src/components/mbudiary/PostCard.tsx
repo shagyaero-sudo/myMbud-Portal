@@ -70,7 +70,7 @@ export const VerifiedBadge: React.FC<{
   authorNrp?: string;
   isVerified?: boolean | string | null;
   size?: 'sm' | 'md' | 'lg';
-}> = ({ authorNrp, isVerified, size = 'md' }) => {
+}> = ({ authorNrp, isVerified, size = 'sm' }) => {
   const tier = getBadgeTier(authorNrp, isVerified);
 
   if (!tier) return null;
@@ -161,7 +161,7 @@ const FormattedPostContent: React.FC<{
                   onSelectAuthor(user.nrp);
                 }
               }}
-              className="text-blue-600 dark:text-blue-400 font-bold hover:underline cursor-pointer"
+              className="text-blue-600 dark:text-blue-400 font-semibold hover:underline cursor-pointer"
             >
               {part}
             </span>
@@ -462,42 +462,42 @@ export const PostCard: React.FC<PostCardProps> = ({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.15, ease: 'easeOut' }}
-        className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-2xl p-3 sm:p-4 transition-colors duration-200 shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none w-full"
+        className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-2xl px-3.5 py-3 sm:px-4 sm:py-3.5 transition-colors duration-200 shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none w-full"
       >
-        {/* BADGE REPOST */}
+        {/* REPOST INDICATOR */}
         {isPlainRepost && (
-          <div className="flex items-center gap-1.5 mb-2 text-[11px] font-semibold text-slate-400 dark:text-zinc-500 pl-11">
+          <div className="flex items-center gap-1.5 mb-1.5 text-[11px] font-semibold text-slate-400 dark:text-zinc-500 pl-11">
             <Repeat2 className="w-3.5 h-3.5 text-emerald-500" />
             <span>{isAuthor ? 'Anda me-repost' : `${authorName} me-repost`}</span>
           </div>
         )}
 
-        {/* TWITTER 2-COLUMN STRUCTURE: AVATAR KIRI | KONTEN KANAN */}
-        <div className="flex items-start gap-3">
+        {/* 2-COLUMN STRUCTURE (PRECISE ALIGNMENT) */}
+        <div className="flex items-start gap-2.5 sm:gap-3">
           
-          {/* KOLOM KIRI: AVATAR */}
+          {/* AVATAR DENGAN OFFSET mt-0.5 AGAR SEJAJAR DENGAN TEKS NAMA */}
           <div
             onClick={() => onSelectAuthor?.(displayAuthorNrp)}
-            className="w-10 h-10 rounded-full bg-white/60 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden border border-slate-200/80 dark:border-zinc-700/80 cursor-pointer hover:opacity-90 transition-opacity"
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/60 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden border border-slate-200/80 dark:border-zinc-700/80 cursor-pointer hover:opacity-90 transition-opacity mt-0.5"
             title={`Lihat profil ${displayAuthorName}`}
           >
             {displayAuthorPhotoUrl ? (
               <img src={getOptimizedImageUrl(displayAuthorPhotoUrl)} alt={displayAuthorName} className="w-full h-full object-cover rounded-full" />
             ) : (
-              <span className="text-xl leading-none">{displayAuthorEmoji}</span>
+              <span className="text-lg leading-none">{displayAuthorEmoji}</span>
             )}
           </div>
 
-          {/* KOLOM KANAN: SEMUA KONTEN */}
+          {/* MAIN CONTENT COLUMN */}
           <div className="flex-1 min-w-0">
             
-            {/* HEADER BARIS HORIZONTAL COMPACT */}
-            <div className="flex items-center justify-between gap-1 leading-tight mb-1">
+            {/* HEADER COMPACT */}
+            <div className="flex items-center justify-between gap-1 leading-none mb-1">
               <div
                 onClick={() => onSelectAuthor?.(displayAuthorNrp)}
-                className="flex items-center gap-1.5 min-w-0 flex-wrap sm:flex-nowrap cursor-pointer group/author"
+                className="flex items-center gap-1.5 min-w-0 flex-wrap sm:flex-nowrap cursor-pointer group/author py-0.5"
               >
-                <span className="text-slate-900 dark:text-zinc-100 font-bold text-xs sm:text-sm truncate group-hover/author:text-blue-500 transition-colors">
+                <span className="text-slate-900 dark:text-zinc-100 font-bold text-[13px] sm:text-sm truncate group-hover/author:text-blue-500 transition-colors">
                   {displayAuthorName}
                 </span>
                 <VerifiedBadge authorNrp={displayAuthorNrp} isVerified={displayAuthorIsVerified} size="sm" />
@@ -518,7 +518,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                   disabled={isDeleting}
                   className="p-1 rounded-lg text-slate-400 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-white/80 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                 >
-                  <MoreVertical className="w-4 h-4" />
+                  <MoreVertical className="w-3.5 h-3.5" />
                 </button>
 
                 <AnimatePresence>
@@ -558,13 +558,13 @@ export const PostCard: React.FC<PostCardProps> = ({
 
             {/* KONTEN TEKS CERITA */}
             {isQuoteRepost && (
-              <div className="text-[13px] sm:text-sm text-slate-800 dark:text-zinc-200 leading-relaxed whitespace-pre-line mb-2 font-normal">
+              <div className="text-[13px] sm:text-sm text-slate-800 dark:text-zinc-200 leading-snug whitespace-pre-line mb-1.5 font-normal">
                 <FormattedPostContent content={post.quoteContent || ''} onSelectAuthor={onSelectAuthor} />
               </div>
             )}
 
             {!isQuoteRepost && displayContent && (
-              <div className="text-[13px] sm:text-sm text-slate-800 dark:text-zinc-200 leading-relaxed whitespace-pre-line mb-2 font-normal">
+              <div className="text-[13px] sm:text-sm text-slate-800 dark:text-zinc-200 leading-snug whitespace-pre-line mb-1.5 font-normal">
                 <FormattedPostContent content={displayContent} onSelectAuthor={onSelectAuthor} />
               </div>
             )}
@@ -578,16 +578,16 @@ export const PostCard: React.FC<PostCardProps> = ({
                     onSelectPost(originalPost.id);
                   }
                 }}
-                className="mb-2.5 rounded-xl border border-slate-200/60 dark:border-white/5 overflow-hidden bg-white/50 dark:bg-zinc-950/40 cursor-pointer hover:bg-white/80 dark:hover:bg-zinc-950/60 transition-colors w-full"
+                className="mb-2 rounded-xl border border-slate-200/60 dark:border-white/5 overflow-hidden bg-white/50 dark:bg-zinc-950/40 cursor-pointer hover:bg-white/80 dark:hover:bg-zinc-950/60 transition-colors w-full"
               >
                 {originalPost ? (
                   <>
-                    <div className="px-3 pt-2 pb-1 flex items-center gap-2">
-                      <div className="w-5 h-5 rounded-full bg-slate-200 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden">
+                    <div className="px-3 pt-2 pb-1 flex items-center gap-1.5">
+                      <div className="w-4 h-4 rounded-full bg-slate-200 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden">
                         {originalAuthorPhotoUrl ? (
                           <img src={getOptimizedImageUrl(originalAuthorPhotoUrl)} alt={originalAuthorName} className="w-full h-full object-cover" />
                         ) : (
-                          <span className="text-xs leading-none">{originalAuthorEmoji}</span>
+                          <span className="text-[10px] leading-none">{originalAuthorEmoji}</span>
                         )}
                       </div>
 
@@ -601,13 +601,13 @@ export const PostCard: React.FC<PostCardProps> = ({
                     </div>
 
                     {originalPost.content && (
-                      <div className="px-3 pb-2 text-xs text-slate-700 dark:text-zinc-300 leading-relaxed whitespace-pre-line">
+                      <div className="px-3 pb-2 text-xs text-slate-700 dark:text-zinc-300 leading-snug whitespace-pre-line">
                         <FormattedPostContent content={originalPost.content} onSelectAuthor={onSelectAuthor} />
                       </div>
                     )}
                   </>
                 ) : (
-                  <div className="p-2.5 text-xs italic text-slate-400 dark:text-zinc-500">
+                  <div className="p-2 text-xs italic text-slate-400 dark:text-zinc-500">
                     Postingan asli tidak dapat dimuat atau telah dihapus.
                   </div>
                 )}
@@ -616,13 +616,13 @@ export const PostCard: React.FC<PostCardProps> = ({
 
             {/* GAMBAR POSTINGAN */}
             {!isQuoteRepost && displayImages && displayImages.length > 0 && (
-              <div className={`mb-2.5 grid gap-1.5 w-full ${displayImages.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+              <div className={`mb-2 grid gap-1.5 w-full ${displayImages.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
                 {displayImages.map((imageUrl, index) => (
                   <button
                     key={`${imageUrl}-${index}`}
                     type="button"
                     onClick={() => setSelectedImage(getOptimizedImageUrl(imageUrl))}
-                    className={`relative overflow-hidden rounded-xl bg-slate-100 dark:bg-zinc-800 border border-slate-200/50 dark:border-white/5 cursor-zoom-in group ${displayImages.length === 1 ? 'max-h-[460px]' : 'aspect-square'}`}
+                    className={`relative overflow-hidden rounded-xl bg-slate-100 dark:bg-zinc-800 border border-slate-200/50 dark:border-white/5 cursor-zoom-in group ${displayImages.length === 1 ? 'max-h-[440px]' : 'aspect-square'}`}
                   >
                     <img src={getOptimizedImageUrl(imageUrl)} alt={`Gambar ${index + 1}`} loading="lazy" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]" />
                   </button>
@@ -631,23 +631,23 @@ export const PostCard: React.FC<PostCardProps> = ({
             )}
 
             {/* ACTION BUTTONS (LIKE, COMMENT, REPOST, BOOKMARK) */}
-            <div className="flex items-center justify-between pt-1 text-xs">
-              <div className="flex items-center gap-2 sm:gap-3 -ml-1">
+            <div className="flex items-center justify-between text-xs pt-0.5">
+              <div className="flex items-center gap-3 sm:gap-4 -ml-1">
                 <motion.button
                   whileTap={{ scale: 0.9 }}
                   onClick={handleLikeToggle}
-                  className={`flex items-center gap-1.5 px-2 py-1 rounded-full transition-all text-xs font-medium cursor-pointer ${isLiked ? 'text-rose-500 font-bold bg-rose-50/60 dark:bg-rose-950/30' : 'text-slate-500 dark:text-zinc-400 hover:text-rose-500 hover:bg-white/60 dark:hover:bg-zinc-800/60'}`}
+                  className={`flex items-center gap-1.5 py-1 px-1.5 rounded-md transition-all text-xs font-medium cursor-pointer ${isLiked ? 'text-rose-500 font-bold' : 'text-slate-400 dark:text-zinc-500 hover:text-rose-500'}`}
                 >
-                  <Heart className={`w-4 h-4 transition-transform ${isLiked ? 'fill-rose-500 text-rose-500 scale-110' : ''}`} />
-                  <span>{likeCount}</span>
+                  <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${isLiked ? 'fill-rose-500 text-rose-500' : ''}`} />
+                  <span className="text-[11px] sm:text-xs">{likeCount}</span>
                 </motion.button>
 
                 <button
                   onClick={handleCommentClick}
-                  className={`flex items-center gap-1.5 px-2 py-1 rounded-full transition-all text-xs font-medium cursor-pointer ${isRepliesExpanded && isDetailPage ? 'text-blue-600 dark:text-blue-400 font-bold bg-blue-50/60 dark:bg-blue-950/40' : 'text-slate-500 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/60 dark:hover:bg-zinc-800/60'}`}
+                  className={`flex items-center gap-1.5 py-1 px-1.5 rounded-md transition-all text-xs font-medium cursor-pointer ${isRepliesExpanded && isDetailPage ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-slate-400 dark:text-zinc-500 hover:text-blue-600 dark:hover:text-blue-400'}`}
                 >
-                  <MessageSquare className="w-4 h-4" />
-                  <span>{post.replyCount || replies.length}</span>
+                  <MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span className="text-[11px] sm:text-xs">{post.replyCount || replies.length}</span>
                 </button>
 
                 <motion.button
@@ -655,22 +655,22 @@ export const PostCard: React.FC<PostCardProps> = ({
                   type="button"
                   onClick={() => setIsQuoteOpen(true)}
                   disabled={isReposting}
-                  className="flex items-center gap-1.5 px-2 py-1 rounded-full transition-all text-xs font-medium cursor-pointer text-slate-500 dark:text-zinc-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-white/60 dark:hover:bg-zinc-800/60 disabled:opacity-50"
+                  className="flex items-center gap-1.5 py-1 px-1.5 rounded-md transition-all text-xs font-medium cursor-pointer text-slate-400 dark:text-zinc-500 hover:text-emerald-500 disabled:opacity-50"
                   title="Quote Repost"
                 >
-                  <Repeat2 className={`w-4 h-4 ${isReposting ? 'animate-pulse' : ''}`} />
-                  <span className="hidden xs:inline">Repost</span>
+                  <Repeat2 className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isReposting ? 'animate-pulse' : ''}`} />
+                  <span className="text-[11px] sm:text-xs hidden xs:inline">Repost</span>
                 </motion.button>
               </div>
 
-              <div className="-mr-1">
+              <div>
                 <motion.button
                   whileTap={{ scale: 0.9 }}
                   onClick={handleBookmarkToggle}
-                  className={`flex items-center justify-center p-1.5 rounded-full transition-all cursor-pointer ${isBookmarked ? 'text-amber-500 bg-amber-50/60 dark:bg-amber-950/30' : 'text-slate-400 dark:text-zinc-500 hover:text-amber-500 hover:bg-white/60 dark:hover:bg-zinc-800/60'}`}
+                  className={`flex items-center justify-center p-1 rounded-md transition-all cursor-pointer ${isBookmarked ? 'text-amber-500' : 'text-slate-400 dark:text-zinc-500 hover:text-amber-500'}`}
                   title={isBookmarked ? 'Hapus Bookmark' : 'Simpan Postingan'}
                 >
-                  <Bookmark className={`w-4 h-4 transition-all ${isBookmarked ? 'fill-amber-500 text-amber-500' : ''}`} />
+                  <Bookmark className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-all ${isBookmarked ? 'fill-amber-500 text-amber-500' : ''}`} />
                 </motion.button>
               </div>
             </div>
@@ -685,16 +685,16 @@ export const PostCard: React.FC<PostCardProps> = ({
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="mt-2.5 pt-3 border-t border-slate-200/40 dark:border-white/5 space-y-2 overflow-visible"
+              className="mt-2 pt-2.5 border-t border-slate-200/40 dark:border-white/5 space-y-2 overflow-visible"
             >
-              <h4 className="text-xs font-bold text-slate-700 dark:text-zinc-300 flex items-center gap-1.5 pl-1">
-                <CornerDownRight className="w-3.5 h-3.5 text-blue-500" />
+              <h4 className="text-[11px] font-bold text-slate-600 dark:text-zinc-400 flex items-center gap-1.5 pl-1">
+                <CornerDownRight className="w-3 h-3 text-blue-500" />
                 Komen & Balasan ({replies.length})
               </h4>
 
               <div className="space-y-1.5">
                 {replies.length === 0 ? (
-                  <div className="p-3 text-center rounded-xl bg-white/50 dark:bg-zinc-800/30 border border-slate-200/40 dark:border-white/5 text-xs text-slate-400 dark:text-zinc-500 italic">
+                  <div className="p-2.5 text-center rounded-xl bg-white/50 dark:bg-zinc-800/30 border border-slate-200/40 dark:border-white/5 text-xs text-slate-400 dark:text-zinc-500 italic">
                     Belum ada komen. Berikan tanggapan pertamamu!
                   </div>
                 ) : (
@@ -707,7 +707,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                     return (
                       <div key={reply.id} className="p-2.5 rounded-xl bg-white/60 dark:bg-zinc-800/40 border border-slate-200/50 dark:border-white/5 space-y-1 w-full">
                         <div className="flex items-center justify-between text-xs">
-                          <div onClick={() => onSelectAuthor?.(reply.authorNrp)} className="flex items-center gap-2 cursor-pointer group/replyAuthor min-w-0">
+                          <div onClick={() => onSelectAuthor?.(reply.authorNrp)} className="flex items-center gap-1.5 cursor-pointer group/replyAuthor min-w-0">
                             <div className="w-5 h-5 rounded-full bg-slate-200 dark:bg-zinc-700 flex items-center justify-center shrink-0 overflow-hidden">
                               {replyPhotoUrl ? (
                                 <img src={getOptimizedImageUrl(replyPhotoUrl)} alt={replyName} className="w-full h-full object-cover" />
@@ -716,7 +716,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                               )}
                             </div>
 
-                            <div className="flex items-center gap-1.5 min-w-0 truncate">
+                            <div className="flex items-center gap-1 min-w-0 truncate">
                               <span className="text-slate-900 dark:text-zinc-100 font-bold text-xs group-hover/replyAuthor:text-blue-500 transition-colors truncate">
                                 {replyName}
                               </span>
@@ -729,7 +729,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                           </span>
                         </div>
 
-                        <p className="text-[13px] text-slate-700 dark:text-zinc-300 leading-relaxed pl-7">
+                        <p className="text-[13px] text-slate-700 dark:text-zinc-300 leading-snug pl-6">
                           <FormattedPostContent content={reply.content} onSelectAuthor={onSelectAuthor} />
                         </p>
                       </div>
@@ -738,7 +738,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                 )}
               </div>
 
-              <form onSubmit={handleAddReply} className="flex items-center gap-2 pt-1.5 relative">
+              <form onSubmit={handleAddReply} className="flex items-center gap-2 pt-1 relative">
                 <div className="relative flex-1">
                   <input
                     ref={commentInputRef}
@@ -746,7 +746,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                     value={replyContent}
                     onChange={handleCommentChange}
                     placeholder={`Tulis komen sebagai ${currentUser.nickname}...`}
-                    className="w-full px-3.5 py-2 rounded-xl bg-white/70 dark:bg-zinc-800/80 text-xs border border-slate-200/80 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-1.5 rounded-xl bg-white/70 dark:bg-zinc-800/80 text-xs border border-slate-200/80 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
 
                   {commentMentionQuery !== null && commentMentionSuggestions.length > 0 && (
@@ -781,10 +781,10 @@ export const PostCard: React.FC<PostCardProps> = ({
                 <button
                   type="submit"
                   disabled={!replyContent.trim() || isSubmittingReply}
-                  className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:bg-slate-100 dark:disabled:bg-zinc-800 text-white disabled:text-slate-400 text-xs font-semibold transition-all flex items-center gap-1 cursor-pointer"
+                  className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:bg-slate-100 dark:disabled:bg-zinc-800 text-white disabled:text-slate-400 text-xs font-semibold transition-all flex items-center gap-1 cursor-pointer"
                 >
-                  <Send className="w-3.5 h-3.5" />
-                  <span className="hidden xs:inline">Kirim</span>
+                  <Send className="w-3 h-3" />
+                  <span className="hidden xs:inline text-xs">Kirim</span>
                 </button>
               </form>
             </motion.div>
@@ -812,15 +812,15 @@ export const PostCard: React.FC<PostCardProps> = ({
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="w-full max-w-lg bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/60 dark:border-white/10 rounded-2xl p-5 shadow-2xl flex flex-col max-h-[85dvh]"
+              className="w-full max-w-lg bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/60 dark:border-white/10 rounded-2xl p-4 sm:p-5 shadow-2xl flex flex-col max-h-[85dvh]"
               onMouseDown={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between mb-3 shrink-0">
+              <div className="flex items-center justify-between mb-2.5 shrink-0">
                 <div>
                   <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100">Quote Repost</h3>
                   <p className="text-[10px] text-slate-400 dark:text-zinc-500 mt-0.5">Tambahkan komentar sebelum me-repost.</p>
                 </div>
-                <button type="button" onClick={() => { setIsQuoteOpen(false); setQuoteContent(''); setIsQuoteFocused(false); }} className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer">
+                <button type="button" onClick={() => { setIsQuoteOpen(false); setQuoteContent(''); setIsQuoteFocused(false); }} className="p-1 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer">
                   <X className="w-4 h-4" />
                 </button>
               </div>
@@ -834,16 +834,16 @@ export const PostCard: React.FC<PostCardProps> = ({
                   onBlur={() => setIsQuoteFocused(false)}
                   placeholder="Apa pendapatmu tentang postingan ini?"
                   rows={3}
-                  className="w-full resize-none px-3.5 py-2.5 mb-2.5 rounded-xl bg-white/70 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 text-sm text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 shrink-0"
+                  className="w-full resize-none px-3 py-2 mb-2 rounded-xl bg-white/70 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 text-xs sm:text-sm text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-blue-500 shrink-0"
                 />
 
-                <div className="rounded-xl border border-slate-200/60 dark:border-white/5 overflow-y-auto bg-white/40 dark:bg-zinc-950/40 flex-1 min-h-0 mb-3 custom-scrollbar">
-                  <div className="px-3.5 py-2.5 flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-slate-200 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden">
+                <div className="rounded-xl border border-slate-200/60 dark:border-white/5 overflow-y-auto bg-white/40 dark:bg-zinc-950/40 flex-1 min-h-0 mb-2.5 custom-scrollbar">
+                  <div className="px-3 py-2 flex items-center gap-1.5">
+                    <div className="w-5 h-5 rounded-full bg-slate-200 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden">
                       {quoteTargetAuthorPhotoUrl ? (
                         <img src={getOptimizedImageUrl(quoteTargetAuthorPhotoUrl)} alt="Avatar" className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-xs leading-none">{quoteTargetAuthorEmoji}</span>
+                        <span className="text-[10px] leading-none">{quoteTargetAuthorEmoji}</span>
                       )}
                     </div>
 
@@ -857,14 +857,14 @@ export const PostCard: React.FC<PostCardProps> = ({
                     </div>
                   </div>
 
-                  <div className="px-3.5 pb-3 text-xs text-slate-700 dark:text-zinc-300 leading-relaxed whitespace-pre-line">
+                  <div className="px-3 pb-2.5 text-xs text-slate-700 dark:text-zinc-300 leading-snug whitespace-pre-line">
                     <FormattedPostContent content={quoteTargetPost?.content || ''} onSelectAuthor={onSelectAuthor} />
                   </div>
                 </div>
 
                 <div className="flex items-center justify-end gap-2 shrink-0">
-                  <button type="button" onClick={() => { setIsQuoteOpen(false); setQuoteContent(''); setIsQuoteFocused(false); }} className="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-500 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer">Batal</button>
-                  <button type="submit" disabled={!quoteContent.trim() || isReposting} className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:bg-slate-100 dark:disabled:bg-zinc-800 text-white disabled:text-slate-400 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer">
+                  <button type="button" onClick={() => { setIsQuoteOpen(false); setQuoteContent(''); setIsQuoteFocused(false); }} className="px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-500 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer">Batal</button>
+                  <button type="submit" disabled={!quoteContent.trim() || isReposting} className="px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:bg-slate-100 dark:disabled:bg-zinc-800 text-white disabled:text-slate-400 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer">
                     <Quote className="w-3.5 h-3.5" />
                     <span>{isReposting ? 'Memproses...' : 'Quote Repost'}</span>
                   </button>
