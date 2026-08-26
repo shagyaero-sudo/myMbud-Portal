@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { MbudiaryPost, UserProfile, FeedSort } from '../../types';
-import { getPosts, getCachedUserByNrp, getBookmarkedPostIds } from './lib/storage';
-import { PostCard } from './PostCard';
-import { Search, MessageCircle, Clock, TrendingUp, Bookmark, ArrowUpDown } from 'lucide-react';
+import { getPosts, getCachedUserByNrp, getBookmarkedPostIds, searchUsersForMention } from './lib/storage';
+import { PostCard, VerifiedBadge } from './PostCard';
+import { getOptimizedImageUrl } from './lib/utils';
+import { Search, MessageCircle, Clock, TrendingUp, Bookmark, ArrowUpDown, Users, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface PostListProps {
@@ -69,6 +70,14 @@ export const PostList: React.FC<PostListProps> = ({
     };
   }, []);
 
+  // 1. PENCARIAN AKUN USER BERDASARKAN QUERY
+  const matchedUsers = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q || showBookmarksOnly) return [];
+    return searchUsersForMention(q);
+  }, [searchQuery, showBookmarksOnly]);
+
+  // 2. PENCARIAN & FILTER POSTINGAN
   const filteredPosts = posts.filter((post) => {
     if (showBookmarksOnly) {
       const bookmarkedIds = getBookmarkedPostIds();
@@ -81,6 +90,7 @@ export const PostList: React.FC<PostListProps> = ({
     
     return (
       post.content?.toLowerCase().includes(q) ||
+      post.quoteContent?.toLowerCase().includes(q) ||
       author?.nickname?.toLowerCase().includes(q) ||
       author?.username?.toLowerCase().includes(q) ||
       post.authorNrp?.toLowerCase().includes(q)
@@ -93,6 +103,9 @@ export const PostList: React.FC<PostListProps> = ({
     }
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
+
+  const hasSearch = Boolean(searchQuery.trim());
+  const hasNoResults = hasSearch && matchedUsers.length === 0 && sortedPosts.length === 0;
 
   return (
     <div className="space-y-3">
@@ -107,7 +120,7 @@ export const PostList: React.FC<PostListProps> = ({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Cari cerita..."
+              placeholder="Cari postingan atau akun pengguna..."
               className="w-full pl-8 pr-3 py-1.5 text-[11px] sm:text-xs rounded-xl sm:rounded-2xl bg-white/60 dark:bg-zinc-800/70 border border-slate-200/60 dark:border-white/5 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all"
             />
             {searchQuery && (
@@ -141,6 +154,62 @@ export const PostList: React.FC<PostListProps> = ({
         </div>
       </div>
 
+      {/* HASIL PENCARIAN AKUN PENGGUNA */}
+      {hasSearch && matchedUsers.length > 0 && !showBookmarksOnly && (
+        <motion.div
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none space-y-2.5"
+        >
+          <div className="flex items-center gap-1.5 px-1 text-[11px] sm:text-xs font-bold text-slate-500 dark:text-zinc-400">
+            <Users className="w-3.5 h-3.5 text-blue-500" />
+            <span>Akun Pengguna ({matchedUsers.length})</span>
+          </div>
+
+          <div className="space-y-1.5">
+            {matchedUsers.map((user) => (
+              <div
+                key={user.nrp}
+                onClick={() => onSelectAuthor?.(user.nrp)}
+                className="flex items-center justify-between p-2 sm:p-2.5 rounded-xl sm:rounded-2xl hover:bg-white/80 dark:hover:bg-zinc-800/60 border border-transparent hover:border-slate-200/50 dark:hover:border-white/5 transition-all cursor-pointer group"
+              >
+                <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-200 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden border border-slate-200/80 dark:border-zinc-700/80 group-hover:scale-105 transition-transform">
+                    {user.photoUrl ? (
+                      <img
+                        src={getOptimizedImageUrl(user.photoUrl)}
+                        alt={user.nickname}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-lg sm:text-xl leading-none">{user.emoji || '😊'}</span>
+                    )}
+                  </div>
+
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-zinc-100 truncate group-hover:text-blue-500 transition-colors">
+                        {user.nickname}
+                      </span>
+                      <VerifiedBadge authorNrp={user.nrp} isVerified={user.isVerified} size="sm" />
+                    </div>
+                    <div className="text-[10px] sm:text-[11px] text-slate-400 dark:text-zinc-500 truncate">
+                      @{user.username}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1 text-[11px] font-semibold text-blue-600 dark:text-blue-400 opacity-80 group-hover:opacity-100 pl-2">
+                  <span className="hidden sm:inline">Lihat</span>
+                  <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
+      {/* FEED LIST */}
       <div className="space-y-3">
         {isLoading ? (
           <>
@@ -148,19 +217,19 @@ export const PostList: React.FC<PostListProps> = ({
             <PostCardSkeleton />
             <PostCardSkeleton />
           </>
-        ) : sortedPosts.length === 0 ? (
+        ) : hasNoResults || (sortedPosts.length === 0 && !hasSearch) ? (
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-8 text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none space-y-3">
             <div className="w-12 h-12 rounded-full bg-slate-50 dark:bg-zinc-800 border border-slate-100 dark:border-zinc-800 text-slate-400 dark:text-zinc-500 flex items-center justify-center mx-auto">
               {showBookmarksOnly ? <Bookmark className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}
             </div>
             <h3 className="font-bold text-sm text-slate-800 dark:text-zinc-200">
-              {showBookmarksOnly ? 'Belum Ada Bookmark' : 'Tidak Ada Postingan Ditemukan'}
+              {showBookmarksOnly ? 'Belum Ada Bookmark' : 'Tidak Ada Hasil Ditemukan'}
             </h3>
             <p className="text-xs text-slate-500 dark:text-zinc-400 max-w-sm mx-auto">
               {showBookmarksOnly
                 ? 'Kamu belum menyimpan postingan apa pun ke Bookmark.'
                 : searchQuery
-                  ? `Tidak ada hasil untuk kata kunci "${searchQuery}". Coba kata kunci lain.`
+                  ? `Tidak ada akun atau postingan yang cocok dengan kata kunci "${searchQuery}".`
                   : 'Belum ada aktivitas di feed. Buat postingan pertama untuk kelas!'
               }
             </p>
