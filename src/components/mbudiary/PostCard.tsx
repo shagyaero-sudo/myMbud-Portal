@@ -41,23 +41,36 @@ import {
 } from '../../services/oneSignalNotification';
 
 // =========================================================================
-// BADGE CENTANG OTOMATIS: BIRU (>=10 FOLLOWERS) & EMAS (>=30 FOLLOWERS)
+// BADGE CENTANG OTOMATIS + OVERRIDE MANUAL OFFICER (BIRU & EMAS)
 // =========================================================================
 
-export const getBadgeTier = (authorNrp?: string, isExplicitlyVerified?: boolean): 'gold' | 'blue' | null => {
-  if (!authorNrp) return isExplicitlyVerified ? 'blue' : null;
+export const getBadgeTier = (
+  authorNrp?: string,
+  isExplicitlyVerified?: boolean | string
+): 'gold' | 'blue' | null => {
+  // 1. Cek Override Manual Admin / Officer
+  if (isExplicitlyVerified === 'gold' || (isExplicitlyVerified as any) === true && (authorNrp as any)?.isGoldVerified) {
+    return 'gold';
+  }
+  if (isExplicitlyVerified === 'blue' || isExplicitlyVerified === true) {
+    // Jika manual biru tapi ternyata followers organik sudah >= 30, otomatis naik emas
+    if (authorNrp && getFollowerCount(authorNrp) >= 30) return 'gold';
+    return 'blue';
+  }
 
-  const count = getFollowerCount(authorNrp);
-
-  if (count >= 30) return 'gold';
-  if (count >= 10 || isExplicitlyVerified) return 'blue';
+  // 2. Cek Otomasi Follower Count
+  if (authorNrp) {
+    const count = getFollowerCount(authorNrp);
+    if (count >= 30) return 'gold';
+    if (count >= 10) return 'blue';
+  }
 
   return null;
 };
 
 export const VerifiedBadge: React.FC<{
   authorNrp?: string;
-  isVerified?: boolean;
+  isVerified?: boolean | string;
   size?: 'sm' | 'md' | 'lg';
 }> = ({ authorNrp, isVerified, size = 'md' }) => {
   const tier = getBadgeTier(authorNrp, isVerified);
@@ -75,11 +88,11 @@ export const VerifiedBadge: React.FC<{
   return (
     <svg
       viewBox="0 0 24 24"
-      aria-label={isGold ? 'Centang Emas (Tier 30+ Pengikut)' : 'Centang Biru (Tier 10+ Pengikut)'}
+      aria-label={isGold ? 'Centang Emas' : 'Centang Biru'}
       className={`${sizeClasses[size]} shrink-0 select-none inline-block ${isGold ? 'drop-shadow-[0_1px_6px_rgba(245,158,11,0.65)]' : ''}`}
       style={{ color: isGold ? '#F59E0B' : '#1D9BF0' }}
     >
-      <title>{isGold ? 'Centang Emas: Tier Legenda (≥ 30 Pengikut)' : 'Centang Biru: Terverifikasi (≥ 10 Pengikut)'}</title>
+      <title>{isGold ? 'Centang Emas: Tier Legenda' : 'Centang Biru: Terverifikasi'}</title>
       <g>
         <path
           fill="currentColor"
@@ -437,7 +450,7 @@ export const PostCard: React.FC<PostCardProps> = ({
 
   const isAuthor = post.authorNrp.toLowerCase() === currentUser.nrp.toLowerCase();
   const canDelete = isAuthor || currentUser.isOfficer;
-  const displayAuthorIsVerified = isPlainRepost && originalPost ? !!originalAuthorProfile?.isVerified : !!authorProfile?.isVerified;
+  const displayAuthorIsVerified = isPlainRepost && originalPost ? (originalAuthorProfile as any)?.isVerified : (authorProfile as any)?.isVerified;
 
   return (
     <>
@@ -561,7 +574,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5 min-w-0">
                       <div className="text-xs font-bold text-slate-900 dark:text-zinc-100 truncate">{originalAuthorName}</div>
-                      <VerifiedBadge authorNrp={originalPost.authorNrp} isVerified={originalAuthorProfile?.isVerified} size="sm" />
+                      <VerifiedBadge authorNrp={originalPost.authorNrp} isVerified={(originalAuthorProfile as any)?.isVerified} size="sm" />
                     </div>
                     <div className="text-[10px] text-slate-400 dark:text-zinc-500">
                       @{originalAuthorProfile?.username || 'unknown'} • {formatThreadsTime(originalPost.createdAt)}
@@ -684,7 +697,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                               <span className="text-slate-900 dark:text-zinc-100 font-bold text-xs sm:text-[13px] group-hover/replyAuthor:text-blue-500 transition-colors">
                                 {replyName}
                               </span>
-                              <VerifiedBadge authorNrp={reply.authorNrp} isVerified={replyAuthor?.isVerified} size="sm" />
+                              <VerifiedBadge authorNrp={reply.authorNrp} isVerified={(replyAuthor as any)?.isVerified} size="sm" />
                             </div>
                           </div>
 

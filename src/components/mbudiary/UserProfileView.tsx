@@ -14,7 +14,7 @@ import {
 } from './lib/storage';
 import { uploadImagesToCloudinary } from './lib/cloudinary';
 import { getOptimizedImageUrl } from './lib/utils';
-import { PostCard, VerifiedBadge } from './PostCard';
+import { PostCard, VerifiedBadge, getBadgeTier } from './PostCard';
 import {
   ArrowLeft,
   FileText,
@@ -26,6 +26,7 @@ import {
   Edit2,
   Edit3,
   X,
+  Sparkles,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -103,14 +104,25 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
     }
   };
 
-  const handleVerifyToggle = async () => {
+  // Siklus 3 Status: Normal -> Blue -> Gold -> Normal
+  const handleVerifyCycle = async () => {
     if (isTogglingVerified) return;
     setIsTogglingVerified(true);
     try {
-      const nextState = !authorProfile?.isVerified;
+      const currentTier = getBadgeTier(authorNrp, (authorProfile as any)?.isVerified);
+      
+      let nextState: any = false;
+      if (!currentTier) {
+        nextState = 'blue';
+      } else if (currentTier === 'blue') {
+        nextState = 'gold';
+      } else {
+        nextState = false;
+      }
+
       await setUserVerified(authorNrp, nextState);
     } catch (error) {
-      console.error('[mbudiary] Gagal toggle verified:', error);
+      console.error('[mbudiary] Gagal toggle badge status:', error);
       alert('Gagal mengubah status verifikasi user.');
     } finally {
       setIsTogglingVerified(false);
@@ -161,6 +173,8 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
   const authorEmoji = authorProfile?.emoji || (isSelf ? currentUser.emoji : '😊');
   const authorPhotoUrl = authorProfile?.photoUrl || (isSelf ? currentUser.photoUrl : undefined);
   const authorHeaderUrl = authorProfile?.headerUrl || (isSelf ? currentUser.headerUrl : undefined);
+
+  const activeBadgeTier = getBadgeTier(authorNrp, (authorProfile as any)?.isVerified);
 
   return (
     <div className="space-y-3 sm:space-y-4">
@@ -225,15 +239,38 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                 </button>
               )}
 
+              {/* TOMBOL OFFICER: SIKLUS NORMAL -> BIRU -> EMAS -> CABUT */}
               {currentUser.isOfficer && !isSelf && (
                 <button
                   type="button"
                   disabled={isTogglingVerified}
-                  onClick={handleVerifyToggle}
-                  className={`p-2 sm:px-3 sm:py-2 rounded-2xl text-[11px] font-bold transition-all flex items-center gap-1.5 active:scale-95 disabled:opacity-50 cursor-pointer ${authorProfile?.isVerified ? 'bg-rose-50/80 text-rose-600 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60' : 'bg-blue-50/80 text-blue-600 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/60'}`}
+                  onClick={handleVerifyCycle}
+                  className={`p-2 sm:px-3 sm:py-2 rounded-2xl text-[11px] font-bold transition-all flex items-center gap-1.5 active:scale-95 disabled:opacity-50 cursor-pointer ${
+                    activeBadgeTier === 'gold'
+                      ? 'bg-rose-50/80 text-rose-600 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60'
+                      : activeBadgeTier === 'blue'
+                      ? 'bg-amber-50/80 text-amber-600 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60'
+                      : 'bg-blue-50/80 text-blue-600 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/60'
+                  }`}
+                  title="Klik untuk mengubah tier centang akun ini"
                 >
-                  {isTogglingVerified ? <Loader2 className="w-4 h-4 animate-spin" /> : <BadgeCheck className="w-4 h-4" />}
-                  <span className="hidden sm:inline">{authorProfile?.isVerified ? 'Cabut Cenblu' : '+ Kasih Cenblu'}</span>
+                  {isTogglingVerified ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : activeBadgeTier === 'gold' ? (
+                    <BadgeCheck className="w-4 h-4 text-rose-500" />
+                  ) : activeBadgeTier === 'blue' ? (
+                    <Sparkles className="w-4 h-4 text-amber-500" />
+                  ) : (
+                    <BadgeCheck className="w-4 h-4 text-blue-500" />
+                  )}
+
+                  <span className="hidden sm:inline">
+                    {activeBadgeTier === 'gold'
+                      ? 'Cabut Centang'
+                      : activeBadgeTier === 'blue'
+                      ? '⭐ Upgrade Emas'
+                      : '+ Kasih Cenblu'}
+                  </span>
                 </button>
               )}
 
@@ -256,7 +293,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
           <div className="mb-4">
             <div className="flex items-center gap-1.5 flex-wrap">
               <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-zinc-100 tracking-tight">{authorName}</h2>
-              <VerifiedBadge authorNrp={authorNrp} isVerified={authorProfile?.isVerified} size="md" />
+              <VerifiedBadge authorNrp={authorNrp} isVerified={(authorProfile as any)?.isVerified} size="md" />
               {isSelf && (
                 <span className="px-2.5 py-0.5 text-[11px] font-bold rounded-full bg-blue-50/80 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400 border border-blue-100 dark:border-blue-900/50 ml-1">Saya</span>
               )}
@@ -358,7 +395,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5">
                             <span className="text-sm font-bold text-slate-900 dark:text-zinc-100 truncate">{user.nickname}</span>
-                            <VerifiedBadge authorNrp={nrp} isVerified={user.isVerified} size="sm" />
+                            <VerifiedBadge authorNrp={nrp} isVerified={(user as any)?.isVerified} size="sm" />
                           </div>
                           <div className="text-[11px] text-slate-500 dark:text-zinc-400 truncate">@{user.username}</div>
                         </div>
