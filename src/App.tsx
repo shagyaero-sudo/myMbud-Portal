@@ -58,6 +58,8 @@ import {
   deleteMaterialFromFirestore,
 } from './services/materials';
 
+import { initializeMbudiary } from './components/mbudiary/lib/storage';
+
 const IS_MAINTENANCE = false;
 
 // =========================================================================
@@ -128,6 +130,12 @@ export default function App() {
   }
 
   const [showSplash, setShowSplash] = useState<boolean>(true);
+
+  // PRE-FETCH & SINKRONISASI MBUDIARY SECARA SILENT DI BACKGROUND SEJAK DETIK PERTAMA
+  useEffect(() => {
+    const unsubMbudiary = initializeMbudiary();
+    return () => unsubMbudiary();
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {

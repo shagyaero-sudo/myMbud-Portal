@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { ArrowLeft, User, X, Camera, Trash2, Loader2, Sparkles } from 'lucide-react';
+import { ArrowLeft, User, X, Camera, Trash2, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UserProfile, MbudiaryPost } from './mbudiary/types';
-import { getUserProfile, getPosts, initializeMbudiary, saveUserProfile } from './mbudiary/lib/storage';
+import { getUserProfile, getPosts, saveUserProfile } from './mbudiary/lib/storage';
 import { uploadImagesToCloudinary } from './mbudiary/lib/cloudinary';
 import { CreatePostForm } from './mbudiary/CreatePostForm';
 import { PostList } from './mbudiary/PostList';
@@ -161,7 +161,6 @@ export const MbudiaryView: React.FC = () => {
   }, [currentUser.username, currentUser.photoUrl]);
 
   useEffect(() => {
-    const unsubscribe = initializeMbudiary();
     const sync = () => {
       const updatedUser = getUserProfile();
       setCurrentUser(updatedUser);
@@ -195,7 +194,6 @@ export const MbudiaryView: React.FC = () => {
       window.removeEventListener('mbud_posts_change', sync);
       window.removeEventListener('mbud_follows_change', sync);
       window.removeEventListener('mbud_notification_navigate', handleNotificationNavigation);
-      unsubscribe();
     };
   }, [handleSelectAuthor, handleSelectPost]);
 
