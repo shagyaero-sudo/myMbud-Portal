@@ -4,7 +4,7 @@ import { getPosts, getCachedUserByNrp, getBookmarkedPostIds, searchUsersForMenti
 import { PostCard, VerifiedBadge } from './PostCard';
 import { getOptimizedImageUrl } from './lib/utils';
 import { Search, MessageCircle, Clock, TrendingUp, Bookmark, ArrowUpDown, Users, ChevronRight } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 interface PostListProps {
   currentUser: UserProfile;
@@ -126,11 +126,7 @@ export const PostList: React.FC<PostListProps> = ({
 
       {/* HASIL PENCARIAN AKUN PENGGUNA */}
       {hasSearch && matchedUsers.length > 0 && !showBookmarksOnly && (
-        <motion.div
-          initial={{ opacity: 0, y: -4 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-2xl p-3 shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none space-y-2"
-        >
+        <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-2xl p-3 shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none space-y-2">
           <div className="flex items-center gap-1.5 px-1 text-[11px] font-bold text-slate-500 dark:text-zinc-400">
             <Users className="w-3.5 h-3.5 text-blue-500" />
             <span>Akun Pengguna ({matchedUsers.length})</span>
@@ -176,13 +172,13 @@ export const PostList: React.FC<PostListProps> = ({
               </div>
             ))}
           </div>
-        </motion.div>
+        </div>
       )}
 
-      {/* FEED LIST */}
+      {/* FEED LIST (INSTANT PERSISTENT RENDER - ZERO FLASH) */}
       <div className="space-y-2.5">
         {hasNoResults || (sortedPosts.length === 0 && !hasSearch) ? (
-          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-2xl p-8 text-center shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none space-y-2.5">
+          <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-2xl p-8 text-center shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none space-y-2.5">
             <div className="w-11 h-11 rounded-full bg-slate-50 dark:bg-zinc-800 border border-slate-100 dark:border-zinc-800 text-slate-400 dark:text-zinc-500 flex items-center justify-center mx-auto">
               {showBookmarksOnly ? <Bookmark className="w-5 h-5" /> : <MessageCircle className="w-5 h-5" />}
             </div>
@@ -205,20 +201,18 @@ export const PostList: React.FC<PostListProps> = ({
                 Kembali ke Feed
               </button>
             )}
-          </motion.div>
+          </div>
         ) : (
-          <AnimatePresence mode="popLayout">
-            {sortedPosts.map((post) => (
-              <PostCard
-                key={post.id}
-                post={post}
-                currentUser={currentUser}
-                onPostUpdate={silentLoadPosts}
-                onSelectPost={onSelectPost}
-                onSelectAuthor={onSelectAuthor}
-              />
-            ))}
-          </AnimatePresence>
+          sortedPosts.map((post) => (
+            <PostCard
+              key={post.id}
+              post={post}
+              currentUser={currentUser}
+              onPostUpdate={silentLoadPosts}
+              onSelectPost={onSelectPost}
+              onSelectAuthor={onSelectAuthor}
+            />
+          ))
         )}
       </div>
     </div>
