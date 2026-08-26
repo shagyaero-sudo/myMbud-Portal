@@ -2,7 +2,7 @@ export interface MbudiaryNotification {
   id: string;
   recipientNrp: string;
   senderNrp: string;
-  type: 'like' | 'reply' | 'repost' | 'follow';
+  type: 'like' | 'reply' | 'repost' | 'follow' | 'mention';
   postId?: string;
   isRead: boolean;
   createdAt: string;
@@ -11,6 +11,7 @@ export interface MbudiaryNotification {
 export interface MbudiaryPost {
   id: string;
   authorNrp: string;
+  authorName?: string;
   content: string;
   likes: string[];
   replyCount: number;
@@ -36,9 +37,9 @@ export interface UserProfile {
   nickname: string;
   isOfficer: boolean;
   emoji: string;
-  isVerified?: boolean;
+  isVerified?: boolean | 'gold' | 'blue';
   photoUrl?: string;
-  headerUrl?: string; // <-- Tambahan untuk v3.1
+  headerUrl?: string;
 }
 
 export interface MbudiaryUser {
@@ -47,9 +48,9 @@ export interface MbudiaryUser {
   nickname: string;
   isOfficer: boolean;
   emoji: string;
-  isVerified?: boolean;
+  isVerified?: boolean | 'gold' | 'blue';
   photoUrl?: string;
-  headerUrl?: string; // <-- Tambahan untuk v3.1
+  headerUrl?: string;
   updatedAt?: string;
 }
 

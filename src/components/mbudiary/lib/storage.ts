@@ -31,14 +31,22 @@ function emit(name: string) {
   }
 }
 
+// 1. DUKUNG TIPE VERIFIKASI STRING ('gold' | 'blue') MAUPUN BOOLEAN
 function normalizeUser(data: Record<string, any>): MbudiaryUser {
+  let isVerifiedValue: any = false;
+  if (data.is_verified === 'gold' || data.is_verified === 'blue') {
+    isVerifiedValue = data.is_verified;
+  } else {
+    isVerifiedValue = Boolean(data.is_verified);
+  }
+
   return {
     nrp: String(data.nrp || '').toLowerCase(),
     username: String(data.username || 'mbuders').toLowerCase(),
     nickname: String(data.nickname || 'Mbuders'),
     isOfficer: Boolean(data.is_officer),
     emoji: String(data.emoji || '😊'),
-    isVerified: Boolean(data.is_verified),
+    isVerified: isVerifiedValue,
     photoUrl: data.photo_url || undefined,
     headerUrl: data.header_url || undefined,
     updatedAt: data.updated_at || undefined,
@@ -286,18 +294,23 @@ export async function saveUserProfile(profile: UserProfile): Promise<void> {
   emit('mbud_user_change');
 }
 
-export async function setUserVerified(userNrp: string, verified: boolean): Promise<void> {
+// 2. TERIMA STATUS MULTI-TIER ('gold' | 'blue' | boolean) & UPDATE REALTIME KE SUPABASE
+export async function setUserVerified(userNrp: string, verified: boolean | string): Promise<void> {
   const normalizedNrp = userNrp.trim().toLowerCase();
   if (!normalizedNrp || normalizedNrp === 'unknown') throw new Error('NRP user tidak valid.');
 
-  await supabase
+  const { error } = await supabase
     .from('mbudiary_users')
     .update({ is_verified: verified, updated_at: new Date().toISOString() })
     .eq('nrp', normalizedNrp);
 
+  if (error) {
+    console.error('[Supabase] Gagal update verifikasi user:', error);
+  }
+
   const cachedUser = usersCache[normalizedNrp];
   if (cachedUser) {
-    usersCache[normalizedNrp] = { ...cachedUser, isVerified: verified };
+    usersCache[normalizedNrp] = { ...cachedUser, isVerified: verified as any };
   }
 
   emit('mbud_users_change');
