@@ -14,6 +14,7 @@ import {
   getUserByUsername,
   processMentionsInContent,
   searchUsersForMention,
+  getFollowerCount,
 } from './lib/storage';
 import {
   formatDateFormatted,
@@ -39,20 +40,46 @@ import {
   notifyPostCommented,
 } from '../../services/oneSignalNotification';
 
-export const VerifiedBadge: React.FC<{ size?: 'sm' | 'md' | 'lg' }> = ({ size = 'md' }) => {
+// =========================================================================
+// BADGE CENTANG OTOMATIS: BIRU (>=10 FOLLOWERS) & EMAS (>=30 FOLLOWERS)
+// =========================================================================
+
+export const getBadgeTier = (authorNrp?: string, isExplicitlyVerified?: boolean): 'gold' | 'blue' | null => {
+  if (!authorNrp) return isExplicitlyVerified ? 'blue' : null;
+
+  const count = getFollowerCount(authorNrp);
+
+  if (count >= 30) return 'gold';
+  if (count >= 10 || isExplicitlyVerified) return 'blue';
+
+  return null;
+};
+
+export const VerifiedBadge: React.FC<{
+  authorNrp?: string;
+  isVerified?: boolean;
+  size?: 'sm' | 'md' | 'lg';
+}> = ({ authorNrp, isVerified, size = 'md' }) => {
+  const tier = getBadgeTier(authorNrp, isVerified);
+
+  if (!tier) return null;
+
   const sizeClasses = {
     sm: 'w-3.5 h-3.5',
     md: 'w-4 h-4',
     lg: 'w-5 h-5',
   };
 
+  const isGold = tier === 'gold';
+
   return (
     <svg
       viewBox="0 0 24 24"
-      aria-label="Verified account"
-      className={`${sizeClasses[size]} shrink-0 select-none inline-block`}
-      style={{ color: '#1D9BF0' }}
+      aria-label={isGold ? 'Centang Emas (Tier 30+ Pengikut)' : 'Centang Biru (Tier 10+ Pengikut)'}
+      className={`${sizeClasses[size]} shrink-0 select-none inline-block ${isGold ? 'drop-shadow-[0_1px_6px_rgba(245,158,11,0.65)]' : ''}`}
+      style={{ color: isGold ? '#F59E0B' : '#1D9BF0' }}
     >
+      <title>{isGold ? 'Centang Emas: Tier Legenda (≥ 30 Pengikut)' : 'Centang Biru: Terverifikasi (≥ 10 Pengikut)'}</title>
       <g>
         <path
           fill="currentColor"
@@ -66,6 +93,8 @@ export const VerifiedBadge: React.FC<{ size?: 'sm' | 'md' | 'lg' }> = ({ size = 
     </svg>
   );
 };
+
+// =========================================================================
 
 const formatThreadsTime = (timestamp?: string | number | Date | null): string => {
   if (!timestamp) return 'baru saja';
@@ -220,12 +249,14 @@ export const PostCard: React.FC<PostCardProps> = ({
     window.addEventListener('mbud_posts_change', refreshComponentData);
     window.addEventListener('mbud_replies_change', refreshComponentData);
     window.addEventListener('mbud_bookmarks_change', refreshComponentData);
+    window.addEventListener('mbud_follows_change', refreshComponentData);
 
     return () => {
       window.removeEventListener('mbud_users_change', refreshComponentData);
       window.removeEventListener('mbud_posts_change', refreshComponentData);
       window.removeEventListener('mbud_replies_change', refreshComponentData);
       window.removeEventListener('mbud_bookmarks_change', refreshComponentData);
+      window.removeEventListener('mbud_follows_change', refreshComponentData);
     };
   }, [post.id, isDetailPage]);
 
@@ -444,7 +475,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                 <span className="text-slate-900 dark:text-zinc-100 font-bold text-sm group-hover/author:text-blue-500 transition-colors">
                   {displayAuthorName}
                 </span>
-                {displayAuthorIsVerified && <VerifiedBadge size="sm" />}
+                <VerifiedBadge authorNrp={displayAuthorNrp} isVerified={displayAuthorIsVerified} size="sm" />
               </div>
 
               <div className="text-slate-400 dark:text-zinc-500 text-[11px] mt-1 flex items-center gap-1 font-normal">
@@ -530,7 +561,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5 min-w-0">
                       <div className="text-xs font-bold text-slate-900 dark:text-zinc-100 truncate">{originalAuthorName}</div>
-                      {originalAuthorProfile?.isVerified && <VerifiedBadge size="sm" />}
+                      <VerifiedBadge authorNrp={originalPost.authorNrp} isVerified={originalAuthorProfile?.isVerified} size="sm" />
                     </div>
                     <div className="text-[10px] text-slate-400 dark:text-zinc-500">
                       @{originalAuthorProfile?.username || 'unknown'} • {formatThreadsTime(originalPost.createdAt)}
@@ -618,7 +649,7 @@ export const PostCard: React.FC<PostCardProps> = ({
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="mt-3 pt-4 border-t border-slate-200/40 dark:border-white/5 space-y-3 overflow-hidden"
+              className="mt-3 pt-4 border-t border-slate-200/40 dark:border-white/5 space-y-3 overflow-visible"
             >
               <h4 className="text-xs font-bold text-slate-700 dark:text-zinc-300 flex items-center gap-1.5">
                 <CornerDownRight className="w-3.5 h-3.5 text-blue-500" />
@@ -653,7 +684,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                               <span className="text-slate-900 dark:text-zinc-100 font-bold text-xs sm:text-[13px] group-hover/replyAuthor:text-blue-500 transition-colors">
                                 {replyName}
                               </span>
-                              {replyAuthor?.isVerified && <VerifiedBadge size="sm" />}
+                              <VerifiedBadge authorNrp={reply.authorNrp} isVerified={replyAuthor?.isVerified} size="sm" />
                             </div>
                           </div>
 
@@ -682,8 +713,9 @@ export const PostCard: React.FC<PostCardProps> = ({
                     className="w-full px-4 py-2.5 rounded-2xl bg-white/70 dark:bg-zinc-800/80 text-xs sm:text-[13px] border border-slate-200/80 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
 
+                  {/* DROPDOWN SUGGESTIONS MENTION IN COMMENT (FLOATING ELEVATED) */}
                   {commentMentionQuery !== null && commentMentionSuggestions.length > 0 && (
-                    <div className="absolute left-0 bottom-full mb-1 z-50 w-64 bg-white/95 dark:bg-zinc-800/95 backdrop-blur-xl border border-white/60 dark:border-zinc-700 rounded-2xl p-1.5 shadow-xl max-h-48 overflow-y-auto">
+                    <div className="absolute left-0 bottom-full mb-2 z-[60] w-64 bg-white/95 dark:bg-zinc-800/95 backdrop-blur-2xl border border-slate-200/80 dark:border-zinc-700 rounded-2xl p-1.5 shadow-2xl max-h-52 overflow-y-auto custom-scrollbar">
                       <div className="text-[10px] font-bold text-slate-400 px-2 py-1 flex items-center gap-1">
                         <AtSign className="w-3 h-3 text-blue-500" />
                         <span>Pilih User</span>
@@ -692,7 +724,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                         <div
                           key={u.nrp}
                           onClick={() => selectCommentMentionUser(u.username)}
-                          className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-zinc-700/60 cursor-pointer transition-colors"
+                          className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-zinc-700/70 cursor-pointer transition-colors"
                         >
                           <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-zinc-700 flex items-center justify-center shrink-0 overflow-hidden">
                             {u.photoUrl ? (

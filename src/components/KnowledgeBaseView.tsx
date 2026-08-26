@@ -268,7 +268,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                 Mau Belajar pakai AI?
               </h3>
               <p className="text-[10px] text-zinc-400 line-clamp-1 mt-0.5">
-                Pakai Gemini NotebookLM
+                by Gemini NotebookLM
               </p>
             </div>
           </div>

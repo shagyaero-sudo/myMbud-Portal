@@ -256,7 +256,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
           <div className="mb-4">
             <div className="flex items-center gap-1.5 flex-wrap">
               <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-zinc-100 tracking-tight">{authorName}</h2>
-              {authorProfile?.isVerified && <VerifiedBadge size="md" />}
+              <VerifiedBadge authorNrp={authorNrp} isVerified={authorProfile?.isVerified} size="md" />
               {isSelf && (
                 <span className="px-2.5 py-0.5 text-[11px] font-bold rounded-full bg-blue-50/80 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400 border border-blue-100 dark:border-blue-900/50 ml-1">Saya</span>
               )}
@@ -358,7 +358,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5">
                             <span className="text-sm font-bold text-slate-900 dark:text-zinc-100 truncate">{user.nickname}</span>
-                            {user.isVerified && <VerifiedBadge size="sm" />}
+                            <VerifiedBadge authorNrp={nrp} isVerified={user.isVerified} size="sm" />
                           </div>
                           <div className="text-[11px] text-slate-500 dark:text-zinc-400 truncate">@{user.username}</div>
                         </div>

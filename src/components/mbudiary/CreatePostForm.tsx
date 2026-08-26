@@ -272,7 +272,7 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
                 initial={{ opacity: 0, scale: 0.95, y: 15 }}
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.95, opacity: 0, y: 15 }}
-                className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl w-full max-w-[600px] rounded-3xl shadow-2xl border border-white/60 dark:border-white/10 flex flex-col overflow-hidden max-h-[85dvh]"
+                className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl w-full max-w-[600px] rounded-3xl shadow-2xl border border-white/60 dark:border-white/10 flex flex-col max-h-[85dvh]"
                 onMouseDown={(e) => e.stopPropagation()}
               >
                 <div className="flex items-center justify-between px-4 py-3.5 sm:px-5 border-b border-slate-200/40 dark:border-white/10 shrink-0 bg-white/50 dark:bg-zinc-900/50">
@@ -304,7 +304,7 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
                   </div>
                 </div>
 
-                <div className="p-4 sm:p-5 overflow-y-auto custom-scrollbar flex-1 min-h-[120px] relative">
+                <div className="p-4 sm:p-5 overflow-y-auto custom-scrollbar flex-1 min-h-[140px] relative">
                   <div className="flex items-start gap-3">
                     <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-2xl bg-slate-100 dark:bg-zinc-800 shrink-0 flex items-center justify-center overflow-hidden border border-slate-200/60 dark:border-zinc-700/60">
                       {userProfile.photoUrl ? (
@@ -323,12 +323,12 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
                         placeholder="Ada cerita apa hari ini?..."
                         rows={1}
                         maxLength={MAX_CHARS}
-                        className="w-full text-xs sm:text-[13px] bg-transparent text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none resize-none leading-relaxed min-h-[24px] max-h-[300px] overflow-y-auto"
+                        className="w-full text-xs sm:text-[13px] bg-transparent text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none resize-none leading-relaxed min-h-[30px] max-h-[300px] overflow-y-auto"
                       />
 
-                      {/* DROPDOWN SUGGESTIONS MENTION (GLASSMORPHISM) */}
+                      {/* DROPDOWN SUGGESTIONS MENTION (ELEVATED Z-INDEX & BORDER GLOW) */}
                       {mentionQuery !== null && mentionSuggestions.length > 0 && (
-                        <div className="absolute left-0 top-full mt-1 z-50 w-64 bg-white/95 dark:bg-zinc-800/95 backdrop-blur-xl border border-white/60 dark:border-zinc-700 rounded-2xl p-1.5 shadow-xl max-h-48 overflow-y-auto">
+                        <div className="absolute left-0 top-full mt-2 z-[60] w-64 bg-white/95 dark:bg-zinc-800/95 backdrop-blur-2xl border border-slate-200/80 dark:border-zinc-700 rounded-2xl p-1.5 shadow-2xl max-h-56 overflow-y-auto custom-scrollbar">
                           <div className="text-[10px] font-bold text-slate-400 px-2 py-1 flex items-center gap-1">
                             <AtSign className="w-3 h-3 text-blue-500" />
                             <span>Pilih User</span>
@@ -337,7 +337,7 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
                             <div
                               key={u.nrp}
                               onClick={() => selectMentionUser(u.username)}
-                              className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-zinc-700/60 cursor-pointer transition-colors"
+                              className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-zinc-700/70 cursor-pointer transition-colors"
                             >
                               <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-zinc-700 flex items-center justify-center shrink-0 overflow-hidden">
                                 {u.photoUrl ? (
