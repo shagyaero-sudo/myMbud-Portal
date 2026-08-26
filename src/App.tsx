@@ -60,6 +60,31 @@ import {
 
 const IS_MAINTENANCE = false;
 
+// =========================================================================
+// HELPER ROUTING AMAN & ANTI-BLANK SCREEN
+// =========================================================================
+
+const VALID_TABS: TabType[] = [
+  'dashboard',
+  'contacts',
+  'materials',
+  'tasks',
+  'spinwheel',
+  'calculator',
+  'letter',
+  'blockblast',
+  'mbudiary',
+  'notebooklm' as TabType,
+];
+
+const getTabFromLocation = (): TabType => {
+  if (typeof window === 'undefined') return 'dashboard';
+  const rawHash = window.location.hash.replace(/^#\/?/, '').split('?')[0].split('&')[0].trim();
+  return VALID_TABS.includes(rawHash as TabType) ? (rawHash as TabType) : 'dashboard';
+};
+
+// =========================================================================
+
 const AppSkeleton = () => (
   <div className="animate-pulse space-y-6">
     <div className="h-40 bg-slate-200/60 dark:bg-zinc-900/60 rounded-3xl w-full border border-slate-200 dark:border-zinc-800"></div>
@@ -180,7 +205,8 @@ export default function App() {
   useEffect(() => {
     const handleOneSignalRedirect = (e: any) => {
       const targetTab = e?.detail?.tab || localStorage.getItem('mbud_target_tab') || 'mbudiary';
-      setActiveTab(targetTab as TabType);
+      const cleanTab = VALID_TABS.includes(targetTab as TabType) ? (targetTab as TabType) : 'mbudiary';
+      setActiveTab(cleanTab);
       window.dispatchEvent(new Event('mbud_notification_navigate'));
     };
 
@@ -188,7 +214,8 @@ export default function App() {
     window.addEventListener('mbud_notification_navigate', () => {
       const targetTab = localStorage.getItem('mbud_target_tab');
       if (targetTab) {
-        setActiveTab(targetTab as TabType);
+        const cleanTab = VALID_TABS.includes(targetTab as TabType) ? (targetTab as TabType) : 'mbudiary';
+        setActiveTab(cleanTab);
         localStorage.removeItem('mbud_target_tab');
       }
     });
@@ -233,20 +260,16 @@ export default function App() {
   const requiresLogin =
     !isAuthenticated && (!isMobileOrTabletOS || isStandalone);
 
-  // Inisialisasi activeTab dari URL hash jika ada (misal: /#tasks)
-  const [activeTab, setActiveTab] = useState<TabType>(() => {
-    const hash = window.location.hash.replace('#', '');
-    return (hash as TabType) || 'dashboard';
-  });
+  // Inisialisasi activeTab terproteksi dari blank screen
+  const [activeTab, setActiveTab] = useState<TabType>(() => getTabFromLocation());
 
   // Listener tombol Back / Forward browser & gesture swipe HP
   useEffect(() => {
     const handlePopState = (event: PopStateEvent) => {
-      if (event.state && event.state.tab) {
+      if (event.state && event.state.tab && VALID_TABS.includes(event.state.tab)) {
         setActiveTab(event.state.tab as TabType);
       } else {
-        const hash = window.location.hash.replace('#', '');
-        setActiveTab((hash as TabType) || 'dashboard');
+        setActiveTab(getTabFromLocation());
       }
     };
 
