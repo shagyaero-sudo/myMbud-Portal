@@ -187,10 +187,11 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
         <span>Kembali</span>
       </button>
 
-      {/* CARD PROFIL USER */}
+      {/* CARD PROFIL USER - PURE OPACITY FADE */}
       <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.15, ease: 'easeOut' }}
         className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none relative overflow-hidden w-full"
       >
         <div className="w-full h-32 sm:h-44 relative bg-slate-200 dark:bg-zinc-800">
@@ -353,7 +354,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
             onClick={() => setFollowModalType(null)}
           >
             <motion.div
-              initial={{ scale: 0.95, y: 10, opacity: 0 }} animate={{ scale: 1, y: 0, opacity: 1 }} exit={{ scale: 0.95, y: 0, opacity: 0 }} transition={{ duration: 0.2 }}
+              initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} transition={{ duration: 0.15 }}
               className="w-full max-w-sm bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/60 dark:border-white/10 rounded-3xl p-5 shadow-2xl flex flex-col max-h-[70dvh]"
               onClick={(e) => e.stopPropagation()}
             >

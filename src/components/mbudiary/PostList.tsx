@@ -91,7 +91,7 @@ export const PostList: React.FC<PostListProps> = ({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Cari cerita atau nama akun..."
+              placeholder="Cari post atau username..."
               className="w-full pl-8 pr-3 py-1.5 text-[11px] sm:text-xs rounded-xl sm:rounded-2xl bg-white/60 dark:bg-zinc-800/70 border border-slate-200/60 dark:border-white/5 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all"
             />
             {searchQuery && (

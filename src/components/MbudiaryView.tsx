@@ -290,7 +290,7 @@ export const MbudiaryView: React.FC = () => {
               <div className="flex items-center gap-2.5 text-xs font-semibold min-w-0">
                 <span className="text-base shrink-0">👈</span>
                 <span className="leading-snug">
-                  <span className="font-black">Tips:</span> Kamu bisa geser/swipe dari tepi kiri layar untuk kembali ke Feed!
+                  <span className="font-black">Tips:</span> swipe dari tepi layar buat back to Feed
                 </span>
               </div>
               <button

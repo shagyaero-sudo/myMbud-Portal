@@ -48,17 +48,14 @@ export const getBadgeTier = (
   authorNrp?: string,
   isExplicitlyVerified?: boolean | string | null
 ): 'gold' | 'blue' | null => {
-  // 1. Cek Override Manual Admin / Officer
   if (isExplicitlyVerified === 'gold') {
     return 'gold';
   }
   if (isExplicitlyVerified === 'blue' || isExplicitlyVerified === true || isExplicitlyVerified === 'true') {
-    // Jika manual biru tapi ternyata followers organik sudah >= 30, otomatis naik emas
     if (authorNrp && getFollowerCount(authorNrp) >= 30) return 'gold';
     return 'blue';
   }
 
-  // 2. Cek Otomasi Follower Count
   if (authorNrp) {
     const count = getFollowerCount(authorNrp);
     if (count >= 30) return 'gold';
@@ -454,13 +451,13 @@ export const PostCard: React.FC<PostCardProps> = ({
 
   return (
     <>
+      {/* PURE OPACITY TRANSITION - NO LAYOUT SPRING / NO VERTICAL JITTER */}
       <motion.article
-        layout
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        transition={{ duration: 0.25 }}
-        className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-4 sm:p-5 transition-all duration-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none w-full"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.15, ease: 'easeOut' }}
+        className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-4 sm:p-5 transition-colors duration-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none w-full"
       >
         {isPlainRepost && (
           <div className="flex items-center gap-2 mb-3 text-[10px] font-semibold text-slate-400 dark:text-zinc-500">
@@ -515,9 +512,9 @@ export const PostCard: React.FC<PostCardProps> = ({
               <AnimatePresence>
                 {isMenuOpen && (
                   <motion.div
-                    initial={{ opacity: 0, y: -4, scale: 0.97 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -4, scale: 0.97 }}
+                    initial={{ opacity: 0, scale: 0.97 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.97 }}
                     className="absolute right-0 top-full mt-1.5 z-30 w-44 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/60 dark:border-white/10 rounded-2xl p-1.5 shadow-xl"
                   >
                     <button
@@ -787,9 +784,9 @@ export const PostCard: React.FC<PostCardProps> = ({
             }}
           >
             <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 10 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
               className="w-full max-w-lg bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/60 dark:border-white/10 rounded-3xl p-5 sm:p-6 shadow-2xl flex flex-col max-h-[85dvh]"
               onMouseDown={(e) => e.stopPropagation()}
             >
@@ -864,7 +861,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                 <motion.button initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }} onClick={() => setSelectedImage(null)} className="fixed top-6 right-5 sm:top-6 sm:right-6 z-[10000002] w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full bg-zinc-800/80 hover:bg-zinc-700 border border-white/20 text-white shadow-2xl backdrop-blur-md transition-all cursor-pointer">
                   <X className="w-5 h-5 sm:w-6 sm:h-6" />
                 </motion.button>
-                <motion.div initial={{ opacity: 0, scale: 0.92, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.92, y: 0 }} className="relative z-[10000001] max-w-[95vw] max-h-[85dvh] flex items-center justify-center" onMouseDown={(e) => e.stopPropagation()}>
+                <motion.div initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.92 }} className="relative z-[10000001] max-w-[95vw] max-h-[85dvh] flex items-center justify-center" onMouseDown={(e) => e.stopPropagation()}>
                   <img src={selectedImage} alt="Pratinjau" className="max-w-[95vw] max-h-[85dvh] w-auto h-auto object-contain rounded-2xl sm:rounded-3xl shadow-2xl border border-white/10" />
                 </motion.div>
               </motion.div>
