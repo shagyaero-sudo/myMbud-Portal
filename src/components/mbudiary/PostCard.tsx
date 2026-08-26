@@ -129,11 +129,11 @@ const formatThreadsTime = (timestamp?: string | number | Date | null): string =>
   return `${diffYears}thn`;
 };
 
-// KOMPONEN MEDIA GAMBAR (SINGLE: NATIVE RATIO, 2/4: GRID SQUARE, 3: CAROUSEL SQUARE)
+// KOMPONEN MEDIA GAMBAR
 const PostImageItem: React.FC<{
   imageUrl: string;
-  layoutType: 'single' | 'grid' | 'carousel';
-  onImageClick: () => void;
+  layoutType: 'single' | 'grid' | 'carousel' | 'quote';
+  onImageClick: (e: React.MouseEvent) => void;
 }> = ({ imageUrl, layoutType, onImageClick }) => {
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -163,6 +163,7 @@ const PostImageItem: React.FC<{
   const containerClasses = {
     grid: 'w-full aspect-square',
     carousel: 'w-[75%] sm:w-[60%] shrink-0 aspect-square snap-start',
+    quote: 'w-full aspect-[16/10] max-h-[240px]',
   };
 
   return (
@@ -628,7 +629,7 @@ export const PostCard: React.FC<PostCardProps> = ({
               </div>
             )}
 
-            {/* EMBED KARTU KUTIPAN ASLI */}
+            {/* EMBED KARTU KUTIPAN ASLI (DILENGKAPI GAMBAR POST ASLI) */}
             {isQuoteRepost && (
               <div
                 onClick={(e) => {
@@ -641,7 +642,7 @@ export const PostCard: React.FC<PostCardProps> = ({
               >
                 {originalPost ? (
                   <>
-                    <div className="px-3 pt-2 pb-1 flex items-center gap-1 leading-none">
+                    <div className="px-3 pt-2.5 pb-1 flex items-center gap-1 leading-none">
                       <div className="w-4 h-4 rounded-full bg-slate-200 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden">
                         {originalAuthorPhotoUrl ? (
                           <img src={getOptimizedImageUrl(originalAuthorPhotoUrl)} alt={originalAuthorName} className="w-full h-full object-cover" />
@@ -664,9 +665,39 @@ export const PostCard: React.FC<PostCardProps> = ({
                         <FormattedPostContent content={originalPost.content} onSelectAuthor={onSelectAuthor} />
                       </div>
                     )}
+
+                    {/* GAMBAR POSTINGAN ASLI DI DALAM KARTU QUOTE */}
+                    {originalPost.imageUrls && originalPost.imageUrls.length > 0 && (
+                      <div className="px-3 pb-2.5">
+                        {originalPost.imageUrls.length === 1 ? (
+                          <PostImageItem
+                            imageUrl={originalPost.imageUrls[0]}
+                            layoutType="quote"
+                            onImageClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedImage(getOptimizedImageUrl(originalPost.imageUrls[0]));
+                            }}
+                          />
+                        ) : (
+                          <div className={`grid gap-1.5 w-full ${originalPost.imageUrls.length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
+                            {originalPost.imageUrls.map((imgUrl, idx) => (
+                              <PostImageItem
+                                key={`${imgUrl}-${idx}`}
+                                imageUrl={imgUrl}
+                                layoutType="grid"
+                                onImageClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedImage(getOptimizedImageUrl(imgUrl));
+                                }}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </>
                 ) : (
-                  <div className="p-2 text-xs italic text-slate-400 dark:text-zinc-500">
+                  <div className="p-2.5 text-xs italic text-slate-400 dark:text-zinc-500">
                     Postingan asli tidak dapat dimuat atau telah dihapus.
                   </div>
                 )}
@@ -681,7 +712,10 @@ export const PostCard: React.FC<PostCardProps> = ({
                   <PostImageItem
                     imageUrl={displayImages[0]}
                     layoutType="single"
-                    onImageClick={() => setSelectedImage(getOptimizedImageUrl(displayImages[0]))}
+                    onImageClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedImage(getOptimizedImageUrl(displayImages[0]));
+                    }}
                   />
                 )}
 
@@ -693,7 +727,10 @@ export const PostCard: React.FC<PostCardProps> = ({
                         key={`${imageUrl}-${index}`}
                         imageUrl={imageUrl}
                         layoutType="carousel"
-                        onImageClick={() => setSelectedImage(getOptimizedImageUrl(imageUrl))}
+                        onImageClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedImage(getOptimizedImageUrl(imageUrl));
+                        }}
                       />
                     ))}
                   </div>
@@ -707,7 +744,10 @@ export const PostCard: React.FC<PostCardProps> = ({
                         key={`${imageUrl}-${index}`}
                         imageUrl={imageUrl}
                         layoutType="grid"
-                        onImageClick={() => setSelectedImage(getOptimizedImageUrl(imageUrl))}
+                        onImageClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedImage(getOptimizedImageUrl(imageUrl));
+                        }}
                       />
                     ))}
                   </div>
@@ -877,7 +917,7 @@ export const PostCard: React.FC<PostCardProps> = ({
         </AnimatePresence>
       </article>
 
-      {/* MODAL FORM QUOTE REPOST */}
+      {/* MODAL FORM QUOTE REPOST (DENGAN PREVIEW GAMBAR POST ASLI) */}
       <AnimatePresence>
         {isQuoteOpen && (
           <motion.div
@@ -947,9 +987,21 @@ export const PostCard: React.FC<PostCardProps> = ({
                     </div>
                   </div>
 
-                  <div className="px-3 pb-2.5 text-xs text-slate-700 dark:text-zinc-300 leading-snug whitespace-pre-line">
-                    <FormattedPostContent content={quoteTargetPost?.content || ''} onSelectAuthor={onSelectAuthor} />
-                  </div>
+                  {quoteTargetPost?.content && (
+                    <div className="px-3 pb-2 text-xs text-slate-700 dark:text-zinc-300 leading-snug whitespace-pre-line">
+                      <FormattedPostContent content={quoteTargetPost?.content || ''} onSelectAuthor={onSelectAuthor} />
+                    </div>
+                  )}
+
+                  {quoteTargetPost?.imageUrls && quoteTargetPost.imageUrls.length > 0 && (
+                    <div className="px-3 pb-2.5">
+                      <img
+                        src={getOptimizedImageUrl(quoteTargetPost.imageUrls[0])}
+                        alt="Preview post asli"
+                        className="w-full max-h-36 object-cover rounded-xl border border-slate-200/50 dark:border-white/5"
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex items-center justify-end gap-2 shrink-0">
