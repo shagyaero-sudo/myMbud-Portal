@@ -129,6 +129,43 @@ const formatThreadsTime = (timestamp?: string | number | Date | null): string =>
   return `${diffYears}thn`;
 };
 
+// KOMPONEN MEDIA GAMBAR PERSISTENT RASIO
+const PostImageItem: React.FC<{
+  imageUrl: string;
+  layoutType: 'single' | 'grid' | 'carousel';
+  onImageClick: () => void;
+}> = ({ imageUrl, layoutType, onImageClick }) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  const containerClasses = {
+    single: 'w-full aspect-[4/3] max-h-[460px]',
+    grid: 'w-full aspect-square',
+    carousel: 'w-[75%] sm:w-[60%] shrink-0 aspect-square snap-start',
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={onImageClick}
+      className={`relative overflow-hidden rounded-xl bg-slate-200 dark:bg-zinc-800 border border-slate-200/50 dark:border-white/5 cursor-zoom-in group ${containerClasses[layoutType]}`}
+    >
+      {!isLoaded && (
+        <div className="absolute inset-0 bg-slate-200 dark:bg-zinc-800 animate-pulse" />
+      )}
+
+      <img
+        src={getOptimizedImageUrl(imageUrl)}
+        alt="Post media"
+        loading="lazy"
+        onLoad={() => setIsLoaded(true)}
+        className={`w-full h-full object-cover transition-all duration-300 group-hover:scale-[1.02] ${
+          isLoaded ? 'opacity-100' : 'opacity-0'
+        }`}
+      />
+    </button>
+  );
+};
+
 interface PostCardProps {
   post: MbudiaryPost;
   currentUser: UserProfile;
@@ -457,13 +494,7 @@ export const PostCard: React.FC<PostCardProps> = ({
 
   return (
     <>
-      <motion.article
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.15, ease: 'easeOut' }}
-        className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-2xl px-3.5 py-3 sm:px-4 sm:py-3.5 transition-colors duration-200 shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none w-full"
-      >
+      <article className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-2xl px-3.5 py-3 sm:px-4 sm:py-3.5 transition-colors duration-200 shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none w-full">
         {/* REPOST INDICATOR */}
         {isPlainRepost && (
           <div className="flex items-center gap-1.5 mb-1.5 text-[11px] font-semibold text-slate-400 dark:text-zinc-500 pl-11">
@@ -491,7 +522,7 @@ export const PostCard: React.FC<PostCardProps> = ({
           {/* MAIN CONTENT COLUMN */}
           <div className="flex-1 min-w-0">
             
-            {/* HEADER COMPACT (NO EXTRA WRAPPER, TIGHT GAPS) */}
+            {/* HEADER COMPACT */}
             <div className="flex items-center justify-between gap-1 leading-none mb-1">
               <div
                 onClick={() => onSelectAuthor?.(displayAuthorNrp)}
@@ -501,14 +532,12 @@ export const PostCard: React.FC<PostCardProps> = ({
                   {displayAuthorName}
                 </span>
                 
-                {/* VERIFIED BADGE DIRECT RENDER */}
                 <VerifiedBadge authorNrp={displayAuthorNrp} isVerified={displayAuthorIsVerified} size="sm" />
                 
                 <span className="text-slate-400 dark:text-zinc-500 text-[11px] sm:text-xs truncate font-normal">
                   @{displayAuthorUsername || 'unknown'}
                 </span>
                 
-                {/* DOT PEMISAH */}
                 <span className="text-slate-400 dark:text-zinc-500 text-[10px] font-bold select-none px-0.5">
                   •
                 </span>
@@ -590,7 +619,7 @@ export const PostCard: React.FC<PostCardProps> = ({
               >
                 {originalPost ? (
                   <>
-                    <div className="px-3 pt-2 pb-1 flex items-center gap-1">
+                    <div className="px-3 pt-2 pb-1 flex items-center gap-1 leading-none">
                       <div className="w-4 h-4 rounded-full bg-slate-200 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden">
                         {originalAuthorPhotoUrl ? (
                           <img src={getOptimizedImageUrl(originalAuthorPhotoUrl)} alt={originalAuthorName} className="w-full h-full object-cover" />
@@ -622,19 +651,45 @@ export const PostCard: React.FC<PostCardProps> = ({
               </div>
             )}
 
-            {/* GAMBAR POSTINGAN */}
+            {/* GAMBAR POSTINGAN (LAYOUT PROPORSIONAL: 1x 4:3, 2/4 GRID SQUARE, 3 SWIPEABLE SQUARE) */}
             {!isQuoteRepost && displayImages && displayImages.length > 0 && (
-              <div className={`mb-2 grid gap-1.5 w-full ${displayImages.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
-                {displayImages.map((imageUrl, index) => (
-                  <button
-                    key={`${imageUrl}-${index}`}
-                    type="button"
-                    onClick={() => setSelectedImage(getOptimizedImageUrl(imageUrl))}
-                    className={`relative overflow-hidden rounded-xl bg-slate-100 dark:bg-zinc-800 border border-slate-200/50 dark:border-white/5 cursor-zoom-in group ${displayImages.length === 1 ? 'max-h-[440px]' : 'aspect-square'}`}
-                  >
-                    <img src={getOptimizedImageUrl(imageUrl)} alt={`Gambar ${index + 1}`} loading="lazy" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]" />
-                  </button>
-                ))}
+              <div className="mb-2 w-full">
+                {/* 1 GAMBAR: 4:3 RATIO */}
+                {displayImages.length === 1 && (
+                  <PostImageItem
+                    imageUrl={displayImages[0]}
+                    layoutType="single"
+                    onImageClick={() => setSelectedImage(getOptimizedImageUrl(displayImages[0]))}
+                  />
+                )}
+
+                {/* 3 GAMBAR: SWIPEABLE CAROUSEL SQUARE */}
+                {displayImages.length === 3 && (
+                  <div className="flex gap-2 overflow-x-auto pb-1.5 snap-x snap-mandatory scroll-smooth custom-scrollbar -mx-0.5 px-0.5">
+                    {displayImages.map((imageUrl, index) => (
+                      <PostImageItem
+                        key={`${imageUrl}-${index}`}
+                        imageUrl={imageUrl}
+                        layoutType="carousel"
+                        onImageClick={() => setSelectedImage(getOptimizedImageUrl(imageUrl))}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {/* 2 ATAU 4 GAMBAR: 2-COLUMN GRID SQUARE */}
+                {(displayImages.length === 2 || displayImages.length >= 4) && (
+                  <div className="grid grid-cols-2 gap-1.5 w-full">
+                    {displayImages.map((imageUrl, index) => (
+                      <PostImageItem
+                        key={`${imageUrl}-${index}`}
+                        imageUrl={imageUrl}
+                        layoutType="grid"
+                        onImageClick={() => setSelectedImage(getOptimizedImageUrl(imageUrl))}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
@@ -798,7 +853,7 @@ export const PostCard: React.FC<PostCardProps> = ({
             </motion.div>
           )}
         </AnimatePresence>
-      </motion.article>
+      </article>
 
       {/* MODAL FORM QUOTE REPOST */}
       <AnimatePresence>
