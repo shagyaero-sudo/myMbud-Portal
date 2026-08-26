@@ -70,7 +70,7 @@ export const VerifiedBadge: React.FC<{
   authorNrp?: string;
   isVerified?: boolean | string | null;
   size?: 'sm' | 'md' | 'lg';
-}> = ({ authorNrp, isVerified, size = 'sm' }) => {
+}> = ({ authorNrp, isVerified, size = 'md' }) => {
   const tier = getBadgeTier(authorNrp, isVerified);
 
   if (!tier) return null;
@@ -462,207 +462,219 @@ export const PostCard: React.FC<PostCardProps> = ({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.15, ease: 'easeOut' }}
-        className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-2xl p-3.5 sm:p-4 transition-colors duration-200 shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none w-full"
+        className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-2xl p-3 sm:p-4 transition-colors duration-200 shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none w-full"
       >
+        {/* BADGE REPOST */}
         {isPlainRepost && (
-          <div className="flex items-center gap-1.5 mb-2 text-[11px] font-semibold text-slate-400 dark:text-zinc-500 pl-1">
+          <div className="flex items-center gap-1.5 mb-2 text-[11px] font-semibold text-slate-400 dark:text-zinc-500 pl-11">
             <Repeat2 className="w-3.5 h-3.5 text-emerald-500" />
             <span>{isAuthor ? 'Anda me-repost' : `${authorName} me-repost`}</span>
           </div>
         )}
 
-        {/* HEADER COMPACT 1 BARIS (STREAMLINED) */}
-        <div className="flex items-center justify-between gap-2 mb-2.5">
+        {/* TWITTER 2-COLUMN STRUCTURE: AVATAR KIRI | KONTEN KANAN */}
+        <div className="flex items-start gap-3">
+          
+          {/* KOLOM KIRI: AVATAR */}
           <div
             onClick={() => onSelectAuthor?.(displayAuthorNrp)}
-            className="flex items-center gap-2.5 min-w-0 flex-1 cursor-pointer group/author"
+            className="w-10 h-10 rounded-full bg-white/60 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden border border-slate-200/80 dark:border-zinc-700/80 cursor-pointer hover:opacity-90 transition-opacity"
             title={`Lihat profil ${displayAuthorName}`}
           >
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white/60 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden border border-slate-200/80 dark:border-zinc-700/80 group-hover/author:scale-105 transition-transform">
-              {displayAuthorPhotoUrl ? (
-                <img src={getOptimizedImageUrl(displayAuthorPhotoUrl)} alt={displayAuthorName} className="w-full h-full object-cover rounded-xl" />
-              ) : (
-                <span className="text-lg sm:text-xl leading-none">{displayAuthorEmoji}</span>
-              )}
-            </div>
-
-            {/* BARIS HORIZONTAL COMPACT */}
-            <div className="flex items-center gap-1.5 min-w-0 flex-wrap sm:flex-nowrap leading-tight">
-              <span className="text-slate-900 dark:text-zinc-100 font-bold text-xs sm:text-sm truncate group-hover/author:text-blue-500 transition-colors">
-                {displayAuthorName}
-              </span>
-              <VerifiedBadge authorNrp={displayAuthorNrp} isVerified={displayAuthorIsVerified} size="sm" />
-              <span className="text-slate-400 dark:text-zinc-500 text-[11px] sm:text-xs truncate font-normal">
-                @{displayAuthorUsername || 'unknown'}
-              </span>
-              <span className="text-slate-300 dark:text-zinc-600 text-[10px] hidden xs:inline">•</span>
-              <span className="text-slate-400 dark:text-zinc-500 text-[10px] sm:text-[11px] shrink-0 font-normal" title={formatDateFormatted(displayCreatedAt)}>
-                {formatThreadsTime(displayCreatedAt)}
-              </span>
-            </div>
-          </div>
-
-          {/* TRIPLE DOT MENU (DELETE POST / REPORT) */}
-          <div ref={menuRef} className="relative shrink-0">
-            <button
-              type="button"
-              onClick={() => setIsMenuOpen((prev) => !prev)}
-              disabled={isDeleting}
-              className="p-1 rounded-lg text-slate-400 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-white/80 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
-            >
-              <MoreVertical className="w-4 h-4" />
-            </button>
-
-            <AnimatePresence>
-              {isMenuOpen && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.12 }}
-                  className="absolute right-0 top-full mt-1 z-30 w-44 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-white/60 dark:border-white/10 rounded-2xl p-1.5 shadow-xl"
-                >
-                  {canDelete ? (
-                    <button
-                      type="button"
-                      onClick={handleDeletePost}
-                      disabled={isDeleting}
-                      className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50/80 dark:hover:bg-rose-950/30 transition-colors disabled:opacity-50 cursor-pointer"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      <span>Hapus Postingan</span>
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={handleReportPost}
-                      className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left text-xs font-semibold text-amber-600 dark:text-amber-400 hover:bg-amber-50/80 dark:hover:bg-amber-950/30 transition-colors cursor-pointer"
-                    >
-                      <Flag className="w-3.5 h-3.5" />
-                      <span>Laporkan Postingan</span>
-                    </button>
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
-
-        {/* KONTEN UTAMA */}
-        {isQuoteRepost && (
-          <div className="text-[13px] sm:text-sm text-slate-800 dark:text-zinc-200 leading-relaxed whitespace-pre-line mb-2.5 font-normal">
-            <FormattedPostContent content={post.quoteContent || ''} onSelectAuthor={onSelectAuthor} />
-          </div>
-        )}
-
-        {!isQuoteRepost && displayContent && (
-          <div className="text-[13px] sm:text-sm text-slate-800 dark:text-zinc-200 leading-relaxed whitespace-pre-line mb-2.5 font-normal">
-            <FormattedPostContent content={displayContent} onSelectAuthor={onSelectAuthor} />
-          </div>
-        )}
-
-        {/* EMBED KARTU KUTIPAN ASLI */}
-        {isQuoteRepost && (
-          <div
-            onClick={(e) => {
-              e.stopPropagation();
-              if (originalPost && onSelectPost) {
-                onSelectPost(originalPost.id);
-              }
-            }}
-            className="mb-2.5 rounded-xl border border-slate-200/60 dark:border-white/5 overflow-hidden bg-white/50 dark:bg-zinc-950/40 cursor-pointer hover:bg-white/80 dark:hover:bg-zinc-950/60 transition-colors w-full"
-          >
-            {originalPost ? (
-              <>
-                <div className="px-3.5 pt-2.5 pb-1.5 flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-lg bg-slate-200 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden">
-                    {originalAuthorPhotoUrl ? (
-                      <img src={getOptimizedImageUrl(originalAuthorPhotoUrl)} alt={originalAuthorName} className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-xs leading-none">{originalAuthorEmoji}</span>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                    <span className="text-xs font-bold text-slate-900 dark:text-zinc-100 truncate">{originalAuthorName}</span>
-                    <VerifiedBadge authorNrp={originalPost.authorNrp} isVerified={(originalAuthorProfile as any)?.isVerified} size="sm" />
-                    <span className="text-[10px] text-slate-400 dark:text-zinc-500 truncate">@{originalAuthorProfile?.username || 'unknown'}</span>
-                    <span className="text-slate-300 dark:text-zinc-600 text-[9px]">•</span>
-                    <span className="text-[10px] text-slate-400 dark:text-zinc-500 shrink-0">{formatThreadsTime(originalPost.createdAt)}</span>
-                  </div>
-                </div>
-
-                {originalPost.content && (
-                  <div className="px-3.5 pb-2.5 text-xs text-slate-700 dark:text-zinc-300 leading-relaxed whitespace-pre-line">
-                    <FormattedPostContent content={originalPost.content} onSelectAuthor={onSelectAuthor} />
-                  </div>
-                )}
-              </>
+            {displayAuthorPhotoUrl ? (
+              <img src={getOptimizedImageUrl(displayAuthorPhotoUrl)} alt={displayAuthorName} className="w-full h-full object-cover rounded-full" />
             ) : (
-              <div className="p-3 text-xs italic text-slate-400 dark:text-zinc-500">
-                Postingan asli tidak dapat dimuat atau telah dihapus.
-              </div>
+              <span className="text-xl leading-none">{displayAuthorEmoji}</span>
             )}
           </div>
-        )}
 
-        {!isQuoteRepost && displayImages && displayImages.length > 0 && (
-          <div className={`mb-2.5 grid gap-1.5 w-full ${displayImages.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
-            {displayImages.map((imageUrl, index) => (
-              <button
-                key={`${imageUrl}-${index}`}
-                type="button"
-                onClick={() => setSelectedImage(getOptimizedImageUrl(imageUrl))}
-                className={`relative overflow-hidden rounded-xl bg-slate-100 dark:bg-zinc-800 border border-slate-200/50 dark:border-white/5 cursor-zoom-in group ${displayImages.length === 1 ? 'max-h-[480px]' : 'aspect-square'}`}
+          {/* KOLOM KANAN: SEMUA KONTEN */}
+          <div className="flex-1 min-w-0">
+            
+            {/* HEADER BARIS HORIZONTAL COMPACT */}
+            <div className="flex items-center justify-between gap-1 leading-tight mb-1">
+              <div
+                onClick={() => onSelectAuthor?.(displayAuthorNrp)}
+                className="flex items-center gap-1.5 min-w-0 flex-wrap sm:flex-nowrap cursor-pointer group/author"
               >
-                <img src={getOptimizedImageUrl(imageUrl)} alt={`Gambar ${index + 1}`} loading="lazy" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]" />
-              </button>
-            ))}
-          </div>
-        )}
+                <span className="text-slate-900 dark:text-zinc-100 font-bold text-xs sm:text-sm truncate group-hover/author:text-blue-500 transition-colors">
+                  {displayAuthorName}
+                </span>
+                <VerifiedBadge authorNrp={displayAuthorNrp} isVerified={displayAuthorIsVerified} size="sm" />
+                <span className="text-slate-400 dark:text-zinc-500 text-[11px] sm:text-xs truncate font-normal">
+                  @{displayAuthorUsername || 'unknown'}
+                </span>
+                <span className="text-slate-300 dark:text-zinc-600 text-[10px] hidden xs:inline">•</span>
+                <span className="text-slate-400 dark:text-zinc-500 text-[10px] sm:text-[11px] shrink-0 font-normal" title={formatDateFormatted(displayCreatedAt)}>
+                  {formatThreadsTime(displayCreatedAt)}
+                </span>
+              </div>
 
-        {/* ACTION BUTTONS (STREAMLINED & LEAN) */}
-        <div className="flex items-center justify-between pt-1.5 border-t border-slate-200/40 dark:border-white/5 text-xs">
-          <div className="flex items-center gap-1 sm:gap-1.5 -ml-1">
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={handleLikeToggle}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full transition-all text-xs font-medium cursor-pointer ${isLiked ? 'text-rose-500 font-bold bg-rose-50/60 dark:bg-rose-950/30' : 'text-slate-500 dark:text-zinc-400 hover:text-rose-500 hover:bg-white/60 dark:hover:bg-zinc-800/60'}`}
-            >
-              <Heart className={`w-4 h-4 transition-transform ${isLiked ? 'fill-rose-500 text-rose-500 scale-110' : ''}`} />
-              <span>{likeCount}</span>
-            </motion.button>
+              {/* TRIPLE DOT MENU */}
+              <div ref={menuRef} className="relative shrink-0 -mr-1">
+                <button
+                  type="button"
+                  onClick={() => setIsMenuOpen((prev) => !prev)}
+                  disabled={isDeleting}
+                  className="p-1 rounded-lg text-slate-400 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-white/80 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                >
+                  <MoreVertical className="w-4 h-4" />
+                </button>
 
-            <button
-              onClick={handleCommentClick}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full transition-all text-xs font-medium cursor-pointer ${isRepliesExpanded && isDetailPage ? 'text-blue-600 dark:text-blue-400 font-bold bg-blue-50/60 dark:bg-blue-950/40' : 'text-slate-500 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/60 dark:hover:bg-zinc-800/60'}`}
-            >
-              <MessageSquare className="w-4 h-4" />
-              <span>{post.replyCount || replies.length}</span>
-            </button>
+                <AnimatePresence>
+                  {isMenuOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ duration: 0.12 }}
+                      className="absolute right-0 top-full mt-1 z-30 w-44 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-white/60 dark:border-white/10 rounded-2xl p-1.5 shadow-xl"
+                    >
+                      {canDelete ? (
+                        <button
+                          type="button"
+                          onClick={handleDeletePost}
+                          disabled={isDeleting}
+                          className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50/80 dark:hover:bg-rose-950/30 transition-colors disabled:opacity-50 cursor-pointer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Hapus Postingan</span>
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={handleReportPost}
+                          className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left text-xs font-semibold text-amber-600 dark:text-amber-400 hover:bg-amber-50/80 dark:hover:bg-amber-950/30 transition-colors cursor-pointer"
+                        >
+                          <Flag className="w-3.5 h-3.5" />
+                          <span>Laporkan Postingan</span>
+                        </button>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
 
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              type="button"
-              onClick={() => setIsQuoteOpen(true)}
-              disabled={isReposting}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full transition-all text-xs font-medium cursor-pointer text-slate-500 dark:text-zinc-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-white/60 dark:hover:bg-zinc-800/60 disabled:opacity-50"
-              title="Quote Repost"
-            >
-              <Repeat2 className={`w-4 h-4 ${isReposting ? 'animate-pulse' : ''}`} />
-              <span className="hidden xs:inline">Repost</span>
-            </motion.button>
-          </div>
+            {/* KONTEN TEKS CERITA */}
+            {isQuoteRepost && (
+              <div className="text-[13px] sm:text-sm text-slate-800 dark:text-zinc-200 leading-relaxed whitespace-pre-line mb-2 font-normal">
+                <FormattedPostContent content={post.quoteContent || ''} onSelectAuthor={onSelectAuthor} />
+              </div>
+            )}
 
-          <div className="-mr-1">
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={handleBookmarkToggle}
-              className={`flex items-center justify-center p-1.5 rounded-full transition-all cursor-pointer ${isBookmarked ? 'text-amber-500 bg-amber-50/60 dark:bg-amber-950/30' : 'text-slate-400 dark:text-zinc-500 hover:text-amber-500 hover:bg-white/60 dark:hover:bg-zinc-800/60'}`}
-              title={isBookmarked ? 'Hapus Bookmark' : 'Simpan Postingan'}
-            >
-              <Bookmark className={`w-4 h-4 transition-all ${isBookmarked ? 'fill-amber-500 text-amber-500' : ''}`} />
-            </motion.button>
+            {!isQuoteRepost && displayContent && (
+              <div className="text-[13px] sm:text-sm text-slate-800 dark:text-zinc-200 leading-relaxed whitespace-pre-line mb-2 font-normal">
+                <FormattedPostContent content={displayContent} onSelectAuthor={onSelectAuthor} />
+              </div>
+            )}
+
+            {/* EMBED KARTU KUTIPAN ASLI */}
+            {isQuoteRepost && (
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (originalPost && onSelectPost) {
+                    onSelectPost(originalPost.id);
+                  }
+                }}
+                className="mb-2.5 rounded-xl border border-slate-200/60 dark:border-white/5 overflow-hidden bg-white/50 dark:bg-zinc-950/40 cursor-pointer hover:bg-white/80 dark:hover:bg-zinc-950/60 transition-colors w-full"
+              >
+                {originalPost ? (
+                  <>
+                    <div className="px-3 pt-2 pb-1 flex items-center gap-2">
+                      <div className="w-5 h-5 rounded-full bg-slate-200 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden">
+                        {originalAuthorPhotoUrl ? (
+                          <img src={getOptimizedImageUrl(originalAuthorPhotoUrl)} alt={originalAuthorName} className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-xs leading-none">{originalAuthorEmoji}</span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                        <span className="text-xs font-bold text-slate-900 dark:text-zinc-100 truncate">{originalAuthorName}</span>
+                        <VerifiedBadge authorNrp={originalPost.authorNrp} isVerified={(originalAuthorProfile as any)?.isVerified} size="sm" />
+                        <span className="text-[10px] text-slate-400 dark:text-zinc-500 truncate">@{originalAuthorProfile?.username || 'unknown'}</span>
+                        <span className="text-slate-300 dark:text-zinc-600 text-[9px]">•</span>
+                        <span className="text-[10px] text-slate-400 dark:text-zinc-500 shrink-0">{formatThreadsTime(originalPost.createdAt)}</span>
+                      </div>
+                    </div>
+
+                    {originalPost.content && (
+                      <div className="px-3 pb-2 text-xs text-slate-700 dark:text-zinc-300 leading-relaxed whitespace-pre-line">
+                        <FormattedPostContent content={originalPost.content} onSelectAuthor={onSelectAuthor} />
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="p-2.5 text-xs italic text-slate-400 dark:text-zinc-500">
+                    Postingan asli tidak dapat dimuat atau telah dihapus.
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* GAMBAR POSTINGAN */}
+            {!isQuoteRepost && displayImages && displayImages.length > 0 && (
+              <div className={`mb-2.5 grid gap-1.5 w-full ${displayImages.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                {displayImages.map((imageUrl, index) => (
+                  <button
+                    key={`${imageUrl}-${index}`}
+                    type="button"
+                    onClick={() => setSelectedImage(getOptimizedImageUrl(imageUrl))}
+                    className={`relative overflow-hidden rounded-xl bg-slate-100 dark:bg-zinc-800 border border-slate-200/50 dark:border-white/5 cursor-zoom-in group ${displayImages.length === 1 ? 'max-h-[460px]' : 'aspect-square'}`}
+                  >
+                    <img src={getOptimizedImageUrl(imageUrl)} alt={`Gambar ${index + 1}`} loading="lazy" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]" />
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* ACTION BUTTONS (LIKE, COMMENT, REPOST, BOOKMARK) */}
+            <div className="flex items-center justify-between pt-1 text-xs">
+              <div className="flex items-center gap-2 sm:gap-3 -ml-1">
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={handleLikeToggle}
+                  className={`flex items-center gap-1.5 px-2 py-1 rounded-full transition-all text-xs font-medium cursor-pointer ${isLiked ? 'text-rose-500 font-bold bg-rose-50/60 dark:bg-rose-950/30' : 'text-slate-500 dark:text-zinc-400 hover:text-rose-500 hover:bg-white/60 dark:hover:bg-zinc-800/60'}`}
+                >
+                  <Heart className={`w-4 h-4 transition-transform ${isLiked ? 'fill-rose-500 text-rose-500 scale-110' : ''}`} />
+                  <span>{likeCount}</span>
+                </motion.button>
+
+                <button
+                  onClick={handleCommentClick}
+                  className={`flex items-center gap-1.5 px-2 py-1 rounded-full transition-all text-xs font-medium cursor-pointer ${isRepliesExpanded && isDetailPage ? 'text-blue-600 dark:text-blue-400 font-bold bg-blue-50/60 dark:bg-blue-950/40' : 'text-slate-500 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/60 dark:hover:bg-zinc-800/60'}`}
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  <span>{post.replyCount || replies.length}</span>
+                </button>
+
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  type="button"
+                  onClick={() => setIsQuoteOpen(true)}
+                  disabled={isReposting}
+                  className="flex items-center gap-1.5 px-2 py-1 rounded-full transition-all text-xs font-medium cursor-pointer text-slate-500 dark:text-zinc-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-white/60 dark:hover:bg-zinc-800/60 disabled:opacity-50"
+                  title="Quote Repost"
+                >
+                  <Repeat2 className={`w-4 h-4 ${isReposting ? 'animate-pulse' : ''}`} />
+                  <span className="hidden xs:inline">Repost</span>
+                </motion.button>
+              </div>
+
+              <div className="-mr-1">
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={handleBookmarkToggle}
+                  className={`flex items-center justify-center p-1.5 rounded-full transition-all cursor-pointer ${isBookmarked ? 'text-amber-500 bg-amber-50/60 dark:bg-amber-950/30' : 'text-slate-400 dark:text-zinc-500 hover:text-amber-500 hover:bg-white/60 dark:hover:bg-zinc-800/60'}`}
+                  title={isBookmarked ? 'Hapus Bookmark' : 'Simpan Postingan'}
+                >
+                  <Bookmark className={`w-4 h-4 transition-all ${isBookmarked ? 'fill-amber-500 text-amber-500' : ''}`} />
+                </motion.button>
+              </div>
+            </div>
+
           </div>
         </div>
 
@@ -673,14 +685,14 @@ export const PostCard: React.FC<PostCardProps> = ({
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="mt-2.5 pt-3 border-t border-slate-200/40 dark:border-white/5 space-y-2.5 overflow-visible"
+              className="mt-2.5 pt-3 border-t border-slate-200/40 dark:border-white/5 space-y-2 overflow-visible"
             >
-              <h4 className="text-xs font-bold text-slate-700 dark:text-zinc-300 flex items-center gap-1.5">
+              <h4 className="text-xs font-bold text-slate-700 dark:text-zinc-300 flex items-center gap-1.5 pl-1">
                 <CornerDownRight className="w-3.5 h-3.5 text-blue-500" />
                 Komen & Balasan ({replies.length})
               </h4>
 
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 {replies.length === 0 ? (
                   <div className="p-3 text-center rounded-xl bg-white/50 dark:bg-zinc-800/30 border border-slate-200/40 dark:border-white/5 text-xs text-slate-400 dark:text-zinc-500 italic">
                     Belum ada komen. Berikan tanggapan pertamamu!
@@ -693,10 +705,10 @@ export const PostCard: React.FC<PostCardProps> = ({
                     const replyPhotoUrl = replyAuthor?.photoUrl;
 
                     return (
-                      <div key={reply.id} className="p-3 rounded-xl bg-white/60 dark:bg-zinc-800/40 border border-slate-200/50 dark:border-white/5 space-y-1 w-full">
+                      <div key={reply.id} className="p-2.5 rounded-xl bg-white/60 dark:bg-zinc-800/40 border border-slate-200/50 dark:border-white/5 space-y-1 w-full">
                         <div className="flex items-center justify-between text-xs">
                           <div onClick={() => onSelectAuthor?.(reply.authorNrp)} className="flex items-center gap-2 cursor-pointer group/replyAuthor min-w-0">
-                            <div className="w-5 h-5 rounded-md bg-slate-200 dark:bg-zinc-700 flex items-center justify-center shrink-0 overflow-hidden">
+                            <div className="w-5 h-5 rounded-full bg-slate-200 dark:bg-zinc-700 flex items-center justify-center shrink-0 overflow-hidden">
                               {replyPhotoUrl ? (
                                 <img src={getOptimizedImageUrl(replyPhotoUrl)} alt={replyName} className="w-full h-full object-cover" />
                               ) : (
@@ -827,7 +839,7 @@ export const PostCard: React.FC<PostCardProps> = ({
 
                 <div className="rounded-xl border border-slate-200/60 dark:border-white/5 overflow-y-auto bg-white/40 dark:bg-zinc-950/40 flex-1 min-h-0 mb-3 custom-scrollbar">
                   <div className="px-3.5 py-2.5 flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-lg bg-slate-200 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden">
+                    <div className="w-6 h-6 rounded-full bg-slate-200 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden">
                       {quoteTargetAuthorPhotoUrl ? (
                         <img src={getOptimizedImageUrl(quoteTargetAuthorPhotoUrl)} alt="Avatar" className="w-full h-full object-cover" />
                       ) : (
