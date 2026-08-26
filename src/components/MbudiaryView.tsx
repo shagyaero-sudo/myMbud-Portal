@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { ArrowLeft, User, X, Camera, Trash2, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UserProfile, MbudiaryPost } from './mbudiary/types';
@@ -22,6 +22,74 @@ export const MbudiaryView: React.FC = () => {
   const [editPhotoUrl, setEditPhotoUrl] = useState<string | undefined>(currentUser.photoUrl);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const avatarInputRef = React.useRef<HTMLInputElement>(null);
+
+  // =========================================================================
+  // SUB-ROUTING HISTORY API UNTUK MBUDIARY (PREVENT ACCIDENTAL DASHBOARD EXIT)
+  // =========================================================================
+
+  const handleSelectAuthor = useCallback((nrp: string | null, pushToHistory = true) => {
+    setSelectedAuthorNrp(nrp);
+    setSelectedPostId(null);
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+
+    if (pushToHistory && nrp) {
+      window.history.pushState(
+        { tab: 'mbudiary', mbudView: 'profile', targetNrp: nrp },
+        '',
+        `#mbudiary?user=${nrp}`
+      );
+    }
+  }, []);
+
+  const handleSelectPost = useCallback((postId: string | null, pushToHistory = true) => {
+    setSelectedPostId(postId);
+    setSelectedAuthorNrp(null);
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+
+    if (pushToHistory && postId) {
+      window.history.pushState(
+        { tab: 'mbudiary', mbudView: 'post', targetPostId: postId },
+        '',
+        `#mbudiary?post=${postId}`
+      );
+    }
+  }, []);
+
+  const handleBackToFeed = useCallback(() => {
+    if (window.history.state?.mbudView) {
+      window.history.back();
+    } else {
+      setSelectedAuthorNrp(null);
+      setSelectedPostId(null);
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      window.history.replaceState({ tab: 'mbudiary' }, '', '#mbudiary');
+    }
+  }, []);
+
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      const state = event.state;
+      if (state && state.tab === 'mbudiary') {
+        if (state.mbudView === 'profile' && state.targetNrp) {
+          setSelectedAuthorNrp(state.targetNrp);
+          setSelectedPostId(null);
+          window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+        } else if (state.mbudView === 'post' && state.targetPostId) {
+          setSelectedPostId(state.targetPostId);
+          setSelectedAuthorNrp(null);
+          window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+        } else {
+          setSelectedAuthorNrp(null);
+          setSelectedPostId(null);
+        }
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  // =========================================================================
 
   useEffect(() => {
     const hasPrompted = localStorage.getItem(ONBOARDING_PROFILE_KEY);
@@ -49,12 +117,10 @@ export const MbudiaryView: React.FC = () => {
       const targetActorNrp = localStorage.getItem('mbud_target_actor_nrp');
 
       if (targetPostId) {
-        setSelectedPostId(targetPostId);
-        setSelectedAuthorNrp(null);
+        handleSelectPost(targetPostId, true);
         localStorage.removeItem('mbud_target_post_id');
       } else if (targetActorNrp) {
-        setSelectedAuthorNrp(targetActorNrp);
-        setSelectedPostId(null);
+        handleSelectAuthor(targetActorNrp, true);
         localStorage.removeItem('mbud_target_actor_nrp');
       }
     };
@@ -75,7 +141,7 @@ export const MbudiaryView: React.FC = () => {
       window.removeEventListener('mbud_notification_navigate', handleNotificationNavigation);
       unsubscribe();
     };
-  }, []);
+  }, [handleSelectAuthor, handleSelectPost]);
 
   const handleOpenEditModal = () => {
     setEditUsername(currentUser.username || '');
@@ -141,19 +207,16 @@ export const MbudiaryView: React.FC = () => {
           <UserProfileView
             authorNrp={selectedAuthorNrp}
             currentUser={currentUser}
-            onBack={() => setSelectedAuthorNrp(null)}
-            onSelectPost={(postId) => {
-              setSelectedPostId(postId);
-              setSelectedAuthorNrp(null);
-            }}
+            onBack={handleBackToFeed}
+            onSelectPost={(postId) => handleSelectPost(postId, true)}
             onPostUpdate={() => forceRefresh((value) => value + 1)}
-            onSelectAuthor={(authorNrp) => setSelectedAuthorNrp(authorNrp)}
+            onSelectAuthor={(authorNrp) => handleSelectAuthor(authorNrp, true)}
             onOpenEditProfile={handleOpenEditModal}
           />
         ) : selectedPostId ? (
           <div className="space-y-3 sm:space-y-4">
             <button
-              onClick={() => setSelectedPostId(null)}
+              onClick={handleBackToFeed}
               className="inline-flex items-center gap-2 px-3.5 py-1.5 sm:px-4 sm:py-2.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 text-xs font-bold text-slate-700 dark:text-zinc-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/90 dark:hover:bg-zinc-800/80 transition-all shadow-xs active:scale-95 group ml-1 sm:ml-0 cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
@@ -165,10 +228,7 @@ export const MbudiaryView: React.FC = () => {
                 post={selectedPost}
                 currentUser={currentUser}
                 onPostUpdate={() => forceRefresh((value) => value + 1)}
-                onSelectAuthor={(authorNrp) => {
-                  setSelectedAuthorNrp(authorNrp);
-                  setSelectedPostId(null);
-                }}
+                onSelectAuthor={(authorNrp) => handleSelectAuthor(authorNrp, true)}
                 isDetailPage
               />
             ) : (
@@ -191,7 +251,7 @@ export const MbudiaryView: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <button
-                    onClick={() => setSelectedAuthorNrp(currentUser.nrp)}
+                    onClick={() => handleSelectAuthor(currentUser.nrp, true)}
                     className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 text-xs font-bold text-slate-700 dark:text-zinc-200 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-200 dark:hover:border-blue-900/60 hover:bg-white/90 dark:hover:bg-zinc-800/80 transition-all shadow-xs active:scale-95 cursor-pointer"
                     title="Lihat Profil Saya"
                   >
@@ -205,14 +265,14 @@ export const MbudiaryView: React.FC = () => {
             <CreatePostForm
               userProfile={currentUser}
               onPostCreated={() => forceRefresh((value) => value + 1)}
-              onSelectAuthor={(authorNrp) => setSelectedAuthorNrp(authorNrp)}
+              onSelectAuthor={(authorNrp) => handleSelectAuthor(authorNrp, true)}
             />
 
             <AnimatePresence mode="popLayout">
               <PostList
                 currentUser={currentUser}
-                onSelectPost={(postId) => setSelectedPostId(postId)}
-                onSelectAuthor={(authorNrp) => setSelectedAuthorNrp(authorNrp)}
+                onSelectPost={(postId) => handleSelectPost(postId, true)}
+                onSelectAuthor={(authorNrp) => handleSelectAuthor(authorNrp, true)}
               />
             </AnimatePresence>
           </>

@@ -79,7 +79,7 @@ const getCurrentAcademicWeek = () => {
 
   const weekNumber = Math.floor(diffDays / 7) + 1;
   return {
-    label: `Minggu ke-${weekNumber}`,
+    label: `Pekan ke-${weekNumber}`,
     badgeClass: 'bg-blue-50/80 dark:bg-blue-950/60 border-blue-200/60 dark:border-blue-900/50 text-blue-600 dark:text-blue-400',
   };
 };
