@@ -129,7 +129,7 @@ const formatThreadsTime = (timestamp?: string | number | Date | null): string =>
   return `${diffYears}thn`;
 };
 
-// KOMPONEN MEDIA GAMBAR PERSISTENT RASIO
+// KOMPONEN MEDIA GAMBAR (SINGLE: NATIVE RATIO, 2/4: GRID SQUARE, 3: CAROUSEL SQUARE)
 const PostImageItem: React.FC<{
   imageUrl: string;
   layoutType: 'single' | 'grid' | 'carousel';
@@ -137,8 +137,30 @@ const PostImageItem: React.FC<{
 }> = ({ imageUrl, layoutType, onImageClick }) => {
   const [isLoaded, setIsLoaded] = useState(false);
 
+  if (layoutType === 'single') {
+    return (
+      <button
+        type="button"
+        onClick={onImageClick}
+        className="relative w-full overflow-hidden rounded-2xl bg-slate-200 dark:bg-zinc-800/80 border border-slate-200/50 dark:border-white/5 cursor-zoom-in group flex items-center justify-center min-h-[140px] max-h-[520px]"
+      >
+        {!isLoaded && (
+          <div className="absolute inset-0 bg-slate-200 dark:bg-zinc-800 animate-pulse" />
+        )}
+        <img
+          src={getOptimizedImageUrl(imageUrl)}
+          alt="Post media"
+          loading="lazy"
+          onLoad={() => setIsLoaded(true)}
+          className={`w-full max-h-[520px] h-auto object-cover rounded-2xl transition-all duration-300 group-hover:scale-[1.01] ${
+            isLoaded ? 'opacity-100' : 'opacity-0'
+          }`}
+        />
+      </button>
+    );
+  }
+
   const containerClasses = {
-    single: 'w-full aspect-[4/3] max-h-[460px]',
     grid: 'w-full aspect-square',
     carousel: 'w-[75%] sm:w-[60%] shrink-0 aspect-square snap-start',
   };
@@ -651,10 +673,10 @@ export const PostCard: React.FC<PostCardProps> = ({
               </div>
             )}
 
-            {/* GAMBAR POSTINGAN (LAYOUT PROPORSIONAL: 1x 4:3, 2/4 GRID SQUARE, 3 SWIPEABLE SQUARE) */}
+            {/* GAMBAR POSTINGAN (1: NATIVE RATIO, 3: CAROUSEL SQUARE, 2/4: GRID SQUARE) */}
             {!isQuoteRepost && displayImages && displayImages.length > 0 && (
               <div className="mb-2 w-full">
-                {/* 1 GAMBAR: 4:3 RATIO */}
+                {/* 1 GAMBAR: RASIO ASLI GAMBAR (MAX HEIGHT 520px) */}
                 {displayImages.length === 1 && (
                   <PostImageItem
                     imageUrl={displayImages[0]}
@@ -951,7 +973,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                 <motion.button initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }} onClick={() => setSelectedImage(null)} className="fixed top-6 right-5 sm:top-6 sm:right-6 z-[10000002] w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full bg-zinc-800/80 hover:bg-zinc-700 border border-white/20 text-white shadow-2xl backdrop-blur-md transition-all cursor-pointer">
                   <X className="w-5 h-5 sm:w-6 sm:h-6" />
                 </motion.button>
-                <motion.div initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.92 }} className="relative z-[10000001] max-w-[95vw] max-h-[85dvh] flex items-center justify-center" onMouseDown={(e) => e.stopPropagation()}>
+                <motion.div initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1 }} className="relative z-[10000001] max-w-[95vw] max-h-[85dvh] flex items-center justify-center" onMouseDown={(e) => e.stopPropagation()}>
                   <img src={selectedImage} alt="Pratinjau" className="max-w-[95vw] max-h-[85dvh] w-auto h-auto object-contain rounded-2xl shadow-2xl border border-white/10" />
                 </motion.div>
               </motion.div>
