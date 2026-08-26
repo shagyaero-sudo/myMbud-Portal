@@ -262,10 +262,11 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
-                className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl w-full max-w-[600px] rounded-2xl shadow-2xl border border-white/60 dark:border-white/10 flex flex-col max-h-[85dvh]"
+                className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl w-full max-w-[600px] rounded-2xl shadow-2xl border border-white/60 dark:border-white/10 flex flex-col max-h-[85dvh] overflow-visible"
                 onMouseDown={(e) => e.stopPropagation()}
               >
-                <div className="flex items-center justify-between px-4 py-3 sm:px-5 border-b border-slate-200/40 dark:border-white/10 shrink-0 bg-white/50 dark:bg-zinc-900/50">
+                {/* MODAL HEADER */}
+                <div className="flex items-center justify-between px-4 py-3 sm:px-5 border-b border-slate-200/40 dark:border-white/10 shrink-0 bg-white/50 dark:bg-zinc-900/50 rounded-t-2xl">
                   <div className="flex items-center gap-2.5">
                     <button
                       onClick={() => setIsModalOpen(false)}
@@ -294,7 +295,8 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
                   </div>
                 </div>
 
-                <div className="p-4 sm:p-5 overflow-y-auto custom-scrollbar flex-1 min-h-[140px] relative">
+                {/* MODAL BODY */}
+                <div className="p-4 sm:p-5 overflow-y-visible flex-1 min-h-[140px] relative">
                   <div className="flex items-start gap-2.5">
                     <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-100 dark:bg-zinc-800 shrink-0 flex items-center justify-center overflow-hidden border border-slate-200/60 dark:border-zinc-700/60">
                       {userProfile.photoUrl ? (
@@ -316,9 +318,10 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
                         className="w-full text-xs sm:text-[13px] bg-transparent text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none resize-none leading-relaxed min-h-[40px] max-h-[300px] overflow-y-auto"
                       />
 
+                      {/* DROPDOWN MENTION MELAYANG DI ATAS BILAH UPLOAD DENGAN HIGH ELEVATION */}
                       {mentionQuery !== null && mentionSuggestions.length > 0 && (
-                        <div className="absolute left-0 top-full mt-2 z-[60] w-64 bg-white/95 dark:bg-zinc-800/95 backdrop-blur-2xl border border-slate-200/80 dark:border-zinc-700 rounded-2xl p-1.5 shadow-2xl max-h-56 overflow-y-auto custom-scrollbar">
-                          <div className="text-[10px] font-bold text-slate-400 px-2 py-1 flex items-center gap-1">
+                        <div className="absolute left-0 top-full mt-2 z-[99999999] w-72 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-2xl border border-slate-200/80 dark:border-zinc-700 rounded-2xl p-1.5 shadow-[0_12px_40px_rgb(0,0,0,0.25)] max-h-56 overflow-y-auto custom-scrollbar">
+                          <div className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 px-2 py-1 flex items-center gap-1">
                             <AtSign className="w-3 h-3 text-blue-500" />
                             <span>Pilih User</span>
                           </div>
@@ -326,9 +329,9 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
                             <div
                               key={u.nrp}
                               onClick={() => selectMentionUser(u.username)}
-                              className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-zinc-700/70 cursor-pointer transition-colors"
+                              className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-blue-50/80 dark:hover:bg-zinc-800/80 cursor-pointer transition-colors"
                             >
-                              <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-zinc-700 flex items-center justify-center shrink-0 overflow-hidden">
+                              <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden border border-slate-200/50 dark:border-zinc-700">
                                 {u.photoUrl ? (
                                   <img src={getOptimizedImageUrl(u.photoUrl)} alt={u.nickname} className="w-full h-full object-cover" />
                                 ) : (
@@ -370,7 +373,8 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
                   </AnimatePresence>
                 </div>
 
-                <div className="px-4 py-2.5 sm:px-5 border-t border-slate-200/40 dark:border-white/10 bg-white/50 dark:bg-zinc-900/50 flex items-center shrink-0 relative">
+                {/* MODAL FOOTER (UPLOAD MENU) */}
+                <div className="px-4 py-2.5 sm:px-5 border-t border-slate-200/40 dark:border-white/10 bg-white/50 dark:bg-zinc-900/50 flex items-center shrink-0 relative z-20 rounded-b-2xl">
                   <button
                     type="button"
                     onClick={() => setIsUploadMenuOpen((prev) => !prev)}

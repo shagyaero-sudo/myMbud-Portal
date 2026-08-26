@@ -87,7 +87,7 @@ export const VerifiedBadge: React.FC<{
     <svg
       viewBox="0 0 24 24"
       aria-label={isGold ? 'Centang Emas' : 'Centang Biru'}
-      className={`${sizeClasses[size]} shrink-0 select-none inline-block align-sub ${isGold ? 'drop-shadow-[0_1px_6px_rgba(245,158,11,0.65)]' : ''}`}
+      className={`${sizeClasses[size]} shrink-0 select-none inline-block ${isGold ? 'drop-shadow-[0_1px_6px_rgba(245,158,11,0.65)]' : ''}`}
       style={{ color: isGold ? '#F59E0B' : '#1D9BF0' }}
     >
       <title>{isGold ? 'Centang Emas: Tier Legenda' : 'Centang Biru: Terverifikasi'}</title>
@@ -478,7 +478,7 @@ export const PostCard: React.FC<PostCardProps> = ({
           {/* AVATAR */}
           <div
             onClick={() => onSelectAuthor?.(displayAuthorNrp)}
-            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/60 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden border border-slate-200/80 dark:border-zinc-700/80 cursor-pointer hover:opacity-90 transition-opacity mt-0.5"
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/60 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden border border-slate-200/80 dark:border-zinc-700/80 cursor-pointer hover:opacity-90 transition-opacity"
             title={`Lihat profil ${displayAuthorName}`}
           >
             {displayAuthorPhotoUrl ? (
@@ -491,25 +491,30 @@ export const PostCard: React.FC<PostCardProps> = ({
           {/* MAIN CONTENT COLUMN */}
           <div className="flex-1 min-w-0">
             
-            {/* HEADER COMPACT (ITEMS-BASELINE UNTUK GARIS DASAR HURUF PRESISI) */}
-            <div className="flex items-center justify-between gap-1 mb-1">
+            {/* HEADER COMPACT (RATA TENGAH SEMPURNA DENGAN DOT PEMISAH) */}
+            <div className="flex items-center justify-between gap-1 leading-none mb-1">
               <div
                 onClick={() => onSelectAuthor?.(displayAuthorNrp)}
-                className="flex items-baseline gap-1.5 min-w-0 flex-wrap sm:flex-nowrap cursor-pointer group/author"
+                className="flex items-center gap-1.5 min-w-0 flex-wrap sm:flex-nowrap cursor-pointer group/author"
               >
-                <span className="text-slate-900 dark:text-zinc-100 font-bold text-xs sm:text-[13px] leading-none truncate group-hover/author:text-blue-500 transition-colors">
+                <span className="text-slate-900 dark:text-zinc-100 font-bold text-xs sm:text-[13px] truncate group-hover/author:text-blue-500 transition-colors">
                   {displayAuthorName}
                 </span>
                 
-                <VerifiedBadge authorNrp={displayAuthorNrp} isVerified={displayAuthorIsVerified} size="sm" />
+                <div className="inline-flex items-center justify-center shrink-0">
+                  <VerifiedBadge authorNrp={displayAuthorNrp} isVerified={displayAuthorIsVerified} size="sm" />
+                </div>
                 
-                <span className="text-slate-400 dark:text-zinc-500 text-[11px] sm:text-xs leading-none truncate font-normal">
+                <span className="text-slate-400 dark:text-zinc-500 text-[11px] sm:text-xs truncate font-normal">
                   @{displayAuthorUsername || 'unknown'}
                 </span>
                 
-                <span className="text-slate-300 dark:text-zinc-600 text-[10px] leading-none hidden xs:inline">•</span>
+                {/* TITEL DOT PEMISAH SELALU AKTIF */}
+                <span className="text-slate-400 dark:text-zinc-500 text-[11px] font-bold select-none px-0.5">
+                  •
+                </span>
                 
-                <span className="text-slate-400 dark:text-zinc-500 text-[10px] sm:text-[11px] leading-none shrink-0 font-normal" title={formatDateFormatted(displayCreatedAt)}>
+                <span className="text-slate-400 dark:text-zinc-500 text-[10px] sm:text-[11px] shrink-0 font-normal" title={formatDateFormatted(displayCreatedAt)}>
                   {formatThreadsTime(displayCreatedAt)}
                 </span>
               </div>
@@ -586,8 +591,8 @@ export const PostCard: React.FC<PostCardProps> = ({
               >
                 {originalPost ? (
                   <>
-                    <div className="px-3 pt-2 pb-1 flex items-baseline gap-1.5">
-                      <div className="w-4 h-4 rounded-full bg-slate-200 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden self-center">
+                    <div className="px-3 pt-2 pb-1 flex items-center gap-1.5">
+                      <div className="w-4 h-4 rounded-full bg-slate-200 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden">
                         {originalAuthorPhotoUrl ? (
                           <img src={getOptimizedImageUrl(originalAuthorPhotoUrl)} alt={originalAuthorName} className="w-full h-full object-cover" />
                         ) : (
@@ -595,11 +600,13 @@ export const PostCard: React.FC<PostCardProps> = ({
                         )}
                       </div>
 
-                      <div className="flex items-baseline gap-1.5 min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 min-w-0 flex-1 leading-none">
                         <span className="text-xs font-bold text-slate-900 dark:text-zinc-100 truncate">{originalAuthorName}</span>
-                        <VerifiedBadge authorNrp={originalPost.authorNrp} isVerified={(originalAuthorProfile as any)?.isVerified} size="sm" />
+                        <div className="inline-flex items-center justify-center shrink-0">
+                          <VerifiedBadge authorNrp={originalPost.authorNrp} isVerified={(originalAuthorProfile as any)?.isVerified} size="sm" />
+                        </div>
                         <span className="text-[10px] text-slate-400 dark:text-zinc-500 truncate">@{originalAuthorProfile?.username || 'unknown'}</span>
-                        <span className="text-slate-300 dark:text-zinc-600 text-[9px]">•</span>
+                        <span className="text-slate-400 dark:text-zinc-500 text-[10px] font-bold select-none px-0.5">•</span>
                         <span className="text-[10px] text-slate-400 dark:text-zinc-500 shrink-0">{formatThreadsTime(originalPost.createdAt)}</span>
                       </div>
                     </div>
@@ -711,20 +718,22 @@ export const PostCard: React.FC<PostCardProps> = ({
                     return (
                       <div key={reply.id} className="p-2.5 rounded-xl bg-white/60 dark:bg-zinc-800/40 border border-slate-200/50 dark:border-white/5 space-y-1 w-full">
                         <div className="flex items-center justify-between text-xs">
-                          <div onClick={() => onSelectAuthor?.(reply.authorNrp)} className="flex items-baseline gap-1.5 cursor-pointer group/replyAuthor min-w-0">
-                            <div className="w-4 h-4 rounded-full bg-slate-200 dark:bg-zinc-700 flex items-center justify-center shrink-0 overflow-hidden self-center">
+                          <div onClick={() => onSelectAuthor?.(reply.authorNrp)} className="flex items-center gap-1.5 cursor-pointer group/replyAuthor min-w-0">
+                            <div className="w-5 h-5 rounded-full bg-slate-200 dark:bg-zinc-700 flex items-center justify-center shrink-0 overflow-hidden">
                               {replyPhotoUrl ? (
                                 <img src={getOptimizedImageUrl(replyPhotoUrl)} alt={replyName} className="w-full h-full object-cover" />
                               ) : (
-                                <span className="text-[10px] leading-none">{replyEmoji}</span>
+                                <span className="text-xs leading-none">{replyEmoji}</span>
                               )}
                             </div>
 
-                            <div className="flex items-baseline gap-1 min-w-0 truncate">
+                            <div className="flex items-center gap-1 min-w-0 truncate leading-none">
                               <span className="text-slate-900 dark:text-zinc-100 font-bold text-xs group-hover/replyAuthor:text-blue-500 transition-colors truncate">
                                 {replyName}
                               </span>
-                              <VerifiedBadge authorNrp={reply.authorNrp} isVerified={(replyAuthor as any)?.isVerified} size="sm" />
+                              <div className="inline-flex items-center justify-center shrink-0">
+                                <VerifiedBadge authorNrp={reply.authorNrp} isVerified={(replyAuthor as any)?.isVerified} size="sm" />
+                              </div>
                             </div>
                           </div>
 
@@ -733,7 +742,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                           </span>
                         </div>
 
-                        <p className="text-[13px] text-slate-700 dark:text-zinc-300 leading-snug pl-5">
+                        <p className="text-[13px] text-slate-700 dark:text-zinc-300 leading-snug pl-6">
                           <FormattedPostContent content={reply.content} onSelectAuthor={onSelectAuthor} />
                         </p>
                       </div>
@@ -842,8 +851,8 @@ export const PostCard: React.FC<PostCardProps> = ({
                 />
 
                 <div className="rounded-xl border border-slate-200/60 dark:border-white/5 overflow-y-auto bg-white/40 dark:bg-zinc-950/40 flex-1 min-h-0 mb-2.5 custom-scrollbar">
-                  <div className="px-3 py-2 flex items-baseline gap-1.5">
-                    <div className="w-4 h-4 rounded-full bg-slate-200 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden self-center">
+                  <div className="px-3 py-2 flex items-center gap-1.5">
+                    <div className="w-5 h-5 rounded-full bg-slate-200 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden">
                       {quoteTargetAuthorPhotoUrl ? (
                         <img src={getOptimizedImageUrl(quoteTargetAuthorPhotoUrl)} alt={quoteTargetAuthorName} className="w-full h-full object-cover" />
                       ) : (
@@ -851,10 +860,13 @@ export const PostCard: React.FC<PostCardProps> = ({
                       )}
                     </div>
 
-                    <div className="min-w-0 flex-1 flex items-baseline gap-1.5">
+                    <div className="min-w-0 flex-1 flex items-center gap-1.5 leading-none">
                       <span className="text-xs font-bold text-slate-900 dark:text-zinc-100 truncate">
                         {quoteTargetAuthorName}
                       </span>
+                      <div className="inline-flex items-center justify-center shrink-0">
+                        <VerifiedBadge authorNrp={quoteTargetPost?.authorNrp} isVerified={(quoteTargetAuthorProfile as any)?.isVerified} size="sm" />
+                      </div>
                       <span className="text-[10px] text-slate-400 dark:text-zinc-500 truncate">
                         @{quoteTargetAuthorUsername} • {formatThreadsTime(quoteTargetPost?.createdAt)}
                       </span>
@@ -887,7 +899,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                 <motion.button initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }} onClick={() => setSelectedImage(null)} className="fixed top-6 right-5 sm:top-6 sm:right-6 z-[10000002] w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full bg-zinc-800/80 hover:bg-zinc-700 border border-white/20 text-white shadow-2xl backdrop-blur-md transition-all cursor-pointer">
                   <X className="w-5 h-5 sm:w-6 sm:h-6" />
                 </motion.button>
-                <motion.div initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1 }} className="relative z-[10000001] max-w-[95vw] max-h-[85dvh] flex items-center justify-center" onMouseDown={(e) => e.stopPropagation()}>
+                <motion.div initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.92 }} className="relative z-[10000001] max-w-[95vw] max-h-[85dvh] flex items-center justify-center" onMouseDown={(e) => e.stopPropagation()}>
                   <img src={selectedImage} alt="Pratinjau" className="max-w-[95vw] max-h-[85dvh] w-auto h-auto object-contain rounded-2xl shadow-2xl border border-white/10" />
                 </motion.div>
               </motion.div>
