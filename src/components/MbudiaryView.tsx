@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { ArrowLeft, User, X, Camera, Trash2, Loader2 } from 'lucide-react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { ArrowLeft, User, X, Camera, Trash2, Loader2, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UserProfile, MbudiaryPost } from './mbudiary/types';
 import { getUserProfile, getPosts, initializeMbudiary, saveUserProfile } from './mbudiary/lib/storage';
@@ -10,6 +10,7 @@ import { PostCard } from './mbudiary/PostCard';
 import { UserProfileView } from './mbudiary/UserProfileView';
 
 const ONBOARDING_PROFILE_KEY = 'mbud_onboarded_mbudiary_profile';
+const SWIPE_HINT_KEY = 'mbud_swipe_hint_seen';
 
 export const MbudiaryView: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<UserProfile>(getUserProfile());
@@ -17,17 +18,35 @@ export const MbudiaryView: React.FC = () => {
   const [selectedAuthorNrp, setSelectedAuthorNrp] = useState<string | null>(null);
   const [, forceRefresh] = useState(0);
 
+  // Simpan posisi scroll feed
+  const feedScrollPositionRef = useRef<number>(0);
+
+  // State edukasi swipe back
+  const [showSwipeHint, setShowSwipeHint] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return !localStorage.getItem(SWIPE_HINT_KEY);
+  });
+  const [isEdgeSwiping, setIsEdgeSwiping] = useState(false);
+
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editUsername, setEditUsername] = useState(currentUser.username || '');
   const [editPhotoUrl, setEditPhotoUrl] = useState<string | undefined>(currentUser.photoUrl);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
-  const avatarInputRef = React.useRef<HTMLInputElement>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  const dismissSwipeHint = () => {
+    setShowSwipeHint(false);
+    localStorage.setItem(SWIPE_HINT_KEY, 'true');
+  };
 
   // =========================================================================
-  // SUB-ROUTING HISTORY API UNTUK MBUDIARY (PREVENT ACCIDENTAL DASHBOARD EXIT)
+  // SUB-ROUTING & SCROLL RESTORATION
   // =========================================================================
 
   const handleSelectAuthor = useCallback((nrp: string | null, pushToHistory = true) => {
+    if (!selectedAuthorNrp && !selectedPostId) {
+      feedScrollPositionRef.current = window.scrollY;
+    }
     setSelectedAuthorNrp(nrp);
     setSelectedPostId(null);
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
@@ -39,9 +58,12 @@ export const MbudiaryView: React.FC = () => {
         `#mbudiary?user=${nrp}`
       );
     }
-  }, []);
+  }, [selectedAuthorNrp, selectedPostId]);
 
   const handleSelectPost = useCallback((postId: string | null, pushToHistory = true) => {
+    if (!selectedAuthorNrp && !selectedPostId) {
+      feedScrollPositionRef.current = window.scrollY;
+    }
     setSelectedPostId(postId);
     setSelectedAuthorNrp(null);
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
@@ -53,18 +75,24 @@ export const MbudiaryView: React.FC = () => {
         `#mbudiary?post=${postId}`
       );
     }
+  }, [selectedAuthorNrp, selectedPostId]);
+
+  const restoreFeedScroll = useCallback(() => {
+    setSelectedAuthorNrp(null);
+    setSelectedPostId(null);
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: feedScrollPositionRef.current, behavior: 'instant' });
+    });
   }, []);
 
   const handleBackToFeed = useCallback(() => {
     if (window.history.state?.mbudView) {
       window.history.back();
     } else {
-      setSelectedAuthorNrp(null);
-      setSelectedPostId(null);
-      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      restoreFeedScroll();
       window.history.replaceState({ tab: 'mbudiary' }, '', '#mbudiary');
     }
-  }, []);
+  }, [restoreFeedScroll]);
 
   useEffect(() => {
     const handlePopState = (event: PopStateEvent) => {
@@ -79,15 +107,43 @@ export const MbudiaryView: React.FC = () => {
           setSelectedAuthorNrp(null);
           window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
         } else {
-          setSelectedAuthorNrp(null);
-          setSelectedPostId(null);
+          restoreFeedScroll();
         }
+      } else {
+        restoreFeedScroll();
       }
     };
 
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
+  }, [restoreFeedScroll]);
+
+  // Visual Edge Indicator Listener
+  useEffect(() => {
+    if (!selectedAuthorNrp && !selectedPostId) return;
+
+    let startX = 0;
+    const handleTouchStart = (e: TouchEvent) => {
+      startX = e.touches[0].clientX;
+      if (startX < 35) {
+        setIsEdgeSwiping(true);
+      }
+    };
+
+    const handleTouchEnd = () => {
+      setIsEdgeSwiping(false);
+    };
+
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd, { passive: true });
+    window.addEventListener('touchcancel', handleTouchEnd, { passive: true });
+
+    return () => {
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchend', handleTouchEnd);
+      window.removeEventListener('touchcancel', handleTouchEnd);
+    };
+  }, [selectedAuthorNrp, selectedPostId]);
 
   // =========================================================================
 
@@ -102,7 +158,7 @@ export const MbudiaryView: React.FC = () => {
       setIsEditModalOpen(true);
       localStorage.setItem(ONBOARDING_PROFILE_KEY, 'true');
     }
-  }, []);
+  }, [currentUser.username, currentUser.photoUrl]);
 
   useEffect(() => {
     const unsubscribe = initializeMbudiary();
@@ -199,11 +255,57 @@ export const MbudiaryView: React.FC = () => {
 
   const allPosts = getPosts();
   const selectedPost: MbudiaryPost | undefined = allPosts.find((post) => post.id === selectedPostId);
+  const isFeedActive = !selectedAuthorNrp && !selectedPostId;
 
   return (
     <div className="w-full text-slate-900 dark:text-zinc-100 font-sans transition-colors duration-300 antialiased relative">
+      
+      {/* VISUAL EDGE INDICATOR SAAT SWIPE BACK DI HP */}
+      <AnimatePresence>
+        {isEdgeSwiping && (
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="fixed left-2 top-1/2 -translate-y-1/2 z-[9999] pointer-events-none flex items-center gap-1.5"
+          >
+            <div className="w-10 h-10 rounded-full bg-blue-600/90 text-white flex items-center justify-center shadow-xl backdrop-blur-md border border-white/20">
+              <ArrowLeft className="w-5 h-5 animate-pulse" />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <main className="w-full max-w-3xl mx-auto px-0 sm:px-2 py-2 sm:py-6 pb-24 sm:pb-8 relative z-10 space-y-3 sm:space-y-5">
-        {selectedAuthorNrp ? (
+        
+        {/* BANNER EDUKASI SWIPE UNTUK DETAIL POST & PROFILE */}
+        <AnimatePresence>
+          {!isFeedActive && showSwipeHint && (
+            <motion.div
+              initial={{ opacity: 0, y: -8, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.98 }}
+              className="mx-1 sm:mx-0 p-3 rounded-2xl bg-blue-500/10 dark:bg-blue-500/15 border border-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-between gap-3 backdrop-blur-md shadow-xs"
+            >
+              <div className="flex items-center gap-2.5 text-xs font-semibold min-w-0">
+                <span className="text-base shrink-0">👈</span>
+                <span className="leading-snug">
+                  <span className="font-black">Tips:</span> Kamu bisa geser/swipe dari tepi kiri layar untuk kembali ke Feed!
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={dismissSwipeHint}
+                className="px-3 py-1 text-[11px] font-bold bg-blue-600 hover:bg-blue-500 text-white rounded-xl shadow-xs active:scale-95 cursor-pointer shrink-0 transition-all"
+              >
+                Paham
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* VIEW 1: USER PROFILE DETAIL */}
+        {selectedAuthorNrp && (
           <UserProfileView
             authorNrp={selectedAuthorNrp}
             currentUser={currentUser}
@@ -213,14 +315,20 @@ export const MbudiaryView: React.FC = () => {
             onSelectAuthor={(authorNrp) => handleSelectAuthor(authorNrp, true)}
             onOpenEditProfile={handleOpenEditModal}
           />
-        ) : selectedPostId ? (
+        )}
+
+        {/* VIEW 2: SINGLE POST DETAIL */}
+        {selectedPostId && (
           <div className="space-y-3 sm:space-y-4">
             <button
               onClick={handleBackToFeed}
               className="inline-flex items-center gap-2 px-3.5 py-1.5 sm:px-4 sm:py-2.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 text-xs font-bold text-slate-700 dark:text-zinc-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/90 dark:hover:bg-zinc-800/80 transition-all shadow-xs active:scale-95 group ml-1 sm:ml-0 cursor-pointer"
             >
-              <ArrowLeft className="w-4 h-4 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
+              <ArrowLeft className="w-4 h-4 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors group-hover:-translate-x-0.5 transform" />
               <span>Kembali</span>
+              <span className="hidden sm:inline text-[10px] text-slate-400 font-normal border-l border-slate-200 dark:border-zinc-700 pl-2 ml-1">
+                atau swipe kanan
+              </span>
             </button>
 
             {selectedPost ? (
@@ -237,46 +345,46 @@ export const MbudiaryView: React.FC = () => {
               </div>
             )}
           </div>
-        ) : (
-          <>
-            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-              <div className="flex items-start justify-between gap-3 px-3 sm:px-1 pt-1 pb-1">
-                <div>
-                  <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-zinc-100">
-                    mbudiary.
-                  </h1>
-                  <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 mt-0.5 font-medium">
-                    #Safe(A)rea
-                  </p>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <button
-                    onClick={() => handleSelectAuthor(currentUser.nrp, true)}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 text-xs font-bold text-slate-700 dark:text-zinc-200 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-200 dark:hover:border-blue-900/60 hover:bg-white/90 dark:hover:bg-zinc-800/80 transition-all shadow-xs active:scale-95 cursor-pointer"
-                    title="Lihat Profil Saya"
-                  >
-                    <User className="w-3.5 h-3.5 text-blue-500" />
-                    <span>Edit Profil</span>
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-
-            <CreatePostForm
-              userProfile={currentUser}
-              onPostCreated={() => forceRefresh((value) => value + 1)}
-              onSelectAuthor={(authorNrp) => handleSelectAuthor(authorNrp, true)}
-            />
-
-            <AnimatePresence mode="popLayout">
-              <PostList
-                currentUser={currentUser}
-                onSelectPost={(postId) => handleSelectPost(postId, true)}
-                onSelectAuthor={(authorNrp) => handleSelectAuthor(authorNrp, true)}
-              />
-            </AnimatePresence>
-          </>
         )}
+
+        {/* VIEW 3: MAIN FEED (PERSISTENT DOM) */}
+        <div className={isFeedActive ? 'space-y-3 sm:space-y-5 block' : 'hidden'}>
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+            <div className="flex items-start justify-between gap-3 px-3 sm:px-1 pt-1 pb-1">
+              <div>
+                <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-zinc-100">
+                  mbudiary.
+                </h1>
+                <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 mt-0.5 font-medium">
+                  #Safe(A)rea
+                </p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={() => handleSelectAuthor(currentUser.nrp, true)}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 text-xs font-bold text-slate-700 dark:text-zinc-200 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-200 dark:hover:border-blue-900/60 hover:bg-white/90 dark:hover:bg-zinc-800/80 transition-all shadow-xs active:scale-95 cursor-pointer"
+                  title="Lihat Profil Saya"
+                >
+                  <User className="w-3.5 h-3.5 text-blue-500" />
+                  <span>Edit Profil</span>
+                </button>
+              </div>
+            </div>
+          </motion.div>
+
+          <CreatePostForm
+            userProfile={currentUser}
+            onPostCreated={() => forceRefresh((value) => value + 1)}
+            onSelectAuthor={(authorNrp) => handleSelectAuthor(authorNrp, true)}
+          />
+
+          <PostList
+            currentUser={currentUser}
+            onSelectPost={(postId) => handleSelectPost(postId, true)}
+            onSelectAuthor={(authorNrp) => handleSelectAuthor(authorNrp, true)}
+          />
+        </div>
+
       </main>
 
       {/* EDIT PROFILE MODAL */}

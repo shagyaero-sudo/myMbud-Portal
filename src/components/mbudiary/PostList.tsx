@@ -12,52 +12,23 @@ interface PostListProps {
   onSelectAuthor?: (authorNrp: string) => void;
 }
 
-const PostCardSkeleton = () => (
-  <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none animate-pulse space-y-4 w-full mx-auto">
-    <div className="flex items-start gap-3">
-      <div className="w-11 h-11 rounded-2xl bg-slate-200/80 dark:bg-zinc-800 shrink-0"></div>
-      <div className="space-y-2 flex-1 pt-1">
-        <div className="h-3.5 w-32 bg-slate-200/80 dark:bg-zinc-800 rounded-full"></div>
-        <div className="h-2.5 w-24 bg-slate-200/80 dark:bg-zinc-800 rounded-full"></div>
-      </div>
-    </div>
-    <div className="space-y-2 pt-2">
-      <div className="h-3 w-full bg-slate-200/80 dark:bg-zinc-800 rounded-full"></div>
-      <div className="h-3 w-5/6 bg-slate-200/80 dark:bg-zinc-800 rounded-full"></div>
-      <div className="h-3 w-4/6 bg-slate-200/80 dark:bg-zinc-800 rounded-full"></div>
-    </div>
-    <div className="flex gap-3 pt-4 border-t border-slate-200/40 dark:border-white/5 mt-4">
-      <div className="h-8 w-14 bg-slate-200/80 dark:bg-zinc-800 rounded-full"></div>
-      <div className="h-8 w-14 bg-slate-200/80 dark:bg-zinc-800 rounded-full"></div>
-    </div>
-  </div>
-);
-
 export const PostList: React.FC<PostListProps> = ({
   currentUser,
   onSelectPost,
   onSelectAuthor,
 }) => {
-  const [posts, setPosts] = useState<MbudiaryPost[]>([]);
+  // Langsung ambil dari memory cache instan
+  const [posts, setPosts] = useState<MbudiaryPost[]>(() => getPosts());
   const [sort, setSort] = useState<FeedSort>('newest');
   const [searchQuery, setSearchQuery] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
   const [showBookmarksOnly, setShowBookmarksOnly] = useState(false);
-
-  const loadPosts = async () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setPosts(getPosts());
-      setIsLoading(false);
-    }, 600);
-  };
 
   const silentLoadPosts = () => {
     setPosts(getPosts());
   };
 
   useEffect(() => {
-    loadPosts();
+    silentLoadPosts();
 
     window.addEventListener('mbud_posts_change', silentLoadPosts);
     window.addEventListener('mbud_users_change', silentLoadPosts);
@@ -70,7 +41,7 @@ export const PostList: React.FC<PostListProps> = ({
     };
   }, []);
 
-  // 1. PENCARIAN AKUN USER BERDASARKAN QUERY
+  // 1. PENCARIAN AKUN USER
   const matchedUsers = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     if (!q || showBookmarksOnly) return [];
@@ -120,7 +91,7 @@ export const PostList: React.FC<PostListProps> = ({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Cari postingan atau akun pengguna..."
+              placeholder="Cari cerita atau nama akun..."
               className="w-full pl-8 pr-3 py-1.5 text-[11px] sm:text-xs rounded-xl sm:rounded-2xl bg-white/60 dark:bg-zinc-800/70 border border-slate-200/60 dark:border-white/5 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all"
             />
             {searchQuery && (
@@ -211,13 +182,7 @@ export const PostList: React.FC<PostListProps> = ({
 
       {/* FEED LIST */}
       <div className="space-y-3">
-        {isLoading ? (
-          <>
-            <PostCardSkeleton />
-            <PostCardSkeleton />
-            <PostCardSkeleton />
-          </>
-        ) : hasNoResults || (sortedPosts.length === 0 && !hasSearch) ? (
+        {hasNoResults || (sortedPosts.length === 0 && !hasSearch) ? (
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-8 text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none space-y-3">
             <div className="w-12 h-12 rounded-full bg-slate-50 dark:bg-zinc-800 border border-slate-100 dark:border-zinc-800 text-slate-400 dark:text-zinc-500 flex items-center justify-center mx-auto">
               {showBookmarksOnly ? <Bookmark className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}
