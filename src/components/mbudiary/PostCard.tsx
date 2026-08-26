@@ -163,7 +163,7 @@ const PostImageItem: React.FC<{
   const containerClasses = {
     grid: 'w-full aspect-square',
     carousel: 'w-[75%] sm:w-[60%] shrink-0 aspect-square snap-start',
-    quote: 'w-full aspect-[16/10] max-h-[240px]',
+    quote: 'w-full aspect-[16/10] max-h-[220px]',
   };
 
   return (
@@ -268,9 +268,9 @@ export const PostCard: React.FC<PostCardProps> = ({
 
   const allAvailablePosts = getPosts() || [];
   const originalPost = useMemo(() => {
-    if (!post.isRepost || !post.originalPostId) return null;
+    if (!post?.isRepost || !post?.originalPostId) return null;
     return allAvailablePosts.find((p) => String(p.id) === String(post.originalPostId)) || null;
-  }, [post.isRepost, post.originalPostId, allAvailablePosts]);
+  }, [post?.isRepost, post?.originalPostId, allAvailablePosts]);
 
   const originalAuthorProfile = useMemo(() => {
     if (!originalPost) return null;
@@ -363,13 +363,13 @@ export const PostCard: React.FC<PostCardProps> = ({
     commentInputRef.current.focus();
   };
 
-  const authorName = authorProfile?.nickname || authorProfile?.username || post.authorName || 'Mbuders';
+  const authorName = authorProfile?.nickname || authorProfile?.username || post?.authorName || 'Mbuders';
   const authorEmoji = authorProfile?.emoji || '😊';
   const authorPhotoUrl = authorProfile?.photoUrl;
   const actorName = currentUser.nickname || currentUser.username || 'Mbuders';
 
-  const isQuoteRepost = post.isRepost && !!post.quoteContent;
-  const isPlainRepost = post.isRepost && !post.quoteContent;
+  const isQuoteRepost = Boolean(post?.isRepost && post?.quoteContent);
+  const isPlainRepost = Boolean(post?.isRepost && !post?.quoteContent);
 
   const originalAuthorName = originalAuthorProfile?.nickname || originalAuthorProfile?.username || originalPost?.authorName || 'Mbuders';
   const originalAuthorEmoji = originalAuthorProfile?.emoji || '😊';
@@ -382,9 +382,11 @@ export const PostCard: React.FC<PostCardProps> = ({
   const displayAuthorNrp = isPlainRepost && originalPost ? originalPost.authorNrp : post.authorNrp;
   const displayCreatedAt = isPlainRepost && originalPost ? originalPost.createdAt : post.createdAt;
   const displayContent = isPlainRepost && originalPost ? originalPost.content : post.content;
-  const displayImages = isPlainRepost && originalPost ? originalPost.imageUrls : post.imageUrls;
+  const displayImages = isPlainRepost && originalPost ? (originalPost.imageUrls || []) : (post.imageUrls || []);
 
+  // DEKLARASI AMAN TARGET POST & AUTHOR UNTUK MODAL QUOTE REPOST
   const quoteTargetPost = post.isRepost && originalPost ? originalPost : post;
+  const quoteTargetAuthorProfile = post.isRepost && originalPost ? originalAuthorProfile : authorProfile;
   const quoteTargetAuthorName = post.isRepost && originalPost ? originalAuthorName : authorName;
   const quoteTargetAuthorUsername = post.isRepost && originalPost ? (originalAuthorProfile?.username || 'unknown') : (authorProfile?.username || 'unknown');
   const quoteTargetAuthorEmoji = post.isRepost && originalPost ? originalAuthorEmoji : authorEmoji;
@@ -667,7 +669,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                     )}
 
                     {/* GAMBAR POSTINGAN ASLI DI DALAM KARTU QUOTE */}
-                    {originalPost.imageUrls && originalPost.imageUrls.length > 0 && (
+                    {Array.isArray(originalPost.imageUrls) && originalPost.imageUrls.length > 0 && (
                       <div className="px-3 pb-2.5">
                         {originalPost.imageUrls.length === 1 ? (
                           <PostImageItem
@@ -704,10 +706,9 @@ export const PostCard: React.FC<PostCardProps> = ({
               </div>
             )}
 
-            {/* GAMBAR POSTINGAN (1: NATIVE RATIO, 3: CAROUSEL SQUARE, 2/4: GRID SQUARE) */}
-            {!isQuoteRepost && displayImages && displayImages.length > 0 && (
+            {/* GAMBAR POSTINGAN UTAMA */}
+            {!isQuoteRepost && Array.isArray(displayImages) && displayImages.length > 0 && (
               <div className="mb-2 w-full">
-                {/* 1 GAMBAR: RASIO ASLI GAMBAR (MAX HEIGHT 520px) */}
                 {displayImages.length === 1 && (
                   <PostImageItem
                     imageUrl={displayImages[0]}
@@ -719,7 +720,6 @@ export const PostCard: React.FC<PostCardProps> = ({
                   />
                 )}
 
-                {/* 3 GAMBAR: SWIPEABLE CAROUSEL SQUARE */}
                 {displayImages.length === 3 && (
                   <div className="flex gap-2 overflow-x-auto pb-1.5 snap-x snap-mandatory scroll-smooth custom-scrollbar -mx-0.5 px-0.5">
                     {displayImages.map((imageUrl, index) => (
@@ -736,7 +736,6 @@ export const PostCard: React.FC<PostCardProps> = ({
                   </div>
                 )}
 
-                {/* 2 ATAU 4 GAMBAR: 2-COLUMN GRID SQUARE */}
                 {(displayImages.length === 2 || displayImages.length >= 4) && (
                   <div className="grid grid-cols-2 gap-1.5 w-full">
                     {displayImages.map((imageUrl, index) => (
@@ -917,7 +916,7 @@ export const PostCard: React.FC<PostCardProps> = ({
         </AnimatePresence>
       </article>
 
-      {/* MODAL FORM QUOTE REPOST (DENGAN PREVIEW GAMBAR POST ASLI) */}
+      {/* MODAL FORM QUOTE REPOST */}
       <AnimatePresence>
         {isQuoteOpen && (
           <motion.div
@@ -993,7 +992,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                     </div>
                   )}
 
-                  {quoteTargetPost?.imageUrls && quoteTargetPost.imageUrls.length > 0 && (
+                  {Array.isArray(quoteTargetPost?.imageUrls) && quoteTargetPost.imageUrls.length > 0 && (
                     <div className="px-3 pb-2.5">
                       <img
                         src={getOptimizedImageUrl(quoteTargetPost.imageUrls[0])}
