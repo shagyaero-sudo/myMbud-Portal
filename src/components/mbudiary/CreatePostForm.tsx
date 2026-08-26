@@ -296,7 +296,7 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
                 </div>
 
                 {/* MODAL BODY */}
-                <div className="p-4 sm:p-5 overflow-y-visible flex-1 min-h-[140px] relative">
+                <div className="p-4 sm:p-5 overflow-y-visible flex-1 min-h-[120px] relative">
                   <div className="flex items-start gap-2.5">
                     <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-100 dark:bg-zinc-800 shrink-0 flex items-center justify-center overflow-hidden border border-slate-200/60 dark:border-zinc-700/60">
                       {userProfile.photoUrl ? (
@@ -306,21 +306,21 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
                       )}
                     </div>
                     
-                    <div className="flex-1 min-w-0 pt-0.5 relative">
+                    <div className="flex-1 min-w-0 relative">
                       <textarea
                         autoFocus
                         ref={textareaRef}
                         value={content}
                         onChange={handleContentChange}
                         placeholder="Ada cerita apa hari ini?..."
-                        rows={2}
+                        rows={1}
                         maxLength={MAX_CHARS}
-                        className="w-full text-xs sm:text-[13px] bg-transparent text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none resize-none leading-relaxed min-h-[40px] max-h-[300px] overflow-y-auto"
+                        className="w-full text-xs sm:text-[13px] bg-transparent text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none resize-none leading-relaxed min-h-[26px] max-h-[300px] overflow-y-auto"
                       />
 
-                      {/* DROPDOWN MENTION MELAYANG DI ATAS BILAH UPLOAD DENGAN HIGH ELEVATION */}
+                      {/* DROPDOWN MENTION TEPAT DI BAWAH KETIKAN */}
                       {mentionQuery !== null && mentionSuggestions.length > 0 && (
-                        <div className="absolute left-0 top-full mt-2 z-[99999999] w-72 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-2xl border border-slate-200/80 dark:border-zinc-700 rounded-2xl p-1.5 shadow-[0_12px_40px_rgb(0,0,0,0.25)] max-h-56 overflow-y-auto custom-scrollbar">
+                        <div className="absolute left-0 top-7 z-[99999999] w-72 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-2xl border border-slate-200/80 dark:border-zinc-700 rounded-2xl p-1.5 shadow-[0_12px_40px_rgb(0,0,0,0.25)] max-h-56 overflow-y-auto custom-scrollbar">
                           <div className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 px-2 py-1 flex items-center gap-1">
                             <AtSign className="w-3 h-3 text-blue-500" />
                             <span>Pilih User</span>
