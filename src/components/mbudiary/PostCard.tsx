@@ -129,7 +129,7 @@ const formatThreadsTime = (timestamp?: string | number | Date | null): string =>
   return `${diffYears}thn`;
 };
 
-// KOMPONEN MEDIA GAMBAR
+// KOMPONEN MEDIA GAMBAR (FIT RAPAT MENGIKUTI UKURAN ASLI)
 const PostImageItem: React.FC<{
   imageUrl: string;
   layoutType: 'single' | 'grid' | 'carousel' | 'quote';
@@ -137,23 +137,23 @@ const PostImageItem: React.FC<{
 }> = ({ imageUrl, layoutType, onImageClick }) => {
   const [isLoaded, setIsLoaded] = useState(false);
 
-  if (layoutType === 'single') {
+  if (layoutType === 'single' || layoutType === 'quote') {
     return (
       <button
         type="button"
         onClick={onImageClick}
-        className="relative w-full overflow-hidden rounded-2xl bg-slate-200 dark:bg-zinc-800/80 border border-slate-200/50 dark:border-white/5 cursor-zoom-in group flex items-center justify-center min-h-[140px] max-h-[520px]"
+        className="relative block w-full overflow-hidden rounded-2xl border border-slate-200/60 dark:border-white/10 cursor-zoom-in group text-left leading-none bg-transparent"
       >
         {!isLoaded && (
-          <div className="absolute inset-0 bg-slate-200 dark:bg-zinc-800 animate-pulse" />
+          <div className="w-full aspect-[16/9] bg-slate-200 dark:bg-zinc-800 animate-pulse rounded-2xl" />
         )}
         <img
           src={getOptimizedImageUrl(imageUrl)}
           alt="Post media"
           loading="lazy"
           onLoad={() => setIsLoaded(true)}
-          className={`w-full max-h-[520px] h-auto object-cover rounded-2xl transition-all duration-300 group-hover:scale-[1.01] ${
-            isLoaded ? 'opacity-100' : 'opacity-0'
+          className={`w-full h-auto max-h-[600px] object-cover block rounded-2xl transition-all duration-300 group-hover:scale-[1.01] ${
+            isLoaded ? 'opacity-100' : 'opacity-0 absolute inset-0'
           }`}
         />
       </button>
@@ -163,7 +163,7 @@ const PostImageItem: React.FC<{
   const containerClasses = {
     grid: 'w-full aspect-square',
     carousel: 'w-[75%] sm:w-[60%] shrink-0 aspect-square snap-start',
-    quote: 'w-full aspect-[16/10] max-h-[220px]',
+    quote: 'w-full',
   };
 
   return (
@@ -384,7 +384,6 @@ export const PostCard: React.FC<PostCardProps> = ({
   const displayContent = isPlainRepost && originalPost ? originalPost.content : post.content;
   const displayImages = isPlainRepost && originalPost ? (originalPost.imageUrls || []) : (post.imageUrls || []);
 
-  // DEKLARASI AMAN TARGET POST & AUTHOR UNTUK MODAL QUOTE REPOST
   const quoteTargetPost = post.isRepost && originalPost ? originalPost : post;
   const quoteTargetAuthorProfile = post.isRepost && originalPost ? originalAuthorProfile : authorProfile;
   const quoteTargetAuthorName = post.isRepost && originalPost ? originalAuthorName : authorName;
@@ -631,7 +630,7 @@ export const PostCard: React.FC<PostCardProps> = ({
               </div>
             )}
 
-            {/* EMBED KARTU KUTIPAN ASLI (DILENGKAPI GAMBAR POST ASLI) */}
+            {/* EMBED KARTU KUTIPAN ASLI */}
             {isQuoteRepost && (
               <div
                 onClick={(e) => {
@@ -997,7 +996,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                       <img
                         src={getOptimizedImageUrl(quoteTargetPost.imageUrls[0])}
                         alt="Preview post asli"
-                        className="w-full max-h-36 object-cover rounded-xl border border-slate-200/50 dark:border-white/5"
+                        className="w-full max-h-52 h-auto object-cover rounded-xl border border-slate-200/50 dark:border-white/5"
                       />
                     </div>
                   )}
