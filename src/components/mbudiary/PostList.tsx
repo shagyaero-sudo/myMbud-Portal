@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { MbudiaryPost, UserProfile } from '../../types';
 import { getPosts, getCachedUserByNrp, getBookmarkedPostIds, searchUsersForMention, getFollows } from './lib/storage';
 import { PostCard, VerifiedBadge } from './PostCard';
+import { CreatePostForm } from './CreatePostForm';
 import { getOptimizedImageUrl } from './lib/utils';
 import { Search, MessageCircle, Bookmark, Users, ChevronRight, UserCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -54,7 +55,7 @@ export const PostList: React.FC<PostListProps> = ({
   // 2. PENCARIAN & FILTER POSTINGAN
   const filteredPosts = useMemo(() => {
     let result = [...posts];
-    const followingNrps = getFollows(); // Akun-akun yang difollow user
+    const followingNrps = getFollows();
 
     // Filter Tab: Mengikuti
     if (activeTab === 'following' && !showBookmarksOnly) {
@@ -82,7 +83,6 @@ export const PostList: React.FC<PostListProps> = ({
       });
     }
 
-    // Urutkan selalu dari yang terbaru
     result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     return result;
   }, [posts, activeTab, showBookmarksOnly, searchQuery]);
@@ -183,10 +183,10 @@ export const PostList: React.FC<PostListProps> = ({
         </div>
       )}
 
-      {/* CONTAINER INDUK TIMELINE DENGAN TAB FOR YOU / MENGIKUTI */}
+      {/* CONTAINER TIMELINE DENGAN TAB & INLINE CREATE POST FORM */}
       <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl overflow-hidden shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none divide-y divide-slate-200/50 dark:divide-white/10">
         
-        {/* HEADER TAB FOR YOU / MENGIKUTI (HANYA KETIKA TIDAK DALAM MODE BOOKMARK) */}
+        {/* HEADER TAB FOR YOU / MENGIKUTI */}
         {!showBookmarksOnly && (
           <div className="flex items-center border-b border-slate-200/50 dark:border-white/10 bg-white/40 dark:bg-zinc-950/20">
             <button
@@ -225,6 +225,15 @@ export const PostList: React.FC<PostListProps> = ({
               )}
             </button>
           </div>
+        )}
+
+        {/* INLINE CREATE POST FORM ALA TWITTER (HANYA DITAMPILKAN JIKA BUKAN MODE SEARCH/BOOKMARK) */}
+        {!showBookmarksOnly && !hasSearch && (
+          <CreatePostForm
+            userProfile={currentUser}
+            onPostCreated={silentLoadPosts}
+            onSelectAuthor={onSelectAuthor}
+          />
         )}
 
         {/* FEED LIST / EMPTY STATES */}
