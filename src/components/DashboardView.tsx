@@ -16,7 +16,6 @@ import {
   Send,
   Building2,
   Coffee,
-  Sparkles,
 } from 'lucide-react';
 import { supabase } from '../services/supabase';
 import { AppState, DayOfWeek, Announcement } from '../types';
@@ -189,7 +188,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     if (dayTabs.includes(todayActualName as DayOfWeek)) {
       setSelectedDay(todayActualName as DayOfWeek);
     } else {
-      // Jika hari ini Jumat (tanpa jadwal), Sabtu, atau Minggu -> biarkan selectedDay = null agar notice muncul
       setSelectedDay(null);
     }
   }, [dayTabs, todayActualName]);
@@ -773,22 +771,20 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               {selectedDay === null ? (
                 <div className="p-8 text-center space-y-3 bg-slate-50/50 dark:bg-zinc-800/30 rounded-2xl border border-slate-200/40 dark:border-white/5">
                   <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center mx-auto shadow-xs">
-                    {todayActualName === 'Jumat' ? <Sparkles className="w-5 h-5" /> : <Coffee className="w-5 h-5" />}
+                    <Coffee className="w-5 h-5" />
                   </div>
                   <div className="space-y-1">
                     <h4 className="text-xs sm:text-sm font-bold text-slate-800 dark:text-zinc-100">
-                      Tidak ada jadwal kelas di hari {todayActualName} 🎉
+                      Tidak ada kelas di hari {todayActualName}
                     </h4>
                     <p className="text-[11px] sm:text-xs text-slate-500 dark:text-zinc-400 max-w-sm mx-auto">
-                      {todayActualName === 'Jumat'
-                        ? 'Kuliah selesai untuk pekan ini! Pilih tab di atas jika ingin mengecek jadwal hari lain.'
-                        : 'Waktunya istirahat dan liburan akhir pekan! Klik tab di atas untuk mengintip jadwal kuliah.'}
+                      Klik tab hari di atas untuk mengecek jadwal
                     </p>
                   </div>
                 </div>
               ) : filteredSchedule.length === 0 ? (
                 <div className="p-8 text-center text-slate-400 dark:text-zinc-500 text-xs bg-slate-50/50 dark:bg-zinc-800/30 rounded-2xl border border-slate-200/30 dark:border-white/5">
-                  Tidak ada jadwal perkuliahan untuk hari {selectedDay}.
+                  Tidak ada kelas di hari {selectedDay}.
                 </div>
               ) : (
                 <AnimatePresence mode="wait">
