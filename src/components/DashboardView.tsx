@@ -16,6 +16,7 @@ import {
   Send,
   Building2,
   Coffee,
+  Sparkles,
 } from 'lucide-react';
 import { supabase } from '../services/supabase';
 import { AppState, DayOfWeek, Announcement } from '../types';
@@ -90,7 +91,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   isOfficer,
   onNavigateTab,
 }) => {
-  const [selectedDay, setSelectedDay] = useState<DayOfWeek>('Senin');
+  const [selectedDay, setSelectedDay] = useState<DayOfWeek | null>(null);
   const [showAnnModal, setShowAnnModal] = useState(false);
   const [editingAnnId, setEditingAnnId] = useState<string | null>(null);
   const [isSubmittingAnn, setIsSubmittingAnn] = useState(false);
@@ -121,13 +122,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const currentUserNrp = typeof window !== 'undefined' ? (localStorage.getItem('mymbud_user_nrp') || '').trim().toLowerCase() : '';
   const userName = typeof window !== 'undefined' ? localStorage.getItem('mymbud_user_name') || 'Mbuders' : 'Mbuders';
 
-  // Helper deteksi nama hari ini
+  // Helper deteksi hari ini
   const todayActualName = useMemo(() => {
     const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
     return days[new Date().getDay()];
   }, []);
 
-  // Helper untuk membersihkan & menormalkan target NRP
+  // Helper normalisasi target NRP
   const parseTargetNrps = (raw: any): string[] => {
     if (!raw) return [];
     if (Array.isArray(raw)) {
@@ -174,7 +175,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     return visibleSchedules.some((s) => s.day === 'Jumat');
   }, [visibleSchedules]);
 
-  // 3. Tab hari adaptif: Jumat hanya muncul jika memang ada matkulnya
+  // 3. Tab hari adaptif: hanya tampilkan Jumat jika user memang punya kelas Jumat
   const dayTabs: DayOfWeek[] = useMemo(() => {
     const baseDays: DayOfWeek[] = ['Senin', 'Selasa', 'Rabu', 'Kamis'];
     if (hasFridaySchedule) {
@@ -183,16 +184,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     return baseDays;
   }, [hasFridaySchedule]);
 
+  // 4. Inisialisasi tab aktif: hanya aktif jika hari ini termasuk dalam dayTabs dan punya kelas
   useEffect(() => {
-    const days: DayOfWeek[] = ['Minggu' as DayOfWeek, 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-    const currentDayIndex = new Date().getDay();
-    const todayName = days[currentDayIndex];
-    if (todayName && dayTabs.includes(todayName)) {
-      setSelectedDay(todayName);
+    if (dayTabs.includes(todayActualName as DayOfWeek)) {
+      setSelectedDay(todayActualName as DayOfWeek);
     } else {
-      setSelectedDay('Senin');
+      // Jika hari ini Jumat (tanpa jadwal), Sabtu, atau Minggu -> biarkan selectedDay = null agar notice muncul
+      setSelectedDay(null);
     }
-  }, [dayTabs]);
+  }, [dayTabs, todayActualName]);
 
   useEffect(() => {
     if (!currentUserNrp || currentUserNrp === 'unknown') return;
@@ -432,13 +432,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     });
   };
 
-  const filteredSchedule = visibleSchedules
-    .filter((s) => s.day === selectedDay)
-    .sort((a, b) => {
-      const startA = a.time.split('-')[0]?.trim() || '';
-      const startB = b.time.split('-')[0]?.trim() || '';
-      return startA.localeCompare(startB);
-    });
+  const filteredSchedule = selectedDay
+    ? visibleSchedules
+        .filter((s) => s.day === selectedDay)
+        .sort((a, b) => {
+          const startA = a.time.split('-')[0]?.trim() || '';
+          const startB = b.time.split('-')[0]?.trim() || '';
+          return startA.localeCompare(startB);
+        })
+    : [];
 
   const handleOpenAddAnn = () => {
     setEditingAnnId(null);
@@ -558,7 +560,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </motion.div>
       )}
 
-      {/* CLUSTER HEADER & PENGUMUMAN MOBILE DENGAN COMPACT STREAK PILL BADGE */}
+      {/* CLUSTER HEADER & PENGUMUMAN MOBILE */}
       <div className="block lg:hidden space-y-3">
         <div className="flex items-center justify-between gap-3 px-1 pt-1">
           <div>
@@ -745,7 +747,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               })()}
             </div>
 
-            {/* TAB HARI DINAMIS */}
+            {/* TAB HARI (SENIN - KAMIS ATAU +JUMAT) */}
             <div className={`grid ${dayTabs.length === 5 ? 'grid-cols-5' : 'grid-cols-4'} gap-1 p-1 bg-slate-100/70 dark:bg-zinc-800/60 rounded-2xl w-full border border-slate-200/40 dark:border-white/5`}>
               {dayTabs.map((day) => {
                 const isActive = selectedDay === day;
@@ -753,7 +755,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   <button
                     key={day}
                     onClick={() => setSelectedDay(day)}
-                    className={`relative w-full py-2 px-1 text-[11px] sm:text-xs text-center font-bold rounded-xl transition-colors duration-150 cursor-pointer select-none ${
+                    className={`relative w-full py-2 px-1 text-[11px] sm:text-xs text-center font-bold rounded-xl transition-all duration-150 cursor-pointer select-none ${
                       isActive
                         ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
                         : 'text-slate-600 dark:text-zinc-300 hover:bg-slate-200/60 dark:hover:bg-zinc-700/60'
@@ -765,25 +767,28 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               })}
             </div>
 
-            {/* KONTEN JADWAL / EMPTY STATE ADAPTIF */}
+            {/* KONTEN JADWAL / NOTICE CARD HARI INI */}
             <div className="space-y-2.5 pt-1">
-              {filteredSchedule.length === 0 ? (
-                <div className="p-8 text-center space-y-3 bg-slate-50/50 dark:bg-zinc-800/30 rounded-2xl border border-slate-200/30 dark:border-white/5">
-                  <div className="w-11 h-11 rounded-full bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center mx-auto">
-                    <Coffee className="w-5 h-5" />
+              {/* JIKA SELECTED DAY NULL (HARI INI LIBUR / TIDAK ADA JADWAL AKTIF) */}
+              {selectedDay === null ? (
+                <div className="p-8 text-center space-y-3 bg-slate-50/50 dark:bg-zinc-800/30 rounded-2xl border border-slate-200/40 dark:border-white/5">
+                  <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center mx-auto shadow-xs">
+                    {todayActualName === 'Jumat' ? <Sparkles className="w-5 h-5" /> : <Coffee className="w-5 h-5" />}
                   </div>
-                  <div>
-                    <h4 className="text-xs sm:text-sm font-bold text-slate-800 dark:text-zinc-200">
-                      {['Jumat', 'Sabtu', 'Minggu'].includes(todayActualName) && selectedDay === 'Senin' && !hasFridaySchedule
-                        ? `Tidak ada jadwal kelas di hari ${todayActualName}`
-                        : `Tidak ada jadwal perkuliahan untuk hari ${selectedDay}`}
+                  <div className="space-y-1">
+                    <h4 className="text-xs sm:text-sm font-bold text-slate-800 dark:text-zinc-100">
+                      Tidak ada jadwal kelas di hari {todayActualName} 🎉
                     </h4>
-                    <p className="text-[11px] sm:text-xs text-slate-500 dark:text-zinc-400 mt-1 max-w-sm mx-auto">
-                      {['Jumat', 'Sabtu', 'Minggu'].includes(todayActualName)
-                        ? 'Waktunya istirahat dan recharge energi! Kamu sedang melihat jadwal hari Senin.'
-                        : 'Gunakan waktu luang untuk menyelesaikan tugas atau belajar mandiri.'}
+                    <p className="text-[11px] sm:text-xs text-slate-500 dark:text-zinc-400 max-w-sm mx-auto">
+                      {todayActualName === 'Jumat'
+                        ? 'Kuliah selesai untuk pekan ini! Pilih tab di atas jika ingin mengecek jadwal hari lain.'
+                        : 'Waktunya istirahat dan liburan akhir pekan! Klik tab di atas untuk mengintip jadwal kuliah.'}
                     </p>
                   </div>
+                </div>
+              ) : filteredSchedule.length === 0 ? (
+                <div className="p-8 text-center text-slate-400 dark:text-zinc-500 text-xs bg-slate-50/50 dark:bg-zinc-800/30 rounded-2xl border border-slate-200/30 dark:border-white/5">
+                  Tidak ada jadwal perkuliahan untuk hari {selectedDay}.
                 </div>
               ) : (
                 <AnimatePresence mode="wait">
