@@ -38,6 +38,15 @@ export const MbudiaryView: React.FC = () => {
     localStorage.setItem(SWIPE_HINT_KEY, 'true');
   };
 
+  // Navigasi Kembali ke Dashboard Utama Portal
+  const handleExitToDashboard = () => {
+    if (window.location.hash) {
+      window.location.hash = '';
+    } else {
+      window.history.back();
+    }
+  };
+
   // =========================================================================
   // SUB-ROUTING & SCROLL RESTORATION
   // =========================================================================
@@ -347,14 +356,27 @@ export const MbudiaryView: React.FC = () => {
         <div className={isFeedActive ? 'space-y-3 sm:space-y-5 block' : 'hidden'}>
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
             <div className="flex items-start justify-between gap-3 px-3 sm:px-1 pt-1 pb-1">
-              <div>
-                <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-zinc-100">
-                  mbudiary.
-                </h1>
-                <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 mt-0.5 font-medium">
-                  #Safe(A)rea
-                </p>
+              {/* HEADER WITH BACK TO DASHBOARD BUTTON */}
+              <div className="flex items-center gap-2 sm:gap-3">
+                <button
+                  type="button"
+                  onClick={handleExitToDashboard}
+                  className="p-2 sm:p-2.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 text-slate-600 dark:text-zinc-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/90 dark:hover:bg-zinc-800 transition-all shadow-xs active:scale-95 cursor-pointer group"
+                  title="Kembali ke Dashboard Utama"
+                >
+                  <ArrowLeft className="w-4 h-4 sm:w-4.5 sm:h-4.5 group-hover:-translate-x-0.5 transition-transform" />
+                </button>
+
+                <div>
+                  <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-zinc-100">
+                    mbudiary.
+                  </h1>
+                  <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 mt-0.5 font-medium">
+                    #Safe(A)rea
+                  </p>
+                </div>
               </div>
+
               <div className="flex items-center gap-2 shrink-0">
                 <button
                   onClick={() => handleSelectAuthor(currentUser.nrp, true)}

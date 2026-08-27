@@ -768,12 +768,15 @@ export default function App() {
           />
 
           <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 flex flex-col lg:flex-row gap-6 pt-4 pb-28 lg:pb-8">
-            <Sidebar
-              activeTab={activeTab}
-              setActiveTab={(tab) => handleNavigateTab(tab)}
-              activeTaskCount={activeTaskCount}
-              onOpenGpaModal={() => setIsGpaModalOpen(true)}
-            />
+            {/* KONDISI NAVIGASI: HANYA DIRENDER SAAT BUKAN TAB MBUDIARY */}
+            {activeTab !== 'mbudiary' && (
+              <Sidebar
+                activeTab={activeTab}
+                setActiveTab={(tab) => handleNavigateTab(tab)}
+                activeTaskCount={activeTaskCount}
+                onOpenGpaModal={() => setIsGpaModalOpen(true)}
+              />
+            )}
 
             <main className="flex-1 space-y-6">
               {isInitialLoad ? (
