@@ -295,9 +295,9 @@ export const Header: React.FC<HeaderProps> = ({
     const formatted = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 
     if (isRunning) {
-      document.title = `(${formatted}) ${pomoMode === 'focus' ? '🔥 Focus' : '☕ Break'} • myMbud Portal`;
+      document.title = `(${formatted}) ${pomoMode === 'focus' ? '🔥 Focus' : '☕ Break'} • myMbud`;
     } else {
-      document.title = 'myMbud Portal';
+      document.title = 'myMbud';
     }
   }, [timeLeft, isRunning, pomoMode]);
 

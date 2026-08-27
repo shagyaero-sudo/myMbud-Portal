@@ -235,7 +235,7 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
             onClick={() => setIsModalOpen(true)}
             className="flex-1 min-w-0 py-1.5 text-xs sm:text-sm text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300 cursor-pointer transition-colors truncate"
           >
-            Apa yang sedang terjadi?...
+            Tulis cerita di sini...
           </div>
         </div>
 
