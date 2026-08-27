@@ -4,7 +4,7 @@ import { getPosts, getCachedUserByNrp, searchUsersForMention, getFollows, getBoo
 import { PostCard, VerifiedBadge } from './PostCard';
 import { CreatePostForm } from './CreatePostForm';
 import { getOptimizedImageUrl } from './lib/utils';
-import { Search, MessageCircle, Users, ChevronRight, UserCheck, ArrowLeft, User, Bookmark } from 'lucide-react';
+import { Search, MessageCircle, Users, ChevronRight, UserCheck, ArrowLeft, Bookmark } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface PostListProps {
@@ -92,11 +92,11 @@ export const PostList: React.FC<PostListProps> = ({
   return (
     <div className="space-y-3 sm:space-y-4 w-full">
       
-      {/* 1-ROW TOPBAR BESAR & PROPORSIONAL */}
-      <div className="flex items-center gap-2 sm:gap-3 w-full px-1 py-1">
+      {/* 1-ROW TOPBAR BESAR & PROPORSIONAL (TANPA EDIT PROFIL) */}
+      <div className="flex items-center gap-2.5 sm:gap-4 w-full px-1 py-1">
         
         {/* Back Button & Title */}
-        <div className="flex items-center gap-1.5 shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
           <button
             type="button"
             onClick={onExitToDashboard}
@@ -111,19 +111,9 @@ export const PostList: React.FC<PostListProps> = ({
           </span>
         </div>
 
-        {/* Tombol Lihat/Edit Profil Sendiri */}
-        <button
-          type="button"
-          onClick={onOpenOwnProfile}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:py-2 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 text-xs sm:text-[13px] font-bold text-slate-700 dark:text-zinc-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/90 dark:hover:bg-zinc-800 transition-all shadow-xs active:scale-95 shrink-0 cursor-pointer"
-        >
-          <User className="w-3.5 h-3.5 text-blue-500" />
-          <span>Edit</span>
-        </button>
-
-        {/* Search Bar Lebar */}
+        {/* Search Bar Lebar Penuh */}
         <div className="relative flex-1 min-w-0 flex items-center">
-          <div className="absolute left-3 flex items-center pointer-events-none z-10">
+          <div className="absolute left-3.5 flex items-center pointer-events-none z-10">
             <Search className="w-4 h-4 text-slate-400 dark:text-zinc-400" />
           </div>
           <input
@@ -131,7 +121,7 @@ export const PostList: React.FC<PostListProps> = ({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Cari post/akun..."
-            className="w-full pl-9 pr-8 py-1.5 sm:py-2 text-xs sm:text-[13px] rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-xs transition-all"
+            className="w-full pl-10 pr-8 py-2 text-xs sm:text-[13px] rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-xs transition-all"
           />
           {searchQuery && (
             <button
@@ -195,7 +185,7 @@ export const PostList: React.FC<PostListProps> = ({
         </div>
       )}
 
-      {/* CONTAINER TIMELINE DENGAN TAB & ICON BOOKMARK DI KANAN */}
+      {/* CONTAINER TIMELINE */}
       <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl overflow-hidden shadow-xs divide-y divide-slate-200/50 dark:divide-white/10">
         
         {/* HEADER TAB (UNTUK ANDA | MENGIKUTI | [BOOKMARK ICON]) */}
@@ -252,12 +242,13 @@ export const PostList: React.FC<PostListProps> = ({
           </button>
         </div>
 
-        {/* INLINE CREATE POST FORM */}
+        {/* INLINE CREATE POST FORM DENGAN TRIGGER EDIT PROFIL */}
         {!showBookmarksOnly && !hasSearch && (
           <CreatePostForm
             userProfile={currentUser}
             onPostCreated={silentLoadPosts}
             onSelectAuthor={onSelectAuthor}
+            onOpenOwnProfile={onOpenOwnProfile}
           />
         )}
 

@@ -13,6 +13,7 @@ import {
   Images,
   Loader2,
   AtSign,
+  User,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -20,6 +21,7 @@ interface CreatePostFormProps {
   userProfile: UserProfile;
   onPostCreated?: () => void;
   onSelectAuthor?: (authorNrp: string) => void;
+  onOpenOwnProfile?: () => void;
 }
 
 const MAX_CHARS = 280;
@@ -37,6 +39,7 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
   userProfile,
   onPostCreated,
   onSelectAuthor,
+  onOpenOwnProfile,
 }) => {
   const [content, setContent] = useState('');
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
@@ -239,19 +242,16 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
           </div>
         </div>
 
-        {/* BARIS 2: KONTROL BAWAH (UPLOAD GAMBAR & POST BUTTON) */}
+        {/* BARIS 2: KONTROL BAWAH (EDIT PROFIL & POST BUTTON) */}
         <div className="flex items-center justify-between pt-2.5 mt-2 border-t border-slate-200/40 dark:border-white/5 pl-12">
-          {/* TOMBOL UPLOAD GAMBAR */}
+          {/* TOMBOL EDIT PROFIL */}
           <button
             type="button"
-            onClick={() => {
-              setIsModalOpen(true);
-              setTimeout(() => setIsUploadMenuOpen(true), 150);
-            }}
+            onClick={onOpenOwnProfile}
             className="px-2.5 py-1.5 rounded-xl hover:bg-blue-50 dark:hover:bg-zinc-800/80 text-blue-600 dark:text-blue-400 text-xs font-semibold transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
           >
-            <ImagePlus className="w-4 h-4" />
-            <span className="text-[11px] sm:text-xs">Upload Gambar</span>
+            <User className="w-4 h-4" />
+            <span className="text-[11px] sm:text-xs">Edit Profil</span>
           </button>
 
           {/* TOMBOL POST */}
