@@ -15,6 +15,7 @@ import {
   Zap,
   Send,
   Building2,
+  Coffee,
 } from 'lucide-react';
 import { supabase } from '../services/supabase';
 import { AppState, DayOfWeek, Announcement } from '../types';
@@ -120,6 +121,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const currentUserNrp = typeof window !== 'undefined' ? (localStorage.getItem('mymbud_user_nrp') || '').trim().toLowerCase() : '';
   const userName = typeof window !== 'undefined' ? localStorage.getItem('mymbud_user_name') || 'Mbuders' : 'Mbuders';
 
+  // Helper deteksi nama hari ini
+  const todayActualName = useMemo(() => {
+    const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    return days[new Date().getDay()];
+  }, []);
+
   // Helper untuk membersihkan & menormalkan target NRP
   const parseTargetNrps = (raw: any): string[] => {
     if (!raw) return [];
@@ -153,13 +160,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     return state.schedules.filter((s: any) => {
       const targets = parseTargetNrps(s.target_nrps || s.targetNrps);
 
-      // JIKA ADA TARGET NRP KHUSUS:
       if (targets.length > 0) {
         if (!cleanUserNrp || cleanUserNrp === 'unknown') return false;
         return targets.includes(cleanUserNrp);
       }
 
-      // JIKA KOSONG -> Jadwal umum kelas
       return true;
     });
   }, [state.schedules, currentUserNrp]);
@@ -179,10 +184,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   }, [hasFridaySchedule]);
 
   useEffect(() => {
-    if (selectedDay === 'Jumat' && !hasFridaySchedule) {
+    const days: DayOfWeek[] = ['Minggu' as DayOfWeek, 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    const currentDayIndex = new Date().getDay();
+    const todayName = days[currentDayIndex];
+    if (todayName && dayTabs.includes(todayName)) {
+      setSelectedDay(todayName);
+    } else {
       setSelectedDay('Senin');
     }
-  }, [hasFridaySchedule, selectedDay]);
+  }, [dayTabs]);
 
   useEffect(() => {
     if (!currentUserNrp || currentUserNrp === 'unknown') return;
@@ -287,17 +297,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }
     setTouchStartX(null);
   };
-
-  useEffect(() => {
-    const days: DayOfWeek[] = ['Minggu' as DayOfWeek, 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-    const currentDayIndex = new Date().getDay();
-    const todayName = days[currentDayIndex];
-    if (todayName && dayTabs.includes(todayName)) {
-      setSelectedDay(todayName);
-    } else {
-      setSelectedDay('Senin');
-    }
-  }, [dayTabs]);
 
   const daysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
   const firstDayOfMonth = (year: number, month: number) => {
@@ -746,7 +745,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               })()}
             </div>
 
-            {/* TAB HARI DINAMIS (GRID MENYESUAIKAN 4 ATAU 5 HARI) */}
+            {/* TAB HARI DINAMIS */}
             <div className={`grid ${dayTabs.length === 5 ? 'grid-cols-5' : 'grid-cols-4'} gap-1 p-1 bg-slate-100/70 dark:bg-zinc-800/60 rounded-2xl w-full border border-slate-200/40 dark:border-white/5`}>
               {dayTabs.map((day) => {
                 const isActive = selectedDay === day;
@@ -766,10 +765,25 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               })}
             </div>
 
+            {/* KONTEN JADWAL / EMPTY STATE ADAPTIF */}
             <div className="space-y-2.5 pt-1">
               {filteredSchedule.length === 0 ? (
-                <div className="p-8 text-center text-slate-400 dark:text-zinc-500 text-xs bg-slate-50/50 dark:bg-zinc-800/30 rounded-2xl border border-slate-200/30 dark:border-white/5">
-                  Tidak ada jadwal perkuliahan untuk hari {selectedDay}.
+                <div className="p-8 text-center space-y-3 bg-slate-50/50 dark:bg-zinc-800/30 rounded-2xl border border-slate-200/30 dark:border-white/5">
+                  <div className="w-11 h-11 rounded-full bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center mx-auto">
+                    <Coffee className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs sm:text-sm font-bold text-slate-800 dark:text-zinc-200">
+                      {['Jumat', 'Sabtu', 'Minggu'].includes(todayActualName) && selectedDay === 'Senin' && !hasFridaySchedule
+                        ? `Tidak ada jadwal kelas di hari ${todayActualName}`
+                        : `Tidak ada jadwal perkuliahan untuk hari ${selectedDay}`}
+                    </h4>
+                    <p className="text-[11px] sm:text-xs text-slate-500 dark:text-zinc-400 mt-1 max-w-sm mx-auto">
+                      {['Jumat', 'Sabtu', 'Minggu'].includes(todayActualName)
+                        ? 'Waktunya istirahat dan recharge energi! Kamu sedang melihat jadwal hari Senin.'
+                        : 'Gunakan waktu luang untuk menyelesaikan tugas atau belajar mandiri.'}
+                    </p>
+                  </div>
                 </div>
               ) : (
                 <AnimatePresence mode="wait">
@@ -848,7 +862,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                             className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-[11px] sm:text-xs font-bold flex items-center justify-center gap-2 rounded-xl transition-all shadow-sm shadow-blue-500/20 cursor-pointer"
                           >
                             <UserCheck className="w-4 h-4" />
-                            <span>Presensi / Kehadiran</span>
+                            <span>Input Presensi</span>
                           </a>
 
                           <button
