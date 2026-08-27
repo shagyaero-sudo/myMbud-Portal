@@ -123,7 +123,7 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
                           <ExternalLink className="w-4 h-4 text-blue-400 group-hover:scale-110 transition-transform shrink-0" />
                           <div className="flex flex-col">
                             <span>Buka di Google Drive</span>
-                            <span className="text-[10px] text-zinc-400 font-normal">Untuk mendownload</span>
+                            <span className="text-[10px] text-zinc-400 font-normal">Download File Asli</span>
                           </div>
                         </a>
                       </motion.div>

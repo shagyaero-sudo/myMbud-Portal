@@ -461,7 +461,7 @@ export const Header: React.FC<HeaderProps> = ({
             <div>
               <div className="flex items-center gap-1.5">
                 <h1 className="text-lg font-bold text-slate-900 dark:text-zinc-100 tracking-tight group-hover:text-blue-500 transition-colors">
-                  <span className="font-light">my</span>Mbud<span className="font-light"> Portal</span>
+                  <span className="font-light">my</span>Mbud<span className="font-light"></span>
                 </h1>
                 <span className="text-xs font-normal text-slate-400">v2.5</span>
                 {isOfficer && (
