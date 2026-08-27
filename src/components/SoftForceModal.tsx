@@ -154,7 +154,7 @@ export const SoftForceModal: React.FC = () => {
               Install myMbud Portal
             </h2>
             <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">
-              Untuk mengakses jadwal kuliah, tugas, dan fitur portal di HP/Tablet, kamu wajib menginstal aplikasi ini ke Home Screen terlebih dahulu.
+              Untuk mengakses jadwal kuliah, tugas, dan fitur portal di HP/Tablet, kamu wajib menginstal aplikasi ini ke Home Screen terlebih dulu.
             </p>
           </div>
 
