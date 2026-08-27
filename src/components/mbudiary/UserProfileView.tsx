@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { UserProfile } from '../../types';
+import { UserProfile, MbudiaryPost } from '../../types';
 import {
   getPosts,
   isFollowing,
@@ -51,10 +51,10 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
   onSelectAuthor,
   onOpenEditProfile,
 }) => {
-  const allPosts = getPosts();
-  const [following, setFollowing] = useState<boolean>(isFollowing(authorNrp));
-  const [followerCount, setFollowerCount] = useState<number>(getFollowerCount(authorNrp));
-  const [followingCount, setFollowingCount] = useState<number>(getFollowingCount(authorNrp));
+  const [allPosts, setAllPosts] = useState<MbudiaryPost[]>(() => getPosts());
+  const [following, setFollowing] = useState<boolean>(() => isFollowing(authorNrp));
+  const [followerCount, setFollowerCount] = useState<number>(() => getFollowerCount(authorNrp));
+  const [followingCount, setFollowingCount] = useState<number>(() => getFollowingCount(authorNrp));
   const [isTogglingVerified, setIsTogglingVerified] = useState(false);
   
   const [isUploadingHeader, setIsUploadingHeader] = useState(false);
@@ -66,13 +66,14 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
   const authorProfile = getCachedUserByNrp(authorNrp);
   const isSelf = currentUser.nrp.toLowerCase() === authorNrp.toLowerCase();
 
-  useEffect(() => {
-    const syncProfileState = () => {
-      setFollowing(isFollowing(authorNrp));
-      setFollowerCount(getFollowerCount(authorNrp));
-      setFollowingCount(getFollowingCount(authorNrp));
-    };
+  const syncProfileState = () => {
+    setAllPosts(getPosts());
+    setFollowing(isFollowing(authorNrp));
+    setFollowerCount(getFollowerCount(authorNrp));
+    setFollowingCount(getFollowingCount(authorNrp));
+  };
 
+  useEffect(() => {
     syncProfileState();
     window.addEventListener('mbud_follows_change', syncProfileState);
     window.addEventListener('mbud_users_change', syncProfileState);
@@ -104,7 +105,6 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
     }
   };
 
-  // Siklus 3 Status: Normal -> Blue -> Gold -> Normal
   const handleVerifyCycle = async () => {
     if (isTogglingVerified) return;
     setIsTogglingVerified(true);
@@ -160,9 +160,11 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
   const openFollowModal = (type: 'followers' | 'following') => {
     setFollowModalType(type);
     if (type === 'followers') {
-      setModalUsersList(getFollowerNrps(authorNrp));
+      const list = getFollowerNrps(authorNrp) || [];
+      setModalUsersList(list);
     } else {
-      setModalUsersList(getFollowingNrps(authorNrp));
+      const list = getFollowingNrps(authorNrp) || [];
+      setModalUsersList(list);
     }
   };
 
@@ -177,7 +179,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
   const activeBadgeTier = getBadgeTier(authorNrp, (authorProfile as any)?.isVerified);
 
   return (
-    <div className="space-y-3 sm:space-y-4">
+    <div className="space-y-3 sm:space-y-4 w-full">
       {/* TOMBOL KEMBALI */}
       <button
         onClick={onBack}
@@ -187,7 +189,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
         <span>Kembali</span>
       </button>
 
-      {/* CARD PROFIL USER - PURE OPACITY FADE */}
+      {/* CARD PROFIL USER */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -240,7 +242,6 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                 </button>
               )}
 
-              {/* TOMBOL OFFICER: SIKLUS NORMAL -> BIRU -> EMAS -> CABUT */}
               {currentUser.isOfficer && !isSelf && (
                 <button
                   type="button"
@@ -332,16 +333,18 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
         </div>
       </motion.div>
 
-      {/* DAFTAR POSTINGAN USER */}
+      {/* DAFTAR POSTINGAN USER (SINGLE ROUNDED CONTAINER WITH DIVIDERS) */}
       <div className="space-y-3 pt-1">
         {userPosts.length === 0 ? (
           <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-8 text-center text-xs text-slate-400 dark:text-zinc-500 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none w-full">
             User ini belum membuat postingan di mbudiary.
           </div>
         ) : (
-          userPosts.map((post) => (
-            <PostCard key={post.id} post={post} currentUser={currentUser} onPostUpdate={onPostUpdate} onSelectPost={onSelectPost} onSelectAuthor={onSelectAuthor} />
-          ))
+          <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl overflow-hidden shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none divide-y divide-slate-200/50 dark:divide-white/10">
+            {userPosts.map((post) => (
+              <PostCard key={post.id} post={post} currentUser={currentUser} onPostUpdate={onPostUpdate} onSelectPost={onSelectPost} onSelectAuthor={onSelectAuthor} />
+            ))}
+          </div>
         )}
       </div>
 

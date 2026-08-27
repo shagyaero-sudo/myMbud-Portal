@@ -129,7 +129,7 @@ const formatThreadsTime = (timestamp?: string | number | Date | null): string =>
   return `${diffYears}thn`;
 };
 
-// KOMPONEN MEDIA GAMBAR INSTAN (ZERO DELAY & ZERO SKELETON FLASH)
+// KOMPONEN MEDIA GAMBAR INSTAN
 const PostImageItem: React.FC<{
   imageUrl: string;
   layoutType: 'single' | 'grid' | 'carousel' | 'quote';
@@ -505,7 +505,11 @@ export const PostCard: React.FC<PostCardProps> = ({
 
   return (
     <>
-      <article className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-2xl px-3.5 py-3 sm:px-4 sm:py-3.5 transition-colors duration-200 shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none w-full">
+      <article className={`px-3.5 py-3 sm:px-4 sm:py-3.5 transition-colors duration-200 hover:bg-slate-500/5 w-full ${
+        isDetailPage 
+          ? 'bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none' 
+          : 'bg-transparent'
+      }`}>
         {/* REPOST INDICATOR */}
         {isPlainRepost && (
           <div className="flex items-center gap-1.5 mb-1.5 text-[11px] font-semibold text-slate-400 dark:text-zinc-500 pl-11">
@@ -626,7 +630,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                     onSelectPost(originalPost.id);
                   }
                 }}
-                className="mb-2 rounded-xl border border-slate-200/60 dark:border-white/5 overflow-hidden bg-white/50 dark:bg-zinc-950/40 cursor-pointer hover:bg-white/80 dark:hover:bg-zinc-950/60 transition-colors w-full"
+                className="mb-2 rounded-2xl border border-slate-200/60 dark:border-white/10 overflow-hidden bg-white/50 dark:bg-zinc-950/40 cursor-pointer hover:bg-white/80 dark:hover:bg-zinc-950/60 transition-colors w-full"
               >
                 {originalPost ? (
                   <>
