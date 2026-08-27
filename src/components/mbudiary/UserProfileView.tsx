@@ -306,6 +306,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
           </div>
 
           <div className="grid grid-cols-3 gap-2 w-full">
+            {/* JUMLAH CERITA */}
             <div className="p-2.5 sm:px-3.5 sm:py-2.5 rounded-2xl bg-white/60 dark:bg-zinc-800/40 border border-slate-200/50 dark:border-white/5 flex flex-col xl:flex-row items-center justify-center gap-1 sm:gap-2 text-[11px] sm:text-[13px] transition-colors text-center">
               <div className="flex items-center gap-1.5">
                 <FileText className="w-4 h-4 text-blue-500 shrink-0" />
@@ -314,14 +315,18 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
               <span className="text-slate-500 dark:text-zinc-400 font-medium leading-none mt-0.5 xl:mt-0">Cerita</span>
             </div>
 
+            {/* EASTER EGG: PENGIKUT DENGAN AKHIRAN 'k' JIKA > 0 */}
             <button onClick={() => openFollowModal('followers')} className="p-2.5 sm:px-3.5 sm:py-2.5 rounded-2xl bg-white/60 hover:bg-white/90 dark:bg-zinc-800/40 dark:hover:bg-zinc-800/70 border border-slate-200/50 dark:border-white/5 flex flex-col xl:flex-row items-center justify-center gap-1 sm:gap-2 text-[11px] sm:text-[13px] transition-all cursor-pointer text-center">
               <div className="flex items-center gap-1.5">
                 <Users className="w-4 h-4 text-amber-500 shrink-0" />
-                <span className="font-black text-slate-900 dark:text-zinc-100 leading-none">{followerCount}</span>
+                <span className="font-black text-slate-900 dark:text-zinc-100 leading-none">
+                  {followerCount > 0 ? `${followerCount}k` : 0}
+                </span>
               </div>
               <span className="text-slate-500 dark:text-zinc-400 font-medium leading-none mt-0.5 xl:mt-0">Pengikut</span>
             </button>
 
+            {/* MENGIKUTI: TETAP ANGKA NORMAL */}
             <button onClick={() => openFollowModal('following')} className="p-2.5 sm:px-3.5 sm:py-2.5 rounded-2xl bg-white/60 hover:bg-white/90 dark:bg-zinc-800/40 dark:hover:bg-zinc-800/70 border border-slate-200/50 dark:border-white/5 flex flex-col xl:flex-row items-center justify-center gap-1 sm:gap-2 text-[11px] sm:text-[13px] transition-all cursor-pointer text-center">
               <div className="flex items-center gap-1.5">
                 <UserPlus className="w-4 h-4 text-emerald-500 shrink-0" />
