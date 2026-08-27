@@ -1,16 +1,18 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { MbudiaryPost, UserProfile } from '../../types';
-import { getPosts, getCachedUserByNrp, getBookmarkedPostIds, searchUsersForMention, getFollows } from './lib/storage';
+import { getPosts, getCachedUserByNrp, searchUsersForMention, getFollows } from './lib/storage';
 import { PostCard, VerifiedBadge } from './PostCard';
 import { CreatePostForm } from './CreatePostForm';
 import { getOptimizedImageUrl } from './lib/utils';
-import { Search, MessageCircle, Bookmark, Users, ChevronRight, UserCheck } from 'lucide-react';
+import { Search, MessageCircle, Users, ChevronRight, UserCheck, ArrowLeft, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface PostListProps {
   currentUser: UserProfile;
   onSelectPost?: (postId: string) => void;
   onSelectAuthor?: (authorNrp: string) => void;
+  onExitToDashboard?: () => void;
+  onOpenEditProfile?: () => void;
 }
 
 type FeedTab = 'for_you' | 'following';
@@ -19,11 +21,12 @@ export const PostList: React.FC<PostListProps> = ({
   currentUser,
   onSelectPost,
   onSelectAuthor,
+  onExitToDashboard,
+  onOpenEditProfile,
 }) => {
   const [posts, setPosts] = useState<MbudiaryPost[]>(() => getPosts());
   const [activeTab, setActiveTab] = useState<FeedTab>('for_you');
   const [searchQuery, setSearchQuery] = useState('');
-  const [showBookmarksOnly, setShowBookmarksOnly] = useState(false);
 
   const silentLoadPosts = () => {
     setPosts(getPosts());
@@ -45,30 +48,20 @@ export const PostList: React.FC<PostListProps> = ({
     };
   }, []);
 
-  // 1. PENCARIAN AKUN USER
   const matchedUsers = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    if (!q || showBookmarksOnly) return [];
+    if (!q) return [];
     return searchUsersForMention(q);
-  }, [searchQuery, showBookmarksOnly]);
+  }, [searchQuery]);
 
-  // 2. PENCARIAN & FILTER POSTINGAN
   const filteredPosts = useMemo(() => {
     let result = [...posts];
     const followingNrps = getFollows();
 
-    // Filter Tab: Mengikuti
-    if (activeTab === 'following' && !showBookmarksOnly) {
+    if (activeTab === 'following') {
       result = result.filter((p) => followingNrps.includes(p.authorNrp.toLowerCase()));
     }
 
-    // Filter Bookmark
-    if (showBookmarksOnly) {
-      const bookmarkedIds = getBookmarkedPostIds();
-      result = result.filter((p) => bookmarkedIds.includes(p.id));
-    }
-
-    // Filter Query Pencarian
     if (searchQuery.trim()) {
       const q = searchQuery.trim().toLowerCase();
       result = result.filter((post) => {
@@ -85,56 +78,69 @@ export const PostList: React.FC<PostListProps> = ({
 
     result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     return result;
-  }, [posts, activeTab, showBookmarksOnly, searchQuery]);
+  }, [posts, activeTab, searchQuery]);
 
   const hasSearch = Boolean(searchQuery.trim());
   const hasNoResults = hasSearch && matchedUsers.length === 0 && filteredPosts.length === 0;
 
   return (
-    <div className="space-y-3 sm:space-y-4 w-full">
-      {/* DIRECT CONTROL BAR (SEARCH + BOOKMARK) */}
-      <div className="flex items-center gap-1.5 sm:gap-2 w-full">
+    <div className="space-y-2.5 sm:space-y-4 w-full">
+      
+      {/* 1-ROW ULTRA-COMPACT TOPBAR */}
+      <div className="flex items-center gap-1.5 sm:gap-2.5 w-full px-1">
         
-        {/* SEARCH BAR INDIVIDUAL */}
+        {/* Back & Title */}
+        <div className="flex items-center gap-1 shrink-0">
+          <button
+            type="button"
+            onClick={onExitToDashboard}
+            className="p-1 -ml-1 text-slate-600 dark:text-zinc-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
+            title="Kembali ke Dashboard Utama"
+          >
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+          </button>
+
+          <span className="font-black text-sm sm:text-base text-slate-900 dark:text-zinc-100 tracking-tight">
+            mbudiary.
+          </span>
+        </div>
+
+        {/* Edit Profil */}
+        <button
+          type="button"
+          onClick={onOpenEditProfile}
+          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 text-[11px] sm:text-xs font-semibold text-slate-700 dark:text-zinc-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/90 dark:hover:bg-zinc-800 transition-all shadow-xs active:scale-95 shrink-0 cursor-pointer"
+        >
+          <User className="w-3 h-3 text-blue-500" />
+          <span>Edit Profil</span>
+        </button>
+
+        {/* Search Bar */}
         <div className="relative flex-1 min-w-0 flex items-center">
-          <div className="absolute left-3.5 flex items-center pointer-events-none z-10">
-            <Search className="w-4 h-4 text-slate-400 dark:text-zinc-400" />
+          <div className="absolute left-2.5 flex items-center pointer-events-none z-10">
+            <Search className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-400" />
           </div>
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Cari post atau username..."
-            className="w-full pl-10 pr-8 py-2 text-xs sm:text-[13px] rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none transition-all"
+            placeholder="Cari..."
+            className="w-full pl-8 pr-7 py-1.5 text-xs rounded-full bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-xs transition-all"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-200 text-xs font-bold cursor-pointer"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-200 text-xs font-bold cursor-pointer"
             >
               ✕
             </button>
           )}
         </div>
-
-        {/* TOMBOL BOOKMARK INDIVIDUAL */}
-        <button
-          onClick={() => setShowBookmarksOnly((prev) => !prev)}
-          className={`px-3.5 py-2 rounded-2xl backdrop-blur-md border shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none transition-all shrink-0 flex items-center gap-1.5 active:scale-95 cursor-pointer ${
-            showBookmarksOnly
-              ? 'bg-amber-50/80 dark:bg-amber-950/40 border-amber-300 dark:border-amber-900/50 text-amber-600 dark:text-amber-400 font-bold'
-              : 'bg-white/70 dark:bg-zinc-900/60 border-white/60 dark:border-white/10 text-slate-500 dark:text-zinc-400 hover:text-amber-500'
-          }`}
-          title="Lihat Postingan Tersimpan"
-        >
-          <Bookmark className={`w-3.5 h-3.5 transition-all ${showBookmarksOnly ? 'fill-amber-500 text-amber-500' : ''}`} />
-          <span className="hidden sm:inline text-xs font-bold">Tersimpan</span>
-        </button>
       </div>
 
-      {/* HASIL PENCARIAN AKUN PENGGUNA */}
-      {hasSearch && matchedUsers.length > 0 && !showBookmarksOnly && (
-        <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-3 shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none space-y-2">
+      {/* HASIL PENCARIAN AKUN */}
+      {hasSearch && matchedUsers.length > 0 && (
+        <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-3 shadow-xs space-y-2">
           <div className="flex items-center gap-1.5 px-1 text-[11px] font-bold text-slate-500 dark:text-zinc-400">
             <Users className="w-3.5 h-3.5 text-blue-500" />
             <span>Akun Pengguna ({matchedUsers.length})</span>
@@ -183,52 +189,50 @@ export const PostList: React.FC<PostListProps> = ({
         </div>
       )}
 
-      {/* CONTAINER TIMELINE DENGAN TAB & INLINE CREATE POST FORM */}
-      <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl overflow-hidden shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none divide-y divide-slate-200/50 dark:divide-white/10">
+      {/* CONTAINER TIMELINE */}
+      <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl overflow-hidden shadow-xs divide-y divide-slate-200/50 dark:divide-white/10">
         
-        {/* HEADER TAB FOR YOU / MENGIKUTI */}
-        {!showBookmarksOnly && (
-          <div className="flex items-center border-b border-slate-200/50 dark:border-white/10 bg-white/40 dark:bg-zinc-950/20">
-            <button
-              type="button"
-              onClick={() => setActiveTab('for_you')}
-              className={`flex-1 py-3 text-center text-xs sm:text-[13px] font-bold transition-all relative cursor-pointer ${
-                activeTab === 'for_you'
-                  ? 'text-slate-900 dark:text-zinc-100'
-                  : 'text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300'
-              }`}
-            >
-              <span>Untuk Anda</span>
-              {activeTab === 'for_you' && (
-                <motion.div
-                  layoutId="feedTabIndicator"
-                  className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-1 bg-blue-600 rounded-full"
-                />
-              )}
-            </button>
+        {/* TAB FEED */}
+        <div className="flex items-center border-b border-slate-200/50 dark:border-white/10 bg-white/40 dark:bg-zinc-950/20">
+          <button
+            type="button"
+            onClick={() => setActiveTab('for_you')}
+            className={`flex-1 py-3 text-center text-xs sm:text-[13px] font-bold transition-all relative cursor-pointer ${
+              activeTab === 'for_you'
+                ? 'text-slate-900 dark:text-zinc-100'
+                : 'text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300'
+            }`}
+          >
+            <span>Untuk Anda</span>
+            {activeTab === 'for_you' && (
+              <motion.div
+                layoutId="feedTabIndicator"
+                className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-1 bg-blue-600 rounded-full"
+              />
+            )}
+          </button>
 
-            <button
-              type="button"
-              onClick={() => setActiveTab('following')}
-              className={`flex-1 py-3 text-center text-xs sm:text-[13px] font-bold transition-all relative cursor-pointer ${
-                activeTab === 'following'
-                  ? 'text-slate-900 dark:text-zinc-100'
-                  : 'text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300'
-              }`}
-            >
-              <span>Mengikuti</span>
-              {activeTab === 'following' && (
-                <motion.div
-                  layoutId="feedTabIndicator"
-                  className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-1 bg-blue-600 rounded-full"
-                />
-              )}
-            </button>
-          </div>
-        )}
+          <button
+            type="button"
+            onClick={() => setActiveTab('following')}
+            className={`flex-1 py-3 text-center text-xs sm:text-[13px] font-bold transition-all relative cursor-pointer ${
+              activeTab === 'following'
+                ? 'text-slate-900 dark:text-zinc-100'
+                : 'text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300'
+            }`}
+          >
+            <span>Mengikuti</span>
+            {activeTab === 'following' && (
+              <motion.div
+                layoutId="feedTabIndicator"
+                className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-1 bg-blue-600 rounded-full"
+              />
+            )}
+          </button>
+        </div>
 
-        {/* INLINE CREATE POST FORM ALA TWITTER (HANYA DITAMPILKAN JIKA BUKAN MODE SEARCH/BOOKMARK) */}
-        {!showBookmarksOnly && !hasSearch && (
+        {/* INLINE CREATE POST FORM */}
+        {!hasSearch && (
           <CreatePostForm
             userProfile={currentUser}
             onPostCreated={silentLoadPosts}
@@ -240,33 +244,27 @@ export const PostList: React.FC<PostListProps> = ({
         {hasNoResults || filteredPosts.length === 0 ? (
           <div className="p-10 text-center space-y-2.5">
             <div className="w-11 h-11 rounded-full bg-slate-100 dark:bg-zinc-800 border border-slate-200/60 dark:border-zinc-700 text-slate-400 dark:text-zinc-500 flex items-center justify-center mx-auto">
-              {showBookmarksOnly ? (
-                <Bookmark className="w-5 h-5" />
-              ) : activeTab === 'following' ? (
+              {activeTab === 'following' ? (
                 <UserCheck className="w-5 h-5" />
               ) : (
                 <MessageCircle className="w-5 h-5" />
               )}
             </div>
             <h3 className="font-bold text-sm text-slate-800 dark:text-zinc-200">
-              {showBookmarksOnly
-                ? 'Belum Ada Bookmark'
-                : activeTab === 'following'
+              {activeTab === 'following'
                 ? 'Belum Ada Postingan dari Teman'
                 : 'Tidak Ada Hasil Ditemukan'}
             </h3>
             <p className="text-xs text-slate-500 dark:text-zinc-400 max-w-sm mx-auto">
-              {showBookmarksOnly
-                ? 'Kamu belum menyimpan postingan apa pun ke Bookmark.'
-                : activeTab === 'following'
+              {activeTab === 'following'
                 ? 'Akun yang kamu ikuti belum membuat postingan atau kamu belum mengikuti siapa pun.'
                 : searchQuery
                 ? `Tidak ada akun atau postingan yang cocok dengan kata kunci "${searchQuery}".`
                 : 'Belum ada aktivitas di feed. Buat postingan pertama untuk kelas!'}
             </p>
-            {(searchQuery || showBookmarksOnly) && (
+            {searchQuery && (
               <button 
-                onClick={() => { setSearchQuery(''); setShowBookmarksOnly(false); }} 
+                onClick={() => setSearchQuery('')} 
                 className="px-4 py-1.5 bg-blue-600 text-white rounded-full text-xs font-semibold hover:bg-blue-500 transition-colors inline-block shadow-xs mt-1 cursor-pointer"
               >
                 Kembali ke Feed

@@ -41,10 +41,6 @@ import {
   notifyPostCommented,
 } from '../../services/oneSignalNotification';
 
-// =========================================================================
-// BADGE CENTANG OTOMATIS + OVERRIDE MANUAL OFFICER (BIRU & EMAS)
-// =========================================================================
-
 export const getBadgeTier = (
   authorNrp?: string,
   isExplicitlyVerified?: boolean | string | null
@@ -105,8 +101,6 @@ export const VerifiedBadge: React.FC<{
   );
 };
 
-// =========================================================================
-
 const formatThreadsTime = (timestamp?: string | number | Date | null): string => {
   if (!timestamp) return 'baru saja';
   const now = Date.now();
@@ -129,7 +123,6 @@ const formatThreadsTime = (timestamp?: string | number | Date | null): string =>
   return `${diffYears}thn`;
 };
 
-// KOMPONEN MEDIA GAMBAR INSTAN
 const PostImageItem: React.FC<{
   imageUrl: string;
   layoutType: 'single' | 'grid' | 'carousel' | 'quote';
@@ -510,7 +503,6 @@ export const PostCard: React.FC<PostCardProps> = ({
           ? 'bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none' 
           : 'bg-transparent'
       }`}>
-        {/* REPOST INDICATOR */}
         {isPlainRepost && (
           <div className="flex items-center gap-1.5 mb-1.5 text-[11px] font-semibold text-slate-400 dark:text-zinc-500 pl-11">
             <Repeat2 className="w-3.5 h-3.5 text-emerald-500" />
@@ -518,10 +510,8 @@ export const PostCard: React.FC<PostCardProps> = ({
           </div>
         )}
 
-        {/* 2-COLUMN STRUCTURE */}
         <div className="flex items-start gap-2.5 sm:gap-3">
           
-          {/* AVATAR */}
           <div
             onClick={() => onSelectAuthor?.(displayAuthorNrp)}
             className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/60 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden border border-slate-200/80 dark:border-zinc-700/80 cursor-pointer hover:opacity-90 transition-opacity mt-0.5"
@@ -534,10 +524,9 @@ export const PostCard: React.FC<PostCardProps> = ({
             )}
           </div>
 
-          {/* MAIN CONTENT COLUMN */}
           <div className="flex-1 min-w-0">
             
-            {/* HEADER COMPACT */}
+            {/* HEADER COMPACT DENGAN BOOKMARK & TRIPLE DOT */}
             <div className="flex items-center justify-between gap-1 leading-none mb-1">
               <div
                 onClick={() => onSelectAuthor?.(displayAuthorNrp)}
@@ -562,53 +551,67 @@ export const PostCard: React.FC<PostCardProps> = ({
                 </span>
               </div>
 
-              {/* TRIPLE DOT MENU */}
-              <div ref={menuRef} className="relative shrink-0 -mr-1">
-                <button
-                  type="button"
-                  onClick={() => setIsMenuOpen((prev) => !prev)}
-                  disabled={isDeleting}
-                  className="p-1 rounded-lg text-slate-400 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-white/80 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+              {/* ACTIONS KANAN ATAS: BOOKMARK + TRIPLE DOT MENU */}
+              <div className="flex items-center gap-0.5 shrink-0 -mr-1">
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={handleBookmarkToggle}
+                  className={`p-1 rounded-lg transition-colors cursor-pointer ${
+                    isBookmarked
+                      ? 'text-amber-500'
+                      : 'text-slate-400 dark:text-zinc-500 hover:text-amber-500 hover:bg-white/80 dark:hover:bg-zinc-800'
+                  }`}
+                  title={isBookmarked ? 'Hapus Bookmark' : 'Simpan Postingan'}
                 >
-                  <MoreVertical className="w-3.5 h-3.5" />
-                </button>
+                  <Bookmark className={`w-3.5 h-3.5 transition-all ${isBookmarked ? 'fill-amber-500 text-amber-500' : ''}`} />
+                </motion.button>
 
-                <AnimatePresence>
-                  {isMenuOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ duration: 0.12 }}
-                      className="absolute right-0 top-full mt-1 z-30 w-44 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-white/60 dark:border-white/10 rounded-2xl p-1.5 shadow-xl"
-                    >
-                      {canDelete ? (
-                        <button
-                          type="button"
-                          onClick={handleDeletePost}
-                          disabled={isDeleting}
-                          className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50/80 dark:hover:bg-rose-950/30 transition-colors disabled:opacity-50 cursor-pointer"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                          <span>Hapus Postingan</span>
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={handleReportPost}
-                          className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left text-xs font-semibold text-amber-600 dark:text-amber-400 hover:bg-amber-50/80 dark:hover:bg-amber-950/30 transition-colors cursor-pointer"
-                        >
-                          <Flag className="w-3.5 h-3.5" />
-                          <span>Laporkan Postingan</span>
-                        </button>
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                <div ref={menuRef} className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setIsMenuOpen((prev) => !prev)}
+                    disabled={isDeleting}
+                    className="p-1 rounded-lg text-slate-400 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-white/80 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                  >
+                    <MoreVertical className="w-3.5 h-3.5" />
+                  </button>
+
+                  <AnimatePresence>
+                    {isMenuOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.12 }}
+                        className="absolute right-0 top-full mt-1 z-30 w-44 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-white/60 dark:border-white/10 rounded-2xl p-1.5 shadow-xl"
+                      >
+                        {canDelete ? (
+                          <button
+                            type="button"
+                            onClick={handleDeletePost}
+                            disabled={isDeleting}
+                            className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50/80 dark:hover:bg-rose-950/30 transition-colors disabled:opacity-50 cursor-pointer"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>Hapus Postingan</span>
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={handleReportPost}
+                            className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left text-xs font-semibold text-amber-600 dark:text-amber-400 hover:bg-amber-50/80 dark:hover:bg-amber-950/30 transition-colors cursor-pointer"
+                          >
+                            <Flag className="w-3.5 h-3.5" />
+                            <span>Laporkan Postingan</span>
+                          </button>
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
             </div>
 
-            {/* KONTEN TEKS CERITA */}
             {isQuoteRepost && (
               <div className="text-[13px] sm:text-sm text-slate-800 dark:text-zinc-200 leading-snug whitespace-pre-line mb-1.5 font-normal">
                 <FormattedPostContent content={post.quoteContent || ''} onSelectAuthor={onSelectAuthor} />
@@ -621,7 +624,6 @@ export const PostCard: React.FC<PostCardProps> = ({
               </div>
             )}
 
-            {/* EMBED KARTU KUTIPAN ASLI */}
             {isQuoteRepost && (
               <div
                 onClick={(e) => {
@@ -658,7 +660,6 @@ export const PostCard: React.FC<PostCardProps> = ({
                       </div>
                     )}
 
-                    {/* GAMBAR POSTINGAN ASLI DI DALAM KARTU QUOTE */}
                     {Array.isArray(originalPost.imageUrls) && originalPost.imageUrls.length > 0 && (
                       <div className="px-3 pb-2.5">
                         {originalPost.imageUrls.length === 1 ? (
@@ -696,7 +697,6 @@ export const PostCard: React.FC<PostCardProps> = ({
               </div>
             )}
 
-            {/* GAMBAR POSTINGAN UTAMA */}
             {!isQuoteRepost && Array.isArray(displayImages) && displayImages.length > 0 && (
               <div className="mb-2 w-full">
                 {displayImages.length === 1 && (
@@ -744,55 +744,41 @@ export const PostCard: React.FC<PostCardProps> = ({
               </div>
             )}
 
-            {/* ACTION BUTTONS */}
-            <div className="flex items-center justify-between text-xs pt-0.5">
-              <div className="flex items-center gap-3 sm:gap-4 -ml-1">
-                <motion.button
-                  whileTap={{ scale: 0.9 }}
-                  onClick={handleLikeToggle}
-                  className={`flex items-center gap-1.5 py-1 px-1.5 rounded-md transition-all text-xs font-medium cursor-pointer ${isLiked ? 'text-rose-500 font-bold' : 'text-slate-400 dark:text-zinc-500 hover:text-rose-500'}`}
-                >
-                  <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${isLiked ? 'fill-rose-500 text-rose-500' : ''}`} />
-                  <span className="text-[11px] sm:text-xs">{likeCount}</span>
-                </motion.button>
+            {/* ACTION BUTTONS (LIKE, COMMENT, REPOST) */}
+            <div className="flex items-center gap-3 sm:gap-4 text-xs pt-0.5 -ml-1">
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={handleLikeToggle}
+                className={`flex items-center gap-1.5 py-1 px-1.5 rounded-md transition-all text-xs font-medium cursor-pointer ${isLiked ? 'text-rose-500 font-bold' : 'text-slate-400 dark:text-zinc-500 hover:text-rose-500'}`}
+              >
+                <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${isLiked ? 'fill-rose-500 text-rose-500' : ''}`} />
+                <span className="text-[11px] sm:text-xs">{likeCount}</span>
+              </motion.button>
 
-                <button
-                  onClick={handleCommentClick}
-                  className={`flex items-center gap-1.5 py-1 px-1.5 rounded-md transition-all text-xs font-medium cursor-pointer ${isRepliesExpanded && isDetailPage ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-slate-400 dark:text-zinc-500 hover:text-blue-600 dark:hover:text-blue-400'}`}
-                >
-                  <MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  <span className="text-[11px] sm:text-xs">{post.replyCount || replies.length}</span>
-                </button>
+              <button
+                onClick={handleCommentClick}
+                className={`flex items-center gap-1.5 py-1 px-1.5 rounded-md transition-all text-xs font-medium cursor-pointer ${isRepliesExpanded && isDetailPage ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-slate-400 dark:text-zinc-500 hover:text-blue-600 dark:hover:text-blue-400'}`}
+              >
+                <MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="text-[11px] sm:text-xs">{post.replyCount || replies.length}</span>
+              </button>
 
-                <motion.button
-                  whileTap={{ scale: 0.9 }}
-                  type="button"
-                  onClick={() => setIsQuoteOpen(true)}
-                  disabled={isReposting}
-                  className="flex items-center gap-1.5 py-1 px-1.5 rounded-md transition-all text-xs font-medium cursor-pointer text-slate-400 dark:text-zinc-500 hover:text-emerald-500 disabled:opacity-50"
-                  title="Quote Repost"
-                >
-                  <Repeat2 className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isReposting ? 'animate-pulse' : ''}`} />
-                  <span className="text-[11px] sm:text-xs hidden xs:inline">Repost</span>
-                </motion.button>
-              </div>
-
-              <div>
-                <motion.button
-                  whileTap={{ scale: 0.9 }}
-                  onClick={handleBookmarkToggle}
-                  className={`flex items-center justify-center p-1 rounded-md transition-all cursor-pointer ${isBookmarked ? 'text-amber-500' : 'text-slate-400 dark:text-zinc-500 hover:text-amber-500'}`}
-                  title={isBookmarked ? 'Hapus Bookmark' : 'Simpan Postingan'}
-                >
-                  <Bookmark className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-all ${isBookmarked ? 'fill-amber-500 text-amber-500' : ''}`} />
-                </motion.button>
-              </div>
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                type="button"
+                onClick={() => setIsQuoteOpen(true)}
+                disabled={isReposting}
+                className="flex items-center gap-1.5 py-1 px-1.5 rounded-md transition-all text-xs font-medium cursor-pointer text-slate-400 dark:text-zinc-500 hover:text-emerald-500 disabled:opacity-50"
+                title="Quote Repost"
+              >
+                <Repeat2 className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isReposting ? 'animate-pulse' : ''}`} />
+                <span className="text-[11px] sm:text-xs hidden xs:inline">Repost</span>
+              </motion.button>
             </div>
 
           </div>
         </div>
 
-        {/* SECTION KOMENTAR / BALASAN */}
         <AnimatePresence>
           {isRepliesExpanded && (
             <motion.div
@@ -906,7 +892,6 @@ export const PostCard: React.FC<PostCardProps> = ({
         </AnimatePresence>
       </article>
 
-      {/* MODAL FORM QUOTE REPOST */}
       <AnimatePresence>
         {isQuoteOpen && (
           <motion.div
