@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { MbudiaryPost, UserProfile, FeedSort } from '../../types';
-import { getPosts, getCachedUserByNrp, getBookmarkedPostIds, searchUsersForMention } from './lib/storage';
+import { MbudiaryPost, UserProfile } from '../../types';
+import { getPosts, getCachedUserByNrp, getBookmarkedPostIds, searchUsersForMention, getFollows } from './lib/storage';
 import { PostCard, VerifiedBadge } from './PostCard';
 import { getOptimizedImageUrl } from './lib/utils';
-import { Search, MessageCircle, Clock, TrendingUp, Bookmark, ArrowUpDown, Users, ChevronRight } from 'lucide-react';
+import { Search, MessageCircle, Bookmark, Users, ChevronRight, UserCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface PostListProps {
@@ -12,13 +12,15 @@ interface PostListProps {
   onSelectAuthor?: (authorNrp: string) => void;
 }
 
+type FeedTab = 'for_you' | 'following';
+
 export const PostList: React.FC<PostListProps> = ({
   currentUser,
   onSelectPost,
   onSelectAuthor,
 }) => {
   const [posts, setPosts] = useState<MbudiaryPost[]>(() => getPosts());
-  const [sort, setSort] = useState<FeedSort>('newest');
+  const [activeTab, setActiveTab] = useState<FeedTab>('for_you');
   const [searchQuery, setSearchQuery] = useState('');
   const [showBookmarksOnly, setShowBookmarksOnly] = useState(false);
 
@@ -32,11 +34,13 @@ export const PostList: React.FC<PostListProps> = ({
     window.addEventListener('mbud_posts_change', silentLoadPosts);
     window.addEventListener('mbud_users_change', silentLoadPosts);
     window.addEventListener('mbud_bookmarks_change', silentLoadPosts);
+    window.addEventListener('mbud_follows_change', silentLoadPosts);
 
     return () => {
       window.removeEventListener('mbud_posts_change', silentLoadPosts);
       window.removeEventListener('mbud_users_change', silentLoadPosts);
       window.removeEventListener('mbud_bookmarks_change', silentLoadPosts);
+      window.removeEventListener('mbud_follows_change', silentLoadPosts);
     };
   }, []);
 
@@ -48,38 +52,47 @@ export const PostList: React.FC<PostListProps> = ({
   }, [searchQuery, showBookmarksOnly]);
 
   // 2. PENCARIAN & FILTER POSTINGAN
-  const filteredPosts = posts.filter((post) => {
+  const filteredPosts = useMemo(() => {
+    let result = [...posts];
+    const followingNrps = getFollows(); // Akun-akun yang difollow user
+
+    // Filter Tab: Mengikuti
+    if (activeTab === 'following' && !showBookmarksOnly) {
+      result = result.filter((p) => followingNrps.includes(p.authorNrp.toLowerCase()));
+    }
+
+    // Filter Bookmark
     if (showBookmarksOnly) {
       const bookmarkedIds = getBookmarkedPostIds();
-      if (!bookmarkedIds.includes(post.id)) return false;
+      result = result.filter((p) => bookmarkedIds.includes(p.id));
     }
 
-    if (!searchQuery.trim()) return true;
-    const q = searchQuery.trim().toLowerCase();
-    const author = getCachedUserByNrp(post.authorNrp);
-    
-    return (
-      post.content?.toLowerCase().includes(q) ||
-      post.quoteContent?.toLowerCase().includes(q) ||
-      author?.nickname?.toLowerCase().includes(q) ||
-      author?.username?.toLowerCase().includes(q) ||
-      post.authorNrp?.toLowerCase().includes(q)
-    );
-  });
-
-  const sortedPosts = [...filteredPosts].sort((a, b) => {
-    if (sort === 'popular') {
-      return (b.likes.length + (b.replyCount || 0)) - (a.likes.length + (a.replyCount || 0));
+    // Filter Query Pencarian
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      result = result.filter((post) => {
+        const author = getCachedUserByNrp(post.authorNrp);
+        return (
+          post.content?.toLowerCase().includes(q) ||
+          post.quoteContent?.toLowerCase().includes(q) ||
+          author?.nickname?.toLowerCase().includes(q) ||
+          author?.username?.toLowerCase().includes(q) ||
+          post.authorNrp?.toLowerCase().includes(q)
+        );
+      });
     }
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-  });
+
+    // Urutkan selalu dari yang terbaru
+    result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    return result;
+  }, [posts, activeTab, showBookmarksOnly, searchQuery]);
 
   const hasSearch = Boolean(searchQuery.trim());
-  const hasNoResults = hasSearch && matchedUsers.length === 0 && sortedPosts.length === 0;
+  const hasNoResults = hasSearch && matchedUsers.length === 0 && filteredPosts.length === 0;
 
   return (
     <div className="space-y-3 sm:space-y-4 w-full">
-      {/* DIRECT CONTROL BAR DENGAN ICON KACA PEMBESAR JELAS */}
+      {/* DIRECT CONTROL BAR (SEARCH + BOOKMARK) */}
       <div className="flex items-center gap-1.5 sm:gap-2 w-full">
         
         {/* SEARCH BAR INDIVIDUAL */}
@@ -103,20 +116,6 @@ export const PostList: React.FC<PostListProps> = ({
             </button>
           )}
         </div>
-
-        {/* TOMBOL TAB SORTING INDIVIDUAL */}
-        <button
-          onClick={() => setSort(sort === 'newest' ? 'popular' : 'newest')}
-          className="px-3.5 py-2 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md hover:bg-white/90 dark:hover:bg-zinc-800 border border-white/60 dark:border-white/10 text-slate-700 dark:text-zinc-200 text-xs font-bold flex items-center gap-1.5 transition-all shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none shrink-0 active:scale-95 cursor-pointer"
-          title="Ubah Urutan Postingan"
-        >
-          {sort === 'newest' ? (
-            <><Clock className="w-3.5 h-3.5 text-blue-500" /><span className="hidden sm:inline">Terbaru</span></>
-          ) : (
-            <><TrendingUp className="w-3.5 h-3.5 text-rose-500" /><span className="hidden sm:inline">Terpopuler</span></>
-          )}
-          <ArrowUpDown className="w-3 h-3 text-slate-400 ml-0.5" />
-        </button>
 
         {/* TOMBOL BOOKMARK INDIVIDUAL */}
         <button
@@ -184,35 +183,89 @@ export const PostList: React.FC<PostListProps> = ({
         </div>
       )}
 
-      {/* FEED LIST */}
-      {hasNoResults || (sortedPosts.length === 0 && !hasSearch) ? (
-        <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-8 text-center shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none space-y-2.5">
-          <div className="w-11 h-11 rounded-full bg-slate-50 dark:bg-zinc-800 border border-slate-100 dark:border-zinc-800 text-slate-400 dark:text-zinc-500 flex items-center justify-center mx-auto">
-            {showBookmarksOnly ? <Bookmark className="w-5 h-5" /> : <MessageCircle className="w-5 h-5" />}
-          </div>
-          <h3 className="font-bold text-sm text-slate-800 dark:text-zinc-200">
-            {showBookmarksOnly ? 'Belum Ada Bookmark' : 'Tidak Ada Hasil Ditemukan'}
-          </h3>
-          <p className="text-xs text-slate-500 dark:text-zinc-400 max-w-sm mx-auto">
-            {showBookmarksOnly
-              ? 'Kamu belum menyimpan postingan apa pun ke Bookmark.'
-              : searchQuery
-                ? `Tidak ada akun atau postingan yang cocok dengan kata kunci "${searchQuery}".`
-                : 'Belum ada aktivitas di feed. Buat postingan pertama untuk kelas!'
-            }
-          </p>
-          {(searchQuery || showBookmarksOnly) && (
-            <button 
-              onClick={() => { setSearchQuery(''); setShowBookmarksOnly(false); }} 
-              className="px-4 py-1.5 bg-blue-600 text-white rounded-full text-xs font-semibold hover:bg-blue-500 transition-colors inline-block shadow-xs mt-1 cursor-pointer"
+      {/* CONTAINER INDUK TIMELINE DENGAN TAB FOR YOU / MENGIKUTI */}
+      <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl overflow-hidden shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none divide-y divide-slate-200/50 dark:divide-white/10">
+        
+        {/* HEADER TAB FOR YOU / MENGIKUTI (HANYA KETIKA TIDAK DALAM MODE BOOKMARK) */}
+        {!showBookmarksOnly && (
+          <div className="flex items-center border-b border-slate-200/50 dark:border-white/10 bg-white/40 dark:bg-zinc-950/20">
+            <button
+              type="button"
+              onClick={() => setActiveTab('for_you')}
+              className={`flex-1 py-3 text-center text-xs sm:text-[13px] font-bold transition-all relative cursor-pointer ${
+                activeTab === 'for_you'
+                  ? 'text-slate-900 dark:text-zinc-100'
+                  : 'text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300'
+              }`}
             >
-              Kembali ke Feed
+              <span>Untuk Anda</span>
+              {activeTab === 'for_you' && (
+                <motion.div
+                  layoutId="feedTabIndicator"
+                  className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-1 bg-blue-600 rounded-full"
+                />
+              )}
             </button>
-          )}
-        </div>
-      ) : (
-        <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl overflow-hidden shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none divide-y divide-slate-200/50 dark:divide-white/10">
-          {sortedPosts.map((post) => (
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('following')}
+              className={`flex-1 py-3 text-center text-xs sm:text-[13px] font-bold transition-all relative cursor-pointer ${
+                activeTab === 'following'
+                  ? 'text-slate-900 dark:text-zinc-100'
+                  : 'text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300'
+              }`}
+            >
+              <span>Mengikuti</span>
+              {activeTab === 'following' && (
+                <motion.div
+                  layoutId="feedTabIndicator"
+                  className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-1 bg-blue-600 rounded-full"
+                />
+              )}
+            </button>
+          </div>
+        )}
+
+        {/* FEED LIST / EMPTY STATES */}
+        {hasNoResults || filteredPosts.length === 0 ? (
+          <div className="p-10 text-center space-y-2.5">
+            <div className="w-11 h-11 rounded-full bg-slate-100 dark:bg-zinc-800 border border-slate-200/60 dark:border-zinc-700 text-slate-400 dark:text-zinc-500 flex items-center justify-center mx-auto">
+              {showBookmarksOnly ? (
+                <Bookmark className="w-5 h-5" />
+              ) : activeTab === 'following' ? (
+                <UserCheck className="w-5 h-5" />
+              ) : (
+                <MessageCircle className="w-5 h-5" />
+              )}
+            </div>
+            <h3 className="font-bold text-sm text-slate-800 dark:text-zinc-200">
+              {showBookmarksOnly
+                ? 'Belum Ada Bookmark'
+                : activeTab === 'following'
+                ? 'Belum Ada Postingan dari Teman'
+                : 'Tidak Ada Hasil Ditemukan'}
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-zinc-400 max-w-sm mx-auto">
+              {showBookmarksOnly
+                ? 'Kamu belum menyimpan postingan apa pun ke Bookmark.'
+                : activeTab === 'following'
+                ? 'Akun yang kamu ikuti belum membuat postingan atau kamu belum mengikuti siapa pun.'
+                : searchQuery
+                ? `Tidak ada akun atau postingan yang cocok dengan kata kunci "${searchQuery}".`
+                : 'Belum ada aktivitas di feed. Buat postingan pertama untuk kelas!'}
+            </p>
+            {(searchQuery || showBookmarksOnly) && (
+              <button 
+                onClick={() => { setSearchQuery(''); setShowBookmarksOnly(false); }} 
+                className="px-4 py-1.5 bg-blue-600 text-white rounded-full text-xs font-semibold hover:bg-blue-500 transition-colors inline-block shadow-xs mt-1 cursor-pointer"
+              >
+                Kembali ke Feed
+              </button>
+            )}
+          </div>
+        ) : (
+          filteredPosts.map((post) => (
             <PostCard
               key={post.id}
               post={post}
@@ -221,9 +274,9 @@ export const PostList: React.FC<PostListProps> = ({
               onSelectPost={onSelectPost}
               onSelectAuthor={onSelectAuthor}
             />
-          ))}
-        </div>
-      )}
+          ))
+        )}
+      </div>
     </div>
   );
 };

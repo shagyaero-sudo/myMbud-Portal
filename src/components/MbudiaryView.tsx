@@ -18,7 +18,9 @@ export const MbudiaryView: React.FC = () => {
   const [selectedAuthorNrp, setSelectedAuthorNrp] = useState<string | null>(null);
   const [, forceRefresh] = useState(0);
 
-  // Simpan posisi scroll feed
+  // State Kontrol Scroll Auto-Hide FAB & Floating Bar
+  const [isFabVisible, setIsFabVisible] = useState(true);
+  const lastScrollYRef = useRef<number>(0);
   const feedScrollPositionRef = useRef<number>(0);
 
   // State edukasi swipe back
@@ -33,6 +35,36 @@ export const MbudiaryView: React.FC = () => {
   const [editPhotoUrl, setEditPhotoUrl] = useState<string | undefined>(currentUser.photoUrl);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  const isFeedActive = !selectedAuthorNrp && !selectedPostId;
+
+  // =========================================================================
+  // DETEKSI SCROLL DIRECTION (AUTO-HIDE PADA FEED)
+  // =========================================================================
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      // Selalu tampilkan jika dekat puncak
+      if (currentScrollY < 60) {
+        setIsFabVisible(true);
+        lastScrollYRef.current = currentScrollY;
+        return;
+      }
+
+      // Scroll Down -> Hide, Scroll Up -> Show (dengan threshold 10px)
+      if (currentScrollY > lastScrollYRef.current + 10) {
+        setIsFabVisible(false);
+      } else if (currentScrollY < lastScrollYRef.current - 10) {
+        setIsFabVisible(true);
+      }
+
+      lastScrollYRef.current = currentScrollY;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const dismissSwipeHint = () => {
     setShowSwipeHint(false);
@@ -253,7 +285,6 @@ export const MbudiaryView: React.FC = () => {
 
   const allPosts = getPosts();
   const selectedPost: MbudiaryPost | undefined = allPosts.find((post) => post.id === selectedPostId);
-  const isFeedActive = !selectedAuthorNrp && !selectedPostId;
 
   return (
     <div className="w-full text-slate-900 dark:text-zinc-100 font-sans transition-colors duration-300 antialiased relative">
@@ -276,7 +307,7 @@ export const MbudiaryView: React.FC = () => {
 
       <main className="w-full max-w-3xl mx-auto px-0 sm:px-2 py-2 sm:py-6 pb-24 sm:pb-8 relative z-10 space-y-3 sm:space-y-5">
         
-        {/* BANNER EDUKASI SWIPE UNTUK DETAIL POST & PROFILE */}
+        {/* BANNER EDUKASI SWIPE */}
         <AnimatePresence>
           {!isFeedActive && showSwipeHint && (
             <motion.div
@@ -370,15 +401,17 @@ export const MbudiaryView: React.FC = () => {
             </div>
           </motion.div>
 
-          <CreatePostForm
-            userProfile={currentUser}
-            onPostCreated={() => forceRefresh((value) => value + 1)}
-            onSelectAuthor={(authorNrp) => handleSelectAuthor(authorNrp, true)}
-          />
-
           <PostList
             currentUser={currentUser}
             onSelectPost={(postId) => handleSelectPost(postId, true)}
+            onSelectAuthor={(authorNrp) => handleSelectAuthor(authorNrp, true)}
+          />
+
+          {/* FAB PENSIL HANYA AKTIF SAAT BERADA DI FEED UTAMA */}
+          <CreatePostForm
+            userProfile={currentUser}
+            isVisible={isFabVisible}
+            onPostCreated={() => forceRefresh((value) => value + 1)}
             onSelectAuthor={(authorNrp) => handleSelectAuthor(authorNrp, true)}
           />
         </div>
