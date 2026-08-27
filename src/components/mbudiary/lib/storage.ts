@@ -728,8 +728,8 @@ export function getFollowerNrps(targetNrp: string): string[] {
 export function getFollowingNrps(targetNrp: string): string[] {
   const target = targetNrp.trim().toLowerCase();
   return followsCache
-    .filter((follow) => follow.targetNrp === target)
-    .map((follow) => follow.followerNrp);
+    .filter((follow) => follow.followerNrp === target)
+    .map((follow) => follow.targetNrp);
 }
 
 export function isFollowing(targetNrp: string): boolean {

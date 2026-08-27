@@ -79,18 +79,20 @@ export const PostList: React.FC<PostListProps> = ({
 
   return (
     <div className="space-y-3 sm:space-y-4 w-full">
-      {/* DIRECT CONTROL BAR (TANPA PADDING PEMBUNGKUS LUAR) */}
+      {/* DIRECT CONTROL BAR DENGAN ICON KACA PEMBESAR JELAS */}
       <div className="flex items-center gap-1.5 sm:gap-2 w-full">
         
         {/* SEARCH BAR INDIVIDUAL */}
-        <div className="relative flex-1 min-w-0">
-          <Search className="w-3.5 h-3.5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-500" />
+        <div className="relative flex-1 min-w-0 flex items-center">
+          <div className="absolute left-3.5 flex items-center pointer-events-none z-10">
+            <Search className="w-4 h-4 text-slate-400 dark:text-zinc-400" />
+          </div>
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Cari post atau username..."
-            className="w-full pl-9 pr-3 py-2 text-xs sm:text-[13px] rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none transition-all"
+            className="w-full pl-10 pr-8 py-2 text-xs sm:text-[13px] rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none transition-all"
           />
           {searchQuery && (
             <button
@@ -182,7 +184,7 @@ export const PostList: React.FC<PostListProps> = ({
         </div>
       )}
 
-      {/* FEED LIST (SINGLE ROUNDED CONTAINER WITH DIVIDER LINES) */}
+      {/* FEED LIST */}
       {hasNoResults || (sortedPosts.length === 0 && !hasSearch) ? (
         <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-8 text-center shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none space-y-2.5">
           <div className="w-11 h-11 rounded-full bg-slate-50 dark:bg-zinc-800 border border-slate-100 dark:border-zinc-800 text-slate-400 dark:text-zinc-500 flex items-center justify-center mx-auto">
