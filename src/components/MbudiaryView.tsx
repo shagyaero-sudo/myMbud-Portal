@@ -346,7 +346,7 @@ export const MbudiaryView: React.FC = () => {
             onSelectPost={(postId) => handleSelectPost(postId, true)}
             onSelectAuthor={(authorNrp) => handleSelectAuthor(authorNrp, true)}
             onExitToDashboard={handleExitToDashboard}
-            onOpenEditProfile={handleOpenEditModal}
+            onOpenOwnProfile={() => handleSelectAuthor(currentUser.nrp, true)}
           />
         </div>
 
