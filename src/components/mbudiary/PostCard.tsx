@@ -242,7 +242,6 @@ export const PostCard: React.FC<PostCardProps> = ({
   const [isQuoteOpen, setIsQuoteOpen] = useState(false);
   const [quoteContent, setQuoteContent] = useState('');
   const [isReposting, setIsReposting] = useState(false);
-  const [isQuoteFocused, setIsQuoteFocused] = useState(false);
 
   const [authorProfile, setAuthorProfile] = useState<MbudiaryUser | null>(() => getCachedUserByNrp(post.authorNrp));
 
@@ -274,7 +273,6 @@ export const PostCard: React.FC<PostCardProps> = ({
         setSelectedImage(null);
         setIsQuoteOpen(false);
         setQuoteContent('');
-        setIsQuoteFocused(false);
       }
     };
 
@@ -463,7 +461,6 @@ export const PostCard: React.FC<PostCardProps> = ({
 
       setQuoteContent('');
       setIsQuoteOpen(false);
-      setIsQuoteFocused(false);
       onPostUpdate?.();
     } catch (error) {
       console.error('[mbudiary] Gagal melakukan quote repost:', error);
@@ -526,7 +523,7 @@ export const PostCard: React.FC<PostCardProps> = ({
 
           <div className="flex-1 min-w-0">
             
-            {/* HEADER COMPACT POST (AUTHOR + TRIPLE DOT ONLY) */}
+            {/* HEADER COMPACT POST */}
             <div className="flex items-center justify-between gap-1 leading-none mb-1">
               <div
                 onClick={() => onSelectAuthor?.(displayAuthorNrp)}
@@ -729,7 +726,7 @@ export const PostCard: React.FC<PostCardProps> = ({
               </div>
             )}
 
-            {/* ACTION BUTTONS (LIKE, COMMENT, REPOST & BOOKMARK DI POJOK KANAN BAWAH) */}
+            {/* ACTION BUTTONS */}
             <div className="flex items-center justify-between text-xs pt-0.5">
               <div className="flex items-center gap-3 sm:gap-4 -ml-1">
                 <motion.button
@@ -890,105 +887,145 @@ export const PostCard: React.FC<PostCardProps> = ({
         </AnimatePresence>
       </article>
 
-      <AnimatePresence>
-        {isQuoteOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className={`fixed inset-0 z-[999998] bg-black/70 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 transition-all duration-300 ${isQuoteFocused ? 'pb-[26dvh] sm:pb-0' : 'pb-0'}`}
-            onMouseDown={(e) => {
-              if (e.target === e.currentTarget) {
-                setIsQuoteOpen(false);
-                setQuoteContent('');
-                setIsQuoteFocused(false);
-              }
-            }}
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="w-full max-w-lg bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/60 dark:border-white/10 rounded-2xl p-4 sm:p-5 shadow-2xl flex flex-col max-h-[85dvh]"
-              onMouseDown={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between mb-2.5 shrink-0">
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100">Quote Repost</h3>
-                  <p className="text-[10px] text-slate-400 dark:text-zinc-500 mt-0.5">Tambahkan komentar sebelum me-repost.</p>
-                </div>
-                <button type="button" onClick={() => { setIsQuoteOpen(false); setQuoteContent(''); setIsQuoteFocused(false); }} className="p-1 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer">
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
+      {/* MODAL FORM QUOTE REPOST (PORTAL KE BODY BEBAS GLITCH) */}
+      {typeof document !== 'undefined' &&
+        createPortal(
+          <AnimatePresence>
+            {isQuoteOpen && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[9999998] bg-black/75 backdrop-blur-md flex items-center justify-center p-3 sm:p-6"
+                onMouseDown={(e) => {
+                  if (e.target === e.currentTarget) {
+                    setIsQuoteOpen(false);
+                    setQuoteContent('');
+                  }
+                }}
+              >
+                <motion.div
+                  initial={{ scale: 0.95, opacity: 0, y: 15 }}
+                  animate={{ scale: 1, opacity: 1, y: 0 }}
+                  exit={{ scale: 0.95, opacity: 0, y: 15 }}
+                  transition={{ duration: 0.2 }}
+                  className="w-full max-w-lg bg-white/95 dark:bg-zinc-900/95 backdrop-blur-2xl border border-white/60 dark:border-white/10 rounded-3xl p-4 sm:p-5 shadow-2xl flex flex-col max-h-[88dvh] overflow-hidden"
+                  onMouseDown={(e) => e.stopPropagation()}
+                >
+                  <div className="flex items-center justify-between mb-3 shrink-0">
+                    <div>
+                      <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-zinc-100">
+                        Quote Repost
+                      </h3>
+                      <p className="text-[11px] text-slate-400 dark:text-zinc-500 mt-0.5">
+                        Tambahkan komentar sebelum me-repost.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsQuoteOpen(false);
+                        setQuoteContent('');
+                      }}
+                      className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
 
-              <form onSubmit={handleQuoteRepost} className="flex flex-col flex-1 min-h-0">
-                <textarea
-                  autoFocus
-                  value={quoteContent}
-                  onChange={(e) => setQuoteContent(e.target.value)}
-                  onFocus={() => setIsQuoteFocused(true)}
-                  onBlur={() => setIsQuoteFocused(false)}
-                  placeholder="Apa pendapatmu tentang postingan ini?"
-                  rows={3}
-                  className="w-full resize-none px-3 py-2 mb-2 rounded-xl bg-white/70 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 text-xs sm:text-sm text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-blue-500 shrink-0"
-                />
+                  <form onSubmit={handleQuoteRepost} className="flex flex-col flex-1 min-h-0 space-y-3">
+                    <textarea
+                      value={quoteContent}
+                      onChange={(e) => setQuoteContent(e.target.value)}
+                      placeholder="Apa pendapatmu tentang postingan ini?"
+                      rows={3}
+                      className="w-full resize-none px-3.5 py-2.5 rounded-2xl bg-white/70 dark:bg-zinc-800/80 border border-slate-200/80 dark:border-zinc-700 text-xs sm:text-sm text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-blue-500 shrink-0"
+                    />
 
-                <div className="rounded-xl border border-slate-200/60 dark:border-white/5 overflow-y-auto bg-white/40 dark:bg-zinc-950/40 flex-1 min-h-0 mb-2.5 custom-scrollbar">
-                  <div className="px-3 py-2 flex items-center gap-1 leading-none">
-                    <div className="w-5 h-5 rounded-full bg-slate-200 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden">
-                      {quoteTargetAuthorPhotoUrl ? (
-                        <img src={getOptimizedImageUrl(quoteTargetAuthorPhotoUrl)} alt={quoteTargetAuthorName} className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-[10px] leading-none">{quoteTargetAuthorEmoji}</span>
+                    <div className="rounded-2xl border border-slate-200/60 dark:border-white/5 overflow-y-auto bg-white/40 dark:bg-zinc-950/40 flex-1 min-h-0 custom-scrollbar">
+                      <div className="px-3 pt-3 pb-1 flex items-center gap-1.5 leading-none">
+                        <div className="w-5 h-5 rounded-full bg-slate-200 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden">
+                          {quoteTargetAuthorPhotoUrl ? (
+                            <img
+                              src={getOptimizedImageUrl(quoteTargetAuthorPhotoUrl)}
+                              alt={quoteTargetAuthorName}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <span className="text-[10px] leading-none">{quoteTargetAuthorEmoji}</span>
+                          )}
+                        </div>
+
+                        <div className="min-w-0 flex-1 flex items-center gap-1 leading-none">
+                          <span className="text-xs font-bold text-slate-900 dark:text-zinc-100 truncate">
+                            {quoteTargetAuthorName}
+                          </span>
+                          <VerifiedBadge
+                            authorNrp={quoteTargetPost?.authorNrp}
+                            isVerified={(quoteTargetAuthorProfile as any)?.isVerified}
+                            size="sm"
+                          />
+                          <span className="text-[10px] text-slate-400 dark:text-zinc-500 truncate">
+                            @{quoteTargetAuthorUsername}
+                          </span>
+                          <span className="text-slate-400 dark:text-zinc-500 text-[10px] font-bold select-none px-0.5">
+                            •
+                          </span>
+                          <span className="text-[10px] text-slate-400 dark:text-zinc-500 shrink-0">
+                            {formatThreadsTime(quoteTargetPost?.createdAt)}
+                          </span>
+                        </div>
+                      </div>
+
+                      {quoteTargetPost?.content && (
+                        <div className="px-3 py-1.5 text-xs text-slate-700 dark:text-zinc-300 leading-snug whitespace-pre-line">
+                          <FormattedPostContent
+                            content={quoteTargetPost?.content || ''}
+                            onSelectAuthor={onSelectAuthor}
+                          />
+                        </div>
+                      )}
+
+                      {Array.isArray(quoteTargetPost?.imageUrls) && quoteTargetPost.imageUrls.length > 0 && (
+                        <div className="px-3 pb-3 pt-1">
+                          <img
+                            src={getOptimizedImageUrl(quoteTargetPost.imageUrls[0])}
+                            alt="Preview post asli"
+                            className="w-full max-h-48 h-auto object-cover rounded-xl border border-slate-200/50 dark:border-white/5"
+                          />
+                        </div>
                       )}
                     </div>
 
-                    <div className="min-w-0 flex-1 flex items-center gap-1 leading-none">
-                      <span className="text-xs font-bold text-slate-900 dark:text-zinc-100 truncate">
-                        {quoteTargetAuthorName}
-                      </span>
-                      <VerifiedBadge authorNrp={quoteTargetPost?.authorNrp} isVerified={(quoteTargetAuthorProfile as any)?.isVerified} size="sm" />
-                      <span className="text-[10px] text-slate-400 dark:text-zinc-500 truncate">
-                        @{quoteTargetAuthorUsername}
-                      </span>
-                      <span className="text-slate-400 dark:text-zinc-500 text-[10px] font-bold select-none px-0.5">•</span>
-                      <span className="text-[10px] text-slate-400 dark:text-zinc-500 shrink-0">
-                        {formatThreadsTime(quoteTargetPost?.createdAt)}
-                      </span>
+                    <div className="flex items-center justify-end gap-2 pt-1 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsQuoteOpen(false);
+                          setQuoteContent('');
+                        }}
+                        className="px-4 py-2 rounded-2xl text-xs font-semibold text-slate-500 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                      >
+                        Batal
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={!quoteContent.trim() || isReposting}
+                        className="px-5 py-2 rounded-2xl bg-blue-600 hover:bg-blue-500 disabled:bg-slate-100 dark:disabled:bg-zinc-800 text-white disabled:text-slate-400 text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95"
+                      >
+                        <Quote className="w-3.5 h-3.5" />
+                        <span>{isReposting ? 'Memproses...' : 'Quote Repost'}</span>
+                      </button>
                     </div>
-                  </div>
-
-                  {quoteTargetPost?.content && (
-                    <div className="px-3 pb-2 text-xs text-slate-700 dark:text-zinc-300 leading-snug whitespace-pre-line">
-                      <FormattedPostContent content={quoteTargetPost?.content || ''} onSelectAuthor={onSelectAuthor} />
-                    </div>
-                  )}
-
-                  {Array.isArray(quoteTargetPost?.imageUrls) && quoteTargetPost.imageUrls.length > 0 && (
-                    <div className="px-3 pb-2.5">
-                      <img
-                        src={getOptimizedImageUrl(quoteTargetPost.imageUrls[0])}
-                        alt="Preview post asli"
-                        className="w-full max-h-52 h-auto object-cover rounded-xl border border-slate-200/50 dark:border-white/5"
-                      />
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex items-center justify-end gap-2 shrink-0">
-                  <button type="button" onClick={() => { setIsQuoteOpen(false); setQuoteContent(''); setIsQuoteFocused(false); }} className="px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-500 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer">Batal</button>
-                  <button type="submit" disabled={!quoteContent.trim() || isReposting} className="px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:bg-slate-100 dark:disabled:bg-zinc-800 text-white disabled:text-slate-400 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer">
-                    <Quote className="w-3.5 h-3.5" />
-                    <span>{isReposting ? 'Memproses...' : 'Quote Repost'}</span>
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          </motion.div>
+                  </form>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>,
+          document.body
         )}
-      </AnimatePresence>
 
+      {/* LIGHTBOX FULLSCREEN IMAGE */}
       {typeof document !== 'undefined' &&
         createPortal(
           <AnimatePresence>

@@ -118,7 +118,7 @@ export const PostList: React.FC<PostListProps> = ({
           className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:py-2 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 text-xs sm:text-[13px] font-bold text-slate-700 dark:text-zinc-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/90 dark:hover:bg-zinc-800 transition-all shadow-xs active:scale-95 shrink-0 cursor-pointer"
         >
           <User className="w-3.5 h-3.5 text-blue-500" />
-          <span>Edit Profil</span>
+          <span>Profil</span>
         </button>
 
         {/* Search Bar Lebar */}
@@ -130,7 +130,7 @@ export const PostList: React.FC<PostListProps> = ({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Cari post atau username..."
+            placeholder="Cari post/akun.."
             className="w-full pl-9 pr-8 py-1.5 sm:py-2 text-xs sm:text-[13px] rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-xs transition-all"
           />
           {searchQuery && (
