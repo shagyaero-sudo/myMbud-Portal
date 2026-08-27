@@ -320,7 +320,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
               <div className="flex items-center gap-1.5">
                 <Users className="w-4 h-4 text-amber-500 shrink-0" />
                 <span className="font-black text-slate-900 dark:text-zinc-100 leading-none">
-                  {followerCount > 0 ? `${followerCount}.000` : 0}
+                  {followerCount > 0 ? `${followerCount}K` : 0}
                 </span>
               </div>
               <span className="text-slate-500 dark:text-zinc-400 font-medium leading-none mt-0.5 xl:mt-0">Pengikut</span>
