@@ -1,46 +1,19 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 
 interface SplashScreenProps {
-  soundUrl?: string;
   onComplete?: () => void;
 }
 
-export const SplashScreen: React.FC<SplashScreenProps> = ({
-  soundUrl = '/splash-sound.mp3',
-  onComplete,
-}) => {
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-
+export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
   useEffect(() => {
-    if (soundUrl) {
-      try {
-        const audio = new Audio(soundUrl);
-        audioRef.current = audio;
-        audio.volume = 0.75;
-        const playPromise = audio.play();
-        if (playPromise !== undefined) {
-          playPromise.catch((err) => {
-            console.warn('[SplashScreen] Audio autoplay dicegah browser:', err);
-          });
-        }
-      } catch (e) {
-        console.warn('[SplashScreen] Gagal memuat file audio:', e);
-      }
-    }
-
+    // 1200ms agar ada waktu bernapas: fade-in lembut -> stay -> fade-out halus
     const timer = setTimeout(() => {
       onComplete?.();
     }, 1200);
 
-    return () => {
-      clearTimeout(timer);
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
-    };
-  }, [soundUrl, onComplete]);
+    return () => clearTimeout(timer);
+  }, [onComplete]);
 
   return (
     <motion.div
@@ -91,7 +64,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
         />
       </motion.div>
 
-      {/* FOOTER: myITS INTEGRATED */}
+      {/* FOOTER: myITS INTEGRATED (MENYUSUL LEMBUT) */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 0.8 }}
