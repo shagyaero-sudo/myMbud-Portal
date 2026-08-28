@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   CalendarDays,
@@ -74,6 +74,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const matchTouch = window.matchMedia('(hover: none), (pointer: coarse)');
+      setIsTouchDevice(matchTouch.matches);
+
+      const handleTouchMediaChange = (e: MediaQueryListEvent) => {
+        setIsTouchDevice(e.matches);
+      };
+
+      if (matchTouch.addEventListener) {
+        matchTouch.addEventListener('change', handleTouchMediaChange);
+        return () => matchTouch.removeEventListener('change', handleTouchMediaChange);
+      }
+    }
+  }, []);
+
+  const isExpanded = isTouchDevice || isHovered;
 
   const menuItems: MenuItem[] = [
     {
@@ -135,15 +154,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <>
-      {/* DESKTOP SIDEBAR (CLEAN NO-GREETING HOVER EXPAND) */}
+      {/* DESKTOP & TABLET SIDEBAR */}
       <motion.aside
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        animate={{ width: isHovered ? 260 : 76 }}
+        onMouseEnter={() => !isTouchDevice && setIsHovered(true)}
+        onMouseLeave={() => !isTouchDevice && setIsHovered(false)}
+        animate={{ width: isExpanded ? 260 : 76 }}
         transition={{ type: 'spring', stiffness: 380, damping: 32 }}
         className="hidden lg:flex flex-col bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-3.5 text-slate-700 dark:text-zinc-200 min-h-[calc(100vh-80px)] shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none shrink-0 my-2 transition-colors overflow-hidden select-none z-20"
       >
-        {/* Navigation Items (Langsung di atas) */}
+        {/* Navigation Items */}
         <nav aria-label="Sidebar Navigation" className="flex-1 space-y-1.5 overflow-y-auto overflow-x-hidden pr-0.5 pt-1 pb-4 custom-scrollbar">
           {menuItems.map((item) => {
             const Icon = item.icon;
@@ -154,7 +173,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 type="button"
                 whileTap={{ scale: 0.96 }}
                 key={item.id}
-                title={!isHovered ? item.label : undefined}
+                title={!isExpanded ? item.label : undefined}
                 onClick={() => {
                   if (item.isModal) {
                     item.action();
@@ -192,7 +211,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
                 {/* Expanding Label */}
                 <AnimatePresence>
-                  {isHovered && (
+                  {isExpanded && (
                     <motion.div
                       initial={{ opacity: 0, width: 0 }}
                       animate={{ opacity: 1, width: 'auto' }}
@@ -222,7 +241,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </AnimatePresence>
 
                 {/* Dot Badge saat Collapsed */}
-                {!isHovered && item.count !== null && (
+                {!isExpanded && item.count !== null && (
                   <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-rose-500 z-20" />
                 )}
               </motion.button>
@@ -231,7 +250,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
           {/* Desktop Sidebar: myITS Academics 2.0 */}
           <div className="pt-3 mt-3 border-t border-slate-200/50 dark:border-white/5 space-y-1">
-            {isHovered && (
+            {isExpanded && (
               <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -245,45 +264,45 @@ export const Sidebar: React.FC<SidebarProps> = ({
               href="https://mia.its.ac.id/presensi/"
               target="_blank"
               rel="noreferrer"
-              title={!isHovered ? 'Presensi' : undefined}
+              title={!isExpanded ? 'Presensi' : undefined}
               className="flex items-center h-10 px-3 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/60 dark:hover:bg-zinc-800/50 transition-all"
             >
               <div className="flex items-center justify-center shrink-0 w-6">
                 <ClipboardList className="w-4 h-4" />
               </div>
-              {isHovered && <span className="pl-3 truncate">Presensi</span>}
+              {isExpanded && <span className="pl-3 truncate">Presensi</span>}
             </a>
 
             <a
               href="https://mia.its.ac.id/rencana-studi/"
               target="_blank"
               rel="noreferrer"
-              title={!isHovered ? 'Rencana Studi (FRS)' : undefined}
+              title={!isExpanded ? 'Rencana Studi (FRS)' : undefined}
               className="flex items-center h-10 px-3 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/60 dark:hover:bg-zinc-800/50 transition-all"
             >
               <div className="flex items-center justify-center shrink-0 w-6">
                 <GraduationCap className="w-4 h-4" />
               </div>
-              {isHovered && <span className="pl-3 truncate">Rencana Studi (FRS)</span>}
+              {isExpanded && <span className="pl-3 truncate">Rencana Studi (FRS)</span>}
             </a>
 
             <a
               href="https://mia.its.ac.id/penilaian/"
               target="_blank"
               rel="noreferrer"
-              title={!isHovered ? 'Transkrip Nilai' : undefined}
+              title={!isExpanded ? 'Transkrip Nilai' : undefined}
               className="flex items-center h-10 px-3 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/60 dark:hover:bg-zinc-800/50 transition-all"
             >
               <div className="flex items-center justify-center shrink-0 w-6">
                 <FileSpreadsheet className="w-4 h-4" />
               </div>
-              {isHovered && <span className="pl-3 truncate">Transkrip Nilai</span>}
+              {isExpanded && <span className="pl-3 truncate">Transkrip Nilai</span>}
             </a>
           </div>
 
           {/* Desktop Sidebar: External Links */}
           <div className="pt-3 mt-2 border-t border-slate-200/50 dark:border-white/5 space-y-1">
-            {isHovered && (
+            {isExpanded && (
               <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -297,39 +316,39 @@ export const Sidebar: React.FC<SidebarProps> = ({
               href="https://akademik.its.ac.id/home.php"
               target="_blank"
               rel="noreferrer"
-              title={!isHovered ? 'myITS SIAKAD' : undefined}
+              title={!isExpanded ? 'myITS SIAKAD' : undefined}
               className="flex items-center h-10 px-3 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/60 dark:hover:bg-zinc-800/50 transition-all"
             >
               <div className="flex items-center justify-center shrink-0 w-6">
                 <Globe className="w-4 h-4" />
               </div>
-              {isHovered && <span className="pl-3 truncate">myITS SIAKAD</span>}
+              {isExpanded && <span className="pl-3 truncate">myITS SIAKAD</span>}
             </a>
 
             <a
               href="https://kemahasiswaan.its.ac.id/beranda"
               target="_blank"
               rel="noreferrer"
-              title={!isHovered ? 'myITS StudentConnect' : undefined}
+              title={!isExpanded ? 'myITS StudentConnect' : undefined}
               className="flex items-center h-10 px-3 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/60 dark:hover:bg-zinc-800/50 transition-all"
             >
               <div className="flex items-center justify-center shrink-0 w-6">
                 <Handshake className="w-4 h-4" />
               </div>
-              {isHovered && <span className="pl-3 truncate">StudentConnect</span>}
+              {isExpanded && <span className="pl-3 truncate">StudentConnect</span>}
             </a>
 
             <a
               href="https://classroom.its.ac.id/auth/oidc"
               target="_blank"
               rel="noreferrer"
-              title={!isHovered ? 'myITS Classroom' : undefined}
+              title={!isExpanded ? 'myITS Classroom' : undefined}
               className="flex items-center h-10 px-3 rounded-2xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/60 dark:hover:bg-zinc-800/50 transition-all"
             >
               <div className="flex items-center justify-center shrink-0 w-6">
                 <BookOpenCheck className="w-4 h-4" />
               </div>
-              {isHovered && <span className="pl-3 truncate">myITS Classroom</span>}
+              {isExpanded && <span className="pl-3 truncate">myITS Classroom</span>}
             </a>
           </div>
 
@@ -338,7 +357,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <motion.button
               type="button"
               whileTap={{ scale: 0.96 }}
-              title={!isHovered ? 'myMbudblox' : undefined}
+              title={!isExpanded ? 'myMbudblox' : undefined}
               onClick={() => setActiveTab('blockblast')}
               className={`group relative w-full overflow-hidden rounded-2xl p-2.5 text-xs font-bold transition-all border ${
                 activeTab === 'blockblast'
@@ -363,7 +382,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   />
                 </div>
 
-                {isHovered && (
+                {isExpanded && (
                   <motion.div
                     initial={{ opacity: 0, width: 0 }}
                     animate={{ opacity: 1, width: 'auto' }}
@@ -381,7 +400,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Footer Brand */}
         <div className="mt-2 pt-3 border-t border-slate-200/50 dark:border-white/5 px-2 text-xs text-slate-400 dark:text-zinc-500 shrink-0 h-10 flex items-center overflow-hidden">
-          {isHovered ? (
+          {isExpanded ? (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
