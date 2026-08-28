@@ -292,6 +292,9 @@ export const PostCard: React.FC<PostCardProps> = ({
     refreshComponentData();
     if (isDetailPage) {
       setIsRepliesExpanded(true);
+      setTimeout(() => {
+        commentInputRef.current?.focus();
+      }, 150);
     }
 
     window.addEventListener('mbud_users_change', refreshComponentData);
@@ -397,7 +400,14 @@ export const PostCard: React.FC<PostCardProps> = ({
     if (onSelectPost && !isDetailPage) {
       onSelectPost(post.id);
     } else {
-      setIsRepliesExpanded((prev) => !prev);
+      const nextExpanded = !isRepliesExpanded;
+      setIsRepliesExpanded(nextExpanded);
+      if (nextExpanded) {
+        setTimeout(() => {
+          commentInputRef.current?.focus();
+          commentInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 120);
+      }
     }
   };
 
@@ -774,6 +784,7 @@ export const PostCard: React.FC<PostCardProps> = ({
           </div>
         </div>
 
+        {/* SECTION KOMENTAR & BALASAN */}
         <AnimatePresence>
           {isRepliesExpanded && (
             <motion.div
@@ -796,13 +807,14 @@ export const PostCard: React.FC<PostCardProps> = ({
                   replies.map((reply) => {
                     const replyAuthor = getCachedUserByNrp(reply.authorNrp);
                     const replyName = replyAuthor?.nickname || replyAuthor?.username || 'Mbuders';
+                    const replyUsername = replyAuthor?.username || 'unknown';
                     const replyEmoji = replyAuthor?.emoji || '😊';
                     const replyPhotoUrl = replyAuthor?.photoUrl;
 
                     return (
                       <div key={reply.id} className="p-2.5 rounded-xl bg-white/60 dark:bg-zinc-800/40 border border-slate-200/50 dark:border-white/5 space-y-1 w-full">
                         <div className="flex items-center justify-between text-xs">
-                          <div onClick={() => onSelectAuthor?.(reply.authorNrp)} className="flex items-center gap-1 cursor-pointer group/replyAuthor min-w-0">
+                          <div onClick={() => onSelectAuthor?.(reply.authorNrp)} className="flex items-center gap-1.5 cursor-pointer group/replyAuthor min-w-0">
                             <div className="w-5 h-5 rounded-full bg-slate-200 dark:bg-zinc-700 flex items-center justify-center shrink-0 overflow-hidden">
                               {replyPhotoUrl ? (
                                 <img src={getOptimizedImageUrl(replyPhotoUrl)} alt={replyName} className="w-full h-full object-cover" />
@@ -816,15 +828,18 @@ export const PostCard: React.FC<PostCardProps> = ({
                                 {replyName}
                               </span>
                               <VerifiedBadge authorNrp={reply.authorNrp} isVerified={(replyAuthor as any)?.isVerified} size="sm" />
+                              <span className="text-[10px] text-slate-400 dark:text-zinc-500 truncate font-normal">
+                                @{replyUsername}
+                              </span>
                             </div>
                           </div>
 
-                          <span className="text-slate-400 dark:text-zinc-500 text-[10px] shrink-0">
+                          <span className="text-slate-400 dark:text-zinc-500 text-[10px] shrink-0 pl-1">
                             {formatThreadsTime(reply.createdAt)}
                           </span>
                         </div>
 
-                        <p className="text-[13px] text-slate-700 dark:text-zinc-300 leading-snug pl-6">
+                        <p className="text-[13px] text-slate-700 dark:text-zinc-300 leading-snug pl-6.5">
                           <FormattedPostContent content={reply.content} onSelectAuthor={onSelectAuthor} />
                         </p>
                       </div>
@@ -833,6 +848,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                 )}
               </div>
 
+              {/* FORM INPUT KOMENTAR DENGAN AUTO-FOCUS */}
               <form onSubmit={handleAddReply} className="flex items-center gap-2 pt-1 relative">
                 <div className="relative flex-1">
                   <input
@@ -840,7 +856,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                     type="text"
                     value={replyContent}
                     onChange={handleCommentChange}
-                    placeholder={`Tulis komen sebagai ${currentUser.nickname}...`}
+                    placeholder={`Tulis komen sebagai ${currentUser.nickname || currentUser.username}...`}
                     className="w-full px-3 py-1.5 rounded-xl bg-white/70 dark:bg-zinc-800/80 text-xs border border-slate-200/80 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
 
@@ -887,7 +903,7 @@ export const PostCard: React.FC<PostCardProps> = ({
         </AnimatePresence>
       </article>
 
-      {/* MODAL FORM QUOTE REPOST (PORTAL KE BODY BEBAS GLITCH) */}
+      {/* MODAL FORM QUOTE REPOST */}
       {typeof document !== 'undefined' &&
         createPortal(
           <AnimatePresence>
