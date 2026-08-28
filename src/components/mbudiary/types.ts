@@ -20,6 +20,7 @@ export interface MbudiaryPost {
   isRepost?: boolean;
   originalPostId?: string;
   quoteContent?: string;
+  isFollowersOnly?: boolean;
   createdAt: string;
 }
 

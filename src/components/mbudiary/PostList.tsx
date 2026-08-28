@@ -58,16 +58,28 @@ export const PostList: React.FC<PostListProps> = ({
   const filteredPosts = useMemo(() => {
     let result = [...posts];
     const followingNrps = getFollows();
+    const myNrp = (currentUser?.nrp || '').toLowerCase();
 
+    // 1. Tab Untuk Anda (Global Feed): post followers-only milik orang lain disembunyikan
+    if (activeTab === 'for_you' && !showBookmarksOnly) {
+      result = result.filter((p) => {
+        const isMe = p.authorNrp.toLowerCase() === myNrp;
+        return isMe || !p.isFollowersOnly;
+      });
+    }
+
+    // 2. Tab Mengikuti: semua postingan dari yang difollow muncul
     if (activeTab === 'following' && !showBookmarksOnly) {
       result = result.filter((p) => followingNrps.includes(p.authorNrp.toLowerCase()));
     }
 
+    // 3. Tab Bookmarks
     if (showBookmarksOnly) {
       const bookmarkedIds = getBookmarkedPostIds();
       result = result.filter((p) => bookmarkedIds.includes(p.id));
     }
 
+    // 4. Search Query Filter
     if (searchQuery.trim()) {
       const q = searchQuery.trim().toLowerCase();
       result = result.filter((post) => {
@@ -84,7 +96,7 @@ export const PostList: React.FC<PostListProps> = ({
 
     result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     return result;
-  }, [posts, activeTab, showBookmarksOnly, searchQuery]);
+  }, [posts, activeTab, showBookmarksOnly, searchQuery, currentUser?.nrp]);
 
   const hasSearch = Boolean(searchQuery.trim());
   const hasNoResults = hasSearch && matchedUsers.length === 0 && filteredPosts.length === 0;
@@ -92,10 +104,8 @@ export const PostList: React.FC<PostListProps> = ({
   return (
     <div className="space-y-3 sm:space-y-4 w-full">
       
-      {/* 1-ROW TOPBAR BESAR & PROPORSIONAL (TANPA EDIT PROFIL) */}
+      {/* 1-ROW TOPBAR */}
       <div className="flex items-center gap-2.5 sm:gap-4 w-full px-1 py-1">
-        
-        {/* Back Button & Title */}
         <div className="flex items-center gap-2 shrink-0">
           <button
             type="button"
@@ -111,7 +121,6 @@ export const PostList: React.FC<PostListProps> = ({
           </span>
         </div>
 
-        {/* Search Bar Lebar Penuh */}
         <div className="relative flex-1 min-w-0 flex items-center">
           <div className="absolute left-3.5 flex items-center pointer-events-none z-10">
             <Search className="w-4 h-4 text-slate-400 dark:text-zinc-400" />
@@ -188,7 +197,7 @@ export const PostList: React.FC<PostListProps> = ({
       {/* CONTAINER TIMELINE */}
       <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl overflow-hidden shadow-xs divide-y divide-slate-200/50 dark:divide-white/10">
         
-        {/* HEADER TAB (UNTUK ANDA | MENGIKUTI | [BOOKMARK ICON]) */}
+        {/* HEADER TAB */}
         <div className="flex items-center border-b border-slate-200/50 dark:border-white/10 bg-white/40 dark:bg-zinc-950/20 pr-2">
           
           <button
@@ -204,6 +213,7 @@ export const PostList: React.FC<PostListProps> = ({
             {activeTab === 'for_you' && !showBookmarksOnly && (
               <motion.div
                 layoutId="feedTabIndicator"
+                transition={{ type: 'spring', stiffness: 500, damping: 40 }}
                 className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-1 bg-blue-600 rounded-full"
               />
             )}
@@ -222,12 +232,12 @@ export const PostList: React.FC<PostListProps> = ({
             {activeTab === 'following' && !showBookmarksOnly && (
               <motion.div
                 layoutId="feedTabIndicator"
+                transition={{ type: 'spring', stiffness: 500, damping: 40 }}
                 className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-1 bg-blue-600 rounded-full"
               />
             )}
           </button>
 
-          {/* ICON BOOKMARK DI POJOK KANAN BARIS TAB */}
           <button
             type="button"
             onClick={() => setShowBookmarksOnly((prev) => !prev)}
@@ -242,7 +252,7 @@ export const PostList: React.FC<PostListProps> = ({
           </button>
         </div>
 
-        {/* INLINE CREATE POST FORM DENGAN TRIGGER EDIT PROFIL */}
+        {/* INLINE CREATE POST FORM */}
         {!showBookmarksOnly && !hasSearch && (
           <CreatePostForm
             userProfile={currentUser}
