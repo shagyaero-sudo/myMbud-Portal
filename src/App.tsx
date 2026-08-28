@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { AnimatePresence } from 'framer-motion';
 
 import { subscribeAnnouncements } from './services/announcements';
 import { supabase } from './services/supabase';
@@ -695,12 +694,33 @@ export default function App() {
     }
   };
 
+  // =========================================================================
+  // SPLASH SCREEN
+  // =========================================================================
+
+  if (showSplash) {
+    return (
+      <SplashScreen
+        onComplete={() => setShowSplash(false)}
+      />
+    );
+  }
+
+  // =========================================================================
+  // LOGIN
+  // =========================================================================
+
   if (requiresLogin) {
     return <LoginScreen onLoginSuccess={() => setIsAuthenticated(true)} />;
   }
 
+  // =========================================================================
+  // ONBOARDING
+  // =========================================================================
+
   if (isAuthenticated && !hasCompletedOnboarding) {
     const currentUserName = localStorage.getItem('mymbud_user_name') || 'Mbuders';
+
     return (
       <OnboardingScreen
         userName={currentUserName}
@@ -710,164 +730,154 @@ export default function App() {
   }
 
   return (
-    <>
-      <AnimatePresence>
-        {showSplash && (
-          <SplashScreen 
-            key="splash" 
-            soundUrl="/splash-sound.mp3" 
-            onComplete={() => setShowSplash(false)}
-          />
-        )}
-      </AnimatePresence>
-
-      <div className="relative min-h-screen bg-slate-100 dark:bg-[#0e0f12] text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-500">
-        
-        {/* RESPONSIVE GRADIENT SYSTEM */}
-        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden gpu-layer">
-          <div 
-            className="block lg:hidden absolute -bottom-[10%] left-1/2 -translate-x-1/2 w-[130vw] h-[550px] rounded-[100%] blur-[120px] transition-all duration-700 opacity-20 dark:opacity-22 gpu-layer" 
-            style={{ backgroundColor: 'var(--glow-1)' }}
-          />
-
-          <div 
-            className="hidden lg:block absolute top-[-100px] left-[-80px] w-[850px] h-[850px] rounded-full blur-[140px] transition-all duration-700 opacity-10 dark:opacity-12 gpu-layer" 
-            style={{ backgroundColor: 'var(--glow-1)' }}
-          />
-          <div 
-            className="hidden lg:block absolute top-[30%] right-[-100px] w-[800px] h-[800px] rounded-full blur-[150px] transition-all duration-700 opacity-10 dark:opacity-12 gpu-layer" 
-            style={{ backgroundColor: 'var(--glow-2)' }}
-          />
-          <div 
-            className="hidden lg:block absolute bottom-[-100px] left-[20%] w-[800px] h-[800px] rounded-full blur-[140px] transition-all duration-700 opacity-10 dark:opacity-12 gpu-layer" 
-            style={{ backgroundColor: 'var(--glow-1)' }}
-          />
-        </div>
-
-        {/* CONTENT LAYER WITH EXACT 1x SAFE AREA */}
+    <div className="relative min-h-screen bg-slate-100 dark:bg-[#0e0f12] text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-500">
+      
+      {/* RESPONSIVE GRADIENT SYSTEM */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden gpu-layer">
         <div 
-          className="relative z-10 flex flex-col min-h-screen bg-transparent"
-          style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 12px)' }}
-        >
-          <Header
-            isOfficer={isOfficer}
-            setIsOfficer={setIsOfficer}
-            activeTab={activeTab}
-            setActiveTab={(tab) => handleNavigateTab(tab)}
-            isSyncing={isSyncing}
-            lastUpdated={appState.lastUpdated}
-            onRefresh={syncState}
-            urgentTaskCount={urgentTaskCount}
-            onLogout={handleLogout}
-          />
+          className="block lg:hidden absolute -bottom-[10%] left-1/2 -translate-x-1/2 w-[130vw] h-[550px] rounded-[100%] blur-[120px] transition-all duration-700 opacity-20 dark:opacity-22 gpu-layer" 
+          style={{ backgroundColor: 'var(--glow-1)' }}
+        />
 
-          <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 flex flex-col lg:flex-row gap-6 pt-4 pb-28 lg:pb-8">
-            {activeTab !== 'mbudiary' && (
-              <Sidebar
-                activeTab={activeTab}
-                setActiveTab={(tab) => handleNavigateTab(tab)}
-                activeTaskCount={activeTaskCount}
-                onOpenGpaModal={() => setIsGpaModalOpen(true)}
-              />
-            )}
+        <div 
+          className="hidden lg:block absolute top-[-100px] left-[-80px] w-[850px] h-[850px] rounded-full blur-[140px] transition-all duration-700 opacity-10 dark:opacity-12 gpu-layer" 
+          style={{ backgroundColor: 'var(--glow-1)' }}
+        />
 
-            <main className="flex-1 space-y-6">
-              {isInitialLoad ? (
-                <AppSkeleton />
-              ) : (
-                <div
-                  key={activeTab}
-                  className="transition-opacity duration-150 ease-out opacity-100"
-                >
-                  {activeTab === 'dashboard' && (
-                    <DashboardView
-                      state={{ ...appState, tasks: accessibleTasks }}
-                      isOfficer={isOfficer}
-                      onAddAnnouncement={() => {}}
-                      onDeleteAnnouncement={() => {}}
-                      onNavigateTab={handleNavigateTab}
-                    />
-                  )}
+        <div 
+          className="hidden lg:block absolute top-[30%] right-[-100px] w-[800px] h-[800px] rounded-full blur-[150px] transition-all duration-700 opacity-10 dark:opacity-12 gpu-layer" 
+          style={{ backgroundColor: 'var(--glow-2)' }}
+        />
 
-                  {activeTab === 'contacts' && (
-                    <ContactsView
-                      key={`contacts-${selectedContactCourse}`}
-                      contacts={appState.contacts}
-                      isOfficer={isOfficer}
-                      initialCourseFilter={selectedContactCourse}
-                      onAddContact={handleAddContact}
-                      onUpdateContact={handleUpdateContact}
-                      onDeleteContact={handleDeleteContact}
-                    />
-                  )}
-
-                  {activeTab === 'materials' && (
-                    <KnowledgeBaseView
-                      materials={accessibleMaterials}
-                      isOfficer={isOfficer}
-                      availableCourses={accessibleCourseNames}
-                      onAddMaterial={handleAddMaterial}
-                      onDeleteMaterial={handleDeleteMaterial}
-                      onPreviewPdf={(material) => setPreviewMaterial(material)}
-                      onOpenNotebookLm={() => handleNavigateTab('notebooklm' as TabType)}
-                    />
-                  )}
-
-                  {activeTab === ('notebooklm' as TabType) && (
-                    <NotebookLmView
-                      isOfficer={isOfficer}
-                      onBack={() => handleNavigateTab('materials')}
-                    />
-                  )}
-
-                  {activeTab === 'tasks' && (
-                    <TaskTrackerView
-                      tasks={accessibleTasks}
-                      contacts={accessibleContacts}
-                      isOfficer={isOfficer}
-                      completedTaskIds={completedTaskIds}
-                      onAddTask={handleAddTask}
-                      onUpdateTask={handleUpdateTask}
-                      onUpdateTaskStatus={handleUpdateTaskStatus}
-                      onDeleteTask={handleDeleteTask}
-                    />
-                  )}
-
-                  {activeTab === 'spinwheel' && (
-                    <SpinwheelView
-                      onSaveGroupResult={handleSaveGroupResult}
-                      savedResults={appState.groupResults}
-                      isOfficer={isOfficer}
-                    />
-                  )}
-
-                  {activeTab === 'calculator' && (
-                    <GradeCalculatorView courseGrades={appState.courseGrades} />
-                  )}
-
-                  {activeTab === 'letter' && <LetterGeneratorView />}
-
-                  {activeTab === 'blockblast' && <BlockBlastView />}
-
-                  {activeTab === 'mbudiary' && <MbudiaryView />}
-                </div>
-              )}
-            </main>
-          </div>
-
-          <PdfViewerModal
-            material={previewMaterial}
-            onClose={() => setPreviewMaterial(null)}
-          />
-
-          <SoftForceModal />
-
-          <GpaCalculatorModal
-            isOpen={isGpaModalOpen}
-            onClose={() => setIsGpaModalOpen(false)}
-          />
-        </div>
+        <div 
+          className="hidden lg:block absolute bottom-[-100px] left-[20%] w-[800px] h-[800px] rounded-full blur-[140px] transition-all duration-700 opacity-10 dark:opacity-12 gpu-layer" 
+          style={{ backgroundColor: 'var(--glow-1)' }}
+        />
       </div>
-    </>
+
+      {/* CONTENT LAYER WITH EXACT 1x SAFE AREA */}
+      <div 
+        className="relative z-10 flex flex-col min-h-screen bg-transparent"
+        style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 12px)' }}
+      >
+        <Header
+          isOfficer={isOfficer}
+          setIsOfficer={setIsOfficer}
+          activeTab={activeTab}
+          setActiveTab={(tab) => handleNavigateTab(tab)}
+          isSyncing={isSyncing}
+          lastUpdated={appState.lastUpdated}
+          onRefresh={syncState}
+          urgentTaskCount={urgentTaskCount}
+          onLogout={handleLogout}
+        />
+
+        <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 flex flex-col lg:flex-row gap-6 pt-4 pb-28 lg:pb-8">
+          {activeTab !== 'mbudiary' && (
+            <Sidebar
+              activeTab={activeTab}
+              setActiveTab={(tab) => handleNavigateTab(tab)}
+              activeTaskCount={activeTaskCount}
+              onOpenGpaModal={() => setIsGpaModalOpen(true)}
+            />
+          )}
+
+          <main className="flex-1 space-y-6">
+            {isInitialLoad ? (
+              <AppSkeleton />
+            ) : (
+              <div
+                key={activeTab}
+                className="transition-opacity duration-150 ease-out opacity-100"
+              >
+                {activeTab === 'dashboard' && (
+                  <DashboardView
+                    state={{ ...appState, tasks: accessibleTasks }}
+                    isOfficer={isOfficer}
+                    onAddAnnouncement={() => {}}
+                    onDeleteAnnouncement={() => {}}
+                    onNavigateTab={handleNavigateTab}
+                  />
+                )}
+
+                {activeTab === 'contacts' && (
+                  <ContactsView
+                    key={`contacts-${selectedContactCourse}`}
+                    contacts={appState.contacts}
+                    isOfficer={isOfficer}
+                    initialCourseFilter={selectedContactCourse}
+                    onAddContact={handleAddContact}
+                    onUpdateContact={handleUpdateContact}
+                    onDeleteContact={handleDeleteContact}
+                  />
+                )}
+
+                {activeTab === 'materials' && (
+                  <KnowledgeBaseView
+                    materials={accessibleMaterials}
+                    isOfficer={isOfficer}
+                    availableCourses={accessibleCourseNames}
+                    onAddMaterial={handleAddMaterial}
+                    onDeleteMaterial={handleDeleteMaterial}
+                    onPreviewPdf={(material) => setPreviewMaterial(material)}
+                    onOpenNotebookLm={() => handleNavigateTab('notebooklm' as TabType)}
+                  />
+                )}
+
+                {activeTab === ('notebooklm' as TabType) && (
+                  <NotebookLmView
+                    isOfficer={isOfficer}
+                    onBack={() => handleNavigateTab('materials')}
+                  />
+                )}
+
+                {activeTab === 'tasks' && (
+                  <TaskTrackerView
+                    tasks={accessibleTasks}
+                    contacts={accessibleContacts}
+                    isOfficer={isOfficer}
+                    completedTaskIds={completedTaskIds}
+                    onAddTask={handleAddTask}
+                    onUpdateTask={handleUpdateTask}
+                    onUpdateTaskStatus={handleUpdateTaskStatus}
+                    onDeleteTask={handleDeleteTask}
+                  />
+                )}
+
+                {activeTab === 'spinwheel' && (
+                  <SpinwheelView
+                    onSaveGroupResult={handleSaveGroupResult}
+                    savedResults={appState.groupResults}
+                    isOfficer={isOfficer}
+                  />
+                )}
+
+                {activeTab === 'calculator' && (
+                  <GradeCalculatorView courseGrades={appState.courseGrades} />
+                )}
+
+                {activeTab === 'letter' && <LetterGeneratorView />}
+
+                {activeTab === 'blockblast' && <BlockBlastView />}
+
+                {activeTab === 'mbudiary' && <MbudiaryView />}
+              </div>
+            )}
+          </main>
+        </div>
+
+        <PdfViewerModal
+          material={previewMaterial}
+          onClose={() => setPreviewMaterial(null)}
+        />
+
+        <SoftForceModal />
+
+        <GpaCalculatorModal
+          isOpen={isGpaModalOpen}
+          onClose={() => setIsGpaModalOpen(false)}
+        />
+      </div>
+    </div>
   );
 }
