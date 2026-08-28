@@ -135,15 +135,7 @@ export default function App() {
   useEffect(() => {
     const unsubMbudiary = initializeMbudiary();
     return () => unsubMbudiary();
-  }, []);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowSplash(false);
-    }, 3000);
-
-    return () => clearTimeout(timer);
-  }, []);
+  }, [initializeMbudiary]);
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     return localStorage.getItem('mymbud_auth') === 'true';
@@ -512,7 +504,6 @@ export default function App() {
     return [];
   }, []);
 
-  // 1. Matkul yang dapat diakses oleh user yang sedang login
   const accessibleContacts = useMemo(() => {
     const cleanUserNrp = currentUserNrp.trim().toLowerCase();
     return appState.contacts.filter((c: any) => {
@@ -536,7 +527,6 @@ export default function App() {
     );
   }, [accessibleContacts]);
 
-  // 2. Filter Tugas: Otomatis sembunyikan jika matkulnya tidak diambil user
   const accessibleTasks = useMemo(() => {
     const cleanUserNrp = currentUserNrp.trim().toLowerCase();
     
@@ -561,7 +551,6 @@ export default function App() {
     });
   }, [appState.tasks, appState.contacts, isOfficer, currentUserNrp, parseTargetNrps]);
 
-  // 3. Filter Materi PDF: Otomatis sembunyikan jika matkulnya tidak diambil user
   const accessibleMaterials = useMemo(() => {
     const cleanUserNrp = currentUserNrp.trim().toLowerCase();
 
@@ -586,7 +575,6 @@ export default function App() {
     });
   }, [appState.materials, appState.contacts, isOfficer, currentUserNrp, parseTargetNrps]);
 
-  // Hitung badge tugas
   const activeTaskCount = accessibleTasks.filter((task) => {
     const isExplicitlyDone = completedTaskIds.includes(task.id);
     if (task.status === 'done' || isExplicitlyDone) return false;
@@ -724,7 +712,13 @@ export default function App() {
   return (
     <>
       <AnimatePresence>
-        {showSplash && <SplashScreen key="splash" soundUrl="/splash-sound.mp3" />}
+        {showSplash && (
+          <SplashScreen 
+            key="splash" 
+            soundUrl="/splash-sound.mp3" 
+            onComplete={() => setShowSplash(false)}
+          />
+        )}
       </AnimatePresence>
 
       <div className="relative min-h-screen bg-slate-100 dark:bg-[#0e0f12] text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-500">
@@ -768,7 +762,6 @@ export default function App() {
           />
 
           <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 flex flex-col lg:flex-row gap-6 pt-4 pb-28 lg:pb-8">
-            {/* KONDISI NAVIGASI: HANYA DIRENDER SAAT BUKAN TAB MBUDIARY */}
             {activeTab !== 'mbudiary' && (
               <Sidebar
                 activeTab={activeTab}
