@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
 
 interface SplashScreenProps {
   soundUrl?: string;
@@ -10,8 +10,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
   soundUrl = '/splash-sound.mp3',
   onComplete,
 }) => {
-  // Step urutan animasi: 'icon' -> 'wordmark' -> 'dot' -> 'reveal'
-  const [step, setStep] = useState<'icon' | 'wordmark' | 'dot' | 'reveal'>('icon');
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
@@ -19,33 +17,24 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
       try {
         const audio = new Audio(soundUrl);
         audioRef.current = audio;
-        audio.volume = 0.8;
+        audio.volume = 0.75;
         const playPromise = audio.play();
         if (playPromise !== undefined) {
           playPromise.catch((err) => {
-            console.warn('[SplashScreen] Audio autoplay dicegah browser:', err);
+            console.warn('[SplashScreen] Autoplay audio dicegah browser:', err);
           });
         }
       } catch (e) {
-        console.warn('[SplashScreen] Gagal memuat file audio:', e);
+        console.warn('[SplashScreen] Gagal memuat audio:', e);
       }
     }
 
-    // Timeline Cepat & Presisi ala GetYourGuide (Total ~1.5s):
-    // 1. Icon Logo tampil selama 450ms
-    const t1 = setTimeout(() => setStep('wordmark'), 450);
-    // 2. Wordmark Teks tampil selama 450ms
-    const t2 = setTimeout(() => setStep('dot'), 900);
-    // 3. Titik putih meledak secara circular mask membuka dashboard
-    const t3 = setTimeout(() => setStep('reveal'), 1150);
-    // 4. Selesai & Trigger Unmount
-    const t4 = setTimeout(() => onComplete?.(), 1550);
+    const timer = setTimeout(() => {
+      onComplete?.();
+    }, 950);
 
     return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-      clearTimeout(t3);
-      clearTimeout(t4);
+      clearTimeout(timer);
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current = null;
@@ -54,83 +43,61 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
   }, [soundUrl, onComplete]);
 
   return (
-    <AnimatePresence>
-      {step !== 'reveal' && (
-        <motion.div
-          key="splash-overlay"
-          initial={{ opacity: 1 }}
-          exit={{
-            clipPath: 'circle(160% at 50% 50%)',
-            opacity: 0,
-            transition: { duration: 0.45, ease: [0.76, 0, 0.24, 1] },
-          }}
-          className="fixed inset-0 z-[99999999] flex items-center justify-center bg-blue-600 dark:bg-zinc-950 select-none overflow-hidden overscroll-none touch-none"
-          style={{
-            clipPath: step === 'reveal' ? 'circle(160% at 50% 50%)' : 'circle(100% at 50% 50%)',
-          }}
-        >
-          {/* FASE 1: LOGO ICON */}
-          {step === 'icon' && (
-            <motion.div
-              key="icon"
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ duration: 0.25, ease: 'easeOut' }}
-              className="flex items-center justify-center p-4"
-            >
-              <img
-                src="/logombud.png"
-                alt="myMbud Logo"
-                className="w-20 h-20 sm:w-24 sm:h-24 object-contain drop-shadow-xl brightness-0 invert"
-              />
-            </motion.div>
-          )}
+    <motion.div
+      initial={{ opacity: 1 }}
+      exit={{
+        opacity: 0,
+        scale: 1.02,
+        transition: { duration: 0.35, ease: [0.32, 0.72, 0, 1] },
+      }}
+      className="fixed inset-0 z-[99999999] flex flex-col items-center justify-between bg-[#090a0f] text-white select-none overflow-hidden p-6 sm:p-10 pointer-events-none"
+    >
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div className="w-[320px] h-[320px] rounded-full bg-blue-600/10 blur-[90px]" />
+      </div>
 
-          {/* FASE 2: WORDMARK TEKS & COPYRIGHT */}
-          {step === 'wordmark' && (
-            <motion.div
-              key="wordmark"
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.6, opacity: 0 }}
-              transition={{ duration: 0.25, ease: 'easeOut' }}
-              className="text-center px-4 space-y-1"
-            >
-              <h1 className="text-2xl sm:text-3xl font-black text-white tracking-widest uppercase">
-                myMbud <span className="font-light opacity-80">Portal</span>
-              </h1>
-              <p className="text-[11px] sm:text-xs font-semibold text-blue-100 dark:text-zinc-400 tracking-wider">
-                Ruang Digital Mahasiswa
-              </p>
-            </motion.div>
-          )}
+      <div className="w-full" />
 
-          {/* FASE 3: TITIK PUTIH SEBELUM MELEDAK / EXPAND */}
-          {step === 'dot' && (
-            <motion.div
-              key="dot"
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 45, opacity: 0 }}
-              transition={{ duration: 0.35, ease: [0.76, 0, 0.24, 1] }}
-              className="w-3.5 h-3.5 rounded-full bg-white shadow-2xl"
-            />
-          )}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.94, y: 8 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+        className="relative z-10 flex flex-col items-center gap-4"
+      >
+        <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center">
+          <img
+            src="/logombud.png"
+            alt="myMbud Logo"
+            className="w-full h-full object-contain drop-shadow-[0_0_24px_rgba(59,130,246,0.35)]"
+          />
+        </div>
 
-          {/* WATERMARK INTEGRATED DI BAWAH */}
-          <div className="absolute bottom-10 sm:bottom-12 flex flex-col items-center gap-1 opacity-70">
-            <img
-              src="/myits-logo.svg"
-              alt="myITS Logo"
-              className="h-3.5 w-auto object-contain brightness-0 invert opacity-90"
-            />
-            <span className="text-[9px] uppercase tracking-widest text-white/80 font-medium">
-              Integrated
-            </span>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+        <div className="text-center space-y-0.5">
+          <h1 className="text-lg sm:text-xl font-bold tracking-tight text-white/90">
+            <span className="font-light text-white/60">my</span>Mbud
+            <span className="font-light text-white/60"> Portal</span>
+          </h1>
+          <p className="text-[11px] font-medium tracking-wide text-zinc-500">
+            v2.5
+          </p>
+        </div>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 0.6 }}
+        transition={{ duration: 0.4, delay: 0.2 }}
+        className="relative z-10 flex flex-col items-center gap-1 mb-[env(safe-area-inset-bottom)]"
+      >
+        <img
+          src="/myits-logo.svg"
+          alt="myITS Logo"
+          className="h-3 w-auto object-contain brightness-0 invert opacity-80"
+        />
+        <span className="text-[8.5px] uppercase tracking-widest text-zinc-500 font-semibold">
+          Integrated
+        </span>
+      </motion.div>
+    </motion.div>
   );
 };
