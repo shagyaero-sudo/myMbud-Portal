@@ -1,4 +1,4 @@
-import React, { useState, useId } from 'react';
+import React, { useState, useId, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
@@ -115,17 +115,68 @@ export const StreakModal: React.FC<StreakModalProps> = ({
   const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState(false);
   const [isReviving, setIsReviving] = useState(false);
 
-  const daysOfWeek = [
-    { label: 'Sen', initial: 'S', jsDay: 1 },
-    { label: 'Sel', initial: 'S', jsDay: 2 },
-    { label: 'Rab', initial: 'R', jsDay: 3 },
-    { label: 'Kam', initial: 'K', jsDay: 4 },
-    { label: 'Jum', initial: 'J', jsDay: 5 },
-    { label: 'Sab', initial: 'S', jsDay: 6 },
-    { label: 'Min', initial: 'M', jsDay: 0 },
-  ];
-  const todayJsDay = new Date().getDay();
   const isMythic = streak.currentStreak >= 100;
+
+  // =========================================================================
+  // KALKULASI REAL-TIME MINGGU INI (SENIN -> MINGGU BERDASARKAN TANGGAL NYATA)
+  // =========================================================================
+  const weeklySchedule = useMemo(() => {
+    const now = new Date();
+    const currentDay = now.getDay(); // 0 = Min, 1 = Sen, ..., 6 = Sab
+    const distanceToMonday = currentDay === 0 ? -6 : 1 - currentDay;
+
+    const monday = new Date(now);
+    monday.setDate(now.getDate() + distanceToMonday);
+    monday.setHours(0, 0, 0, 0);
+
+    const labels = [
+      { label: 'Sen', initial: 'S', jsDay: 1 },
+      { label: 'Sel', initial: 'S', jsDay: 2 },
+      { label: 'Rab', initial: 'R', jsDay: 3 },
+      { label: 'Kam', initial: 'K', jsDay: 4 },
+      { label: 'Jum', initial: 'J', jsDay: 5 },
+      { label: 'Sab', initial: 'S', jsDay: 6 },
+      { label: 'Min', initial: 'M', jsDay: 0 },
+    ];
+
+    const todayStr = now.toISOString().split('T')[0];
+    const lastActiveStr = streak.lastActiveDate ? streak.lastActiveDate.split('T')[0] : '';
+    const currentStreakCount = streak.currentStreak || 0;
+
+    return labels.map((item, index) => {
+      const targetDate = new Date(monday);
+      targetDate.setDate(monday.getDate() + index);
+      const targetDateStr = targetDate.toISOString().split('T')[0];
+
+      const isToday = targetDateStr === todayStr;
+      const isPastOrToday = targetDateStr <= todayStr;
+
+      // Hitung apakah hari ini aktif:
+      // 1. Jika ada di array weeklyActiveDays dan tanggalnya di minggu ini
+      // 2. Atau jika streak masih jalan mundur dari hari ini
+      let isActive = false;
+      if (isPastOrToday && currentStreakCount > 0 && lastActiveStr) {
+        const lastActiveTime = new Date(lastActiveStr).getTime();
+        const targetDateTime = new Date(targetDateStr).getTime();
+        const diffDays = Math.round((lastActiveTime - targetDateTime) / (1000 * 60 * 60 * 24));
+
+        if (diffDays >= 0 && diffDays < currentStreakCount) {
+          isActive = true;
+        } else if (streak.weeklyActiveDays?.includes(item.jsDay) && isPastOrToday) {
+          // Fallback bila service memakai array mingguan yang ter-reset
+          isActive = true;
+        }
+      }
+
+      return {
+        ...item,
+        dateStr: targetDateStr,
+        isToday,
+        isActive,
+        isPast: targetDateStr < todayStr,
+      };
+    });
+  }, [streak.currentStreak, streak.lastActiveDate, streak.weeklyActiveDays]);
 
   const handleOpenLeaderboard = async () => {
     setViewMode('leaderboard');
@@ -179,7 +230,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
             className="relative max-w-sm sm:max-w-md w-full rounded-3xl bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-slate-800 dark:text-zinc-100 shadow-2xl p-6 sm:p-7 text-center overflow-hidden flex flex-col items-center max-h-[88vh]"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Ambient Glow Oranye / Violet */}
+            {/* Ambient Glow */}
             <div
               className={`absolute -top-10 left-1/2 -translate-x-1/2 w-56 h-56 rounded-full blur-3xl pointer-events-none transition-colors ${
                 isMythic ? 'bg-purple-600/30' : 'bg-orange-500/20'
@@ -218,7 +269,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                 animate={{ opacity: 1, x: 0 }}
                 className="w-full flex flex-col items-center"
               >
-                {/* 3D Glossy SVG Flame Utama */}
+                {/* 3D Glossy SVG Flame */}
                 <motion.div
                   animate={{
                     scale: [1, 1.07, 1],
@@ -238,7 +289,6 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                   {streak.currentStreak} Hari
                 </h2>
 
-                {/* TEKS DENGAN NAMA USER */}
                 <p
                   className={`text-xs font-bold mt-0.5 tracking-wide ${
                     isMythic
@@ -249,7 +299,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                   {userName} Menyala!
                 </p>
 
-                {/* BANNER STREAK REVIVE JIKA PUTUS */}
+                {/* BANNER STREAK REVIVE */}
                 {streak.canRevive && (streak.previousBrokenStreak || 0) > 1 && (
                   <motion.div
                     initial={{ opacity: 0, y: 8 }}
@@ -295,41 +345,36 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                     Aktivitas Minggu Ini
                   </p>
                   <div className="grid grid-cols-7 gap-1.5 pt-1">
-                    {daysOfWeek.map((day) => {
-                      const isActive = streak.weeklyActiveDays?.includes(day.jsDay);
-                      const isToday = day.jsDay === todayJsDay;
-
-                      return (
-                        <div key={day.label} className="flex flex-col items-center gap-1">
-                          <div
-                            className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold transition-all ${
-                              isActive
-                                ? isMythic
-                                  ? 'bg-gradient-to-br from-purple-600 to-pink-500 text-white shadow-xs'
-                                  : 'bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-xs'
-                                : isToday
-                                ? 'border-2 border-dashed border-amber-500 text-amber-500 bg-amber-50/50 dark:bg-amber-950/20'
-                                : 'bg-slate-200/70 dark:bg-zinc-700/60 text-slate-400 dark:text-zinc-500'
-                            }`}
-                          >
-                            {isActive ? (
-                              <GlossyFlameIcon className="w-4 h-5" streakCount={streak.currentStreak} />
-                            ) : (
-                              <span>{day.initial}</span>
-                            )}
-                          </div>
-                          <span
-                            className={`text-[9.5px] font-medium ${
-                              isToday
-                                ? 'font-bold text-amber-600 dark:text-amber-400'
-                                : 'text-slate-400 dark:text-zinc-500'
-                            }`}
-                          >
-                            {day.label}
-                          </span>
+                    {weeklySchedule.map((day) => (
+                      <div key={day.label} className="flex flex-col items-center gap-1">
+                        <div
+                          className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold transition-all ${
+                            day.isActive
+                              ? isMythic
+                                ? 'bg-gradient-to-br from-purple-600 to-pink-500 text-white shadow-xs'
+                                : 'bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-xs'
+                              : day.isToday
+                              ? 'border-2 border-dashed border-amber-500 text-amber-500 bg-amber-50/50 dark:bg-amber-950/20'
+                              : 'bg-slate-200/70 dark:bg-zinc-700/60 text-slate-400 dark:text-zinc-500'
+                          }`}
+                        >
+                          {day.isActive ? (
+                            <GlossyFlameIcon className="w-4 h-5" streakCount={streak.currentStreak} />
+                          ) : (
+                            <span>{day.initial}</span>
+                          )}
                         </div>
-                      );
-                    })}
+                        <span
+                          className={`text-[9.5px] font-medium ${
+                            day.isToday
+                              ? 'font-bold text-amber-600 dark:text-amber-400'
+                              : 'text-slate-400 dark:text-zinc-500'
+                          }`}
+                        >
+                          {day.label}
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
@@ -380,7 +425,6 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                   <span>Leaderboard Streak</span>
                 </motion.button>
 
-                {/* Catatan Pengingat Login Harian */}
                 <p className="mt-2.5 text-[11px] font-normal text-slate-400 dark:text-zinc-500 leading-snug">
                   Buka myMbud min. 1x/hari untuk mempertahankan streak-mu! 
                 </p>
