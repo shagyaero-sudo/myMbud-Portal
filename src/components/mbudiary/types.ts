@@ -41,6 +41,7 @@ export interface UserProfile {
   isVerified?: boolean | 'gold' | 'blue';
   photoUrl?: string;
   headerUrl?: string;
+  bio?: string;
 }
 
 export interface MbudiaryUser {
@@ -52,6 +53,7 @@ export interface MbudiaryUser {
   isVerified?: boolean | 'gold' | 'blue';
   photoUrl?: string;
   headerUrl?: string;
+  bio?: string;
   updatedAt?: string;
 }
 

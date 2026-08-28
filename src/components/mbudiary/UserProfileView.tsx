@@ -175,6 +175,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
   const authorEmoji = authorProfile?.emoji || (isSelf ? currentUser.emoji : '😊');
   const authorPhotoUrl = authorProfile?.photoUrl || (isSelf ? currentUser.photoUrl : undefined);
   const authorHeaderUrl = authorProfile?.headerUrl || (isSelf ? currentUser.headerUrl : undefined);
+  const authorBio = authorProfile?.bio || (isSelf ? currentUser.bio : undefined);
 
   const activeBadgeTier = getBadgeTier(authorNrp, (authorProfile as any)?.isVerified);
 
@@ -303,6 +304,13 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
             {authorUsername && (
               <div className="text-[13px] text-slate-500 dark:text-zinc-400 font-medium mt-0.5">@{authorUsername}</div>
             )}
+
+            {/* BIO DESKRIPSI PROFIL */}
+            {authorBio && (
+              <p className="text-xs sm:text-[13px] text-slate-700 dark:text-zinc-300 font-normal leading-relaxed mt-2 whitespace-pre-line">
+                {authorBio}
+              </p>
+            )}
           </div>
 
           <div className="grid grid-cols-3 gap-2 w-full">
@@ -315,7 +323,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
               <span className="text-slate-500 dark:text-zinc-400 font-medium leading-none mt-0.5 xl:mt-0">Cerita</span>
             </div>
 
-            {/* EASTER EGG: PENGIKUT DENGAN AKHIRAN 'k' JIKA > 0 */}
+            {/* PENGIKUT */}
             <button onClick={() => openFollowModal('followers')} className="p-2.5 sm:px-3.5 sm:py-2.5 rounded-2xl bg-white/60 hover:bg-white/90 dark:bg-zinc-800/40 dark:hover:bg-zinc-800/70 border border-slate-200/50 dark:border-white/5 flex flex-col xl:flex-row items-center justify-center gap-1 sm:gap-2 text-[11px] sm:text-[13px] transition-all cursor-pointer text-center">
               <div className="flex items-center gap-1.5">
                 <Users className="w-4 h-4 text-amber-500 shrink-0" />
@@ -326,7 +334,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
               <span className="text-slate-500 dark:text-zinc-400 font-medium leading-none mt-0.5 xl:mt-0">Pengikut</span>
             </button>
 
-            {/* MENGIKUTI: TETAP ANGKA NORMAL */}
+            {/* MENGIKUTI */}
             <button onClick={() => openFollowModal('following')} className="p-2.5 sm:px-3.5 sm:py-2.5 rounded-2xl bg-white/60 hover:bg-white/90 dark:bg-zinc-800/40 dark:hover:bg-zinc-800/70 border border-slate-200/50 dark:border-white/5 flex flex-col xl:flex-row items-center justify-center gap-1 sm:gap-2 text-[11px] sm:text-[13px] transition-all cursor-pointer text-center">
               <div className="flex items-center gap-1.5">
                 <UserPlus className="w-4 h-4 text-emerald-500 shrink-0" />
@@ -338,7 +346,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
         </div>
       </motion.div>
 
-      {/* DAFTAR POSTINGAN USER (SINGLE ROUNDED CONTAINER WITH DIVIDERS) */}
+      {/* DAFTAR POSTINGAN USER */}
       <div className="space-y-3 pt-1">
         {userPosts.length === 0 ? (
           <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-8 text-center text-xs text-slate-400 dark:text-zinc-500 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none w-full">

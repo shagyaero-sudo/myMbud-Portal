@@ -795,13 +795,13 @@ export const PostCard: React.FC<PostCardProps> = ({
             >
               <h4 className="text-[11px] font-bold text-slate-600 dark:text-zinc-400 flex items-center gap-1.5 pl-1">
                 <CornerDownRight className="w-3 h-3 text-blue-500" />
-                Komen & Balasan ({replies.length})
+                Komentar ({replies.length})
               </h4>
 
               <div className="space-y-1.5">
                 {replies.length === 0 ? (
                   <div className="p-2.5 text-center rounded-xl bg-white/50 dark:bg-zinc-800/30 border border-slate-200/40 dark:border-white/5 text-xs text-slate-400 dark:text-zinc-500 italic">
-                    Belum ada komen. Berikan tanggapan pertamamu!
+                    Belum ada komen. Berikan komentar pertama!
                   </div>
                 ) : (
                   replies.map((reply) => {

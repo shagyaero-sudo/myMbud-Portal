@@ -28,6 +28,7 @@ export const MbudiaryView: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editUsername, setEditUsername] = useState(currentUser.username || '');
   const [editPhotoUrl, setEditPhotoUrl] = useState<string | undefined>(currentUser.photoUrl);
+  const [editBio, setEditBio] = useState(currentUser.bio || '');
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
@@ -155,10 +156,11 @@ export const MbudiaryView: React.FC = () => {
     if (!hasPrompted && (isDefaultUsername || isNoCustomPhoto)) {
       setEditUsername(currentUser.username || '');
       setEditPhotoUrl(currentUser.photoUrl);
+      setEditBio(currentUser.bio || '');
       setIsEditModalOpen(true);
       localStorage.setItem(ONBOARDING_PROFILE_KEY, 'true');
     }
-  }, [currentUser.username, currentUser.photoUrl]);
+  }, [currentUser.username, currentUser.photoUrl, currentUser.bio]);
 
   useEffect(() => {
     const sync = () => {
@@ -200,6 +202,7 @@ export const MbudiaryView: React.FC = () => {
   const handleOpenEditModal = () => {
     setEditUsername(currentUser.username || '');
     setEditPhotoUrl(currentUser.photoUrl);
+    setEditBio(currentUser.bio || '');
     setIsEditModalOpen(true);
   };
 
@@ -242,6 +245,7 @@ export const MbudiaryView: React.FC = () => {
         username: normalizedUsername,
         emoji: '😊',
         photoUrl: editPhotoUrl,
+        bio: editBio.trim(),
       });
       localStorage.setItem(ONBOARDING_PROFILE_KEY, 'true');
       setIsEditModalOpen(false);
@@ -283,7 +287,7 @@ export const MbudiaryView: React.FC = () => {
               className="mx-1 sm:mx-0 p-3 rounded-2xl bg-blue-500/10 dark:bg-blue-500/15 border border-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-between gap-3 backdrop-blur-md shadow-xs"
             >
               <div className="flex items-center gap-2.5 text-xs font-semibold min-w-0">
-                <span className="text-base shrink-0">👈</span>
+                <span className="text-base shrink-0">👉</span>
                 <span className="leading-snug">
                   <span className="font-black">Tips:</span> swipe dari tepi layar buat back to Feed
                 </span>
@@ -443,6 +447,24 @@ export const MbudiaryView: React.FC = () => {
                       className="w-full pl-7 pr-3.5 py-2.5 rounded-2xl bg-white/70 dark:bg-zinc-800/80 text-xs border border-slate-200/80 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300">
+                      Bio / Deskripsi
+                    </label>
+                    <span className="text-[10px] text-slate-400 dark:text-zinc-500">
+                      {editBio.length}/150
+                    </span>
+                  </div>
+                  <textarea
+                    value={editBio}
+                    onChange={(e) => setEditBio(e.target.value.slice(0, 150))}
+                    placeholder="Tulis deskripsi singkat tentang dirimu..."
+                    rows={2}
+                    className="w-full px-3.5 py-2.5 rounded-2xl bg-white/70 dark:bg-zinc-800/80 text-xs border border-slate-200/80 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  />
                 </div>
 
                 <div className="flex items-center justify-end gap-2 pt-2">
