@@ -11,6 +11,7 @@ import {
   getCachedUserByNrp,
   setUserVerified,
   saveUserProfile,
+  getUserByUsername,
 } from './lib/storage';
 import { uploadImagesToCloudinary } from './lib/cloudinary';
 import { getOptimizedImageUrl } from './lib/utils';
@@ -27,10 +28,73 @@ import {
   Edit3,
   X,
   Sparkles,
+  ExternalLink,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { notifyUserFollowed } from '../../services/oneSignalNotification';
+
+// Helper Auto-detect & Clickable URL + Mention
+const FormattedBioContent: React.FC<{
+  content: string;
+  onSelectAuthor?: (nrp: string) => void;
+}> = ({ content, onSelectAuthor }) => {
+  if (!content) return null;
+
+  // Regex mendeteksi URL (https://, http://, atau domain tanpa protokol) dan mention @user
+  const tokenRegex = /(https?:\/\/[^\s]+|(?:[a-zA-Z0-9-]+\.)+(?:com|id|net|org|io|me|app|dev|edu|ac\.id)[^\s]*|@[a-zA-Z0-9_.]+)/gi;
+
+  const parts = content.split(tokenRegex);
+
+  return (
+    <span>
+      {parts.map((part, index) => {
+        if (!part) return null;
+
+        // 1. Parse Mention @username
+        if (part.startsWith('@')) {
+          const username = part.substring(1).toLowerCase();
+          return (
+            <span
+              key={index}
+              onClick={async (e) => {
+                e.stopPropagation();
+                const user = await getUserByUsername(username);
+                if (user && onSelectAuthor) {
+                  onSelectAuthor(user.nrp);
+                }
+              }}
+              className="text-blue-600 dark:text-blue-400 font-semibold hover:underline cursor-pointer"
+            >
+              {part}
+            </span>
+          );
+        }
+
+        // 2. Parse Clickable Link
+        const isUrl = /(https?:\/\/[^\s]+|(?:[a-zA-Z0-9-]+\.)+(?:com|id|net|org|io|me|app|dev|edu|ac\.id)[^\s]*)/i.test(part);
+        if (isUrl) {
+          const fullHref = part.startsWith('http://') || part.startsWith('https://') ? part : `https://${part}`;
+          return (
+            <a
+              key={index}
+              href={fullHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="text-blue-600 dark:text-blue-400 font-semibold hover:underline inline-flex items-center gap-0.5 break-all cursor-pointer"
+            >
+              <span>{part}</span>
+              <ExternalLink className="w-3 h-3 inline-block opacity-70 shrink-0" />
+            </a>
+          );
+        }
+
+        return <span key={index}>{part}</span>;
+      })}
+    </span>
+  );
+};
 
 interface UserProfileViewProps {
   authorNrp: string;
@@ -305,10 +369,10 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
               <div className="text-[13px] text-slate-500 dark:text-zinc-400 font-medium mt-0.5">@{authorUsername}</div>
             )}
 
-            {/* BIO DESKRIPSI PROFIL */}
+            {/* BIO DENGAN CLICKABLE LINK & MENTION */}
             {authorBio && (
               <p className="text-xs sm:text-[13px] text-slate-700 dark:text-zinc-300 font-normal leading-relaxed mt-2 whitespace-pre-line">
-                {authorBio}
+                <FormattedBioContent content={authorBio} onSelectAuthor={onSelectAuthor} />
               </p>
             )}
           </div>
