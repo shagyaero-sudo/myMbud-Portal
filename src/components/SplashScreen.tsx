@@ -7,10 +7,10 @@ interface SplashScreenProps {
 
 export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
   useEffect(() => {
-    // 950ms total agar transisi fade in -> diam sejenak -> fade out terasa pas
+    // 1200ms agar ada waktu bernapas: fade-in lembut -> stay -> fade-out halus
     const timer = setTimeout(() => {
       onComplete?.();
-    }, 950);
+    }, 1200);
 
     return () => clearTimeout(timer);
   }, [onComplete]);
@@ -21,7 +21,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
       exit={{
         opacity: 0,
         scale: 1.02,
-        transition: { duration: 0.28, ease: [0.32, 0.72, 0, 1] },
+        transition: { duration: 0.4, ease: [0.25, 1, 0.5, 1] },
       }}
       className="fixed -inset-10 z-[99999999] flex flex-col items-center justify-between select-none overflow-hidden overscroll-none touch-none pointer-events-none p-10"
       style={{
@@ -34,38 +34,45 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
       {/* Spacer Penyeimbang Atas */}
       <div className="w-full" />
 
-      {/* AMBIENT BLUE GLOW (FADE IN) */}
+      {/* AMBIENT BLUE GLOW (FADE IN SUPER LEMBUT) */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 0.45, scale: 1.15 }}
-          transition={{ duration: 0.45, ease: 'easeOut' }}
+          initial={{ opacity: 0, scale: 0.85 }}
+          animate={{ opacity: 0.4, scale: 1.1 }}
+          transition={{
+            duration: 0.75,
+            ease: [0.4, 0, 0.2, 1],
+          }}
           className="w-[340px] sm:w-[480px] h-[340px] sm:h-[480px] rounded-full bg-blue-600/25 blur-[120px]"
         />
       </div>
 
-      {/* BIG LOGO + BLUE DROP SHADOW (FADE IN) */}
+      {/* BIG LOGO (FADE IN + SUBTLE SCALE-UP) */}
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
+        initial={{ opacity: 0, scale: 0.94 }}
+        animate={{ opacity: 1, scale: 1 }}
         transition={{
-          duration: 0.4,
-          ease: [0.16, 1, 0.3, 1],
+          duration: 0.65,
+          ease: [0.25, 0.1, 0.25, 1],
         }}
         className="relative z-10 w-44 h-44 sm:w-60 sm:h-60 md:w-72 md:h-72 flex items-center justify-center"
       >
         <img
           src="/logombud.png"
           alt="myMbud Logo"
-          className="w-full h-full object-contain drop-shadow-[0_0_40px_rgba(59,130,246,0.6)] select-none"
+          className="w-full h-full object-contain drop-shadow-[0_0_40px_rgba(59,130,246,0.55)] select-none"
         />
       </motion.div>
 
-      {/* FOOTER: myITS INTEGRATED (FADE IN) */}
+      {/* FOOTER: myITS INTEGRATED (MENYUSUL LEMBUT) */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 0.8 }}
-        transition={{ duration: 0.35, delay: 0.1, ease: 'easeOut' }}
+        transition={{
+          duration: 0.55,
+          delay: 0.2,
+          ease: 'easeInOut',
+        }}
         className="relative z-10 flex flex-col items-center gap-1 mb-6 sm:mb-8 select-none"
       >
         <img
