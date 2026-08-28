@@ -179,7 +179,6 @@ interface PostCardProps {
   isDetailPage?: boolean;
 }
 
-// FORMATTER DENGAN PARSER URL DAN MENTION @USER
 const FormattedPostContent: React.FC<{
   content: string;
   onSelectAuthor?: (nrp: string) => void;
@@ -194,7 +193,6 @@ const FormattedPostContent: React.FC<{
       {parts.map((part, index) => {
         if (!part) return null;
 
-        // 1. Parse Mention
         if (part.startsWith('@')) {
           const username = part.substring(1).toLowerCase();
           return (
@@ -214,7 +212,6 @@ const FormattedPostContent: React.FC<{
           );
         }
 
-        // 2. Parse URL / Link
         const isUrl = /(https?:\/\/[^\s]+|(?:[a-zA-Z0-9-]+\.)+(?:com|id|net|org|io|me|app|dev|edu|ac\.id)[^\s]*)/i.test(part);
         if (isUrl) {
           const fullHref = part.startsWith('http://') || part.startsWith('https://') ? part : `https://${part}`;
@@ -318,9 +315,6 @@ export const PostCard: React.FC<PostCardProps> = ({
     refreshComponentData();
     if (isDetailPage) {
       setIsRepliesExpanded(true);
-      setTimeout(() => {
-        commentInputRef.current?.focus();
-      }, 150);
     }
 
     window.addEventListener('mbud_users_change', refreshComponentData);
@@ -367,7 +361,6 @@ export const PostCard: React.FC<PostCardProps> = ({
 
     setCommentMentionQuery(null);
     setCommentMentionSuggestions([]);
-    commentInputRef.current.focus();
   };
 
   const authorName = authorProfile?.nickname || authorProfile?.username || post?.authorName || 'Mbuders';
@@ -426,14 +419,7 @@ export const PostCard: React.FC<PostCardProps> = ({
     if (onSelectPost && !isDetailPage) {
       onSelectPost(post.id);
     } else {
-      const nextExpanded = !isRepliesExpanded;
-      setIsRepliesExpanded(nextExpanded);
-      if (nextExpanded) {
-        setTimeout(() => {
-          commentInputRef.current?.focus();
-          commentInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 120);
-      }
+      setIsRepliesExpanded((prev) => !prev);
     }
   };
 
@@ -609,7 +595,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                           type="button"
                           onClick={handleDeletePost}
                           disabled={isDeleting}
-                          className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left text-xs font-semibold text-rose-600 dark:rose-400 hover:bg-rose-50/80 dark:hover:bg-rose-950/30 transition-colors disabled:opacity-50 cursor-pointer"
+                          className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50/80 dark:hover:bg-rose-950/30 transition-colors disabled:opacity-50 cursor-pointer"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                           <span>Hapus Postingan</span>
@@ -874,7 +860,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                 )}
               </div>
 
-              {/* FORM INPUT KOMENTAR DENGAN AUTO-FOCUS */}
+              {/* FORM INPUT KOMENTAR (MANUAL FOCUS) */}
               <form onSubmit={handleAddReply} className="flex items-center gap-2 pt-1 relative">
                 <div className="relative flex-1">
                   <input
@@ -960,7 +946,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                         Quote Repost
                       </h3>
                       <p className="text-[11px] text-slate-400 dark:text-zinc-500 mt-0.5">
-                        Tambahkan komentar sebelum merepost.
+                        Tambahkan komentar sebelum me-repost.
                       </p>
                     </div>
                     <button
