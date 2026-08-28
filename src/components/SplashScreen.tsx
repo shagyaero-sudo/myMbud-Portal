@@ -7,10 +7,10 @@ interface SplashScreenProps {
 
 export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
   useEffect(() => {
-    // 850ms total waktu tampil sebelum fade-out mulus ke dashboard
+    // 950ms total agar transisi fade in -> diam sejenak -> fade out terasa pas
     const timer = setTimeout(() => {
       onComplete?.();
-    }, 850);
+    }, 950);
 
     return () => clearTimeout(timer);
   }, [onComplete]);
@@ -34,39 +34,37 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
       {/* Spacer Penyeimbang Atas */}
       <div className="w-full" />
 
-      {/* Subtle Ambient Glow */}
+      {/* AMBIENT BLUE GLOW (FADE IN) */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 0.35 }}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 0.45, scale: 1.15 }}
           transition={{ duration: 0.45, ease: 'easeOut' }}
-          className="w-[340px] sm:w-[480px] h-[340px] sm:h-[480px] rounded-full bg-blue-600/20 blur-[120px]"
+          className="w-[340px] sm:w-[480px] h-[340px] sm:h-[480px] rounded-full bg-blue-600/25 blur-[120px]"
         />
       </div>
 
-      {/* BIG LOGO DENGAN POP-IN HALUS (APPLE SPRING) */}
+      {/* BIG LOGO + BLUE DROP SHADOW (FADE IN) */}
       <motion.div
-        initial={{ scale: 0.82, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
         transition={{
-          type: 'spring',
-          stiffness: 420,
-          damping: 32,
-          mass: 0.8,
+          duration: 0.4,
+          ease: [0.16, 1, 0.3, 1],
         }}
         className="relative z-10 w-44 h-44 sm:w-60 sm:h-60 md:w-72 md:h-72 flex items-center justify-center"
       >
         <img
           src="/logombud.png"
           alt="myMbud Logo"
-          className="w-full h-full object-contain drop-shadow-[0_0_40px_rgba(59,130,246,0.5)] select-none"
+          className="w-full h-full object-contain drop-shadow-[0_0_40px_rgba(59,130,246,0.6)] select-none"
         />
       </motion.div>
 
-      {/* FOOTER: myITS INTEGRATED */}
+      {/* FOOTER: myITS INTEGRATED (FADE IN) */}
       <motion.div
-        initial={{ opacity: 0, y: 4 }}
-        animate={{ opacity: 0.8, y: 0 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 0.8 }}
         transition={{ duration: 0.35, delay: 0.1, ease: 'easeOut' }}
         className="relative z-10 flex flex-col items-center gap-1 mb-6 sm:mb-8 select-none"
       >
