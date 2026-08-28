@@ -118,65 +118,61 @@ export const StreakModal: React.FC<StreakModalProps> = ({
   const isMythic = streak.currentStreak >= 100;
 
   // =========================================================================
-  // KALKULASI REAL-TIME MINGGU INI (SENIN -> MINGGU BERDASARKAN TANGGAL NYATA)
+  // KALKULASI REAL-TIME MINGGU INI (LOCAL TIMEZONE / BEBAS BUG UTC)
   // =========================================================================
   const weeklySchedule = useMemo(() => {
     const now = new Date();
-    const currentDay = now.getDay(); // 0 = Min, 1 = Sen, ..., 6 = Sab
-    const distanceToMonday = currentDay === 0 ? -6 : 1 - currentDay;
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+    const currentDate = now.getDate();
+    const currentDay = now.getDay(); // 0 = Min, 1 = Sen, 2 = Sel, 3 = Rab, 4 = Kam, 5 = Jum, 6 = Sab
 
-    const monday = new Date(now);
-    monday.setDate(now.getDate() + distanceToMonday);
-    monday.setHours(0, 0, 0, 0);
+    // Hitung jarak hari ke hari Senin minggu ini
+    const distanceToMonday = currentDay === 0 ? -6 : 1 - currentDay;
+    const monday = new Date(currentYear, currentMonth, currentDate + distanceToMonday, 0, 0, 0, 0);
 
     const labels = [
-      { label: 'Sen', initial: 'S', jsDay: 1 },
-      { label: 'Sel', initial: 'S', jsDay: 2 },
-      { label: 'Rab', initial: 'R', jsDay: 3 },
-      { label: 'Kam', initial: 'K', jsDay: 4 },
-      { label: 'Jum', initial: 'J', jsDay: 5 },
-      { label: 'Sab', initial: 'S', jsDay: 6 },
-      { label: 'Min', initial: 'M', jsDay: 0 },
+      { label: 'Sen', initial: 'S', dayOffset: 0 },
+      { label: 'Sel', initial: 'S', dayOffset: 1 },
+      { label: 'Rab', initial: 'R', dayOffset: 2 },
+      { label: 'Kam', initial: 'K', dayOffset: 3 },
+      { label: 'Jum', initial: 'J', dayOffset: 4 },
+      { label: 'Sab', initial: 'S', dayOffset: 5 },
+      { label: 'Min', initial: 'M', dayOffset: 6 },
     ];
 
-    const todayStr = now.toISOString().split('T')[0];
-    const lastActiveStr = streak.lastActiveDate ? streak.lastActiveDate.split('T')[0] : '';
-    const currentStreakCount = streak.currentStreak || 0;
+    const formatLocalDate = (d: Date) => {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const date = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${date}`;
+    };
 
-    return labels.map((item, index) => {
-      const targetDate = new Date(monday);
-      targetDate.setDate(monday.getDate() + index);
-      const targetDateStr = targetDate.toISOString().split('T')[0];
+    const todayStr = formatLocalDate(now);
+    const streakCount = Math.max(1, streak.currentStreak || 0);
+
+    return labels.map((item) => {
+      const targetDate = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + item.dayOffset, 0, 0, 0, 0);
+      const targetDateStr = formatLocalDate(targetDate);
 
       const isToday = targetDateStr === todayStr;
-      const isPastOrToday = targetDateStr <= todayStr;
+      const isFuture = targetDateStr > todayStr;
 
-      // Hitung apakah hari ini aktif:
-      // 1. Jika ada di array weeklyActiveDays dan tanggalnya di minggu ini
-      // 2. Atau jika streak masih jalan mundur dari hari ini
-      let isActive = false;
-      if (isPastOrToday && currentStreakCount > 0 && lastActiveStr) {
-        const lastActiveTime = new Date(lastActiveStr).getTime();
-        const targetDateTime = new Date(targetDateStr).getTime();
-        const diffDays = Math.round((lastActiveTime - targetDateTime) / (1000 * 60 * 60 * 24));
+      // Hitung selisih hari dari hari ini
+      const diffDaysFromToday = Math.round((new Date(currentYear, currentMonth, currentDate).getTime() - targetDate.getTime()) / (1000 * 60 * 60 * 24));
 
-        if (diffDays >= 0 && diffDays < currentStreakCount) {
-          isActive = true;
-        } else if (streak.weeklyActiveDays?.includes(item.jsDay) && isPastOrToday) {
-          // Fallback bila service memakai array mingguan yang ter-reset
-          isActive = true;
-        }
-      }
+      // HANYA aktif jika bukan masa depan dan masuk rentang streak ke belakang
+      const isActive = !isFuture && diffDaysFromToday >= 0 && diffDaysFromToday < streakCount;
 
       return {
         ...item,
         dateStr: targetDateStr,
         isToday,
         isActive,
-        isPast: targetDateStr < todayStr,
+        isFuture,
       };
     });
-  }, [streak.currentStreak, streak.lastActiveDate, streak.weeklyActiveDays]);
+  }, [streak.currentStreak]);
 
   const handleOpenLeaderboard = async () => {
     setViewMode('leaderboard');
