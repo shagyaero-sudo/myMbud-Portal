@@ -15,6 +15,7 @@ export const USER_EMOJI_KEY = 'mymbud_user_emoji';
 export const USER_USERNAME_KEY = 'mymbud_user_username';
 export const USER_PHOTO_URL_KEY = 'mymbud_user_photo_url';
 export const USER_HEADER_URL_KEY = 'mymbud_user_header_url';
+export const USER_BIO_KEY = 'mymbud_user_bio';
 
 // STORAGE KEYS UNTUK PERSISTENT INSTANT CACHE
 const CACHED_POSTS_KEY = 'mymbud_cache_posts';
@@ -78,6 +79,7 @@ function normalizeUser(data: Record<string, any>): MbudiaryUser {
     isVerified: isVerifiedValue,
     photoUrl: data.photo_url || undefined,
     headerUrl: data.header_url || undefined,
+    bio: data.bio || undefined,
     updatedAt: data.updated_at || undefined,
   };
 }
@@ -94,6 +96,7 @@ function normalizePost(data: Record<string, any>): MbudiaryPost {
     isRepost: Boolean(data.is_repost),
     originalPostId: data.original_post_id || undefined,
     quoteContent: data.quote_content || undefined,
+    isFollowersOnly: Boolean(data.is_followers_only),
     createdAt: data.created_at || new Date().toISOString(),
   };
 }
@@ -124,8 +127,9 @@ export function getUserProfile(): UserProfile {
   const emoji = localStorage.getItem(USER_EMOJI_KEY) || '😊';
   const photoUrl = localStorage.getItem(USER_PHOTO_URL_KEY) || undefined;
   const headerUrl = localStorage.getItem(USER_HEADER_URL_KEY) || undefined;
+  const bio = localStorage.getItem(USER_BIO_KEY) || undefined;
 
-  return { nrp, username, nickname, isOfficer, emoji, photoUrl, headerUrl };
+  return { nrp, username, nickname, isOfficer, emoji, photoUrl, headerUrl, bio };
 }
 
 export async function getUserByNrp(userNrp: string): Promise<MbudiaryUser | null> {
@@ -218,6 +222,7 @@ export async function syncUserProfileWithFirebase(): Promise<UserProfile> {
         isVerified: cloudUser.isVerified,
         photoUrl: cloudUser.photoUrl,
         headerUrl: cloudUser.headerUrl,
+        bio: cloudUser.bio,
       };
 
       localStorage.setItem(USER_NRP_KEY, syncedProfile.nrp);
@@ -232,6 +237,9 @@ export async function syncUserProfileWithFirebase(): Promise<UserProfile> {
       if (syncedProfile.headerUrl) localStorage.setItem(USER_HEADER_URL_KEY, syncedProfile.headerUrl);
       else localStorage.removeItem(USER_HEADER_URL_KEY);
 
+      if (syncedProfile.bio) localStorage.setItem(USER_BIO_KEY, syncedProfile.bio);
+      else localStorage.removeItem(USER_BIO_KEY);
+
       emit('mbud_user_change');
       return syncedProfile;
     }
@@ -245,6 +253,7 @@ export async function syncUserProfileWithFirebase(): Promise<UserProfile> {
       isVerified: currentProfile.isVerified || false,
       photoUrl: currentProfile.photoUrl || undefined,
       headerUrl: currentProfile.headerUrl || undefined,
+      bio: currentProfile.bio || undefined,
     };
 
     const initialPayloadVerified = initialUser.isVerified === 'gold' ? 'gold' : initialUser.isVerified === 'blue' || initialUser.isVerified === true ? 'blue' : null;
@@ -258,6 +267,7 @@ export async function syncUserProfileWithFirebase(): Promise<UserProfile> {
       is_verified: initialPayloadVerified,
       photo_url: initialUser.photoUrl || null,
       header_url: initialUser.headerUrl || null,
+      bio: initialUser.bio || null,
       updated_at: new Date().toISOString(),
     });
     usersCache[normalizedNrp] = initialUser;
@@ -269,6 +279,7 @@ export async function syncUserProfileWithFirebase(): Promise<UserProfile> {
     localStorage.setItem(USER_EMOJI_KEY, initialUser.emoji);
     if (initialUser.photoUrl) localStorage.setItem(USER_PHOTO_URL_KEY, initialUser.photoUrl);
     if (initialUser.headerUrl) localStorage.setItem(USER_HEADER_URL_KEY, initialUser.headerUrl);
+    if (initialUser.bio) localStorage.setItem(USER_BIO_KEY, initialUser.bio);
 
     emit('mbud_user_change');
     return initialUser;
@@ -297,6 +308,7 @@ export async function saveUserProfile(profile: UserProfile): Promise<void> {
     isVerified: profile.isVerified || false,
     photoUrl: profile.photoUrl || undefined,
     headerUrl: profile.headerUrl || undefined,
+    bio: profile.bio || undefined,
   };
 
   const payloadVerified = cloudUser.isVerified === 'gold' ? 'gold' : cloudUser.isVerified === 'blue' || cloudUser.isVerified === true ? 'blue' : null;
@@ -310,6 +322,7 @@ export async function saveUserProfile(profile: UserProfile): Promise<void> {
     is_verified: payloadVerified,
     photo_url: cloudUser.photoUrl || null,
     header_url: cloudUser.headerUrl || null,
+    bio: cloudUser.bio || null,
     updated_at: new Date().toISOString(),
   });
 
@@ -328,6 +341,9 @@ export async function saveUserProfile(profile: UserProfile): Promise<void> {
 
   if (cloudUser.headerUrl) localStorage.setItem(USER_HEADER_URL_KEY, cloudUser.headerUrl);
   else localStorage.removeItem(USER_HEADER_URL_KEY);
+
+  if (cloudUser.bio) localStorage.setItem(USER_BIO_KEY, cloudUser.bio);
+  else localStorage.removeItem(USER_BIO_KEY);
 
   emit('mbud_user_change');
 }
@@ -582,10 +598,10 @@ export async function savePost(post: Omit<MbudiaryPost, 'id' | 'likes' | 'replyC
     isRepost: post.isRepost || false,
     originalPostId: post.originalPostId || undefined,
     quoteContent: post.quoteContent || undefined,
+    isFollowersOnly: post.isFollowersOnly || false,
     createdAt,
   };
 
-  // Optimistic update ke cache instan
   postsCache = [newPostItem, ...postsCache];
   saveLocalCache(CACHED_POSTS_KEY, postsCache);
   emit('mbud_posts_change');
@@ -601,6 +617,7 @@ export async function savePost(post: Omit<MbudiaryPost, 'id' | 'likes' | 'replyC
     is_repost: newPostItem.isRepost,
     original_post_id: newPostItem.originalPostId || null,
     quote_content: newPostItem.quoteContent || null,
+    is_followers_only: newPostItem.isFollowersOnly || false,
     created_at: createdAt,
   });
 

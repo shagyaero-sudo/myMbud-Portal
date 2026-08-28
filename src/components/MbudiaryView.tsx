@@ -452,7 +452,7 @@ export const MbudiaryView: React.FC = () => {
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300">
-                      Bio / Deskripsi
+                      Deskripsi
                     </label>
                     <span className="text-[10px] text-slate-400 dark:text-zinc-500">
                       {editBio.length}/150
@@ -461,7 +461,7 @@ export const MbudiaryView: React.FC = () => {
                   <textarea
                     value={editBio}
                     onChange={(e) => setEditBio(e.target.value.slice(0, 150))}
-                    placeholder="Tulis deskripsi singkat tentang dirimu..."
+                    placeholder="Tulis deskripsi..."
                     rows={2}
                     className="w-full px-3.5 py-2.5 rounded-2xl bg-white/70 dark:bg-zinc-800/80 text-xs border border-slate-200/80 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                   />
