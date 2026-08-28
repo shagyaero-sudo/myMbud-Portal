@@ -21,17 +21,18 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
         const playPromise = audio.play();
         if (playPromise !== undefined) {
           playPromise.catch((err) => {
-            console.warn('[SplashScreen] Autoplay audio dicegah browser:', err);
+            console.warn('[SplashScreen] Audio autoplay dicegah browser:', err);
           });
         }
       } catch (e) {
-        console.warn('[SplashScreen] Gagal memuat audio:', e);
+        console.warn('[SplashScreen] Gagal memutar audio:', e);
       }
     }
 
+    // Durasi total sebelum unmount: 900ms (cepat & snappy)
     const timer = setTimeout(() => {
       onComplete?.();
-    }, 950);
+    }, 900);
 
     return () => {
       clearTimeout(timer);
@@ -47,56 +48,34 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
       initial={{ opacity: 1 }}
       exit={{
         opacity: 0,
-        scale: 1.02,
-        transition: { duration: 0.35, ease: [0.32, 0.72, 0, 1] },
+        transition: { duration: 0.35, delay: 0.15, ease: 'easeOut' },
       }}
-      className="fixed inset-0 z-[99999999] flex flex-col items-center justify-between bg-[#090a0f] text-white select-none overflow-hidden p-6 sm:p-10 pointer-events-none"
+      className="fixed inset-0 z-[99999999] flex items-center justify-center bg-[#090a0f] select-none overflow-hidden overscroll-none touch-none pointer-events-none"
     >
+      {/* Ambient background glow */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div className="w-[320px] h-[320px] rounded-full bg-blue-600/10 blur-[90px]" />
+        <div className="w-[300px] h-[300px] rounded-full bg-blue-600/15 blur-[100px]" />
       </div>
 
-      <div className="w-full" />
-
+      {/* Twitter-style Zoom Through Icon */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.94, y: 8 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-        className="relative z-10 flex flex-col items-center gap-4"
-      >
-        <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center">
-          <img
-            src="/logombud.png"
-            alt="myMbud Logo"
-            className="w-full h-full object-contain drop-shadow-[0_0_24px_rgba(59,130,246,0.35)]"
-          />
-        </div>
-
-        <div className="text-center space-y-0.5">
-          <h1 className="text-lg sm:text-xl font-bold tracking-tight text-white/90">
-            <span className="font-light text-white/60">my</span>Mbud
-            <span className="font-light text-white/60"> Portal</span>
-          </h1>
-          <p className="text-[11px] font-medium tracking-wide text-zinc-500">
-            v2.5
-          </p>
-        </div>
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 0.6 }}
-        transition={{ duration: 0.4, delay: 0.2 }}
-        className="relative z-10 flex flex-col items-center gap-1 mb-[env(safe-area-inset-bottom)]"
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{
+          scale: [0.8, 1, 0.88, 38],
+          opacity: [0, 1, 1, 0],
+        }}
+        transition={{
+          duration: 0.85,
+          times: [0, 0.35, 0.55, 1],
+          ease: [0.7, 0, 0.3, 1],
+        }}
+        className="relative z-10 w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center origin-center"
       >
         <img
-          src="/myits-logo.svg"
-          alt="myITS Logo"
-          className="h-3 w-auto object-contain brightness-0 invert opacity-80"
+          src="/logombud.png"
+          alt="myMbud Logo"
+          className="w-full h-full object-contain drop-shadow-[0_0_25px_rgba(59,130,246,0.45)]"
         />
-        <span className="text-[8.5px] uppercase tracking-widest text-zinc-500 font-semibold">
-          Integrated
-        </span>
       </motion.div>
     </motion.div>
   );
