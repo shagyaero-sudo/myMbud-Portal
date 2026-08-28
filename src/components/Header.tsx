@@ -39,10 +39,6 @@ import {
   markAllNotificationsAsRead,
 } from '../services/notifications';
 
-import {
-  requestOneSignalPermission,
-} from '../services/oneSignal';
-
 import { sendOfficerNotification } from '../services/oneSignalNotification';
 import {
   syncUserStreak,
@@ -113,7 +109,6 @@ export const Header: React.FC<HeaderProps> = ({
   const [isQuickDrawerOpen, setIsQuickDrawerOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
-  const [isRequestingPush, setIsRequestingPush] = useState(false);
 
   const [streakData, setStreakData] = useState<UserStreak>(getLocalStreak);
   const [isStreakModalOpen, setIsStreakModalOpen] = useState(false);
@@ -408,16 +403,6 @@ export const Header: React.FC<HeaderProps> = ({
     }
   };
 
-  const handleEnablePush = async () => {
-    if (isRequestingPush) return;
-    setIsRequestingPush(true);
-    try {
-      await requestOneSignalPermission();
-    } finally {
-      setIsRequestingPush(false);
-    }
-  };
-
   const handleSendOfficerNotif = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!officerTargetNrp.trim() || !officerTitle.trim() || !officerMessage.trim() || isSendingOfficerNotif) return;
@@ -669,22 +654,6 @@ export const Header: React.FC<HeaderProps> = ({
                       </motion.div>
                     )}
                   </AnimatePresence>
-
-                  <div className="px-3 pt-3">
-                    <button onClick={handleEnablePush} disabled={isRequestingPush} className="w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl bg-blue-50/80 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50 hover:bg-blue-100 dark:hover:bg-blue-950/50 transition-all text-left disabled:opacity-60 cursor-pointer">
-                      <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0">
-                        <BellRing className="w-4 h-4" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-[11px] font-bold text-blue-700 dark:text-blue-300">
-                          {isRequestingPush ? 'Memproses...' : 'Aktifkan Push Notification'}
-                        </p>
-                        <p className="text-[9px] text-blue-500/80 dark:text-blue-400/70 mt-0.5">
-                          Terima notifikasi meski myMbud tidak sedang dibuka
-                        </p>
-                      </div>
-                    </button>
-                  </div>
 
                   <div className="max-h-[350px] sm:max-h-[430px] overflow-y-auto p-3 space-y-1.5 custom-scrollbar">
                     {notifications.length === 0 ? (
