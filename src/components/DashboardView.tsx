@@ -127,6 +127,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     return days[new Date().getDay()];
   }, []);
 
+  // Format Tanggal Hari Ini (Sabtu, 29 Agustus 2026)
+  const formattedTodayDate = useMemo(() => {
+    return new Intl.DateTimeFormat('id-ID', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    }).format(new Date());
+  }, []);
+
   // Helper normalisasi target NRP
   const parseTargetNrps = (raw: any): string[] => {
     if (!raw) return [];
@@ -565,9 +575,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <h2 className="text-xl font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
               {getGreeting()}
             </h2>
-            <p className="text-xs font-medium text-slate-500 dark:text-zinc-400 mt-0.5 leading-relaxed">
-              Siap untuk produktif hari ini?
-            </p>
+            {/* TANGGAL HARI INI DENGAN MICRO ICON KALENDER */}
+            <div className="flex items-center gap-1.5 mt-0.5 text-xs font-medium text-slate-500 dark:text-zinc-400 leading-relaxed">
+              <CalendarIcon className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500 shrink-0" />
+              <span>{formattedTodayDate}</span>
+            </div>
           </div>
 
           <motion.button
