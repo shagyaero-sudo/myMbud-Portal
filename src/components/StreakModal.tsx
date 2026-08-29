@@ -112,7 +112,9 @@ export const StreakModal: React.FC<StreakModalProps> = ({
 
   const isMythic = (streak.currentStreak || 0) >= 100;
 
-  // KALKULASI AKTIVITAS SENIN - MINGGU
+  // Tanggal implementasi pembaruan sistem check-in (29 Agustus 2026)
+  const MIGRATION_DATE_STR = '2026-08-29';
+
   const weeklySchedule = useMemo(() => {
     const now = new Date();
     const currentYear = now.getFullYear();
@@ -141,6 +143,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
     };
 
     const todayStr = formatLocalDate(now);
+    const streakCount = Math.max(1, streak.currentStreak || 0);
     const activeDatesSet = new Set(streak.activeDates || [todayStr]);
 
     return labels.map((item) => {
@@ -150,8 +153,19 @@ export const StreakModal: React.FC<StreakModalProps> = ({
       const isToday = targetDateStr === todayStr;
       const isPast = targetDateStr < todayStr;
       const isFuture = targetDateStr > todayStr;
-      const isActive = activeDatesSet.has(targetDateStr);
-      const isMissed = isPast && !isActive;
+
+      const diffDaysFromToday = Math.round(
+        (new Date(currentYear, currentMonth, currentDate).getTime() - targetDate.getTime()) / (1000 * 60 * 60 * 24)
+      );
+
+      // Hari sebelum tanggal migrasi: ikuti pakem lama (aktif berdasarkan streakCount)
+      const isPreMigrationActive = targetDateStr <= MIGRATION_DATE_STR && diffDaysFromToday >= 0 && diffDaysFromToday < streakCount;
+      // Hari setelah tanggal migrasi: aktif jika ada di riwayat activeDates
+      const isPostMigrationActive = targetDateStr > MIGRATION_DATE_STR && activeDatesSet.has(targetDateStr);
+
+      const isActive = !isFuture && (isPreMigrationActive || isPostMigrationActive);
+      // Hanya tampilkan X jika hari sudah lewat setelah tanggal migrasi dan tidak aktif
+      const isMissed = isPast && targetDateStr > MIGRATION_DATE_STR && !isActive;
 
       return {
         ...item,
@@ -162,7 +176,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
         isFuture,
       };
     });
-  }, [streak.activeDates]);
+  }, [streak.currentStreak, streak.activeDates]);
 
   const handleOpenLeaderboard = async () => {
     setViewMode('leaderboard');
@@ -296,7 +310,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                           {day.isActive ? (
                             <GlossyFlameIcon className="w-4 h-5" streakCount={streak.currentStreak} />
                           ) : day.isMissed ? (
-                            <span className="text-xs">✕</span>
+                            <span className="text-xs font-bold">✕</span>
                           ) : (
                             <span>{day.initial}</span>
                           )}
@@ -306,7 +320,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                             day.isToday
                               ? 'font-bold text-amber-600 dark:text-amber-400'
                               : day.isMissed
-                              ? 'text-rose-500 dark:text-rose-400'
+                              ? 'text-rose-500 dark:text-rose-400 font-semibold'
                               : 'text-slate-400 dark:text-zinc-500'
                           }`}
                         >

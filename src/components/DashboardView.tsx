@@ -121,13 +121,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const currentUserNrp = typeof window !== 'undefined' ? (localStorage.getItem('mymbud_user_nrp') || '').trim().toLowerCase() : '';
   const userName = typeof window !== 'undefined' ? localStorage.getItem('mymbud_user_name') || 'Mbuders' : 'Mbuders';
 
-  // Helper deteksi hari ini
   const todayActualName = useMemo(() => {
     const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
     return days[new Date().getDay()];
   }, []);
 
-  // Format Tanggal Hari Ini (Sabtu, 29 Agustus 2026)
   const formattedTodayDate = useMemo(() => {
     return new Intl.DateTimeFormat('id-ID', {
       weekday: 'long',
@@ -137,7 +135,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }).format(new Date());
   }, []);
 
-  // Helper normalisasi target NRP
   const parseTargetNrps = (raw: any): string[] => {
     if (!raw) return [];
     if (Array.isArray(raw)) {
@@ -163,7 +160,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     return [];
   };
 
-  // 1. Filter hak akses jadwal mahasiswa berdasarkan NRP
   const visibleSchedules = useMemo(() => {
     const cleanUserNrp = currentUserNrp.trim().toLowerCase();
 
@@ -179,12 +175,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     });
   }, [state.schedules, currentUserNrp]);
 
-  // 2. Cek apakah ada jadwal di hari Jumat untuk user ini
   const hasFridaySchedule = useMemo(() => {
     return visibleSchedules.some((s) => s.day === 'Jumat');
   }, [visibleSchedules]);
 
-  // 3. Tab hari adaptif: hanya tampilkan Jumat jika user memang punya kelas Jumat
   const dayTabs: DayOfWeek[] = useMemo(() => {
     const baseDays: DayOfWeek[] = ['Senin', 'Selasa', 'Rabu', 'Kamis'];
     if (hasFridaySchedule) {
@@ -193,7 +187,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     return baseDays;
   }, [hasFridaySchedule]);
 
-  // 4. Inisialisasi tab aktif: hanya aktif jika hari ini termasuk dalam dayTabs dan punya kelas
   useEffect(() => {
     if (dayTabs.includes(todayActualName as DayOfWeek)) {
       setSelectedDay(todayActualName as DayOfWeek);
@@ -211,6 +204,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         setIsStreakModalOpen(true);
       }
     });
+
+    const refreshStreak = () => {
+      setStreakData(getLocalStreak());
+    };
+
+    window.addEventListener('mbud_streak_change', refreshStreak);
+    return () => window.removeEventListener('mbud_streak_change', refreshStreak);
   }, [currentUserNrp, userName]);
 
   useEffect(() => {
@@ -575,7 +575,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <h2 className="text-xl font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
               {getGreeting()}
             </h2>
-            {/* TANGGAL HARI INI DENGAN MICRO ICON KALENDER */}
             <div className="flex items-center gap-1.5 mt-0.5 text-xs font-medium text-slate-500 dark:text-zinc-400 leading-relaxed">
               <CalendarIcon className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500 shrink-0" />
               <span>{formattedTodayDate}</span>
@@ -699,6 +698,22 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </motion.div>
             </div>
           )}
+
+          {/* MICRO DOT INDICATORS */}
+          {totalAnn > 1 && (
+            <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex items-center gap-1 pointer-events-none z-10">
+              {realAnnouncements.map((_, idx) => (
+                <div
+                  key={idx}
+                  className={`h-1 rounded-full transition-all duration-300 ${
+                    activeAnnIndex === idx
+                      ? 'w-3 bg-blue-500 dark:bg-blue-400 opacity-90'
+                      : 'w-1 bg-slate-400/40 dark:bg-zinc-600/40'
+                  }`}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -779,7 +794,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
             {/* KONTEN JADWAL / NOTICE CARD HARI INI */}
             <div className="space-y-2.5 pt-1">
-              {/* JIKA SELECTED DAY NULL (HARI INI LIBUR / TIDAK ADA JADWAL AKTIF) */}
               {selectedDay === null ? (
                 <div className="p-8 text-center space-y-3 bg-slate-50/50 dark:bg-zinc-800/30 rounded-2xl border border-slate-200/40 dark:border-white/5">
                   <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center mx-auto shadow-xs">

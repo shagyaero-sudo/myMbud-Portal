@@ -41,7 +41,6 @@ import {
 
 import { sendOfficerNotification } from '../services/oneSignalNotification';
 import {
-  syncUserStreak,
   getLocalStreak,
   UserStreak,
 } from '../services/streakService';
@@ -198,12 +197,13 @@ export const Header: React.FC<HeaderProps> = ({
   }, []);
 
   useEffect(() => {
-    if (!targetNrp || targetNrp === 'unknown') return;
+    const refreshStreak = () => {
+      setStreakData(getLocalStreak());
+    };
 
-    syncUserStreak(targetNrp, currentUserName).then(({ streak }) => {
-      setStreakData(streak);
-    });
-  }, [targetNrp, currentUserName]);
+    window.addEventListener('mbud_streak_change', refreshStreak);
+    return () => window.removeEventListener('mbud_streak_change', refreshStreak);
+  }, []);
 
   useEffect(() => {
     if (!targetNrp || targetNrp === 'unknown') {

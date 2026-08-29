@@ -4,7 +4,7 @@ export interface UserStreak {
   currentStreak: number;
   longestStreak: number;
   lastActiveDate: string;
-  activeDates: string[]; // Riwayat tanggal aktif (YYYY-MM-DD)
+  activeDates: string[];
 }
 
 export interface SyncStreakResult {
@@ -21,6 +21,12 @@ export interface LeaderboardUser {
 
 const STORAGE_KEY = 'mymbud_user_streak_v2';
 const POPUP_SEEN_KEY = 'mymbud_streak_popup_seen_date';
+
+const emitStreakChange = () => {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('mbud_streak_change'));
+  }
+};
 
 const getLocalDateString = (dateObj = new Date()): string => {
   const year = dateObj.getFullYear();
@@ -56,7 +62,6 @@ export const syncUserStreak = async (
 
   let baseStreak = getLocalStreak();
 
-  // 1. Ambil data dari Supabase jika user valid
   if (normalizedNrp && normalizedNrp !== 'unknown') {
     try {
       const { data } = await supabase
@@ -70,7 +75,9 @@ export const syncUserStreak = async (
           currentStreak: data.current_streak || 1,
           longestStreak: data.longest_streak || data.current_streak || 1,
           lastActiveDate: data.last_active_date || '',
-          activeDates: Array.isArray(data.active_dates) ? data.active_dates : (data.last_active_date ? [data.last_active_date] : []),
+          activeDates: Array.isArray(data.active_dates)
+            ? data.active_dates
+            : (data.last_active_date ? [data.last_active_date] : []),
         };
       }
     } catch (err) {
@@ -81,20 +88,18 @@ export const syncUserStreak = async (
   const lastSeenPopupDate = localStorage.getItem(POPUP_SEEN_KEY);
   const isFirstVisitToday = lastSeenPopupDate !== today;
 
-  // 2. Jika hari ini sudah check-in, kembalikan data saat ini
   if (baseStreak.lastActiveDate === today) {
     if (isFirstVisitToday) {
       localStorage.setItem(POPUP_SEEN_KEY, today);
     }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(baseStreak));
+    emitStreakChange();
     return { streak: baseStreak, isFirstVisitToday };
   }
 
-  // 3. Logika Kumulatif: Buka di hari baru -> Streak selalu +1 tanpa pernah reset
   let newCurrent = (baseStreak.currentStreak || 0) + 1;
   let newActiveDates = Array.from(new Set([...(baseStreak.activeDates || []), today]));
-  
-  // Batasi penyimpanan tanggal lokal ke 60 hari terakhir agar hemat memori
+
   if (newActiveDates.length > 60) {
     newActiveDates = newActiveDates.slice(-60);
   }
@@ -108,8 +113,8 @@ export const syncUserStreak = async (
 
   localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedStreak));
   localStorage.setItem(POPUP_SEEN_KEY, today);
+  emitStreakChange();
 
-  // 4. Sinkronisasi ke Supabase
   if (normalizedNrp && normalizedNrp !== 'unknown') {
     try {
       await supabase.from('user_streaks').upsert({
