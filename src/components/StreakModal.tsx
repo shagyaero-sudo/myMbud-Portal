@@ -258,7 +258,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                   title="Cara Kerja Streak"
                 >
                   <HelpCircle className="w-3.5 h-3.5" />
-                  <span>Cara Kerja</span>
+                  <span>Aturan Main</span>
                 </button>
               )}
 
@@ -395,10 +395,10 @@ export const StreakModal: React.FC<StreakModalProps> = ({
               >
                 <div className="mb-3 text-center">
                   <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-100 flex items-center justify-center gap-2">
-                    <span>Cara Kerja</span> 💡
+                    <span>Cara Kerja Streak</span> 
                   </h3>
                   <p className="text-[11px] text-slate-400 dark:text-zinc-500">
-                    Sistem akumulasi streak myMbud
+                    Pada Sistem Akumulasi myMbud
                   </p>
                 </div>
 
@@ -408,7 +408,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                     <div>
                       <p className="font-bold text-slate-800 dark:text-zinc-200">1. Check-In Harian (+1 Hari)</p>
                       <p className="text-[11px] text-slate-500 dark:text-zinc-400 mt-0.5 leading-relaxed">
-                        Cukup buka myMbud 1x setiap hari untuk menambah 1 api streak. Buka berkali-kali di hari yang sama tidak akan menambah api eksisting.
+                        Cukup buka myMbud 1x setiap hari untuk menambah 1 api streak. Buka berkali-kali di hari yang sama tidak akan menambah jumlah api.
                       </p>
                     </div>
                   </div>
@@ -424,15 +424,16 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                   </div>
 
                   <div className="p-3 rounded-2xl bg-purple-50/70 dark:bg-purple-950/30 border border-purple-100 dark:border-purple-900/40 flex items-start gap-2.5">
-                    <Sparkles className="w-4 h-4 text-purple-500 shrink-0 mt-0.5" />
+                    <div className="shrink-0 mt-0.5">
+                      <GlossyFlameIcon className="w-4 h-5" streakCount={100} />
+                    </div>
                     <div>
-                      <p className="font-bold text-slate-800 dark:text-zinc-200">3. Api Mythic (100+ Hari)</p>
+                      <p className="font-bold text-slate-800 dark:text-zinc-200">3. Mythic Flame (100+ Hari)</p>
                       <p className="text-[11px] text-slate-500 dark:text-zinc-400 mt-0.5 leading-relaxed">
-                        Kumpulkan streak hingga 100 hari untuk membuka efek aura api ungu eksklusif (Mythic Flame) di profilmu!
+                        Kumpulkan streak hingga 100 hari untuk membuka efek aura api ungu (Mythic Flame) di profilmu!
                       </p>
                     </div>
                   </div>
-                </div>
 
                 <button
                   type="button"
