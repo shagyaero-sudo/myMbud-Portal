@@ -187,8 +187,31 @@ export const StreakModal: React.FC<StreakModalProps> = ({
     }
   };
 
-  const formatLastActive = (dateStr?: string) => {
-    if (!dateStr) return 'Hari ini';
+  const formatLastActive = (dateStr?: string, timestampStr?: string) => {
+    const rawTime = timestampStr || (dateStr && dateStr.includes('T') ? dateStr : null);
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+
+    if (rawTime) {
+      const date = new Date(rawTime);
+      if (!isNaN(date.getTime())) {
+        const now = new Date();
+        const isToday =
+          date.getDate() === now.getDate() &&
+          date.getMonth() === now.getMonth() &&
+          date.getFullYear() === now.getFullYear();
+
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const timeFormatted = `${hours}.${minutes}`;
+
+        if (isToday) {
+          return `Hari ini ${timeFormatted}`;
+        }
+        return `${date.getDate()} ${months[date.getMonth()]} ${timeFormatted}`;
+      }
+    }
+
+    if (!dateStr) return 'Belum pernah';
     const now = new Date();
     const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     
@@ -196,8 +219,9 @@ export const StreakModal: React.FC<StreakModalProps> = ({
 
     const parts = dateStr.split('-');
     if (parts.length === 3) {
-      const dateObj = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
-      return dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+      const d = Number(parts[2]);
+      const m = Number(parts[1]) - 1;
+      return `${d} ${months[m] || ''}`;
     }
     return dateStr;
   };
@@ -257,7 +281,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                   title="Cara Kerja Streak"
                 >
                   <HelpCircle className="w-3.5 h-3.5" />
-                  <span>Aturan Main</span>
+                  <span>Aturan</span>
                 </button>
               )}
 
@@ -304,10 +328,10 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                       : 'text-amber-500 dark:text-amber-400'
                   }`}
                 >
-                  {userName} Menyala!
+                  {userName} Jaga Api!
                 </p>
 
-                {/* Banner Notifikasi Erosi/Decay jika baru saja absen */}
+                {/* Banner Notifikasi Erosi/Decay */}
                 {Boolean(streak.daysMissedToday && streak.daysMissedToday > 0) && (
                   <div className="w-full mt-3 p-2.5 rounded-2xl bg-amber-50/90 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-900/50 flex items-center gap-2 text-left">
                     <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
@@ -380,7 +404,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                 </motion.button>
 
                 <p className="mt-2.5 text-[11px] font-normal text-slate-400 dark:text-zinc-500 leading-snug">
-                  Buka myMbud setiap hari untuk terus menaikkan streak-mu!
+                  Buka myMbud tiap hari untuk menaikkan streak!
                 </p>
               </motion.div>
             )}
@@ -491,7 +515,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                                 {user.name} {isMe && <span className="text-[10px] text-amber-600 dark:text-amber-400 font-bold">(Kamu)</span>}
                               </p>
                               <p className="text-[10px] text-slate-400 dark:text-zinc-500 truncate">
-                                Check-in: {formatLastActive(user.lastActiveDate)}
+                                Log: {formatLastActive(user.lastActiveDate, user.lastCheckedInAt)}
                               </p>
                             </div>
                           </div>

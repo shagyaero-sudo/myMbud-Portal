@@ -5,7 +5,7 @@ export interface UserStreak {
   longestStreak: number;
   lastActiveDate: string;
   activeDates: string[];
-  daysMissedToday?: number; // Jumlah hari bolos yang baru saja dipotong hari ini
+  daysMissedToday?: number;
 }
 
 export interface SyncStreakResult {
@@ -19,6 +19,7 @@ export interface LeaderboardUser {
   currentStreak: number;
   longestStreak: number;
   lastActiveDate: string;
+  lastCheckedInAt?: string;
 }
 
 const STORAGE_KEY = 'mymbud_user_streak_v2';
@@ -91,7 +92,6 @@ export const syncUserStreak = async (
   const lastSeenPopupDate = localStorage.getItem(POPUP_SEEN_KEY);
   const isFirstVisitToday = lastSeenPopupDate !== today;
 
-  // Jika sudah check-in hari ini
   if (baseStreak.lastActiveDate === today) {
     if (isFirstVisitToday) {
       localStorage.setItem(POPUP_SEEN_KEY, today);
@@ -102,7 +102,6 @@ export const syncUserStreak = async (
     return { streak: resultStreak, isFirstVisitToday };
   }
 
-  // Perhitungan Decay (Erosi Hari Bolos)
   let currentVal = baseStreak.currentStreak || 1;
   let daysMissed = 0;
 
@@ -115,13 +114,11 @@ export const syncUserStreak = async (
     const diffDays = Math.round((currDate.getTime() - lastDate.getTime()) / (1000 * 3600 * 24));
 
     if (diffDays > 1) {
-      // Absen = diffDays - 1 (misal tgl 2 ke tgl 6 = selisih 4 hari -> absen 3 hari: tgl 3, 4, 5)
       daysMissed = diffDays - 1;
       currentVal = Math.max(1, currentVal - daysMissed);
     }
   }
 
-  // Tambah reward login hari ini (+1)
   const newCurrent = currentVal + 1;
   let newActiveDates = Array.from(new Set([...(baseStreak.activeDates || []), today]));
 
@@ -165,7 +162,7 @@ export const fetchStreakLeaderboard = async (): Promise<LeaderboardUser[]> => {
   try {
     const { data, error } = await supabase
       .from('user_streaks')
-      .select('nrp, name, current_streak, longest_streak, last_active_date')
+      .select('nrp, name, current_streak, longest_streak, last_active_date, last_checked_in_at')
       .order('current_streak', { ascending: false })
       .order('last_checked_in_at', { ascending: true })
       .limit(45);
@@ -178,6 +175,7 @@ export const fetchStreakLeaderboard = async (): Promise<LeaderboardUser[]> => {
       currentStreak: item.current_streak || 1,
       longestStreak: item.longest_streak || item.current_streak || 1,
       lastActiveDate: item.last_active_date || '',
+      lastCheckedInAt: item.last_checked_in_at || '',
     }));
   } catch (err) {
     console.error('[Streak] Gagal mengambil leaderboard:', err);
