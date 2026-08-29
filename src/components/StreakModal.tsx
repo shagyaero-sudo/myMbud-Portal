@@ -6,13 +6,11 @@ import {
   CalendarCheck,
   Loader2,
   ChevronLeft,
-  ShieldAlert,
 } from 'lucide-react';
 import {
   UserStreak,
   LeaderboardUser,
   fetchStreakLeaderboard,
-  useStreakRevive,
 } from '../services/streakService';
 
 interface StreakModalProps {
@@ -23,14 +21,13 @@ interface StreakModalProps {
   onStreakUpdate?: (updated: UserStreak) => void;
 }
 
-// 3D Glossy Flame Asset dengan Unique SVG Gradient ID (Bebas Bentrok di HP)
 export const GlossyFlameIcon: React.FC<{ className?: string; streakCount?: number }> = ({
   className = "w-20 h-24",
   streakCount = 1,
 }) => {
   const isMythic = (streakCount || 0) >= 100;
   const rawId = useId();
-  const id = rawId.replace(/:/g, ''); // ID unik per instance SVG
+  const id = rawId.replace(/:/g, '');
 
   return (
     <div className={`relative flex items-center justify-center ${className}`}>
@@ -108,26 +105,21 @@ export const StreakModal: React.FC<StreakModalProps> = ({
   onClose,
   streak,
   userName,
-  onStreakUpdate,
 }) => {
   const [viewMode, setViewMode] = useState<'my_streak' | 'leaderboard'>('my_streak');
   const [leaderboard, setLeaderboard] = useState<LeaderboardUser[]>([]);
   const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState(false);
-  const [isReviving, setIsReviving] = useState(false);
 
-  const isMythic = streak.currentStreak >= 100;
+  const isMythic = (streak.currentStreak || 0) >= 100;
 
-  // =========================================================================
-  // KALKULASI REAL-TIME MINGGU INI (LOCAL TIMEZONE / BEBAS BUG UTC)
-  // =========================================================================
+  // KALKULASI AKTIVITAS SENIN - MINGGU
   const weeklySchedule = useMemo(() => {
     const now = new Date();
     const currentYear = now.getFullYear();
     const currentMonth = now.getMonth();
     const currentDate = now.getDate();
-    const currentDay = now.getDay(); // 0 = Min, 1 = Sen, 2 = Sel, 3 = Rab, 4 = Kam, 5 = Jum, 6 = Sab
+    const currentDay = now.getDay();
 
-    // Hitung jarak hari ke hari Senin minggu ini
     const distanceToMonday = currentDay === 0 ? -6 : 1 - currentDay;
     const monday = new Date(currentYear, currentMonth, currentDate + distanceToMonday, 0, 0, 0, 0);
 
@@ -149,30 +141,28 @@ export const StreakModal: React.FC<StreakModalProps> = ({
     };
 
     const todayStr = formatLocalDate(now);
-    const streakCount = Math.max(1, streak.currentStreak || 0);
+    const activeDatesSet = new Set(streak.activeDates || [todayStr]);
 
     return labels.map((item) => {
       const targetDate = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + item.dayOffset, 0, 0, 0, 0);
       const targetDateStr = formatLocalDate(targetDate);
 
       const isToday = targetDateStr === todayStr;
+      const isPast = targetDateStr < todayStr;
       const isFuture = targetDateStr > todayStr;
-
-      // Hitung selisih hari dari hari ini
-      const diffDaysFromToday = Math.round((new Date(currentYear, currentMonth, currentDate).getTime() - targetDate.getTime()) / (1000 * 60 * 60 * 24));
-
-      // HANYA aktif jika bukan masa depan dan masuk rentang streak ke belakang
-      const isActive = !isFuture && diffDaysFromToday >= 0 && diffDaysFromToday < streakCount;
+      const isActive = activeDatesSet.has(targetDateStr);
+      const isMissed = isPast && !isActive;
 
       return {
         ...item,
         dateStr: targetDateStr,
         isToday,
         isActive,
+        isMissed,
         isFuture,
       };
     });
-  }, [streak.currentStreak]);
+  }, [streak.activeDates]);
 
   const handleOpenLeaderboard = async () => {
     setViewMode('leaderboard');
@@ -181,19 +171,6 @@ export const StreakModal: React.FC<StreakModalProps> = ({
       const data = await fetchStreakLeaderboard();
       setLeaderboard(data);
       setIsLoadingLeaderboard(false);
-    }
-  };
-
-  const handleRevive = async () => {
-    const nrp = localStorage.getItem('mymbud_user_nrp') || 'unknown';
-    setIsReviving(true);
-    try {
-      const updated = await useStreakRevive(nrp, userName);
-      if (updated && onStreakUpdate) {
-        onStreakUpdate(updated);
-      }
-    } finally {
-      setIsReviving(false);
     }
   };
 
@@ -265,7 +242,6 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                 animate={{ opacity: 1, x: 0 }}
                 className="w-full flex flex-col items-center"
               >
-                {/* 3D Glossy SVG Flame */}
                 <motion.div
                   animate={{
                     scale: [1, 1.07, 1],
@@ -295,47 +271,8 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                   {userName} Menyala!
                 </p>
 
-                {/* BANNER STREAK REVIVE */}
-                {streak.canRevive && (streak.previousBrokenStreak || 0) > 1 && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="w-full mt-4 p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200/80 dark:border-rose-900/60 flex flex-col gap-2 text-left"
-                  >
-                    <div className="flex items-start gap-2.5">
-                      <div className="p-1.5 rounded-xl bg-rose-100 dark:bg-rose-900/50 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5">
-                        <ShieldAlert className="w-4 h-4" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-bold text-rose-900 dark:text-rose-200">
-                          Streak {streak.previousBrokenStreak} Hari Terputus!
-                        </p>
-                        <p className="text-[10px] text-rose-600 dark:text-rose-400 leading-tight mt-0.5">
-                          Kamu punya {streak.reviveQuota}x kesempatan revive untuk mempertahankan apimu di hari ke-{streak.previousBrokenStreak}.
-                        </p>
-                      </div>
-                    </div>
-
-                    <button
-                      type="button"
-                      disabled={isReviving}
-                      onClick={handleRevive}
-                      className="w-full py-2 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-600 hover:to-amber-600 text-white font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60"
-                    >
-                      {isReviving ? (
-                        <>
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          <span>Memulihkan...</span>
-                        </>
-                      ) : (
-                        <span>Gunakan Penyelamat Streak 🧊 ({streak.reviveQuota}/3)</span>
-                      )}
-                    </button>
-                  </motion.div>
-                )}
-
-                {/* Progress Mingguan: Senin -> Minggu */}
-                <div className="w-full mt-4 p-4 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 space-y-2">
+                {/* Progress Mingguan */}
+                <div className="w-full mt-5 p-4 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 space-y-2">
                   <p className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 text-left flex items-center gap-1.5">
                     <CalendarCheck className="w-3.5 h-3.5" />
                     Aktivitas Minggu Ini
@@ -349,6 +286,8 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                               ? isMythic
                                 ? 'bg-gradient-to-br from-purple-600 to-pink-500 text-white shadow-xs'
                                 : 'bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-xs'
+                              : day.isMissed
+                              ? 'bg-rose-50 dark:bg-rose-950/30 text-rose-500 dark:text-rose-400 border border-rose-200/50 dark:border-rose-900/40'
                               : day.isToday
                               ? 'border-2 border-dashed border-amber-500 text-amber-500 bg-amber-50/50 dark:bg-amber-950/20'
                               : 'bg-slate-200/70 dark:bg-zinc-700/60 text-slate-400 dark:text-zinc-500'
@@ -356,6 +295,8 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                         >
                           {day.isActive ? (
                             <GlossyFlameIcon className="w-4 h-5" streakCount={streak.currentStreak} />
+                          ) : day.isMissed ? (
+                            <span className="text-xs">✕</span>
                           ) : (
                             <span>{day.initial}</span>
                           )}
@@ -364,6 +305,8 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                           className={`text-[9.5px] font-medium ${
                             day.isToday
                               ? 'font-bold text-amber-600 dark:text-amber-400'
+                              : day.isMissed
+                              ? 'text-rose-500 dark:text-rose-400'
                               : 'text-slate-400 dark:text-zinc-500'
                           }`}
                         >
@@ -374,38 +317,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                   </div>
                 </div>
 
-                {/* Stat Rekor & Sisa Revive */}
-                <div className="w-full mt-3 grid grid-cols-2 gap-2">
-                  <div className="p-3 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 flex items-center gap-2">
-                    <div className="p-1.5 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 shrink-0">
-                      <Trophy className="w-3.5 h-3.5" />
-                    </div>
-                    <div className="text-left min-w-0">
-                      <p className="text-[9.5px] font-medium text-slate-400 dark:text-zinc-500 truncate">
-                        Rekor Terpanjang
-                      </p>
-                      <p className="text-xs font-bold text-slate-800 dark:text-zinc-200 truncate">
-                        {streak.longestStreak} Hari
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="p-3 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 flex items-center gap-2">
-                    <div className="p-1.5 rounded-xl bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 shrink-0 text-xs">
-                      🧊
-                    </div>
-                    <div className="text-left min-w-0">
-                      <p className="text-[9.5px] font-medium text-slate-400 dark:text-zinc-500 truncate">
-                        Restore Perbulan
-                      </p>
-                      <p className="text-xs font-bold text-slate-800 dark:text-zinc-200 truncate">
-                        {streak.reviveQuota ?? 3}x Jatah
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Tombol Buka Leaderboard */}
+                {/* Tombol Leaderboard */}
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -422,7 +334,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                 </motion.button>
 
                 <p className="mt-2.5 text-[11px] font-normal text-slate-400 dark:text-zinc-500 leading-snug">
-                  Buka myMbud min. 1x/hari untuk mempertahankan streak-mu! 
+                  Buka myMbud setiap hari untuk terus menaikkan streak-mu!
                 </p>
               </motion.div>
             )}
@@ -439,7 +351,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                     <span>Peringkat Teraktif</span> 🏆
                   </h3>
                   <p className="text-[11px] text-slate-400 dark:text-zinc-500">
-                    Mahasiswa dengan streak api terpanjang
+                    Mahasiswa dengan streak api tertinggi
                   </p>
                 </div>
 
@@ -473,7 +385,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                                 {user.name} {isMe && <span className="text-[10px] text-amber-600 dark:text-amber-400 font-bold">(Kamu)</span>}
                               </p>
                               <p className="text-[10px] text-slate-400 dark:text-zinc-500 truncate">
-                                Rekor: {user.longestStreak} hari
+                                Total: {user.currentStreak} hari aktif
                               </p>
                             </div>
                           </div>

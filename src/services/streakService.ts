@@ -4,11 +4,7 @@ export interface UserStreak {
   currentStreak: number;
   longestStreak: number;
   lastActiveDate: string;
-  weeklyActiveDays: number[];
-  reviveQuota: number;
-  reviveMonth?: string;
-  previousBrokenStreak?: number;
-  canRevive?: boolean;
+  activeDates: string[]; // Riwayat tanggal aktif (YYYY-MM-DD)
 }
 
 export interface SyncStreakResult {
@@ -23,49 +19,29 @@ export interface LeaderboardUser {
   longestStreak: number;
 }
 
-const STORAGE_KEY = 'mymbud_user_streak_v1';
+const STORAGE_KEY = 'mymbud_user_streak_v2';
 const POPUP_SEEN_KEY = 'mymbud_streak_popup_seen_date';
 
-const getLocalDateString = (): string => {
-  const d = new Date();
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
+const getLocalDateString = (dateObj = new Date()): string => {
+  const year = dateObj.getFullYear();
+  const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const day = String(dateObj.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 };
 
-const getLocalMonthString = (): string => {
-  const d = new Date();
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  return `${year}-${month}`;
-};
-
 export const getLocalStreak = (): UserStreak => {
-  const currentMonthKey = getLocalMonthString();
+  const today = getLocalDateString();
   const defaultStreak: UserStreak = {
     currentStreak: 1,
     longestStreak: 1,
-    lastActiveDate: '',
-    weeklyActiveDays: [new Date().getDay()],
-    reviveQuota: 3,
-    reviveMonth: currentMonthKey,
-    canRevive: false,
+    lastActiveDate: today,
+    activeDates: [today],
   };
 
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (!saved) return defaultStreak;
-
-    const parsed: UserStreak = JSON.parse(saved);
-
-    if (parsed.reviveMonth !== currentMonthKey) {
-      parsed.reviveQuota = 3;
-      parsed.reviveMonth = currentMonthKey;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
-    }
-
-    return parsed;
+    return JSON.parse(saved);
   } catch {
     return defaultStreak;
   }
@@ -76,12 +52,11 @@ export const syncUserStreak = async (
   userName: string
 ): Promise<SyncStreakResult> => {
   const today = getLocalDateString();
-  const currentMonthKey = getLocalMonthString();
-  const currentDayIndex = new Date().getDay();
   const normalizedNrp = userNrp.trim().toLowerCase();
 
   let baseStreak = getLocalStreak();
 
+  // 1. Ambil data dari Supabase jika user valid
   if (normalizedNrp && normalizedNrp !== 'unknown') {
     try {
       const { data } = await supabase
@@ -93,13 +68,9 @@ export const syncUserStreak = async (
       if (data) {
         baseStreak = {
           currentStreak: data.current_streak || 1,
-          longestStreak: data.longest_streak || 1,
+          longestStreak: data.longest_streak || data.current_streak || 1,
           lastActiveDate: data.last_active_date || '',
-          weeklyActiveDays: data.weekly_active_days || [currentDayIndex],
-          reviveQuota: typeof data.revive_quota === 'number' ? data.revive_quota : 3,
-          reviveMonth: data.revive_month || currentMonthKey,
-          canRevive: false,
-          previousBrokenStreak: 0,
+          activeDates: Array.isArray(data.active_dates) ? data.active_dates : (data.last_active_date ? [data.last_active_date] : []),
         };
       }
     } catch (err) {
@@ -110,87 +81,44 @@ export const syncUserStreak = async (
   const lastSeenPopupDate = localStorage.getItem(POPUP_SEEN_KEY);
   const isFirstVisitToday = lastSeenPopupDate !== today;
 
-  let reviveQuota = typeof baseStreak.reviveQuota === 'number' ? baseStreak.reviveQuota : 3;
-  if (baseStreak.reviveMonth !== currentMonthKey) {
-    reviveQuota = 3;
-  }
-
+  // 2. Jika hari ini sudah check-in, kembalikan data saat ini
   if (baseStreak.lastActiveDate === today) {
     if (isFirstVisitToday) {
       localStorage.setItem(POPUP_SEEN_KEY, today);
     }
-    const syncedCached: UserStreak = {
-      ...baseStreak,
-      reviveQuota,
-      reviveMonth: currentMonthKey,
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(syncedCached));
-    return { streak: syncedCached, isFirstVisitToday };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(baseStreak));
+    return { streak: baseStreak, isFirstVisitToday };
   }
 
-  let newCurrent = baseStreak.currentStreak;
-  let newLongest = baseStreak.longestStreak || 1;
-  let newWeeklyDays = [...(baseStreak.weeklyActiveDays || [])];
-  let canRevive = false;
-  let previousBrokenStreak = baseStreak.previousBrokenStreak || 0;
-
-  if (!baseStreak.lastActiveDate) {
-    newCurrent = 1;
-    newLongest = 1;
-    newWeeklyDays = [currentDayIndex];
-  } else {
-    const [ly, lm, ld] = baseStreak.lastActiveDate.split('-').map(Number);
-    const [ty, tm, td] = today.split('-').map(Number);
-
-    const lastDate = new Date(ly, lm - 1, ld);
-    const currDate = new Date(ty, tm - 1, td);
-
-    const diffTime = currDate.getTime() - lastDate.getTime();
-    const diffDays = Math.round(diffTime / (1000 * 3600 * 24));
-
-    if (diffDays === 1) {
-      newCurrent += 1;
-      canRevive = false;
-      if (!newWeeklyDays.includes(currentDayIndex)) {
-        newWeeklyDays.push(currentDayIndex);
-      }
-    } else if (diffDays > 1) {
-      previousBrokenStreak = baseStreak.currentStreak;
-      canRevive = reviveQuota > 0 && previousBrokenStreak > 1;
-      newCurrent = 1;
-      newWeeklyDays = [currentDayIndex];
-    }
-
-    if (newCurrent > newLongest) {
-      newLongest = newCurrent;
-    }
+  // 3. Logika Kumulatif: Buka di hari baru -> Streak selalu +1 tanpa pernah reset
+  let newCurrent = (baseStreak.currentStreak || 0) + 1;
+  let newActiveDates = Array.from(new Set([...(baseStreak.activeDates || []), today]));
+  
+  // Batasi penyimpanan tanggal lokal ke 60 hari terakhir agar hemat memori
+  if (newActiveDates.length > 60) {
+    newActiveDates = newActiveDates.slice(-60);
   }
 
   const updatedStreak: UserStreak = {
     currentStreak: newCurrent,
-    longestStreak: newLongest,
+    longestStreak: Math.max(baseStreak.longestStreak || 0, newCurrent),
     lastActiveDate: today,
-    weeklyActiveDays: newWeeklyDays,
-    reviveQuota,
-    reviveMonth: currentMonthKey,
-    canRevive,
-    previousBrokenStreak,
+    activeDates: newActiveDates,
   };
 
   localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedStreak));
   localStorage.setItem(POPUP_SEEN_KEY, today);
 
+  // 4. Sinkronisasi ke Supabase
   if (normalizedNrp && normalizedNrp !== 'unknown') {
     try {
       await supabase.from('user_streaks').upsert({
         nrp: normalizedNrp,
         name: userName,
-        current_streak: newCurrent,
-        longest_streak: newLongest,
+        current_streak: updatedStreak.currentStreak,
+        longest_streak: updatedStreak.longestStreak,
         last_active_date: today,
-        weekly_active_days: newWeeklyDays,
-        revive_quota: reviveQuota,
-        revive_month: currentMonthKey,
+        active_dates: updatedStreak.activeDates,
         last_checked_in_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       });
@@ -200,57 +128,6 @@ export const syncUserStreak = async (
   }
 
   return { streak: updatedStreak, isFirstVisitToday: true };
-};
-
-export const useStreakRevive = async (
-  userNrp: string,
-  userName: string
-): Promise<UserStreak | null> => {
-  const cached = getLocalStreak();
-
-  if (!cached.canRevive || !cached.previousBrokenStreak || cached.reviveQuota <= 0) {
-    return null;
-  }
-
-  const normalizedNrp = userNrp.trim().toLowerCase();
-  const today = getLocalDateString();
-  const currentMonthKey = getLocalMonthString();
-
-  const restoredStreakCount = cached.previousBrokenStreak;
-  const newQuota = cached.reviveQuota - 1;
-
-  const updatedStreak: UserStreak = {
-    ...cached,
-    currentStreak: restoredStreakCount,
-    longestStreak: Math.max(cached.longestStreak, restoredStreakCount),
-    reviveQuota: newQuota,
-    reviveMonth: currentMonthKey,
-    canRevive: false,
-    previousBrokenStreak: 0,
-    lastActiveDate: today,
-  };
-
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedStreak));
-
-  if (normalizedNrp && normalizedNrp !== 'unknown') {
-    try {
-      await supabase.from('user_streaks').upsert({
-        nrp: normalizedNrp,
-        name: userName,
-        current_streak: restoredStreakCount,
-        longest_streak: updatedStreak.longestStreak,
-        revive_quota: newQuota,
-        revive_month: currentMonthKey,
-        last_active_date: today,
-        last_checked_in_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      });
-    } catch (err) {
-      console.warn('[Streak] Gagal update revive ke Supabase:', err);
-    }
-  }
-
-  return updatedStreak;
 };
 
 export const fetchStreakLeaderboard = async (): Promise<LeaderboardUser[]> => {
@@ -268,7 +145,7 @@ export const fetchStreakLeaderboard = async (): Promise<LeaderboardUser[]> => {
       nrp: item.nrp,
       name: item.name || 'Mbuders',
       currentStreak: item.current_streak || 1,
-      longestStreak: item.longest_streak || 1,
+      longestStreak: item.longest_streak || item.current_streak || 1,
     }));
   } catch (err) {
     console.error('[Streak] Gagal mengambil leaderboard:', err);
