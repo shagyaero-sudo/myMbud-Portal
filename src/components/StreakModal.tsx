@@ -9,7 +9,6 @@ import {
   HelpCircle,
   Flame,
   AlertTriangle,
-  Sparkles,
   Clock,
 } from 'lucide-react';
 import {
@@ -313,7 +312,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                   <div className="w-full mt-3 p-2.5 rounded-2xl bg-amber-50/90 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-900/50 flex items-center gap-2 text-left">
                     <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
                     <p className="text-[11px] text-amber-800 dark:text-amber-300 leading-tight">
-                      Apimu terkikis <strong>-{streak.daysMissedToday} hari</strong> karena absen, tapi menyala kembali hari ini (+1)!
+                      Apimu terkikis <strong>-{streak.daysMissedToday} hari</strong> karena absen, tapi menyala kembali hari ini!
                     </p>
                   </div>
                 )}
@@ -395,10 +394,10 @@ export const StreakModal: React.FC<StreakModalProps> = ({
               >
                 <div className="mb-3 text-center">
                   <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-100 flex items-center justify-center gap-2">
-                    <span>Cara Kerja Streak</span> 
+                    <span>Aturan Main Streak</span> 
                   </h3>
                   <p className="text-[11px] text-slate-400 dark:text-zinc-500">
-                    Pada Sistem Akumulasi myMbud
+                    Sistem Akumulasi myMbud
                   </p>
                 </div>
 
@@ -408,7 +407,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                     <div>
                       <p className="font-bold text-slate-800 dark:text-zinc-200">1. Check-In Harian (+1 Hari)</p>
                       <p className="text-[11px] text-slate-500 dark:text-zinc-400 mt-0.5 leading-relaxed">
-                        Cukup buka myMbud 1x setiap hari untuk menambah 1 api streak. Buka berkali-kali di hari yang sama tidak akan menambah jumlah api.
+                        Cukup buka myMbud 1x setiap hari untuk menambah 1 api streak. Buka berkali-kali di hari yang sama tidak akan menambah angka ganda.
                       </p>
                     </div>
                   </div>
@@ -418,7 +417,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                     <div>
                       <p className="font-bold text-slate-800 dark:text-zinc-200">2. Sistem Minus (-1 per hari bolos)</p>
                       <p className="text-[11px] text-slate-500 dark:text-zinc-400 mt-0.5 leading-relaxed">
-                        Jika kamu bolos beberapa hari, api tidak akan langsung reset ke 1, tetapi berkurang sebanyak hari kamu bolos.
+                        Jika kamu bolos beberapa hari, api tidak langsung reset ke 1 (awal), tapi hanya berkurang sebanyak hari kamu bolos.
                       </p>
                     </div>
                   </div>
@@ -434,6 +433,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                       </p>
                     </div>
                   </div>
+                </div>
 
                 <button
                   type="button"
