@@ -17,6 +17,7 @@ export interface LeaderboardUser {
   name: string;
   currentStreak: number;
   longestStreak: number;
+  lastActiveDate: string; // Tanggal check-in terakhir
 }
 
 const STORAGE_KEY = 'mymbud_user_streak_v2';
@@ -139,10 +140,10 @@ export const fetchStreakLeaderboard = async (): Promise<LeaderboardUser[]> => {
   try {
     const { data, error } = await supabase
       .from('user_streaks')
-      .select('nrp, name, current_streak, longest_streak')
+      .select('nrp, name, current_streak, longest_streak, last_active_date')
       .order('current_streak', { ascending: false })
       .order('last_checked_in_at', { ascending: true })
-      .limit(20);
+      .limit(45);
 
     if (error || !data) return [];
 
@@ -151,6 +152,7 @@ export const fetchStreakLeaderboard = async (): Promise<LeaderboardUser[]> => {
       name: item.name || 'Mbuders',
       currentStreak: item.current_streak || 1,
       longestStreak: item.longest_streak || item.current_streak || 1,
+      lastActiveDate: item.last_active_date || '',
     }));
   } catch (err) {
     console.error('[Streak] Gagal mengambil leaderboard:', err);

@@ -111,8 +111,6 @@ export const StreakModal: React.FC<StreakModalProps> = ({
   const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState(false);
 
   const isMythic = (streak.currentStreak || 0) >= 100;
-
-  // Tanggal implementasi pembaruan sistem check-in (29 Agustus 2026)
   const MIGRATION_DATE_STR = '2026-08-29';
 
   const weeklySchedule = useMemo(() => {
@@ -158,13 +156,10 @@ export const StreakModal: React.FC<StreakModalProps> = ({
         (new Date(currentYear, currentMonth, currentDate).getTime() - targetDate.getTime()) / (1000 * 60 * 60 * 24)
       );
 
-      // Hari sebelum tanggal migrasi: ikuti pakem lama (aktif berdasarkan streakCount)
       const isPreMigrationActive = targetDateStr <= MIGRATION_DATE_STR && diffDaysFromToday >= 0 && diffDaysFromToday < streakCount;
-      // Hari setelah tanggal migrasi: aktif jika ada di riwayat activeDates
       const isPostMigrationActive = targetDateStr > MIGRATION_DATE_STR && activeDatesSet.has(targetDateStr);
 
       const isActive = !isFuture && (isPreMigrationActive || isPostMigrationActive);
-      // Hanya tampilkan X jika hari sudah lewat setelah tanggal migrasi dan tidak aktif
       const isMissed = isPast && targetDateStr > MIGRATION_DATE_STR && !isActive;
 
       return {
@@ -186,6 +181,21 @@ export const StreakModal: React.FC<StreakModalProps> = ({
       setLeaderboard(data);
       setIsLoadingLeaderboard(false);
     }
+  };
+
+  const formatLastActive = (dateStr?: string) => {
+    if (!dateStr) return 'Hari ini';
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    
+    if (dateStr === todayStr) return 'Hari ini';
+
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+      const dateObj = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+      return dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+    }
+    return dateStr;
   };
 
   const getRankBadge = (index: number) => {
@@ -399,15 +409,15 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                                 {user.name} {isMe && <span className="text-[10px] text-amber-600 dark:text-amber-400 font-bold">(Kamu)</span>}
                               </p>
                               <p className="text-[10px] text-slate-400 dark:text-zinc-500 truncate">
-                                Total: {user.currentStreak} hari aktif
+                                Last seen: {formatLastActive(user.lastActiveDate)}
                               </p>
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-1.5 shrink-0 bg-white dark:bg-zinc-900 px-2.5 py-1 rounded-xl border border-slate-100 dark:border-zinc-700/50">
+                          <div className="flex items-center gap-1.5 shrink-0 bg-white dark:bg-zinc-900 px-2.5 py-1 rounded-xl border border-slate-100 dark:border-zinc-700/50 shadow-xs">
                             <GlossyFlameIcon className="w-3.5 h-4" streakCount={user.currentStreak} />
                             <span className="text-xs font-bold text-slate-900 dark:text-zinc-100 tabular-nums">
-                              {user.currentStreak}
+                              {user.currentStreak} Hari
                             </span>
                           </div>
                         </div>
