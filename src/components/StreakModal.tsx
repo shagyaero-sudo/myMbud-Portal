@@ -6,6 +6,11 @@ import {
   CalendarCheck,
   Loader2,
   ChevronLeft,
+  HelpCircle,
+  Flame,
+  AlertTriangle,
+  Sparkles,
+  Clock,
 } from 'lucide-react';
 import {
   UserStreak,
@@ -106,7 +111,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
   streak,
   userName,
 }) => {
-  const [viewMode, setViewMode] = useState<'my_streak' | 'leaderboard'>('my_streak');
+  const [viewMode, setViewMode] = useState<'my_streak' | 'leaderboard' | 'guide'>('my_streak');
   const [leaderboard, setLeaderboard] = useState<LeaderboardUser[]>([]);
   const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState(false);
 
@@ -236,7 +241,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
 
             {/* Header Nav */}
             <div className="w-full flex items-center justify-between z-10 mb-1">
-              {viewMode === 'leaderboard' ? (
+              {viewMode !== 'my_streak' ? (
                 <button
                   type="button"
                   onClick={() => setViewMode('my_streak')}
@@ -246,7 +251,15 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                   <span>Kembali</span>
                 </button>
               ) : (
-                <div />
+                <button
+                  type="button"
+                  onClick={() => setViewMode('guide')}
+                  className="px-2.5 py-1 rounded-xl bg-slate-100/80 dark:bg-zinc-800/80 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-500 dark:text-zinc-400 flex items-center gap-1 text-[11px] font-semibold transition-all cursor-pointer"
+                  title="Cara Kerja Streak"
+                >
+                  <HelpCircle className="w-3.5 h-3.5" />
+                  <span>Cara Kerja</span>
+                </button>
               )}
 
               <button
@@ -295,8 +308,18 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                   {userName} Menyala!
                 </p>
 
+                {/* Banner Notifikasi Erosi/Decay jika baru saja absen */}
+                {Boolean(streak.daysMissedToday && streak.daysMissedToday > 0) && (
+                  <div className="w-full mt-3 p-2.5 rounded-2xl bg-amber-50/90 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-900/50 flex items-center gap-2 text-left">
+                    <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                    <p className="text-[11px] text-amber-800 dark:text-amber-300 leading-tight">
+                      Apimu terkikis <strong>-{streak.daysMissedToday} hari</strong> karena absen, tapi menyala kembali hari ini (+1)!
+                    </p>
+                  </div>
+                )}
+
                 {/* Progress Mingguan */}
-                <div className="w-full mt-5 p-4 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 space-y-2">
+                <div className="w-full mt-4 p-4 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 space-y-2">
                   <p className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 text-left flex items-center gap-1.5">
                     <CalendarCheck className="w-3.5 h-3.5" />
                     Aktivitas Minggu Ini
@@ -363,7 +386,65 @@ export const StreakModal: React.FC<StreakModalProps> = ({
               </motion.div>
             )}
 
-            {/* TAB 2: LEADERBOARD KELAS */}
+            {/* TAB 2: CARA KERJA SISTEM STREAK */}
+            {viewMode === 'guide' && (
+              <motion.div
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="w-full flex flex-col flex-1 overflow-hidden text-left"
+              >
+                <div className="mb-3 text-center">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-100 flex items-center justify-center gap-2">
+                    <span>Cara Kerja</span> 💡
+                  </h3>
+                  <p className="text-[11px] text-slate-400 dark:text-zinc-500">
+                    Sistem akumulasi streak myMbud
+                  </p>
+                </div>
+
+                <div className="w-full flex-1 overflow-y-auto space-y-2.5 pr-1 custom-scrollbar max-h-[310px] text-xs">
+                  <div className="p-3 rounded-2xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-900/40 flex items-start gap-2.5">
+                    <Flame className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-bold text-slate-800 dark:text-zinc-200">1. Check-In Harian (+1 Hari)</p>
+                      <p className="text-[11px] text-slate-500 dark:text-zinc-400 mt-0.5 leading-relaxed">
+                        Cukup buka myMbud 1x setiap hari untuk menambah 1 api streak. Buka berkali-kali di hari yang sama tidak akan menambah api eksisting.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="p-3 rounded-2xl bg-rose-50/70 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-900/40 flex items-start gap-2.5">
+                    <Clock className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-bold text-slate-800 dark:text-zinc-200">2. Sistem Minus (-1 per hari bolos)</p>
+                      <p className="text-[11px] text-slate-500 dark:text-zinc-400 mt-0.5 leading-relaxed">
+                        Jika kamu bolos beberapa hari, api tidak akan langsung reset ke 1, tetapi berkurang sebanyak hari kamu bolos.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="p-3 rounded-2xl bg-purple-50/70 dark:bg-purple-950/30 border border-purple-100 dark:border-purple-900/40 flex items-start gap-2.5">
+                    <Sparkles className="w-4 h-4 text-purple-500 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-bold text-slate-800 dark:text-zinc-200">3. Api Mythic (100+ Hari)</p>
+                      <p className="text-[11px] text-slate-500 dark:text-zinc-400 mt-0.5 leading-relaxed">
+                        Kumpulkan streak hingga 100 hari untuk membuka efek aura api ungu eksklusif (Mythic Flame) di profilmu!
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setViewMode('my_streak')}
+                  className="mt-4 w-full py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 font-bold text-xs hover:bg-slate-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
+                >
+                  Mengerti
+                </button>
+              </motion.div>
+            )}
+
+            {/* TAB 3: LEADERBOARD KELAS */}
             {viewMode === 'leaderboard' && (
               <motion.div
                 initial={{ opacity: 0, x: 10 }}
@@ -409,7 +490,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                                 {user.name} {isMe && <span className="text-[10px] text-amber-600 dark:text-amber-400 font-bold">(Kamu)</span>}
                               </p>
                               <p className="text-[10px] text-slate-400 dark:text-zinc-500 truncate">
-                                Last seen: {formatLastActive(user.lastActiveDate)}
+                                Check-in: {formatLastActive(user.lastActiveDate)}
                               </p>
                             </div>
                           </div>
@@ -428,10 +509,10 @@ export const StreakModal: React.FC<StreakModalProps> = ({
 
                 <button
                   type="button"
-                  onClick={onClose}
+                  onClick={() => setViewMode('my_streak')}
                   className="mt-4 w-full py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 font-bold text-xs hover:bg-slate-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
                 >
-                  Tutup
+                  Kembali
                 </button>
               </motion.div>
             )}

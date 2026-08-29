@@ -5,6 +5,7 @@ export interface UserStreak {
   longestStreak: number;
   lastActiveDate: string;
   activeDates: string[];
+  daysMissedToday?: number; // Jumlah hari bolos yang baru saja dipotong hari ini
 }
 
 export interface SyncStreakResult {
@@ -17,7 +18,7 @@ export interface LeaderboardUser {
   name: string;
   currentStreak: number;
   longestStreak: number;
-  lastActiveDate: string; // Tanggal check-in terakhir
+  lastActiveDate: string;
 }
 
 const STORAGE_KEY = 'mymbud_user_streak_v2';
@@ -43,6 +44,7 @@ export const getLocalStreak = (): UserStreak => {
     longestStreak: 1,
     lastActiveDate: today,
     activeDates: [today],
+    daysMissedToday: 0,
   };
 
   try {
@@ -89,16 +91,38 @@ export const syncUserStreak = async (
   const lastSeenPopupDate = localStorage.getItem(POPUP_SEEN_KEY);
   const isFirstVisitToday = lastSeenPopupDate !== today;
 
+  // Jika sudah check-in hari ini
   if (baseStreak.lastActiveDate === today) {
     if (isFirstVisitToday) {
       localStorage.setItem(POPUP_SEEN_KEY, today);
     }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(baseStreak));
+    const resultStreak = { ...baseStreak, daysMissedToday: 0 };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(resultStreak));
     emitStreakChange();
-    return { streak: baseStreak, isFirstVisitToday };
+    return { streak: resultStreak, isFirstVisitToday };
   }
 
-  let newCurrent = (baseStreak.currentStreak || 0) + 1;
+  // Perhitungan Decay (Erosi Hari Bolos)
+  let currentVal = baseStreak.currentStreak || 1;
+  let daysMissed = 0;
+
+  if (baseStreak.lastActiveDate) {
+    const [ly, lm, ld] = baseStreak.lastActiveDate.split('-').map(Number);
+    const [ty, tm, td] = today.split('-').map(Number);
+    const lastDate = new Date(ly, lm - 1, ld);
+    const currDate = new Date(ty, tm - 1, td);
+
+    const diffDays = Math.round((currDate.getTime() - lastDate.getTime()) / (1000 * 3600 * 24));
+
+    if (diffDays > 1) {
+      // Absen = diffDays - 1 (misal tgl 2 ke tgl 6 = selisih 4 hari -> absen 3 hari: tgl 3, 4, 5)
+      daysMissed = diffDays - 1;
+      currentVal = Math.max(1, currentVal - daysMissed);
+    }
+  }
+
+  // Tambah reward login hari ini (+1)
+  const newCurrent = currentVal + 1;
   let newActiveDates = Array.from(new Set([...(baseStreak.activeDates || []), today]));
 
   if (newActiveDates.length > 60) {
@@ -110,6 +134,7 @@ export const syncUserStreak = async (
     longestStreak: Math.max(baseStreak.longestStreak || 0, newCurrent),
     lastActiveDate: today,
     activeDates: newActiveDates,
+    daysMissedToday: daysMissed,
   };
 
   localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedStreak));
