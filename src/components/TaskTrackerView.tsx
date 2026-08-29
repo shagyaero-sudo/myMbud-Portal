@@ -21,6 +21,8 @@ import {
   RotateCcw,
   CheckCircle2,
   Circle,
+  User,
+  Users,
 } from 'lucide-react';
 import { Task, Contact } from '../types';
 import { toggleTaskCompletion } from '../services/api';
@@ -767,8 +769,13 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
 
                       <div className="space-y-1 pt-1 text-xs text-slate-500 dark:text-zinc-400 border-t border-slate-200/40 dark:border-white/5">
                         <div className="flex items-center justify-between text-[11px] pt-1">
-                          <span className="font-semibold text-slate-700 dark:text-zinc-300">
-                            Tugas {t.type}
+                          <span className="font-semibold text-slate-700 dark:text-zinc-300 flex items-center gap-1.5">
+                            {t.type === 'Kelompok' ? (
+                              <Users className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500" />
+                            ) : (
+                              <User className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500" />
+                            )}
+                            <span>Tugas {t.type}</span>
                           </span>
                         </div>
 
@@ -864,8 +871,13 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                     </div>
 
                     <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-zinc-400 pt-1.5 border-t border-slate-200/40 dark:border-white/5">
-                      <span className="font-medium text-slate-700 dark:text-zinc-300">
-                        Tugas {t.type}
+                      <span className="font-medium text-slate-700 dark:text-zinc-300 flex items-center gap-1.5">
+                        {t.type === 'Kelompok' ? (
+                          <Users className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500" />
+                        ) : (
+                          <User className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500" />
+                        )}
+                        <span>Tugas {t.type}</span>
                       </span>
 
                       <div className="flex items-center gap-1.5">

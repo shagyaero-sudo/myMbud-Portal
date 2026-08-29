@@ -515,7 +515,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                                 {user.name} {isMe && <span className="text-[10px] text-amber-600 dark:text-amber-400 font-bold">(Kamu)</span>}
                               </p>
                               <p className="text-[10px] text-slate-400 dark:text-zinc-500 truncate">
-                                Log: {formatLastActive(user.lastActiveDate, user.lastCheckedInAt)}
+                                {formatLastActive(user.lastActiveDate, user.lastCheckedInAt)}
                               </p>
                             </div>
                           </div>
