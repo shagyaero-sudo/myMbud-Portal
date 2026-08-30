@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { 
   ArrowLeft, 
   Send, 
   MessageSquare, 
   Search, 
   Loader2, 
-  ShieldCheck,
-  Smile
+  ShieldCheck 
 } from 'lucide-react';
 import { supabase } from '../services/supabase';
 import { 
@@ -19,9 +18,11 @@ import {
 
 interface UserProfile {
   nrp: string;
-  name: string;
-  username: string;
+  name?: string;
+  full_name?: string;
+  username?: string;
   photo_url?: string;
+  avatar_url?: string;
 }
 
 interface MbudTalkViewProps {
@@ -31,7 +32,6 @@ interface MbudTalkViewProps {
 
 export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp }) => {
   const currentUserNrp = typeof window !== 'undefined' ? (localStorage.getItem('mymbud_user_nrp') || '').trim().toLowerCase() : '';
-  const currentUserName = typeof window !== 'undefined' ? localStorage.getItem('mymbud_user_name') || 'Mbuders' : 'Mbuders';
 
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loadingUsers, setLoadingUsers] = useState<boolean>(true);
@@ -43,20 +43,30 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
   const [isSending, setIsSending] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // 1. Ambil daftar user mbudiary
+  // 1. Fetch data mbudiary_users dengan wildcard (*) agar field tidak ada yang meleset
   useEffect(() => {
     const fetchUsers = async () => {
       setLoadingUsers(true);
       try {
         const { data, error } = await supabase
           .from('mbudiary_users')
-          .select('nrp, name, username, photo_url')
-          .neq('nrp', currentUserNrp);
+          .select('*');
 
-        if (!error && data) {
-          setUsers(data);
+        if (error) {
+          console.error('Supabase query error:', error);
+        }
+
+        if (data && data.length > 0) {
+          // Filter keluar akun diri sendiri secara case-insensitive
+          const otherUsers = data.filter(
+            (u: any) => String(u.nrp || '').trim().toLowerCase() !== currentUserNrp
+          );
+          setUsers(otherUsers);
+
           if (targetNrp) {
-            const found = data.find((u) => u.nrp.toLowerCase() === targetNrp.toLowerCase());
+            const found = otherUsers.find(
+              (u: any) => String(u.nrp || '').trim().toLowerCase() === targetNrp.trim().toLowerCase()
+            );
             if (found) setSelectedPartner(found);
           }
         }
@@ -67,14 +77,12 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
       }
     };
 
-    if (currentUserNrp) {
-      fetchUsers();
-    }
+    fetchUsers();
   }, [currentUserNrp, targetNrp]);
 
-  // 2. Dengarkan room pesan saat partner dipilih
+  // 2. Realtime chat listener
   useEffect(() => {
-    if (!currentUserNrp || !selectedPartner) return;
+    if (!currentUserNrp || !selectedPartner?.nrp) return;
 
     clearUnreadNotification(currentUserNrp, selectedPartner.nrp);
 
@@ -89,14 +97,14 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
     return () => unsubscribe();
   }, [currentUserNrp, selectedPartner]);
 
-  // 3. Auto Scroll to Bottom
+  // 3. Auto-scroll
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputText.trim() || !selectedPartner || isSending) return;
+    if (!inputText.trim() || !selectedPartner?.nrp || isSending) return;
 
     const text = inputText.trim();
     setInputText('');
@@ -112,12 +120,16 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
     }
   };
 
-  const filteredUsers = users.filter(
-    (u) =>
-      u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      u.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      u.nrp.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const getUserDisplayName = (u: UserProfile) => u.name || u.full_name || u.username || u.nrp || 'Teman';
+  const getUserAvatar = (u: UserProfile) => u.photo_url || u.avatar_url || null;
+
+  const filteredUsers = users.filter((u) => {
+    const q = searchQuery.toLowerCase();
+    const name = (u.name || u.full_name || '').toLowerCase();
+    const username = (u.username || '').toLowerCase();
+    const nrp = String(u.nrp || '').toLowerCase();
+    return name.includes(q) || username.includes(q) || nrp.includes(q);
+  });
 
   return (
     <motion.div
@@ -163,7 +175,7 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Cari teman sekelas..."
+                placeholder="Cari nama, username, atau NRP..."
                 className="w-full pl-9 pr-4 py-2 rounded-2xl bg-slate-100/70 dark:bg-zinc-800/60 border border-slate-200/40 dark:border-white/5 text-xs text-slate-800 dark:text-zinc-200 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
               />
             </div>
@@ -174,15 +186,18 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
             {loadingUsers ? (
               <div className="flex flex-col items-center justify-center p-8 space-y-2 text-slate-400 dark:text-zinc-500">
                 <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
-                <span className="text-xs">Memuat kontak...</span>
+                <span className="text-xs">Memuat kontak mbudiary...</span>
               </div>
             ) : filteredUsers.length === 0 ? (
               <div className="p-6 text-center text-xs text-slate-400 dark:text-zinc-500">
-                Tidak ada teman ditemukan.
+                {users.length === 0 ? 'Belum ada data user di database.' : 'Tidak ada teman ditemukan.'}
               </div>
             ) : (
               filteredUsers.map((user) => {
                 const isSelected = selectedPartner?.nrp === user.nrp;
+                const displayName = getUserDisplayName(user);
+                const avatar = getUserAvatar(user);
+
                 return (
                   <motion.div
                     key={user.nrp}
@@ -195,18 +210,18 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                     }`}
                   >
                     <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-slate-200/60 dark:border-zinc-700/60 shrink-0">
-                      {user.photo_url ? (
-                        <img src={user.photo_url} alt={user.name} className="w-full h-full object-cover" />
+                      {avatar ? (
+                        <img src={avatar} alt={displayName} className="w-full h-full object-cover" />
                       ) : (
                         <span className={`text-xs font-bold ${isSelected ? 'text-white' : 'text-slate-700 dark:text-zinc-200'}`}>
-                          {user.name.charAt(0).toUpperCase()}
+                          {displayName.charAt(0).toUpperCase()}
                         </span>
                       )}
                     </div>
 
                     <div className="flex-1 min-w-0">
                       <p className={`text-xs font-bold truncate ${isSelected ? 'text-white' : 'text-slate-800 dark:text-zinc-100'}`}>
-                        {user.name}
+                        {displayName}
                       </p>
                       <p className={`text-[11px] truncate ${isSelected ? 'text-blue-100' : 'text-slate-400 dark:text-zinc-500'}`}>
                         @{user.username || user.nrp}
@@ -239,18 +254,18 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                   </button>
 
                   <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-slate-200 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-slate-200/60 dark:border-zinc-700/60 shrink-0">
-                    {selectedPartner.photo_url ? (
-                      <img src={selectedPartner.photo_url} alt={selectedPartner.name} className="w-full h-full object-cover" />
+                    {getUserAvatar(selectedPartner) ? (
+                      <img src={getUserAvatar(selectedPartner)!} alt={getUserDisplayName(selectedPartner)} className="w-full h-full object-cover" />
                     ) : (
                       <span className="text-xs sm:text-sm font-bold text-slate-700 dark:text-zinc-200">
-                        {selectedPartner.name.charAt(0).toUpperCase()}
+                        {getUserDisplayName(selectedPartner).charAt(0).toUpperCase()}
                       </span>
                     )}
                   </div>
 
                   <div>
                     <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-zinc-100 leading-tight">
-                      {selectedPartner.name}
+                      {getUserDisplayName(selectedPartner)}
                     </h3>
                     <p className="text-[10px] sm:text-[11px] text-slate-400 dark:text-zinc-500">
                       @{selectedPartner.username || selectedPartner.nrp}
@@ -272,7 +287,7 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                       <MessageSquare className="w-6 h-6" />
                     </div>
                     <p className="text-xs sm:text-sm font-bold text-slate-700 dark:text-zinc-300">
-                      Mulai obrolan dengan {selectedPartner.name.split(' ')[0]}
+                      Mulai obrolan dengan {getUserDisplayName(selectedPartner).split(' ')[0]}
                     </p>
                     <p className="text-[11px] text-slate-400 dark:text-zinc-500 max-w-xs">
                       Kirim pesan langsung secara instan dan ringan via Firebase Realtime Engine.
@@ -280,7 +295,7 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                   </div>
                 ) : (
                   messages.map((msg, idx) => {
-                    const isMe = msg.senderNrp.toLowerCase() === currentUserNrp.toLowerCase();
+                    const isMe = String(msg.senderNrp).trim().toLowerCase() === currentUserNrp;
                     return (
                       <motion.div
                         initial={{ opacity: 0, y: 5 }}
@@ -316,7 +331,7 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                   type="text"
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
-                  placeholder={`Kirim pesan ke ${selectedPartner.name.split(' ')[0]}...`}
+                  placeholder={`Kirim pesan ke ${getUserDisplayName(selectedPartner).split(' ')[0]}...`}
                   className="flex-1 px-4 py-3 rounded-2xl bg-white dark:bg-zinc-800/80 border border-slate-200/80 dark:border-zinc-700/80 text-xs sm:text-sm text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                 />
 
