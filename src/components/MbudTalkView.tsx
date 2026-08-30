@@ -22,9 +22,7 @@ import {
 
 interface UserProfile {
   nrp: string;
-  display_name?: string;
-  name?: string;
-  full_name?: string;
+  nickname?: string;
   username?: string;
   photo_url?: string;
   avatar_url?: string;
@@ -52,19 +50,14 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState<string>('');
   const [isSending, setIsSending] = useState<boolean>(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // Ref container lokal obrolan
+  const chatScrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // Helper resolusi nama asli (display_name > full_name > name > username)
+  // Helper menampilkan Nickname
   const getUserDisplayName = (u?: UserProfile | null) => {
     if (!u) return 'Teman';
-    return (
-      u.display_name ||
-      u.full_name ||
-      (u.name && u.name !== u.username ? u.name : null) ||
-      u.username ||
-      u.nrp ||
-      'Teman'
-    );
+    return u.nickname || u.username || u.nrp || 'Teman';
   };
 
   const getUserAvatar = (u?: UserProfile | null) => u?.photo_url || u?.avatar_url || null;
@@ -126,9 +119,11 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
     return () => unsubscribe();
   }, [currentUserNrp, selectedPartner]);
 
-  // 4. Auto scroll
+  // 4. Scroll lokal hanya di dalam container pesan tanpa menarik halaman web
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (chatScrollContainerRef.current) {
+      chatScrollContainerRef.current.scrollTop = chatScrollContainerRef.current.scrollHeight;
+    }
   }, [messages]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -157,7 +152,7 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
       );
       return {
         ...item,
-        profile: userProfile || { nrp: item.partnerNrp, name: item.partnerNrp },
+        profile: userProfile || { nrp: item.partnerNrp, nickname: item.partnerNrp },
       };
     })
     .filter((item) => {
@@ -167,32 +162,32 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
       return name.includes(q) || username.includes(q) || item.lastMessage.toLowerCase().includes(q);
     });
 
-  // Filter user untuk Modal Pesan Baru
+  // Filter user untuk Modal Pesan Baru (berdasarkan nickname, username, atau NRP)
   const filteredNewUsers = allUsers.filter((u) => {
     const q = searchNewUser.toLowerCase();
-    const name = getUserDisplayName(u).toLowerCase();
+    const nickname = (u.nickname || '').toLowerCase();
     const username = (u.username || '').toLowerCase();
     const nrp = String(u.nrp || '').toLowerCase();
-    return name.includes(q) || username.includes(q) || nrp.includes(q);
+    return nickname.includes(q) || username.includes(q) || nrp.includes(q);
   });
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 15 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="flex flex-col h-[calc(100vh-6rem)] sm:h-[calc(100vh-7rem)] w-full max-w-5xl mx-auto rounded-3xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none overflow-hidden relative"
+      transition={{ duration: 0.2 }}
+      className="flex flex-col h-[calc(100dvh-5.5rem)] sm:h-[calc(100vh-6.5rem)] max-h-[850px] w-full max-w-5xl mx-auto rounded-3xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none overflow-hidden relative"
     >
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 h-full overflow-hidden">
         
         {/* ================= BILAH KIRI: RIWAYAT CHAT ================= */}
         <div
-          className={`w-full md:w-80 flex flex-col border-r border-slate-200/50 dark:border-white/5 bg-white/40 dark:bg-zinc-900/40 ${
+          className={`w-full md:w-80 flex flex-col border-r border-slate-200/50 dark:border-white/5 bg-white/40 dark:bg-zinc-900/40 h-full ${
             selectedPartner ? 'hidden md:flex' : 'flex'
           }`}
         >
           {/* Header mbudTalk & Tombol Mulai Chat Baru */}
-          <div className="p-4 border-b border-slate-200/50 dark:border-white/5 flex items-center justify-between gap-3">
+          <div className="p-4 border-b border-slate-200/50 dark:border-white/5 flex items-center justify-between gap-3 shrink-0">
             <div className="flex items-center gap-2.5">
               <button
                 type="button"
@@ -219,7 +214,7 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                 setSearchNewUser('');
                 setIsNewChatModalOpen(true);
               }}
-              className="p-2.5 rounded-2xl bg-blue-600 text-white hover:bg-blue-700 shadow-md shadow-blue-500/20 transition-all cursor-pointer flex items-center justify-center"
+              className="p-2.5 rounded-2xl bg-blue-600 text-white hover:bg-blue-700 shadow-md shadow-blue-500/20 transition-all cursor-pointer flex items-center justify-center shrink-0"
               title="Mulai Chat Baru"
             >
               <MessageSquarePlus className="w-4 h-4" />
@@ -228,7 +223,7 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
 
           {/* Search Riwayat */}
           {recentChats.length > 0 && (
-            <div className="p-3 border-b border-slate-200/30 dark:border-white/5">
+            <div className="p-3 border-b border-slate-200/30 dark:border-white/5 shrink-0">
               <div className="relative">
                 <Search className="w-4 h-4 text-slate-400 dark:text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
@@ -310,14 +305,14 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
 
         {/* ================= BILAH KANAN: RUANG PERCAKAPAN ================= */}
         <div
-          className={`flex-1 flex flex-col bg-white/20 dark:bg-zinc-950/20 ${
+          className={`flex-1 flex flex-col bg-white/20 dark:bg-zinc-950/20 h-full overflow-hidden ${
             !selectedPartner ? 'hidden md:flex' : 'flex'
           }`}
         >
           {selectedPartner ? (
             <>
               {/* Header Active Chat */}
-              <div className="p-3.5 px-4 sm:px-6 border-b border-slate-200/50 dark:border-white/5 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md flex items-center justify-between gap-3">
+              <div className="p-3.5 px-4 sm:px-6 border-b border-slate-200/50 dark:border-white/5 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md flex items-center justify-between gap-3 shrink-0">
                 <div className="flex items-center gap-3">
                   <button
                     type="button"
@@ -354,17 +349,20 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
               </div>
 
               {/* Chat Stream Body */}
-              <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3 custom-scrollbar">
+              <div 
+                ref={chatScrollContainerRef}
+                className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3 custom-scrollbar overscroll-contain"
+              >
                 {messages.length === 0 ? (
                   <div className="flex h-full flex-col items-center justify-center text-center p-6 text-slate-400 dark:text-zinc-500 space-y-2">
                     <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center">
                       <MessageSquare className="w-6 h-6" />
                     </div>
                     <p className="text-xs sm:text-sm font-bold text-slate-700 dark:text-zinc-300">
-                      Mulai obrolan dengan {getUserDisplayName(selectedPartner).split(' ')[0]}
+                      Mulai obrolan dengan {getUserDisplayName(selectedPartner)}
                     </p>
                     <p className="text-[11px] text-slate-400 dark:text-zinc-500 max-w-xs">
-                      Kirim pesan langsung secara instan
+                      Kirim pesan langsung secara instan dan ringan via Firebase Realtime Engine.
                     </p>
                   </div>
                 ) : (
@@ -393,19 +391,18 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                     );
                   })
                 )}
-                <div ref={messagesEndRef} />
               </div>
 
               {/* Chat Input Bar */}
               <form
                 onSubmit={handleSendMessage}
-                className="p-3 sm:p-4 border-t border-slate-200/50 dark:border-white/5 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md flex items-center gap-2"
+                className="p-3 sm:p-4 border-t border-slate-200/50 dark:border-white/5 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md flex items-center gap-2 shrink-0"
               >
                 <input
                   type="text"
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
-                  placeholder={`Kirim pesan ke ${getUserDisplayName(selectedPartner).split(' ')[0]}...`}
+                  placeholder={`Kirim pesan ke ${getUserDisplayName(selectedPartner)}...`}
                   className="flex-1 px-4 py-3 rounded-2xl bg-white dark:bg-zinc-800/80 border border-slate-200/80 dark:border-zinc-700/80 text-xs sm:text-sm text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                 />
 
@@ -431,7 +428,7 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
               </div>
               <div className="space-y-1">
                 <h3 className="text-sm sm:text-base font-bold text-slate-800 dark:text-zinc-200">
-                  
+                  mbudTalk Direct
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-zinc-400 max-w-sm mx-auto">
                   Pilih salah satu obrolan dari daftar sebelah kiri, atau buat chat baru dengan temanmu.
@@ -476,7 +473,7 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
               </div>
 
               {/* Modal Search Input */}
-              <div className="p-4 border-b border-slate-200/30 dark:border-white/5">
+              <div className="p-4 border-b border-slate-200/30 dark:border-white/5 shrink-0">
                 <div className="relative">
                   <Search className="w-4 h-4 text-slate-400 dark:text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
