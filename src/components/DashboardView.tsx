@@ -735,7 +735,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
         <div className="lg:col-span-2 space-y-4 sm:space-y-5">
 
-          {/* MBUDIARY & MBUDTALK INPUT BAR (SIMETRIS & GLASSMORPHISM) */}
+          {/* MBUDIARY & MBUDTALK INPUT BAR */}
           <div className="flex items-center gap-2.5 sm:gap-3">
             <motion.div
               whileHover={{ scale: 1.004 }}
@@ -754,16 +754,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   )}
                 </div>
 
-                <div className="flex-1 flex items-center gap-2.5 text-slate-400 dark:text-zinc-500 min-w-0">
-                  <Pencil className="w-4 h-4 text-slate-400 dark:text-zinc-400 shrink-0" />
+                <div className="flex-1 flex items-center justify-between gap-2.5 text-slate-400 dark:text-zinc-500 min-w-0">
                   <span className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 truncate">
                     Ada cerita apa, {userName.split(' ')[0]}?
                   </span>
+                  <Pencil className="w-4 h-4 text-slate-400 dark:text-zinc-400 shrink-0" />
                 </div>
               </div>
             </motion.div>
 
-            {/* TOMBOL SQUARE MBUDTALK (UKURAN LEBIH BESAR & PRESISI) */}
+            {/* TOMBOL SQUARE MBUDTALK (OUTLINE SAAT KOSONG, SOLID/FILL + DOT SAAT UNREAD) */}
             <motion.button
               type="button"
               whileHover={{ scale: 1.05 }}
@@ -772,7 +772,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               title="Buka mbudTalk"
               className="relative w-14 h-14 rounded-3xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none flex items-center justify-center text-slate-700 dark:text-zinc-200 hover:bg-white/90 dark:hover:bg-zinc-800/80 transition-all shrink-0 cursor-pointer"
             >
-              <MessageSquare className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              <MessageSquare
+                className={`w-6 h-6 transition-all duration-300 ${
+                  hasUnreadChat
+                    ? 'text-blue-600 dark:text-blue-400 fill-blue-600 dark:fill-blue-400'
+                    : 'text-slate-500 dark:text-zinc-400 fill-none'
+                }`}
+              />
               
               {hasUnreadChat && (
                 <span className="absolute top-3 right-3 flex h-3 w-3">
