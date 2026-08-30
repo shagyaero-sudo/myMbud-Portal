@@ -8,7 +8,9 @@ import {
   Loader2, 
   ShieldCheck, 
   MessageSquarePlus, 
-  X 
+  X,
+  Image as ImageIcon,
+  ImagePlus
 } from 'lucide-react';
 import { supabase } from '../services/supabase';
 import { 
@@ -20,6 +22,8 @@ import {
   ChatMessage,
   RecentChatMeta
 } from '../services/firebaseChat';
+// Impor helper upload Cloudinary eksisting
+import { uploadImageToCloudinary } from '../services/cloudinary';
 
 interface UserProfile {
   nrp: string;
@@ -95,7 +99,13 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState<string>('');
   const [isSending, setIsSending] = useState<boolean>(false);
-  
+
+  // State Gambar / Cloudinary Attachment
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+  const [previewZoomImage, setPreviewZoomImage] = useState<string | null>(null);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const chatScrollContainerRef = useRef<HTMLDivElement>(null);
   const [viewportHeight, setViewportHeight] = useState<string>('100%');
 
@@ -260,21 +270,55 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
     if (chatScrollContainerRef.current) {
       chatScrollContainerRef.current.scrollTop = chatScrollContainerRef.current.scrollHeight;
     }
-  }, [messages, viewportHeight]);
+  }, [messages, viewportHeight, imagePreviewUrl]);
 
+  // Handler Pilih File Gambar
+  const handleSelectImageFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedImageFile(file);
+      setImagePreviewUrl(URL.createObjectURL(file));
+    }
+  };
+
+  const handleClearSelectedImage = () => {
+    setSelectedImageFile(null);
+    setImagePreviewUrl(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  // Handler Kirim Pesan & Upload Gambar
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputText.trim() || !selectedPartner?.nrp || isSending) return;
+    if ((!inputText.trim() && !selectedImageFile) || !selectedPartner?.nrp || isSending) return;
 
     const text = inputText.trim();
-    setInputText('');
     setIsSending(true);
 
     try {
-      await sendChatMessage(currentUserNrp, selectedPartner.nrp, text, currentUserName);
+      let uploadedImageUrl: string | undefined = undefined;
+
+      // Unggah gambar ke Cloudinary terlebih dahulu (jika ada lampiran gambar)
+      if (selectedImageFile) {
+        uploadedImageUrl = await uploadImageToCloudinary(selectedImageFile);
+      }
+
+      await sendChatMessage(
+        currentUserNrp,
+        selectedPartner.nrp,
+        text,
+        currentUserName,
+        uploadedImageUrl
+      );
+
+      // Reset form input & preview
+      setInputText('');
+      handleClearSelectedImage();
     } catch (error) {
       console.error('Gagal mengirim pesan:', error);
-      alert('Gagal mengirim pesan.');
+      alert('Gagal mengirim pesan atau unggah gambar.');
     } finally {
       setIsSending(false);
     }
@@ -524,15 +568,31 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                         className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}
                       >
                         <div
-                          className={`max-w-[82%] sm:max-w-[70%] px-4 py-2.5 rounded-3xl text-xs sm:text-sm shadow-xs backdrop-blur-md ${
+                          className={`max-w-[82%] sm:max-w-[70%] p-3 rounded-3xl text-xs sm:text-sm shadow-xs backdrop-blur-md ${
                             isMe
                               ? 'bg-blue-600 text-white rounded-br-xs shadow-blue-500/15'
                               : 'bg-white/80 dark:bg-zinc-800/80 text-slate-800 dark:text-zinc-100 rounded-bl-xs border border-white/60 dark:border-white/5'
                           }`}
                         >
-                          <p className="whitespace-pre-wrap break-words leading-relaxed">
-                            {renderMessageTextWithLinks(msg.text, isMe)}
-                          </p>
+                          {/* Gambar jika ada di pesan */}
+                          {msg.imageUrl && (
+                            <div className="mb-2 overflow-hidden rounded-2xl border border-black/10 dark:border-white/10">
+                              <img
+                                src={msg.imageUrl}
+                                alt="Attachment"
+                                onClick={() => setPreviewZoomImage(msg.imageUrl || null)}
+                                className="w-full max-h-60 object-cover cursor-pointer hover:scale-105 transition-transform duration-200"
+                                loading="lazy"
+                              />
+                            </div>
+                          )}
+
+                          {/* Teks Pesan */}
+                          {msg.text && (
+                            <p className="whitespace-pre-wrap break-words leading-relaxed px-1">
+                              {renderMessageTextWithLinks(msg.text, isMe)}
+                            </p>
+                          )}
                         </div>
                         <span className="text-[10px] text-slate-400 dark:text-zinc-500 px-2 mt-1 tabular-nums">
                           {new Date(msg.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
@@ -544,11 +604,51 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
               )}
             </div>
 
+            {/* PREVIEW LAMPIRAN GAMBAR DILAMPIRKAN */}
+            {imagePreviewUrl && (
+              <div className="relative px-3 py-2 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-2xl flex items-center justify-between shrink-0">
+                <div className="flex items-center gap-3">
+                  <img src={imagePreviewUrl} alt="Preview Upload" className="w-12 h-12 rounded-xl object-cover border border-slate-200 dark:border-zinc-700" />
+                  <div>
+                    <p className="text-xs font-bold text-slate-800 dark:text-zinc-100">Gambar SIAP DIKIRIM</p>
+                    <p className="text-[10px] text-slate-400">Otomatis dikompres ke WebP / Cloudinary</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleClearSelectedImage}
+                  className="p-1 rounded-full bg-slate-200 dark:bg-zinc-800 hover:bg-rose-500 hover:text-white transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
             {/* Sticky Bottom Floating Input Pill */}
             <form
               onSubmit={handleSendMessage}
-              className="p-1.5 pl-4 rounded-3xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-xl border border-white/70 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none flex items-center gap-2 shrink-0"
+              className="p-1.5 pl-3 rounded-3xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-xl border border-white/70 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none flex items-center gap-2 shrink-0"
             >
+              {/* Hidden File Input */}
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleSelectImageFile}
+                accept="image/*"
+                className="hidden"
+              />
+
+              {/* Tombol Lampiran Gambar */}
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isSending}
+                className="p-2 rounded-2xl text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/60 dark:hover:bg-zinc-800 transition-colors shrink-0 disabled:opacity-50 cursor-pointer"
+                title="Pilih Gambar"
+              >
+                <ImagePlus className="w-5 h-5" />
+              </button>
+
               <input
                 type="text"
                 value={inputText}
@@ -560,15 +660,16 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                     }
                   }, 300);
                 }}
-                placeholder={`Ketik pesan ke ${getUserDisplayName(selectedPartner)}...`}
-                className="flex-1 bg-transparent text-xs sm:text-sm text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none"
+                placeholder={isSending ? "Mengunggah gambar & mengirim..." : `Ketik pesan ke ${getUserDisplayName(selectedPartner)}...`}
+                disabled={isSending}
+                className="flex-1 bg-transparent text-xs sm:text-sm text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none disabled:opacity-50"
               />
 
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 type="submit"
-                disabled={!inputText.trim() || isSending}
+                disabled={(!inputText.trim() && !selectedImageFile) || isSending}
                 className="w-10 h-10 rounded-2xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white flex items-center justify-center shadow-md shadow-blue-500/25 transition-all shrink-0 cursor-pointer"
               >
                 {isSending ? (
@@ -595,6 +696,28 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
           </div>
         )}
       </div>
+
+      {/* ================= MODAL FULLVIEW / ZOOM GAMBAR ================= */}
+      <AnimatePresence>
+        {previewZoomImage && (
+          <div className="fixed inset-0 z-[999999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              className="relative max-w-4xl max-h-[90vh]"
+            >
+              <button
+                onClick={() => setPreviewZoomImage(null)}
+                className="absolute -top-10 right-0 p-2 text-white/80 hover:text-white"
+              >
+                <X className="w-6 h-6" />
+              </button>
+              <img src={previewZoomImage} alt="Full Zoom" className="max-w-full max-h-[85vh] rounded-2xl object-contain shadow-2xl" />
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* ================= MODAL MULAI CHAT BARU (PILIH TEMAN) ================= */}
       <AnimatePresence>

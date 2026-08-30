@@ -25,6 +25,7 @@ export interface ChatMessage {
   id?: string;
   senderNrp: string;
   text: string;
+  imageUrl?: string; // Properti opsional untuk URL gambar Cloudinary
   timestamp: number;
 }
 
@@ -34,14 +35,15 @@ export interface RecentChatMeta {
   lastTimestamp: number;
 }
 
-// 1. Kirim Pesan & Trigger Unread
+// 1. Kirim Pesan & Trigger Unread (Mendukung Teks, Gambar Cloudinary, atau Keduanya)
 export const sendChatMessage = async (
   senderNrp: string, 
   recipientNrp: string, 
   text: string,
-  senderDisplayName?: string
+  senderDisplayName?: string,
+  imageUrl?: string
 ) => {
-  if (!text.trim()) return;
+  if (!text.trim() && !imageUrl) return;
 
   const sNrp = senderNrp.trim().toLowerCase();
   const rNrp = recipientNrp.trim().toLowerCase();
@@ -49,24 +51,38 @@ export const sendChatMessage = async (
   const now = Date.now();
   const cleanText = text.trim();
 
-  const messagesRef = ref(rtdb, `chats/${roomId}/messages`);
-  await push(messagesRef, {
+  // Format teks pratinjau pesan terakhir di daftar chat
+  const lastMsgText = imageUrl 
+    ? (cleanText ? `📷 ${cleanText}` : '📷 [Gambar]') 
+    : cleanText;
+
+  // Payload pesan yang dikirim ke Realtime Database
+  const payload: Record<string, any> = {
     senderNrp: sNrp,
     text: cleanText,
     timestamp: now,
-  });
+  };
 
+  if (imageUrl) {
+    payload.imageUrl = imageUrl;
+  }
+
+  const messagesRef = ref(rtdb, `chats/${roomId}/messages`);
+  await push(messagesRef, payload);
+
+  // Update daftar chat terakhir pengirim
   const senderRecentRef = ref(rtdb, `recent_chats/${sNrp}/${rNrp}`);
   await set(senderRecentRef, {
     partnerNrp: rNrp,
-    lastMessage: cleanText,
+    lastMessage: lastMsgText,
     lastTimestamp: now,
   });
 
+  // Update daftar chat terakhir penerima
   const recipientRecentRef = ref(rtdb, `recent_chats/${rNrp}/${sNrp}`);
   await set(recipientRecentRef, {
     partnerNrp: sNrp,
-    lastMessage: cleanText,
+    lastMessage: lastMsgText,
     lastTimestamp: now,
   });
 
@@ -74,11 +90,12 @@ export const sendChatMessage = async (
   const unreadRef = ref(rtdb, `unread/${rNrp}/${sNrp}`);
   await set(unreadRef, true);
 
+  // Kirim notifikasi push
   notifyChatDirectMessage({
     recipientNrp: rNrp,
     senderNrp: sNrp,
     senderName: senderDisplayName || 'Teman',
-    messageText: cleanText,
+    messageText: lastMsgText,
   }).catch((err) => console.error('[Push DM Error]:', err));
 };
 
