@@ -23,6 +23,7 @@ import { PdfViewerModal } from './components/PdfViewerModal';
 import { SoftForceModal } from './components/SoftForceModal';
 import { BlockBlastView } from './components/blockblast/BlockBlastView';
 import { MbudiaryView } from './components/MbudiaryView';
+import { MbudTalkView } from './components/MbudTalkView';
 import { GpaCalculatorModal } from './components/GpaCalculatorModal';
 import { LoginScreen } from './components/LoginScreen';
 import { OnboardingScreen } from './components/OnboardingScreen';
@@ -66,7 +67,7 @@ const IS_MAINTENANCE = false;
 // HELPER ROUTING AMAN & ANTI-BLANK SCREEN
 // =========================================================================
 
-const VALID_TABS: TabType[] = [
+const VALID_TABS: (TabType | 'mbudtalk')[] = [
   'dashboard',
   'contacts',
   'materials',
@@ -76,13 +77,14 @@ const VALID_TABS: TabType[] = [
   'letter',
   'blockblast',
   'mbudiary',
+  'mbudtalk',
   'notebooklm' as TabType,
 ];
 
-const getTabFromLocation = (): TabType => {
+const getTabFromLocation = (): TabType | 'mbudtalk' => {
   if (typeof window === 'undefined') return 'dashboard';
   const rawHash = window.location.hash.replace(/^#\/?/, '').split('?')[0].split('&')[0].trim();
-  return VALID_TABS.includes(rawHash as TabType) ? (rawHash as TabType) : 'dashboard';
+  return VALID_TABS.includes(rawHash as any) ? (rawHash as any) : 'dashboard';
 };
 
 // =========================================================================
@@ -205,7 +207,7 @@ export default function App() {
   useEffect(() => {
     const handleOneSignalRedirect = (e: any) => {
       const targetTab = e?.detail?.tab || localStorage.getItem('mbud_target_tab') || 'mbudiary';
-      const cleanTab = VALID_TABS.includes(targetTab as TabType) ? (targetTab as TabType) : 'mbudiary';
+      const cleanTab = VALID_TABS.includes(targetTab as any) ? (targetTab as any) : 'mbudiary';
       setActiveTab(cleanTab);
       window.dispatchEvent(new Event('mbud_notification_navigate'));
     };
@@ -214,7 +216,7 @@ export default function App() {
     window.addEventListener('mbud_notification_navigate', () => {
       const targetTab = localStorage.getItem('mbud_target_tab');
       if (targetTab) {
-        const cleanTab = VALID_TABS.includes(targetTab as TabType) ? (targetTab as TabType) : 'mbudiary';
+        const cleanTab = VALID_TABS.includes(targetTab as any) ? (targetTab as any) : 'mbudiary';
         setActiveTab(cleanTab);
         localStorage.removeItem('mbud_target_tab');
       }
@@ -261,13 +263,14 @@ export default function App() {
     !isAuthenticated && (!isMobileOrTabletOS || isStandalone);
 
   // Inisialisasi activeTab terproteksi dari blank screen
-  const [activeTab, setActiveTab] = useState<TabType>(() => getTabFromLocation());
+  const [activeTab, setActiveTab] = useState<TabType | 'mbudtalk'>(() => getTabFromLocation());
+  const [chatTargetNrp, setChatTargetNrp] = useState<string | null>(null);
 
   // Listener tombol Back / Forward browser & gesture swipe HP
   useEffect(() => {
     const handlePopState = (event: PopStateEvent) => {
       if (event.state && event.state.tab && VALID_TABS.includes(event.state.tab)) {
-        setActiveTab(event.state.tab as TabType);
+        setActiveTab(event.state.tab as any);
       } else {
         setActiveTab(getTabFromLocation());
       }
@@ -282,8 +285,13 @@ export default function App() {
   const [isGpaModalOpen, setIsGpaModalOpen] = useState<boolean>(false);
 
   const handleNavigateTab = useCallback(
-    (tab: TabType, courseFilter?: string) => {
-      setSelectedContactCourse(courseFilter || 'ALL');
+    (tab: TabType | 'mbudtalk', courseFilterOrTargetNrp?: string) => {
+      if (tab === 'contacts') {
+        setSelectedContactCourse(courseFilterOrTargetNrp || 'ALL');
+      } else if (tab === 'mbudtalk') {
+        setChatTargetNrp(courseFilterOrTargetNrp || null);
+      }
+      
       setActiveTab(tab);
 
       // Catat perpindahan tab ke riwayat browser tanpa reload
@@ -751,7 +759,7 @@ export default function App() {
           <Header
             isOfficer={isOfficer}
             setIsOfficer={setIsOfficer}
-            activeTab={activeTab}
+            activeTab={activeTab as TabType}
             setActiveTab={(tab) => handleNavigateTab(tab)}
             isSyncing={isSyncing}
             lastUpdated={appState.lastUpdated}
@@ -761,9 +769,9 @@ export default function App() {
           />
 
           <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 flex flex-col lg:flex-row gap-6 pt-4 pb-28 lg:pb-8">
-            {activeTab !== 'mbudiary' && (
+            {activeTab !== 'mbudiary' && activeTab !== 'mbudtalk' && (
               <Sidebar
-                activeTab={activeTab}
+                activeTab={activeTab as TabType}
                 setActiveTab={(tab) => handleNavigateTab(tab)}
                 activeTaskCount={activeTaskCount}
                 onOpenGpaModal={() => setIsGpaModalOpen(true)}
@@ -849,6 +857,13 @@ export default function App() {
                   {activeTab === 'blockblast' && <BlockBlastView />}
 
                   {activeTab === 'mbudiary' && <MbudiaryView />}
+
+                  {activeTab === 'mbudtalk' && (
+                    <MbudTalkView
+                      onBack={() => handleNavigateTab('dashboard')}
+                      targetNrp={chatTargetNrp}
+                    />
+                  )}
                 </div>
               )}
             </main>
