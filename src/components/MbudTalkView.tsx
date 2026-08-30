@@ -23,7 +23,7 @@ import {
   RecentChatMeta
 } from '../services/firebaseChat';
 // Impor helper upload Cloudinary eksisting
-import { uploadImageToCloudinary } from '../services/cloudinary';
+import { uploadImageToCloudinary } from './mbudiary/lib/cloudinary';
 
 interface UserProfile {
   nrp: string;

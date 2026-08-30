@@ -3,17 +3,24 @@ const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 const CLOUDINARY_UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
 
 /* =========================================================
-   IMAGE COMPRESSION SETTINGS
+   COMPRESS OPTIONS INTERFACE
    ========================================================= */
-
-const MAX_IMAGE_DIMENSION = 1280;
-const IMAGE_QUALITY = 0.8;
+export interface CompressOptions {
+  maxDimension?: number;
+  quality?: number;
+  maxSizeBytes?: number;
+}
 
 /* =========================================================
    COMPRESS IMAGE (CLIENT-SIDE)
    ========================================================= */
 
-async function compressImage(file: File): Promise<File> {
+async function compressImage(file: File, options?: CompressOptions): Promise<File> {
+  // Setting Default (MbuDiary): Max 1080px, Quality 0.8, Max 250KB
+  const maxDim = options?.maxDimension ?? 1080;
+  const imgQuality = options?.quality ?? 0.8;
+  const maxBytes = options?.maxSizeBytes ?? 250 * 1024;
+
   // Lewati file non-gambar, SVG, atau GIF animasi agar animasinya tidak rusak
   if (
     !file.type.startsWith('image/') ||
@@ -33,21 +40,21 @@ async function compressImage(file: File): Promise<File> {
       let width = image.naturalWidth;
       let height = image.naturalHeight;
 
-      // Jika gambar sudah kecil dan dimensinya di bawah 1280px, lewati kompresi
+      // Jika file asli sudah kecil (<= maxBytes) dan dimensinya sudah aman, lewati kompresi
       if (
-        file.size <= 250 * 1024 &&
-        width <= MAX_IMAGE_DIMENSION &&
-        height <= MAX_IMAGE_DIMENSION
+        file.size <= maxBytes &&
+        width <= maxDim &&
+        height <= maxDim
       ) {
         resolve(file);
         return;
       }
 
-      // Resize proporsional
-      if (width > MAX_IMAGE_DIMENSION || height > MAX_IMAGE_DIMENSION) {
+      // Resize proporsional berdasarkan maxDim
+      if (width > maxDim || height > maxDim) {
         const scale = Math.min(
-          MAX_IMAGE_DIMENSION / width,
-          MAX_IMAGE_DIMENSION / height
+          maxDim / width,
+          maxDim / height
         );
         width = Math.round(width * scale);
         height = Math.round(height * scale);
@@ -92,7 +99,7 @@ async function compressImage(file: File): Promise<File> {
           resolve(compressedFile);
         },
         'image/webp',
-        IMAGE_QUALITY
+        imgQuality
       );
     };
 
@@ -109,12 +116,12 @@ async function compressImage(file: File): Promise<File> {
    SINGLE IMAGE UPLOAD
    ========================================================= */
 
-export async function uploadImageToCloudinary(file: File): Promise<string> {
+export async function uploadImageToCloudinary(file: File, options?: CompressOptions): Promise<string> {
   if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET) {
     throw new Error('Konfigurasi Cloudinary belum tersedia.');
   }
 
-  const compressedFile = await compressImage(file);
+  const compressedFile = await compressImage(file, options);
 
   console.log(
     `[Cloudinary] ${file.name}: ${(file.size / 1024).toFixed(0)} KB → ${(compressedFile.size / 1024).toFixed(0)} KB`
@@ -154,7 +161,7 @@ export async function uploadImageToCloudinary(file: File): Promise<string> {
    MULTIPLE IMAGE UPLOAD
    ========================================================= */
 
-export async function uploadImagesToCloudinary(files: File[]): Promise<string[]> {
+export async function uploadImagesToCloudinary(files: File[], options?: CompressOptions): Promise<string[]> {
   if (!files.length) return [];
-  return Promise.all(files.map((file) => uploadImageToCloudinary(file)));
+  return Promise.all(files.map((file) => uploadImageToCloudinary(file, options)));
 }
