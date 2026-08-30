@@ -6,9 +6,9 @@ import {
   MessageSquare, 
   Search, 
   Loader2, 
-  ShieldCheck,
-  MessageSquarePlus,
-  X
+  ShieldCheck, 
+  MessageSquarePlus, 
+  X 
 } from 'lucide-react';
 import { supabase } from '../services/supabase';
 import { 
@@ -53,6 +53,30 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
   const [isSending, setIsSending] = useState<boolean>(false);
   
   const chatScrollContainerRef = useRef<HTMLDivElement>(null);
+  const [viewportHeight, setViewportHeight] = useState<string>('100%');
+
+  // Deteksi tinggi visual keyboard mobile tanpa terpotong
+  useEffect(() => {
+    const handleViewportChange = () => {
+      if (typeof window !== 'undefined' && window.visualViewport) {
+        const activeHeight = window.visualViewport.height - (window.innerWidth < 1024 ? 68 : 0);
+        setViewportHeight(`${activeHeight}px`);
+      }
+    };
+
+    if (typeof window !== 'undefined' && window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleViewportChange);
+      window.visualViewport.addEventListener('scroll', handleViewportChange);
+      handleViewportChange();
+    }
+
+    return () => {
+      if (typeof window !== 'undefined' && window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', handleViewportChange);
+        window.visualViewport.removeEventListener('scroll', handleViewportChange);
+      }
+    };
+  }, []);
 
   const getUserDisplayName = (u?: UserProfile | null) => {
     if (!u) return 'Teman';
@@ -118,12 +142,12 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
     return () => unsubscribe();
   }, [currentUserNrp, selectedPartner]);
 
-  // 4. Scroll ke bawah hanya dalam ruang chat
+  // 4. Scroll ke bawah hanya dalam ruang pesan
   useEffect(() => {
     if (chatScrollContainerRef.current) {
       chatScrollContainerRef.current.scrollTop = chatScrollContainerRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, viewportHeight]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -169,19 +193,17 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
   });
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2 }}
-      className="flex flex-col lg:flex-row gap-4 h-[calc(100dvh-7.5rem)] sm:h-[calc(100vh-10.5rem)] sm:max-h-[660px] w-full max-w-5xl mx-auto overflow-hidden relative select-none"
+    <div
+      style={{ height: viewportHeight }}
+      className="fixed inset-x-0 bottom-0 top-[68px] z-30 px-3 pb-2 pt-1 lg:static lg:h-[calc(100vh-10.5rem)] lg:max-h-[660px] lg:px-0 lg:py-0 w-full max-w-5xl mx-auto flex flex-col lg:flex-row gap-3 overflow-hidden select-none"
     >
-      {/* ================= BILAH KIRI: RIWAYAT CHAT (FREE RANGE) ================= */}
+      {/* ================= BILAH KIRI: RIWAYAT CHAT ================= */}
       <div
-        className={`w-full lg:w-80 flex flex-col gap-3 h-full ${
+        className={`w-full lg:w-80 flex flex-col gap-2.5 h-full ${
           selectedPartner ? 'hidden lg:flex' : 'flex'
         }`}
       >
-        {/* Floating Top Pill Header */}
+        {/* Top Header Pill */}
         <div className="flex items-center justify-between gap-3 p-2.5 px-4 rounded-3xl bg-white/60 dark:bg-zinc-900/50 backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.03)] dark:shadow-none shrink-0">
           <div className="flex items-center gap-2.5">
             <button
@@ -193,10 +215,10 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
             </button>
             <div className="flex items-center gap-1.5">
               <h2 className="text-sm font-bold text-slate-800 dark:text-zinc-100 tracking-tight">
-                mbudTalk
+                mbudtalk.
               </h2>
               <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
-                v1.0
+                Beta 1.0
               </span>
             </div>
           </div>
@@ -215,19 +237,17 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
           </motion.button>
         </div>
 
-        {/* Floating Search Pill */}
-        {recentChats.length > 0 && (
-          <div className="relative shrink-0">
-            <Search className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              value={searchHistory}
-              onChange={(e) => setSearchHistory(e.target.value)}
-              placeholder="Cari obrolan..."
-              className="w-full pl-9 pr-4 py-2 rounded-2xl bg-white/50 dark:bg-zinc-900/40 backdrop-blur-lg border border-white/50 dark:border-white/5 text-xs text-slate-800 dark:text-zinc-200 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 shadow-xs"
-            />
-          </div>
-        )}
+        {/* Search Riwayat (Ikon Kaca Pembesar Diperbaiki) */}
+        <div className="relative flex items-center shrink-0 w-full rounded-2xl bg-white/50 dark:bg-zinc-900/40 backdrop-blur-lg border border-white/50 dark:border-white/5 px-3 py-1.5 shadow-xs">
+          <Search className="w-4 h-4 text-slate-400 dark:text-zinc-400 shrink-0 mr-2.5 pointer-events-none" />
+          <input
+            type="text"
+            value={searchHistory}
+            onChange={(e) => setSearchHistory(e.target.value)}
+            placeholder="Cari obrolan..."
+            className="w-full bg-transparent text-xs text-slate-800 dark:text-zinc-200 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none"
+          />
+        </div>
 
         {/* Recent Chats Floating List */}
         <div className="flex-1 overflow-y-auto space-y-1.5 custom-scrollbar pr-0.5">
@@ -296,15 +316,15 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
         </div>
       </div>
 
-      {/* ================= BILAH KANAN: RUANG CHAT (FREE RANGE) ================= */}
+      {/* ================= BILAH KANAN: RUANG CHAT ================= */}
       <div
-        className={`flex-1 flex flex-col gap-3 h-full overflow-hidden ${
+        className={`flex-1 flex flex-col gap-2.5 h-full overflow-hidden ${
           !selectedPartner ? 'hidden lg:flex' : 'flex'
         }`}
       >
         {selectedPartner ? (
           <>
-            {/* Floating Top Pill Header Chat Partner */}
+            {/* Top Header Pill Partner */}
             <div className="flex items-center justify-between gap-3 p-2 px-4 rounded-3xl bg-white/60 dark:bg-zinc-900/50 backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.03)] dark:shadow-none shrink-0">
               <div className="flex items-center gap-3 min-w-0">
                 <button
@@ -337,11 +357,11 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
 
               <div className="flex items-center gap-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20 shrink-0">
                 <ShieldCheck className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">mbudTalk Direct</span>
+                <span className="hidden sm:inline">Direct</span>
               </div>
             </div>
 
-            {/* Bubble Messages Stream Canvas */}
+            {/* Bubble Messages Stream Box */}
             <div 
               ref={chatScrollContainerRef}
               className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-2.5 custom-scrollbar overscroll-contain rounded-3xl bg-white/30 dark:bg-zinc-900/25 backdrop-blur-md border border-white/40 dark:border-white/5"
@@ -355,7 +375,7 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                     Mulai obrolan dengan {getUserDisplayName(selectedPartner)}
                   </p>
                   <p className="text-[11px] text-slate-400 dark:text-zinc-500 max-w-xs">
-                    Pesan terkirim instan & ringan via Firebase Realtime Engine.
+                    Kirim pesan instan dan ringan
                   </p>
                 </div>
               ) : (
@@ -386,7 +406,7 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
               )}
             </div>
 
-            {/* Floating Chat Input Pill */}
+            {/* Sticky Bottom Floating Input Pill */}
             <form
               onSubmit={handleSendMessage}
               className="p-1.5 pl-4 rounded-3xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-xl border border-white/70 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none flex items-center gap-2 shrink-0"
@@ -395,6 +415,13 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                 type="text"
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
+                onFocus={() => {
+                  setTimeout(() => {
+                    if (chatScrollContainerRef.current) {
+                      chatScrollContainerRef.current.scrollTop = chatScrollContainerRef.current.scrollHeight;
+                    }
+                  }, 300);
+                }}
                 placeholder={`Ketik pesan ke ${getUserDisplayName(selectedPartner)}...`}
                 className="flex-1 bg-transparent text-xs sm:text-sm text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none"
               />
@@ -462,15 +489,16 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                 </button>
               </div>
 
-              <div className="p-4 border-b border-slate-200/30 dark:border-white/5 shrink-0">
-                <div className="relative">
-                  <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              {/* Search Modal (Ikon Kaca Pembesar Diperbaiki) */}
+              <div className="p-3 border-b border-slate-200/30 dark:border-white/5 shrink-0">
+                <div className="relative flex items-center w-full rounded-2xl bg-white/60 dark:bg-zinc-800/60 border border-white/40 dark:border-white/10 px-3 py-2">
+                  <Search className="w-4 h-4 text-slate-400 shrink-0 mr-2.5 pointer-events-none" />
                   <input
                     type="text"
                     value={searchNewUser}
                     onChange={(e) => setSearchNewUser(e.target.value)}
                     placeholder="Cari nickname, username, atau NRP..."
-                    className="w-full pl-9 pr-4 py-2.5 rounded-2xl bg-white/60 dark:bg-zinc-800/60 border border-white/40 dark:border-white/10 text-xs text-slate-800 dark:text-zinc-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                    className="w-full bg-transparent text-xs text-slate-800 dark:text-zinc-200 placeholder-slate-400 focus:outline-none"
                   />
                 </div>
               </div>
@@ -523,6 +551,6 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
           </div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </div>
   );
 };
