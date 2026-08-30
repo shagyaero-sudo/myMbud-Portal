@@ -22,6 +22,7 @@ import {
 
 interface UserProfile {
   nrp: string;
+  display_name?: string;
   name?: string;
   full_name?: string;
   username?: string;
@@ -53,7 +54,19 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
   const [isSending, setIsSending] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const getUserDisplayName = (u?: UserProfile | null) => u?.name || u?.full_name || u?.username || u?.nrp || 'Teman';
+  // Helper resolusi nama asli (display_name > full_name > name > username)
+  const getUserDisplayName = (u?: UserProfile | null) => {
+    if (!u) return 'Teman';
+    return (
+      u.display_name ||
+      u.full_name ||
+      (u.name && u.name !== u.username ? u.name : null) ||
+      u.username ||
+      u.nrp ||
+      'Teman'
+    );
+  };
+
   const getUserAvatar = (u?: UserProfile | null) => u?.photo_url || u?.avatar_url || null;
 
   // 1. Fetch seluruh kontak dari mbudiary_users
@@ -244,7 +257,7 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                 <div className="space-y-1">
                   <p className="text-xs font-bold text-slate-700 dark:text-zinc-300">Belum ada obrolan</p>
                   <p className="text-[11px] text-slate-400 dark:text-zinc-500 max-w-[200px]">
-                    Klik tombol pensil di atas untuk memulai obrolan baru.
+                    Klik tombol di kanan atas untuk memulai chat baru.
                   </p>
                 </div>
               </div>
@@ -418,7 +431,7 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
               </div>
               <div className="space-y-1">
                 <h3 className="text-sm sm:text-base font-bold text-slate-800 dark:text-zinc-200">
-                
+                  
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-zinc-400 max-w-sm mx-auto">
                   Pilih salah satu obrolan dari daftar sebelah kiri, atau buat chat baru dengan temanmu.
