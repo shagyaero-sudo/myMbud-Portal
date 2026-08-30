@@ -55,6 +55,32 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
   // Ref container lokal obrolan
   const chatScrollContainerRef = useRef<HTMLDivElement>(null);
 
+  // Dynamic Viewport Height Handler khusus Mobile agar keyboard presisi
+  const [viewportHeight, setViewportHeight] = useState<string>('100%');
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.visualViewport) {
+        // Kurangi offset header (~68px) pada mode mobile fullscreen
+        const availableHeight = window.visualViewport.height - (window.innerWidth < 1024 ? 68 : 0);
+        setViewportHeight(`${availableHeight}px`);
+      }
+    };
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleResize);
+      window.visualViewport.addEventListener('scroll', handleResize);
+      handleResize();
+    }
+
+    return () => {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', handleResize);
+        window.visualViewport.removeEventListener('scroll', handleResize);
+      }
+    };
+  }, []);
+
   const getUserDisplayName = (u?: UserProfile | null) => {
     if (!u) return 'Teman';
     return u.nickname || u.username || u.nrp || 'Teman';
@@ -124,7 +150,7 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
     if (chatScrollContainerRef.current) {
       chatScrollContainerRef.current.scrollTop = chatScrollContainerRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, viewportHeight]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -170,34 +196,32 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
   });
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2 }}
-      className="flex flex-col h-[calc(100dvh-7.5rem)] sm:h-[calc(100vh-10.5rem)] sm:max-h-[680px] w-full max-w-5xl mx-auto rounded-3xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none overflow-hidden relative"
+    <div
+      style={{ height: viewportHeight }}
+      className="fixed inset-x-0 bottom-0 top-[4.2rem] z-30 lg:static lg:h-[calc(100vh-10.5rem)] lg:max-h-[680px] w-full max-w-5xl mx-auto flex flex-col bg-slate-900/40 dark:bg-zinc-950/40 backdrop-blur-2xl border-t lg:border border-white/20 dark:border-white/10 lg:rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:shadow-none overflow-hidden"
     >
       <div className="flex flex-1 h-full overflow-hidden">
         
         {/* ================= BILAH KIRI: RIWAYAT CHAT ================= */}
         <div
-          className={`w-full md:w-80 flex flex-col border-r border-slate-200/50 dark:border-white/5 bg-white/40 dark:bg-zinc-900/40 h-full ${
-            selectedPartner ? 'hidden md:flex' : 'flex'
+          className={`w-full lg:w-80 flex flex-col border-r border-white/10 bg-white/20 dark:bg-zinc-900/20 backdrop-blur-md h-full ${
+            selectedPartner ? 'hidden lg:flex' : 'flex'
           }`}
         >
           {/* Header mbudTalk & Tombol Mulai Chat Baru */}
-          <div className="p-3.5 sm:p-4 border-b border-slate-200/50 dark:border-white/5 flex items-center justify-between gap-3 shrink-0">
+          <div className="p-3.5 sm:p-4 border-b border-white/10 flex items-center justify-between gap-3 shrink-0">
             <div className="flex items-center gap-2.5">
               <button
                 type="button"
                 onClick={onBack}
-                className="p-1.5 sm:p-2 rounded-2xl text-slate-500 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                className="p-1.5 sm:p-2 rounded-2xl text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-white/20 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer"
               >
                 <ArrowLeft className="w-5 h-5" />
               </button>
               <div>
-                <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-1.5">
+                <h2 className="text-sm sm:text-base font-bold text-slate-800 dark:text-zinc-100 flex items-center gap-1.5">
                   <span>mbudTalk</span>
-                  <span className="text-[10px] font-black px-1.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-900/50">
+                  <span className="text-[10px] font-black px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-500 dark:text-blue-400 border border-blue-500/30">
                     v1.0
                   </span>
                 </h2>
@@ -220,7 +244,7 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
 
           {/* Search Riwayat */}
           {recentChats.length > 0 && (
-            <div className="p-2.5 sm:p-3 border-b border-slate-200/30 dark:border-white/5 shrink-0">
+            <div className="p-2.5 sm:p-3 border-b border-white/5 shrink-0">
               <div className="relative">
                 <Search className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
@@ -228,7 +252,7 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                   value={searchHistory}
                   onChange={(e) => setSearchHistory(e.target.value)}
                   placeholder="Cari dalam obrolan..."
-                  className="w-full pl-9 pr-4 py-1.5 sm:py-2 rounded-2xl bg-slate-100/70 dark:bg-zinc-800/60 border border-slate-200/40 dark:border-white/5 text-xs text-slate-800 dark:text-zinc-200 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                  className="w-full pl-9 pr-4 py-1.5 sm:py-2 rounded-2xl bg-white/30 dark:bg-zinc-800/40 border border-white/10 text-xs text-slate-900 dark:text-zinc-200 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                 />
               </div>
             </div>
@@ -243,12 +267,12 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
               </div>
             ) : populatedRecentChats.length === 0 ? (
               <div className="flex flex-col items-center justify-center p-8 text-center space-y-3 text-slate-400 dark:text-zinc-500 my-auto">
-                <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-zinc-800/60 flex items-center justify-center text-slate-400">
+                <div className="w-12 h-12 rounded-full bg-white/30 dark:bg-zinc-800/40 flex items-center justify-center text-slate-400">
                   <MessageSquare className="w-6 h-6" />
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs font-bold text-slate-700 dark:text-zinc-300">Belum ada obrolan</p>
-                  <p className="text-[11px] text-slate-400 dark:text-zinc-500 max-w-[200px]">
+                  <p className="text-xs font-bold text-slate-800 dark:text-zinc-200">Belum ada obrolan</p>
+                  <p className="text-[11px] text-slate-400 dark:text-zinc-400 max-w-[200px]">
                     Klik tombol di kanan atas untuk memulai chat baru.
                   </p>
                 </div>
@@ -267,10 +291,10 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                     className={`flex items-center gap-3 p-2.5 sm:p-3 rounded-2xl cursor-pointer transition-all ${
                       isSelected
                         ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
-                        : 'hover:bg-slate-100/80 dark:hover:bg-zinc-800/60 text-slate-800 dark:text-zinc-200'
+                        : 'hover:bg-white/40 dark:hover:bg-zinc-800/40 text-slate-800 dark:text-zinc-200'
                     }`}
                   >
-                    <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-slate-200/60 dark:border-zinc-700/60 shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-white/40 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-white/20 dark:border-zinc-700/60 shrink-0">
                       {avatar ? (
                         <img src={avatar} alt={displayName} className="w-full h-full object-cover" />
                       ) : (
@@ -285,7 +309,7 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                         <p className={`text-xs font-bold truncate ${isSelected ? 'text-white' : 'text-slate-800 dark:text-zinc-100'}`}>
                           {displayName}
                         </p>
-                        <span className={`text-[10px] shrink-0 tabular-nums ${isSelected ? 'text-blue-100' : 'text-slate-400 dark:text-zinc-500'}`}>
+                        <span className={`text-[10px] shrink-0 tabular-nums ${isSelected ? 'text-blue-100' : 'text-slate-400 dark:text-zinc-400'}`}>
                           {new Date(item.lastTimestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
@@ -302,24 +326,24 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
 
         {/* ================= BILAH KANAN: RUANG PERCAKAPAN ================= */}
         <div
-          className={`flex-1 flex flex-col bg-white/20 dark:bg-zinc-950/20 h-full overflow-hidden ${
-            !selectedPartner ? 'hidden md:flex' : 'flex'
+          className={`flex-1 flex flex-col bg-white/10 dark:bg-zinc-950/20 backdrop-blur-md h-full overflow-hidden ${
+            !selectedPartner ? 'hidden lg:flex' : 'flex'
           }`}
         >
           {selectedPartner ? (
             <>
               {/* Header Active Chat */}
-              <div className="p-3 sm:p-3.5 px-4 sm:px-6 border-b border-slate-200/50 dark:border-white/5 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md flex items-center justify-between gap-3 shrink-0">
+              <div className="p-3 sm:p-3.5 px-4 sm:px-6 border-b border-white/10 bg-white/30 dark:bg-zinc-900/40 backdrop-blur-md flex items-center justify-between gap-3 shrink-0">
                 <div className="flex items-center gap-3">
                   <button
                     type="button"
                     onClick={() => setSelectedPartner(null)}
-                    className="md:hidden p-1.5 rounded-xl text-slate-500 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white"
+                    className="lg:hidden p-1.5 rounded-xl text-slate-400 hover:text-slate-800 dark:hover:text-white"
                   >
                     <ArrowLeft className="w-5 h-5" />
                   </button>
 
-                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-slate-200 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-slate-200/60 dark:border-zinc-700/60 shrink-0">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/40 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-white/20 dark:border-zinc-700/60 shrink-0">
                     {getUserAvatar(selectedPartner) ? (
                       <img src={getUserAvatar(selectedPartner)!} alt={getUserDisplayName(selectedPartner)} className="w-full h-full object-cover" />
                     ) : (
@@ -333,7 +357,7 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                     <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-zinc-100 leading-tight">
                       {getUserDisplayName(selectedPartner)}
                     </h3>
-                    <p className="text-[10px] sm:text-[11px] text-slate-400 dark:text-zinc-500">
+                    <p className="text-[10px] sm:text-[11px] text-slate-400 dark:text-zinc-400">
                       @{selectedPartner.username || selectedPartner.nrp}
                     </p>
                   </div>
@@ -351,14 +375,14 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                 className="flex-1 overflow-y-auto p-3.5 sm:p-5 space-y-3 custom-scrollbar overscroll-contain"
               >
                 {messages.length === 0 ? (
-                  <div className="flex h-full flex-col items-center justify-center text-center p-6 text-slate-400 dark:text-zinc-500 space-y-2 my-auto">
-                    <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                  <div className="flex h-full flex-col items-center justify-center text-center p-6 text-slate-400 dark:text-zinc-400 space-y-2 my-auto">
+                    <div className="w-12 h-12 rounded-full bg-blue-500/10 text-blue-500 dark:text-blue-400 flex items-center justify-center">
                       <MessageSquare className="w-6 h-6" />
                     </div>
-                    <p className="text-xs sm:text-sm font-bold text-slate-700 dark:text-zinc-300">
+                    <p className="text-xs sm:text-sm font-bold text-slate-800 dark:text-zinc-200">
                       Mulai obrolan dengan {getUserDisplayName(selectedPartner)}
                     </p>
-                    <p className="text-[11px] text-slate-400 dark:text-zinc-500 max-w-xs">
+                    <p className="text-[11px] text-slate-400 dark:text-zinc-400 max-w-xs">
                       Kirim pesan langsung secara instan dan ringan via Firebase Realtime Engine.
                     </p>
                   </div>
@@ -376,12 +400,12 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                           className={`max-w-[82%] sm:max-w-[70%] px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl text-xs sm:text-sm shadow-xs ${
                             isMe
                               ? 'bg-blue-600 text-white rounded-tr-xs'
-                              : 'bg-white dark:bg-zinc-800 text-slate-800 dark:text-zinc-100 rounded-tl-xs border border-slate-200/50 dark:border-white/5'
+                              : 'bg-white/80 dark:bg-zinc-800/80 backdrop-blur-md text-slate-800 dark:text-zinc-100 rounded-tl-xs border border-white/40 dark:border-white/5'
                           }`}
                         >
                           <p className="whitespace-pre-wrap break-words leading-relaxed">{msg.text}</p>
                         </div>
-                        <span className="text-[10px] text-slate-400 dark:text-zinc-500 px-1 mt-1 tabular-nums">
+                        <span className="text-[10px] text-slate-400 dark:text-zinc-400 px-1 mt-1 tabular-nums">
                           {new Date(msg.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </motion.div>
@@ -393,7 +417,7 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
               {/* Chat Input Bar */}
               <form
                 onSubmit={handleSendMessage}
-                className="p-2.5 sm:p-3.5 border-t border-slate-200/50 dark:border-white/5 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md flex items-center gap-2 shrink-0"
+                className="p-2.5 sm:p-3.5 border-t border-white/10 bg-white/40 dark:bg-zinc-900/50 backdrop-blur-xl flex items-center gap-2 shrink-0 pb-safe sm:pb-3.5"
               >
                 <input
                   type="text"
@@ -407,7 +431,7 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                     }, 250);
                   }}
                   placeholder={`Kirim pesan ke ${getUserDisplayName(selectedPartner)}...`}
-                  className="flex-1 px-4 py-2.5 sm:py-3 rounded-2xl bg-white dark:bg-zinc-800/80 border border-slate-200/80 dark:border-zinc-700/80 text-xs sm:text-sm text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                  className="flex-1 px-4 py-2.5 sm:py-3 rounded-2xl bg-white/70 dark:bg-zinc-800/70 backdrop-blur-md border border-white/20 dark:border-zinc-700/80 text-xs sm:text-sm text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                 />
 
                 <motion.button
@@ -426,15 +450,15 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
               </form>
             </>
           ) : (
-            <div className="flex h-full flex-col items-center justify-center text-center p-8 space-y-3 text-slate-400 dark:text-zinc-500">
-              <div className="w-14 h-14 rounded-3xl bg-slate-100 dark:bg-zinc-800/60 border border-slate-200/50 dark:border-white/5 flex items-center justify-center text-blue-600 dark:text-blue-400 shadow-xs">
+            <div className="flex h-full flex-col items-center justify-center text-center p-8 space-y-3 text-slate-400 dark:text-zinc-400">
+              <div className="w-14 h-14 rounded-3xl bg-white/30 dark:bg-zinc-800/40 border border-white/10 flex items-center justify-center text-blue-500 dark:text-blue-400 shadow-xs">
                 <MessageSquare className="w-7 h-7" />
               </div>
               <div className="space-y-1">
                 <h3 className="text-sm sm:text-base font-bold text-slate-800 dark:text-zinc-200">
                   mbudTalk Direct
                 </h3>
-                <p className="text-xs text-slate-500 dark:text-zinc-400 max-w-sm mx-auto">
+                <p className="text-xs text-slate-400 dark:text-zinc-400 max-w-sm mx-auto">
                   Pilih salah satu obrolan dari daftar sebelah kiri, atau buat chat baru dengan temanmu.
                 </p>
               </div>
@@ -461,36 +485,36 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.92, opacity: 0, y: 15 }}
               transition={{ type: 'spring', stiffness: 350, damping: 28 }}
-              className="relative z-10 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-white/40 dark:border-white/10 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-md w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden"
+              className="relative z-10 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-2xl border border-white/30 dark:border-white/10 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-md w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden"
             >
-              <div className="px-6 py-4 border-b border-slate-200/50 dark:border-white/10 flex items-center justify-between shrink-0 bg-white/50 dark:bg-zinc-900/50">
+              <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between shrink-0 bg-white/40 dark:bg-zinc-900/40">
                 <h3 className="text-base font-bold text-slate-900 dark:text-zinc-100">
                   Mulai Chat Baru
                 </h3>
                 <button
                   onClick={() => setIsNewChatModalOpen(false)}
-                  className="p-1.5 rounded-2xl text-slate-400 hover:text-slate-800 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors shrink-0 cursor-pointer"
+                  className="p-1.5 rounded-2xl text-slate-400 hover:text-slate-800 dark:hover:text-zinc-200 hover:bg-white/20 dark:hover:bg-zinc-800 transition-colors shrink-0 cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              <div className="p-4 border-b border-slate-200/30 dark:border-white/5 shrink-0">
+              <div className="p-4 border-b border-white/5 shrink-0">
                 <div className="relative">
-                  <Search className="w-4 h-4 text-slate-400 dark:text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
                     value={searchNewUser}
                     onChange={(e) => setSearchNewUser(e.target.value)}
                     placeholder="Cari nama, username, atau NRP teman..."
-                    className="w-full pl-9 pr-4 py-2.5 rounded-2xl bg-slate-100/70 dark:bg-zinc-800/60 border border-slate-200/40 dark:border-white/5 text-xs text-slate-800 dark:text-zinc-200 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                    className="w-full pl-9 pr-4 py-2.5 rounded-2xl bg-white/50 dark:bg-zinc-800/60 border border-white/10 text-xs text-slate-800 dark:text-zinc-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                   />
                 </div>
               </div>
 
               <div className="flex-1 overflow-y-auto p-3 space-y-1 custom-scrollbar">
                 {filteredNewUsers.length === 0 ? (
-                  <div className="p-8 text-center text-xs text-slate-400 dark:text-zinc-500">
+                  <div className="p-8 text-center text-xs text-slate-400">
                     Teman tidak ditemukan.
                   </div>
                 ) : (
@@ -507,9 +531,9 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                           setSelectedPartner(user);
                           setIsNewChatModalOpen(false);
                         }}
-                        className="flex items-center gap-3 p-3 rounded-2xl cursor-pointer hover:bg-slate-100/80 dark:hover:bg-zinc-800/60 transition-all border border-transparent hover:border-slate-200/50 dark:hover:border-white/5"
+                        className="flex items-center gap-3 p-3 rounded-2xl cursor-pointer hover:bg-white/40 dark:hover:bg-zinc-800/60 transition-all border border-transparent hover:border-white/10"
                       >
-                        <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-slate-200/60 dark:border-zinc-700/60 shrink-0">
+                        <div className="w-10 h-10 rounded-full bg-white/40 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-white/20 dark:border-zinc-700 shrink-0">
                           {avatar ? (
                             <img src={avatar} alt={displayName} className="w-full h-full object-cover" />
                           ) : (
@@ -523,7 +547,7 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                           <p className="text-xs font-bold text-slate-800 dark:text-zinc-100 truncate">
                             {displayName}
                           </p>
-                          <p className="text-[11px] text-slate-400 dark:text-zinc-500 truncate">
+                          <p className="text-[11px] text-slate-400 truncate">
                             @{user.username || user.nrp}
                           </p>
                         </div>
@@ -536,6 +560,6 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
           </div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </div>
   );
 };
