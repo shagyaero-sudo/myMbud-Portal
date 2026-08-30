@@ -610,8 +610,7 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                 <div className="flex items-center gap-3">
                   <img src={imagePreviewUrl} alt="Preview Upload" className="w-12 h-12 rounded-xl object-cover border border-slate-200 dark:border-zinc-700" />
                   <div>
-                    <p className="text-xs font-bold text-slate-800 dark:text-zinc-100">Gambar SIAP DIKIRIM</p>
-                    <p className="text-[10px] text-slate-400">Otomatis dikompres ke WebP / Cloudinary</p>
+                    <p className="text-xs font-bold text-slate-800 dark:text-zinc-100">Siap Dikirim!</p>
                   </div>
                 </div>
                 <button
