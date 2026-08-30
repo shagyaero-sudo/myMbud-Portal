@@ -11,7 +11,11 @@ import { UserProfileView } from './mbudiary/UserProfileView';
 const ONBOARDING_PROFILE_KEY = 'mbud_onboarded_mbudiary_profile';
 const SWIPE_HINT_KEY = 'mbud_swipe_hint_seen';
 
-export const MbudiaryView: React.FC = () => {
+interface MbudiaryViewProps {
+  onNavigateToChat?: (targetNrp: string) => void;
+}
+
+export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) => {
   const [currentUser, setCurrentUser] = useState<UserProfile>(getUserProfile());
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [selectedAuthorNrp, setSelectedAuthorNrp] = useState<string | null>(null);
@@ -312,6 +316,11 @@ export const MbudiaryView: React.FC = () => {
             onPostUpdate={() => forceRefresh((value) => value + 1)}
             onSelectAuthor={(authorNrp) => handleSelectAuthor(authorNrp, true)}
             onOpenEditProfile={handleOpenEditModal}
+            onNavigateToChat={(authorNrp) => {
+              if (onNavigateToChat) {
+                onNavigateToChat(authorNrp);
+              }
+            }}
           />
         )}
 

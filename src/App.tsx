@@ -856,7 +856,11 @@ export default function App() {
 
                   {activeTab === 'blockblast' && <BlockBlastView />}
 
-                  {activeTab === 'mbudiary' && <MbudiaryView />}
+                  {activeTab === 'mbudiary' && (
+                    <MbudiaryView
+                      onNavigateToChat={(targetNrp) => handleNavigateTab('mbudtalk', targetNrp)}
+                    />
+                  )}
 
                   {activeTab === 'mbudtalk' && (
                     <MbudTalkView
