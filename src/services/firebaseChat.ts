@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getDatabase, ref, push, onValue, set, serverTimestamp } from 'firebase/database';
+import { getDatabase, ref, push, onValue, set } from 'firebase/database';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBAnCJiQblEWZbp9B1manRqQcdPYQui6TM",
@@ -11,16 +11,15 @@ const firebaseConfig = {
   appId: "1:299698262424:web:921c4d69e94a05f144dbed"
 };
 
-// Mencegah re-initialization
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 export const rtdb = getDatabase(app);
 
-// Helper untuk ID Room yang konsisten (NRP diurutkan secara alfabetis)
 export const getChatRoomId = (nrp1: string, nrp2: string): string => {
-  return [nrp1, nrp2].sort().join('_');
+  const clean1 = (nrp1 || '').trim().toLowerCase();
+  const clean2 = (nrp2 || '').trim().toLowerCase();
+  return [clean1, clean2].sort().join('_');
 };
 
-// Interface Pesan
 export interface ChatMessage {
   id?: string;
   senderNrp: string;
@@ -28,26 +27,52 @@ export interface ChatMessage {
   timestamp: number;
 }
 
-// 1. Kirim Pesan
+export interface RecentChatMeta {
+  partnerNrp: string;
+  lastMessage: string;
+  lastTimestamp: number;
+}
+
+// 1. Kirim Pesan & Catat ke Recent Chats kedua belah pihak
 export const sendChatMessage = async (senderNrp: string, recipientNrp: string, text: string) => {
   if (!text.trim()) return;
 
-  const roomId = getChatRoomId(senderNrp, recipientNrp);
-  const messagesRef = ref(rtdb, `chats/${roomId}/messages`);
+  const sNrp = senderNrp.trim().toLowerCase();
+  const rNrp = recipientNrp.trim().toLowerCase();
+  const roomId = getChatRoomId(sNrp, rNrp);
+  const now = Date.now();
+  const cleanText = text.trim();
 
-  // Kirim data pesan baru
+  // Simpan data pesan
+  const messagesRef = ref(rtdb, `chats/${roomId}/messages`);
   await push(messagesRef, {
-    senderNrp,
-    text: text.trim(),
-    timestamp: Date.now()
+    senderNrp: sNrp,
+    text: cleanText,
+    timestamp: now,
   });
 
-  // Tandai unread indicator untuk penerima
-  const unreadRef = ref(rtdb, `unread/${recipientNrp}/${senderNrp}`);
+  // Perbarui Recent Chat untuk Pengirim
+  const senderRecentRef = ref(rtdb, `recent_chats/${sNrp}/${rNrp}`);
+  await set(senderRecentRef, {
+    partnerNrp: rNrp,
+    lastMessage: cleanText,
+    lastTimestamp: now,
+  });
+
+  // Perbarui Recent Chat untuk Penerima
+  const recipientRecentRef = ref(rtdb, `recent_chats/${rNrp}/${sNrp}`);
+  await set(recipientRecentRef, {
+    partnerNrp: sNrp,
+    lastMessage: cleanText,
+    lastTimestamp: now,
+  });
+
+  // Tandai Unread Notification
+  const unreadRef = ref(rtdb, `unread/${rNrp}/${sNrp}`);
   await set(unreadRef, true);
 };
 
-// 2. Dengarkan Pesan Masuk di Room (Realtime Listener)
+// 2. Listener Room Chat Aktif
 export const subscribeToChatRoom = (
   senderNrp: string,
   recipientNrp: string,
@@ -68,21 +93,44 @@ export const subscribeToChatRoom = (
       ...data[key],
     }));
 
-    // Urutkan berdasarkan waktu
     messageList.sort((a, b) => a.timestamp - b.timestamp);
     callback(messageList);
   });
 };
 
-// 3. Hapus Unread Dot saat chat dibuka
+// 3. Listener Recent Chats (History Obrolan Saja)
+export const subscribeToRecentChats = (
+  myNrp: string,
+  callback: (recentList: RecentChatMeta[]) => void
+) => {
+  const cleanNrp = myNrp.trim().toLowerCase();
+  const recentRef = ref(rtdb, `recent_chats/${cleanNrp}`);
+
+  return onValue(recentRef, (snapshot) => {
+    const data = snapshot.val();
+    if (!data) {
+      callback([]);
+      return;
+    }
+
+    const list: RecentChatMeta[] = Object.values(data);
+    list.sort((a, b) => b.lastTimestamp - a.lastTimestamp);
+    callback(list);
+  });
+};
+
+// 4. Bersihkan Unread Dot saat chat dibuka
 export const clearUnreadNotification = async (myNrp: string, partnerNrp: string) => {
-  const unreadRef = ref(rtdb, `unread/${myNrp}/${partnerNrp}`);
+  const cleanMyNrp = myNrp.trim().toLowerCase();
+  const cleanPartnerNrp = partnerNrp.trim().toLowerCase();
+  const unreadRef = ref(rtdb, `unread/${cleanMyNrp}/${cleanPartnerNrp}`);
   await set(unreadRef, null);
 };
 
-// 4. Global Unread Listener untuk Tombol Utama (Muncul Dot Merah)
+// 5. Global Unread Listener untuk Tombol Dashboard
 export const subscribeToGlobalUnread = (myNrp: string, callback: (hasUnread: boolean) => void) => {
-  const userUnreadRef = ref(rtdb, `unread/${myNrp}`);
+  const cleanNrp = myNrp.trim().toLowerCase();
+  const userUnreadRef = ref(rtdb, `unread/${cleanNrp}`);
   return onValue(userUnreadRef, (snapshot) => {
     const data = snapshot.val();
     callback(Boolean(data && Object.keys(data).length > 0));
