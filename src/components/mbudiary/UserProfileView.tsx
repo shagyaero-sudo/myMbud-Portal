@@ -42,9 +42,7 @@ const FormattedBioContent: React.FC<{
 }> = ({ content, onSelectAuthor }) => {
   if (!content) return null;
 
-  // Regex mendeteksi URL (https://, http://, atau domain tanpa protokol) dan mention @user
   const tokenRegex = /(https?:\/\/[^\s]+|(?:[a-zA-Z0-9-]+\.)+(?:com|id|net|org|io|me|app|dev|edu|ac\.id)[^\s]*|@[a-zA-Z0-9_.]+)/gi;
-
   const parts = content.split(tokenRegex);
 
   return (
@@ -92,8 +90,8 @@ const FormattedBioContent: React.FC<{
         }
 
         return <span key={index}>{part}</span>;
-      });
-    }
+      })}
+    </span>
   );
 };
 
@@ -105,7 +103,6 @@ interface UserProfileViewProps {
   onPostUpdate?: () => void;
   onSelectAuthor?: (authorNrp: string) => void;
   onOpenEditProfile?: () => void;
-  // Fungsi dipanggil untuk membuka mbudtalk dan memfokuskan DM ke user ini
   onNavigateToChat?: (authorNrp: string) => void;
 }
 
