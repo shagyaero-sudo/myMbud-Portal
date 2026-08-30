@@ -34,7 +34,7 @@ export interface RecentChatMeta {
   lastTimestamp: number;
 }
 
-// 1. Kirim Pesan, Simpan ke RTDB, dan Trigger OneSignal Push Notification
+// 1. Kirim Pesan & Trigger Unread
 export const sendChatMessage = async (
   senderNrp: string, 
   recipientNrp: string, 
@@ -49,7 +49,6 @@ export const sendChatMessage = async (
   const now = Date.now();
   const cleanText = text.trim();
 
-  // Simpan data pesan
   const messagesRef = ref(rtdb, `chats/${roomId}/messages`);
   await push(messagesRef, {
     senderNrp: sNrp,
@@ -57,7 +56,6 @@ export const sendChatMessage = async (
     timestamp: now,
   });
 
-  // Perbarui Recent Chat untuk Pengirim
   const senderRecentRef = ref(rtdb, `recent_chats/${sNrp}/${rNrp}`);
   await set(senderRecentRef, {
     partnerNrp: rNrp,
@@ -65,7 +63,6 @@ export const sendChatMessage = async (
     lastTimestamp: now,
   });
 
-  // Perbarui Recent Chat untuk Penerima
   const recipientRecentRef = ref(rtdb, `recent_chats/${rNrp}/${sNrp}`);
   await set(recipientRecentRef, {
     partnerNrp: sNrp,
@@ -73,11 +70,10 @@ export const sendChatMessage = async (
     lastTimestamp: now,
   });
 
-  // Tandai Unread Notification
+  // Tandai unread untuk lawan bicara
   const unreadRef = ref(rtdb, `unread/${rNrp}/${sNrp}`);
   await set(unreadRef, true);
 
-  // Trigger Push Notification OneSignal (Non-blocking)
   notifyChatDirectMessage({
     recipientNrp: rNrp,
     senderNrp: sNrp,
@@ -112,7 +108,7 @@ export const subscribeToChatRoom = (
   });
 };
 
-// 3. Listener Recent Chats (History Obrolan Saja)
+// 3. Listener Recent Chats
 export const subscribeToRecentChats = (
   myNrp: string,
   callback: (recentList: RecentChatMeta[]) => void
@@ -133,7 +129,20 @@ export const subscribeToRecentChats = (
   });
 };
 
-// 4. Bersihkan Unread Dot saat chat dibuka
+// 4. Listener Seluruh Status Unread Chat
+export const subscribeToUserUnreads = (
+  myNrp: string,
+  callback: (unreadMap: Record<string, boolean>) => void
+) => {
+  const cleanNrp = myNrp.trim().toLowerCase();
+  const userUnreadRef = ref(rtdb, `unread/${cleanNrp}`);
+  return onValue(userUnreadRef, (snapshot) => {
+    const data = snapshot.val() || {};
+    callback(data);
+  });
+};
+
+// 5. Bersihkan Unread Dot saat chat dibuka
 export const clearUnreadNotification = async (myNrp: string, partnerNrp: string) => {
   const cleanMyNrp = myNrp.trim().toLowerCase();
   const cleanPartnerNrp = partnerNrp.trim().toLowerCase();
@@ -141,7 +150,7 @@ export const clearUnreadNotification = async (myNrp: string, partnerNrp: string)
   await set(unreadRef, null);
 };
 
-// 5. Global Unread Listener untuk Tombol Dashboard
+// 6. Global Unread Listener untuk Tombol Dashboard
 export const subscribeToGlobalUnread = (myNrp: string, callback: (hasUnread: boolean) => void) => {
   const cleanNrp = myNrp.trim().toLowerCase();
   const userUnreadRef = ref(rtdb, `unread/${cleanNrp}`);

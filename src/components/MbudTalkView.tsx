@@ -16,6 +16,7 @@ import {
   sendChatMessage, 
   clearUnreadNotification, 
   subscribeToRecentChats,
+  subscribeToUserUnreads,
   ChatMessage,
   RecentChatMeta
 } from '../services/firebaseChat';
@@ -81,6 +82,7 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
 
   const [allUsers, setAllUsers] = useState<UserProfile[]>([]);
   const [recentChats, setRecentChats] = useState<RecentChatMeta[]>([]);
+  const [unreadMap, setUnreadMap] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState<boolean>(true);
 
   const [searchHistory, setSearchHistory] = useState<string>('');
@@ -99,7 +101,7 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
 
   // Integrasi Browser Popstate (Gesture Swipe Back / Tombol Back HP)
   useEffect(() => {
-    const handlePopState = (event: PopStateEvent) => {
+    const handlePopState = () => {
       if (selectedPartner) {
         setSelectedPartner(null);
       }
@@ -156,6 +158,35 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
 
   const getUserAvatar = (u?: UserProfile | null) => u?.photo_url || u?.avatar_url || null;
 
+  // Helper Auto-detect Clickable URLs di Pesan Chat
+  const renderMessageTextWithLinks = (text: string, isMe: boolean) => {
+    if (!text) return '';
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const parts = text.split(urlRegex);
+
+    return parts.map((part, index) => {
+      if (part.match(urlRegex)) {
+        return (
+          <a
+            key={index}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className={`underline font-semibold break-all transition-opacity ${
+              isMe 
+                ? 'text-white/95 hover:text-white underline-offset-2' 
+                : 'text-blue-600 dark:text-blue-400 hover:opacity-80 underline-offset-2'
+            }`}
+          >
+            {part}
+          </a>
+        );
+      }
+      return part;
+    });
+  };
+
   // 1. Fetch seluruh kontak dari mbudiary_users
   useEffect(() => {
     const fetchUsers = async () => {
@@ -189,15 +220,22 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
     fetchUsers();
   }, [currentUserNrp, targetNrp]);
 
-  // 2. Subscribe ke Riwayat Chat (Recent Chats)
+  // 2. Subscribe ke Riwayat Chat (Recent Chats) & Unread Per Kontak
   useEffect(() => {
     if (!currentUserNrp) return;
 
-    const unsubscribe = subscribeToRecentChats(currentUserNrp, (recentList) => {
+    const unsubRecent = subscribeToRecentChats(currentUserNrp, (recentList) => {
       setRecentChats(recentList);
     });
 
-    return () => unsubscribe();
+    const unsubUnreads = subscribeToUserUnreads(currentUserNrp, (map) => {
+      setUnreadMap(map);
+    });
+
+    return () => {
+      unsubRecent();
+      unsubUnreads();
+    };
   }, [currentUserNrp]);
 
   // 3. Subscribe ke Room Percakapan Aktif
@@ -247,8 +285,10 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
       const userProfile = allUsers.find(
         (u) => String(u.nrp).trim().toLowerCase() === item.partnerNrp.toLowerCase()
       );
+      const isUnread = Boolean(unreadMap[item.partnerNrp.toLowerCase()]);
       return {
         ...item,
+        isUnread,
         profile: userProfile || { nrp: item.partnerNrp, nickname: item.partnerNrp },
       };
     })
@@ -293,7 +333,7 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                 mbudTalk
               </h2>
               <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
-                Beta 1.0
+              #SayHi!
               </span>
             </div>
           </div>
@@ -355,13 +395,13 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                   whileHover={{ scale: 1.01 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => handleOpenPartnerChat(item.profile)}
-                  className={`flex items-center gap-3 p-3 rounded-3xl cursor-pointer transition-all backdrop-blur-md border ${
+                  className={`relative flex items-center gap-3 p-3 rounded-3xl cursor-pointer transition-all backdrop-blur-md border ${
                     isSelected
                       ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-500/20'
                       : 'bg-white/50 dark:bg-zinc-900/40 border-white/50 dark:border-white/5 hover:bg-white/75 dark:hover:bg-zinc-800/60 text-slate-800 dark:text-zinc-200'
                   }`}
                 >
-                  <div className="w-10 h-10 rounded-2xl bg-slate-200 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-white/40 dark:border-zinc-700/60 shrink-0 shadow-xs">
+                  <div className="relative w-10 h-10 rounded-2xl bg-slate-200 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-white/40 dark:border-zinc-700/60 shrink-0 shadow-xs">
                     {avatar ? (
                       <img src={avatar} alt={displayName} className="w-full h-full object-cover" />
                     ) : (
@@ -373,16 +413,25 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-1">
-                      <p className={`text-xs font-bold truncate ${isSelected ? 'text-white' : 'text-slate-800 dark:text-zinc-100'}`}>
+                      <p className={`text-xs font-bold truncate ${isSelected ? 'text-white' : item.isUnread ? 'text-slate-900 dark:text-white font-extrabold' : 'text-slate-800 dark:text-zinc-100'}`}>
                         {displayName}
                       </p>
-                      <span className={`text-[10px] shrink-0 tabular-nums ${isSelected ? 'text-blue-100' : 'text-slate-400 dark:text-zinc-500'}`}>
+                      <span className={`text-[10px] shrink-0 tabular-nums ${isSelected ? 'text-blue-100' : item.isUnread ? 'text-rose-500 font-bold' : 'text-slate-400 dark:text-zinc-500'}`}>
                         {new Date(item.lastTimestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
-                    <p className={`text-[11px] truncate mt-0.5 ${isSelected ? 'text-blue-100' : 'text-slate-500 dark:text-zinc-400'}`}>
-                      {item.lastMessage}
-                    </p>
+                    <div className="flex items-center justify-between gap-2 mt-0.5">
+                      <p className={`text-[11px] truncate flex-1 ${isSelected ? 'text-blue-100' : item.isUnread ? 'text-slate-900 dark:text-zinc-100 font-bold' : 'text-slate-500 dark:text-zinc-400'}`}>
+                        {item.lastMessage}
+                      </p>
+                      {/* DOT UNREAD INDIKATOR CHAT BELUM DIBACA */}
+                      {item.isUnread && !isSelected && (
+                        <span className="flex h-2.5 w-2.5 shrink-0">
+                          <span className="animate-ping absolute inline-flex h-2.5 w-2.5 rounded-full bg-rose-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500 shadow-xs"></span>
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </motion.div>
               );
@@ -436,7 +485,7 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
               </div>
             </div>
 
-            {/* Bubble Messages Stream Box dengan Date Dividers */}
+            {/* Bubble Messages Stream Box */}
             <div 
               ref={chatScrollContainerRef}
               className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-2.5 custom-scrollbar overscroll-contain rounded-3xl bg-white/30 dark:bg-zinc-900/25 backdrop-blur-md border border-white/40 dark:border-white/5"
@@ -481,7 +530,9 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                               : 'bg-white/80 dark:bg-zinc-800/80 text-slate-800 dark:text-zinc-100 rounded-bl-xs border border-white/60 dark:border-white/5'
                           }`}
                         >
-                          <p className="whitespace-pre-wrap break-words leading-relaxed">{msg.text}</p>
+                          <p className="whitespace-pre-wrap break-words leading-relaxed">
+                            {renderMessageTextWithLinks(msg.text, isMe)}
+                          </p>
                         </div>
                         <span className="text-[10px] text-slate-400 dark:text-zinc-500 px-2 mt-1 tabular-nums">
                           {new Date(msg.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
