@@ -13,7 +13,6 @@ import {
   Pencil,
   Loader2,
   Zap,
-  Send,
   Building2,
   Coffee,
   MessageSquare,
@@ -736,16 +735,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
         <div className="lg:col-span-2 space-y-4 sm:space-y-5">
 
-          {/* MBUDIARY & MBUDTALK INPUT BAR */}
-          <div className="flex items-center gap-2 sm:gap-2.5">
+          {/* MBUDIARY & MBUDTALK INPUT BAR (SIMETRIS & GLASSMORPHISM) */}
+          <div className="flex items-center gap-2.5 sm:gap-3">
             <motion.div
               whileHover={{ scale: 1.004 }}
               whileTap={{ scale: 0.99 }}
               onClick={() => onNavigateTab('mbudiary')}
-              className="group flex-1 relative overflow-hidden rounded-3xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 p-3 sm:p-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none cursor-pointer transition-all"
+              className="group flex-1 h-14 relative overflow-hidden rounded-3xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 px-3.5 sm:px-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none cursor-pointer transition-all flex items-center"
             >
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-slate-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-slate-200/60 dark:border-zinc-700/60 shrink-0">
+              <div className="flex items-center gap-3 w-full">
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-slate-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-slate-200/60 dark:border-zinc-700/60 shrink-0">
                   {userAvatarUrl ? (
                     <img src={userAvatarUrl} alt="Profil Saya" className="w-full h-full object-cover rounded-full" />
                   ) : (
@@ -755,32 +754,28 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   )}
                 </div>
 
-                <div className="flex-1 px-4 py-2.5 rounded-2xl bg-slate-50/70 dark:bg-zinc-800/50 border border-slate-200/40 dark:border-white/5 flex items-center gap-2.5 text-slate-400 dark:text-zinc-500 group-hover:border-blue-500/20 group-hover:bg-slate-100/70 dark:group-hover:bg-zinc-800 transition-all">
-                  <Pencil className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500 shrink-0" />
+                <div className="flex-1 flex items-center gap-2.5 text-slate-400 dark:text-zinc-500 min-w-0">
+                  <Pencil className="w-4 h-4 text-slate-400 dark:text-zinc-400 shrink-0" />
                   <span className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 truncate">
                     Ada cerita apa, {userName.split(' ')[0]}?
                   </span>
                 </div>
-
-                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-blue-600 hover:bg-blue-700 active:scale-95 text-white flex items-center justify-center shadow-md shadow-blue-500/25 transition-all shrink-0">
-                  <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.2] -rotate-12 translate-y-[-0.5px] -translate-x-[0.5px]" />
-                </div>
               </div>
             </motion.div>
 
-            {/* TOMBOL SQUARE MBUDTALK DENGAN RED DOT UNREAD */}
+            {/* TOMBOL SQUARE MBUDTALK (UKURAN LEBIH BESAR & PRESISI) */}
             <motion.button
               type="button"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => onNavigateTab('mbudtalk')}
               title="Buka mbudTalk"
-              className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-3xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none flex items-center justify-center text-slate-700 dark:text-zinc-200 hover:bg-white/90 dark:hover:bg-zinc-800/80 transition-all shrink-0 cursor-pointer"
+              className="relative w-14 h-14 rounded-3xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none flex items-center justify-center text-slate-700 dark:text-zinc-200 hover:bg-white/90 dark:hover:bg-zinc-800/80 transition-all shrink-0 cursor-pointer"
             >
-              <MessageSquare className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 dark:text-blue-400" />
+              <MessageSquare className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               
               {hasUnreadChat && (
-                <span className="absolute top-2.5 right-2.5 flex h-3 w-3">
+                <span className="absolute top-3 right-3 flex h-3 w-3">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-75"></span>
                   <span className="relative inline-flex h-3 w-3 rounded-full bg-rose-500 ring-2 ring-white dark:ring-zinc-900"></span>
                 </span>
