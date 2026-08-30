@@ -269,7 +269,7 @@ export async function notifyUserMentioned({
 
 /**
  * ============================================================
- * MBUDTALK DIRECT MESSAGE NOTIFICATION
+ * MBUDTALK DIRECT MESSAGE NOTIFICATION (PUSH ONESIGNAL ONLY)
  * ============================================================
  */
 export async function notifyChatDirectMessage({
@@ -288,15 +288,21 @@ export async function notifyChatDirectMessage({
 
   if (!cleanRecipient || cleanRecipient === cleanSender) return null;
 
-  return sendMbudiaryNotification({
-    targetNrp: cleanRecipient,
-    title: `💬 ${senderName}`,
-    message: messageText,
-    type: 'mbudtalk_dm',
-    data: {
-      type: 'mbudtalk_dm',
-      tab: 'mbudtalk',
-      actorNrp: cleanSender,
-    },
-  });
+  try {
+    const pushResult = await triggerOneSignalPush({
+      targetNrp: cleanRecipient,
+      title: `💬 ${senderName}`,
+      message: messageText,
+      data: {
+        type: 'mbudtalk_dm',
+        tab: 'mbudtalk',
+        actorNrp: cleanSender,
+      },
+    });
+
+    return pushResult;
+  } catch (error) {
+    console.error('[MbudTalk Push] Gagal mengirim push notif:', error);
+    return null;
+  }
 }
