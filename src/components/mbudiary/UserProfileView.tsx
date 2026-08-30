@@ -430,7 +430,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
       <div className="space-y-3 pt-1">
         {userPosts.length === 0 ? (
           <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-8 text-center text-xs text-slate-400 dark:text-zinc-500 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none w-full">
-            User ini belum membuat postingan di mbudiary.
+            User ini belum membuat post di mbudiary.
           </div>
         ) : (
           <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl overflow-hidden shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none divide-y divide-slate-200/50 dark:divide-white/10">
