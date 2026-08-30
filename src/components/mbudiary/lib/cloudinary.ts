@@ -1,11 +1,6 @@
-const CLOUDINARY_CLOUD_NAME =
-  import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-
-const CLOUDINARY_UPLOAD_PRESET =
-  import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
-
-const CLOUDINARY_UPLOAD_URL =
-  `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
+const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+const CLOUDINARY_UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
 
 /* =========================================================
    IMAGE COMPRESSION SETTINGS
@@ -18,14 +13,13 @@ const IMAGE_QUALITY = 0.8;
    COMPRESS IMAGE (CLIENT-SIDE)
    ========================================================= */
 
-async function compressImage(
-  file: File
-): Promise<File> {
-  if (!file.type.startsWith('image/')) {
-    return file;
-  }
-
-  if (file.size <= 800 * 1024) {
+async function compressImage(file: File): Promise<File> {
+  // Lewati file non-gambar, SVG, atau GIF animasi agar animasinya tidak rusak
+  if (
+    !file.type.startsWith('image/') ||
+    file.type === 'image/gif' ||
+    file.type === 'image/svg+xml'
+  ) {
     return file;
   }
 
@@ -39,12 +33,22 @@ async function compressImage(
       let width = image.naturalWidth;
       let height = image.naturalHeight;
 
+      // Jika gambar sudah kecil dan dimensinya di bawah 1280px, lewati kompresi
+      if (
+        file.size <= 250 * 1024 &&
+        width <= MAX_IMAGE_DIMENSION &&
+        height <= MAX_IMAGE_DIMENSION
+      ) {
+        resolve(file);
+        return;
+      }
+
+      // Resize proporsional
       if (width > MAX_IMAGE_DIMENSION || height > MAX_IMAGE_DIMENSION) {
         const scale = Math.min(
           MAX_IMAGE_DIMENSION / width,
           MAX_IMAGE_DIMENSION / height
         );
-
         width = Math.round(width * scale);
         height = Math.round(height * scale);
       }
@@ -70,6 +74,7 @@ async function compressImage(
             return;
           }
 
+          // Jika hasil WebP lebih besar dari aslinya, gunakan file asli
           if (blob.size >= file.size) {
             resolve(file);
             return;
@@ -104,9 +109,7 @@ async function compressImage(
    SINGLE IMAGE UPLOAD
    ========================================================= */
 
-export async function uploadImageToCloudinary(
-  file: File
-): Promise<string> {
+export async function uploadImageToCloudinary(file: File): Promise<string> {
   if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET) {
     throw new Error('Konfigurasi Cloudinary belum tersedia.');
   }
@@ -114,9 +117,7 @@ export async function uploadImageToCloudinary(
   const compressedFile = await compressImage(file);
 
   console.log(
-    `[Cloudinary] ${file.name}: ${(file.size / 1024 / 1024).toFixed(
-      2
-    )} MB → ${(compressedFile.size / 1024 / 1024).toFixed(2)} MB`
+    `[Cloudinary] ${file.name}: ${(file.size / 1024).toFixed(0)} KB → ${(compressedFile.size / 1024).toFixed(0)} KB`
   );
 
   const formData = new FormData();
@@ -134,7 +135,7 @@ export async function uploadImageToCloudinary(
       const errorData = await response.json();
       message = errorData?.error?.message || message;
     } catch {
-      // Ignore JSON parsing error.
+      // Ignore JSON parsing error
     }
     throw new Error(message);
   }
@@ -145,21 +146,15 @@ export async function uploadImageToCloudinary(
     throw new Error('Cloudinary tidak mengembalikan URL gambar.');
   }
 
-  return data.secure_url;
+  // Sisipkan optimasi otomatis f_auto,q_auto pada CDN delivery URL
+  return data.secure_url.replace('/upload/', '/upload/f_auto,q_auto/');
 }
 
 /* =========================================================
    MULTIPLE IMAGE UPLOAD
    ========================================================= */
 
-export async function uploadImagesToCloudinary(
-  files: File[]
-): Promise<string[]> {
-  if (!files.length) {
-    return [];
-  }
-
-  return Promise.all(
-    files.map((file) => uploadImageToCloudinary(file))
-  );
+export async function uploadImagesToCloudinary(files: File[]): Promise<string[]> {
+  if (!files.length) return [];
+  return Promise.all(files.map((file) => uploadImageToCloudinary(file)));
 }
