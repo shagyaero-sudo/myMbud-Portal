@@ -1,5 +1,6 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getDatabase, ref, push, onValue, set } from 'firebase/database';
+import { notifyChatDirectMessage } from './oneSignalNotification';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBAnCJiQblEWZbp9B1manRqQcdPYQui6TM",
@@ -33,8 +34,13 @@ export interface RecentChatMeta {
   lastTimestamp: number;
 }
 
-// 1. Kirim Pesan & Catat ke Recent Chats kedua belah pihak
-export const sendChatMessage = async (senderNrp: string, recipientNrp: string, text: string) => {
+// 1. Kirim Pesan, Simpan ke RTDB, dan Trigger OneSignal Push Notification
+export const sendChatMessage = async (
+  senderNrp: string, 
+  recipientNrp: string, 
+  text: string,
+  senderDisplayName?: string
+) => {
   if (!text.trim()) return;
 
   const sNrp = senderNrp.trim().toLowerCase();
@@ -70,6 +76,14 @@ export const sendChatMessage = async (senderNrp: string, recipientNrp: string, t
   // Tandai Unread Notification
   const unreadRef = ref(rtdb, `unread/${rNrp}/${sNrp}`);
   await set(unreadRef, true);
+
+  // Trigger Push Notification OneSignal (Non-blocking)
+  notifyChatDirectMessage({
+    recipientNrp: rNrp,
+    senderNrp: sNrp,
+    senderName: senderDisplayName || 'Teman',
+    messageText: cleanText,
+  }).catch((err) => console.error('[Push DM Error]:', err));
 };
 
 // 2. Listener Room Chat Aktif

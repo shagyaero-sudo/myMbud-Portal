@@ -239,11 +239,6 @@ export async function sendOfficerNotification({
   });
 }
 
-/**
- * ============================================================
- * MBUDIARY MENTION / TAG USER
- * ============================================================
- */
 export async function notifyUserMentioned({
   targetNrp,
   actorNrp,
@@ -268,6 +263,40 @@ export async function notifyUserMentioned({
       type: 'mbudiary_mention',
       postId,
       actorNrp,
+    },
+  });
+}
+
+/**
+ * ============================================================
+ * MBUDTALK DIRECT MESSAGE NOTIFICATION
+ * ============================================================
+ */
+export async function notifyChatDirectMessage({
+  recipientNrp,
+  senderNrp,
+  senderName,
+  messageText,
+}: {
+  recipientNrp: string;
+  senderNrp: string;
+  senderName: string;
+  messageText: string;
+}) {
+  const cleanRecipient = (recipientNrp || '').trim().toLowerCase();
+  const cleanSender = (senderNrp || '').trim().toLowerCase();
+
+  if (!cleanRecipient || cleanRecipient === cleanSender) return null;
+
+  return sendMbudiaryNotification({
+    targetNrp: cleanRecipient,
+    title: `💬 ${senderName}`,
+    message: messageText,
+    type: 'mbudtalk_dm',
+    data: {
+      type: 'mbudtalk_dm',
+      tab: 'mbudtalk',
+      actorNrp: cleanSender,
     },
   });
 }
