@@ -29,6 +29,7 @@ import {
   X,
   Sparkles,
   ExternalLink,
+  MessageSquare,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -91,8 +92,8 @@ const FormattedBioContent: React.FC<{
         }
 
         return <span key={index}>{part}</span>;
-      })}
-    </span>
+      });
+    }
   );
 };
 
@@ -104,6 +105,8 @@ interface UserProfileViewProps {
   onPostUpdate?: () => void;
   onSelectAuthor?: (authorNrp: string) => void;
   onOpenEditProfile?: () => void;
+  // Fungsi dipanggil untuk membuka mbudtalk dan memfokuskan DM ke user ini
+  onNavigateToChat?: (authorNrp: string) => void;
 }
 
 export const UserProfileView: React.FC<UserProfileViewProps> = ({
@@ -114,6 +117,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
   onPostUpdate,
   onSelectAuthor,
   onOpenEditProfile,
+  onNavigateToChat,
 }) => {
   const [allPosts, setAllPosts] = useState<MbudiaryPost[]>(() => getPosts());
   const [following, setFollowing] = useState<boolean>(() => isFollowing(authorNrp));
@@ -342,17 +346,32 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
               )}
 
               {!isSelf && (
-                <button
-                  onClick={handleFollowToggle}
-                  className={`px-5 py-2 sm:py-2.5 rounded-2xl text-xs sm:text-[13px] font-bold transition-all flex items-center gap-1.5 shadow-xs active:scale-95 cursor-pointer ${following ? 'bg-white/80 dark:bg-zinc-800/80 text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700 hover:bg-rose-50 hover:text-rose-600' : 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-500/20'}`}
-                >
-                  {following ? (
-                    <><UserCheck className="w-4 h-4 text-emerald-500" /><span className="hidden sm:inline">Mengikuti</span></>
-                  ) : (
-                    <><UserPlus className="w-4 h-4" /><span className="hidden sm:inline">Ikuti</span></>
-                  )}
-                  <span className="sm:hidden">{following ? 'Mengikuti' : 'Ikuti'}</span>
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleFollowToggle}
+                    className={`px-5 py-2 sm:py-2.5 rounded-2xl text-xs sm:text-[13px] font-bold transition-all flex items-center gap-1.5 shadow-xs active:scale-95 cursor-pointer ${following ? 'bg-white/80 dark:bg-zinc-800/80 text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700 hover:bg-rose-50 hover:text-rose-600' : 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-500/20'}`}
+                  >
+                    {following ? (
+                      <><UserCheck className="w-4 h-4 text-emerald-500" /><span className="hidden sm:inline">Mengikuti</span></>
+                    ) : (
+                      <><UserPlus className="w-4 h-4" /><span className="hidden sm:inline">Ikuti</span></>
+                    )}
+                    <span className="sm:hidden">{following ? 'Mengikuti' : 'Ikuti'}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (onNavigateToChat) {
+                        onNavigateToChat(authorNrp);
+                      }
+                    }}
+                    title={`Mulai chat dengan ${authorName}`}
+                    className="p-2 sm:p-2.5 rounded-2xl bg-white/80 dark:bg-zinc-800/80 text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700 hover:bg-slate-100 hover:text-blue-600 dark:hover:bg-zinc-700 dark:hover:text-blue-400 transition-all shadow-xs active:scale-95 cursor-pointer"
+                  >
+                    <MessageSquare className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
+                  </button>
+                </div>
               )}
             </div>
           </div>
