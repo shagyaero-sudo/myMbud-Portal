@@ -42,22 +42,50 @@ import {
   notifyPostCommented,
 } from '../../services/oneSignalNotification';
 
+// =========================================================================
+// LOGIKA VERIFIED BADGE 3-TIER TERBARU
+// 1. Emas (Gold): >= 30 Followers & >= 100 Posts
+// 2. Biru (Blue): >= 10 Followers & >= 30 Posts
+// 3. Abu-abu (Gray): >= 10 Followers & >= 1 Post (Bridge buat user lama)
+// =========================================================================
+
+export type BadgeTier = 'gold' | 'blue' | 'gray' | null;
+
 export const getBadgeTier = (
   authorNrp?: string,
   isExplicitlyVerified?: boolean | string | null
-): 'gold' | 'blue' | null => {
-  if (isExplicitlyVerified === 'gold') {
-    return 'gold';
-  }
-  if (isExplicitlyVerified === 'blue' || isExplicitlyVerified === true || isExplicitlyVerified === 'true') {
-    if (authorNrp && getFollowerCount(authorNrp) >= 30) return 'gold';
-    return 'blue';
+): BadgeTier => {
+  if (!authorNrp) return null;
+
+  // 1. Ambil data real-time follower & total postingan user
+  const followerCount = getFollowerCount(authorNrp);
+  const userPosts = (getPosts() || []).filter(
+    (p) => p.authorNrp.toLowerCase() === authorNrp.toLowerCase()
+  );
+  const postCount = userPosts.length;
+
+  // 2. Override khusus dari Admin/Officer
+  if (isExplicitlyVerified === 'gold') return 'gold';
+  if (isExplicitlyVerified === 'blue') return 'blue';
+  if (isExplicitlyVerified === 'gray') return 'gray';
+
+  // Jika isExplicitlyVerified bernilai true (legacy flag centang biru lama)
+  if (isExplicitlyVerified === true || isExplicitlyVerified === 'true') {
+    if (followerCount >= 30 && postCount >= 100) return 'gold';
+    if (followerCount >= 10 && postCount >= 30) return 'blue';
+    if (followerCount >= 10 && postCount >= 1) return 'gray';
+    return 'blue'; // Fallback aman untuk legacy override
   }
 
-  if (authorNrp) {
-    const count = getFollowerCount(authorNrp);
-    if (count >= 30) return 'gold';
-    if (count >= 10) return 'blue';
+  // 3. Kalkulasi Otomatis Berdasarkan New Rule
+  if (followerCount >= 30 && postCount >= 100) {
+    return 'gold';
+  }
+  if (followerCount >= 10 && postCount >= 30) {
+    return 'blue';
+  }
+  if (followerCount >= 10 && postCount >= 1) {
+    return 'gray';
   }
 
   return null;
@@ -78,16 +106,32 @@ export const VerifiedBadge: React.FC<{
     lg: 'w-5 h-5',
   };
 
-  const isGold = tier === 'gold';
+  const badgeConfig = {
+    gold: {
+      color: '#F59E0B',
+      title: 'Centang Emas (≥30 Pengikut & ≥100 Postingan)',
+      shadow: 'drop-shadow-[0_1px_6px_rgba(245,158,11,0.65)]',
+    },
+    blue: {
+      color: '#1D9BF0',
+      title: 'Centang Biru (≥10 Pengikut & ≥30 Postingan)',
+      shadow: 'drop-shadow-[0_1px_6px_rgba(29,155,240,0.4)]',
+    },
+    gray: {
+      color: '#94A3B8',
+      title: 'Centang Abu-abu (≥10 Pengikut & ≥1 Postingan)',
+      shadow: '',
+    },
+  }[tier];
 
   return (
     <svg
       viewBox="0 0 24 24"
-      aria-label={isGold ? 'Centang Emas' : 'Centang Biru'}
-      className={`${sizeClasses[size]} shrink-0 select-none inline-block ${isGold ? 'drop-shadow-[0_1px_6px_rgba(245,158,11,0.65)]' : ''}`}
-      style={{ color: isGold ? '#F59E0B' : '#1D9BF0' }}
+      aria-label={badgeConfig.title}
+      className={`${sizeClasses[size]} shrink-0 select-none inline-block ${badgeConfig.shadow}`}
+      style={{ color: badgeConfig.color }}
     >
-      <title>{isGold ? 'Centang Emas: Tier Legenda' : 'Centang Biru: Terverifikasi'}</title>
+      <title>{badgeConfig.title}</title>
       <g>
         <path
           fill="currentColor"

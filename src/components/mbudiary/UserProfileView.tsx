@@ -170,6 +170,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
     }
   };
 
+  // SIKLUS TOGGLE BADGE ADMIN 3-TIER: Off -> Gray -> Blue -> Gold -> Off
   const handleVerifyCycle = async () => {
     if (isTogglingVerified) return;
     setIsTogglingVerified(true);
@@ -178,11 +179,13 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
       
       let nextState: any = false;
       if (!currentTier) {
-        nextState = 'blue';
+        nextState = 'gray';   // Step 1: Centang Abu-abu
+      } else if (currentTier === 'gray') {
+        nextState = 'blue';   // Step 2: Upgrade Biru
       } else if (currentTier === 'blue') {
-        nextState = 'gold';
+        nextState = 'gold';   // Step 3: Upgrade Emas
       } else {
-        nextState = false;
+        nextState = false;    // Step 4: Reset / Cabut Badge
       }
 
       await setUserVerified(authorNrp, nextState);
@@ -308,6 +311,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                 </button>
               )}
 
+              {/* TOMBOL OFFICER TOGGLE TIER BADGE */}
               {currentUser.isOfficer && !isSelf && (
                 <button
                   type="button"
@@ -318,7 +322,9 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                       ? 'bg-rose-50/80 text-rose-600 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60'
                       : activeBadgeTier === 'blue'
                       ? 'bg-amber-50/80 text-amber-600 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60'
-                      : 'bg-blue-50/80 text-blue-600 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/60'
+                      : activeBadgeTier === 'gray'
+                      ? 'bg-blue-50/80 text-blue-600 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/60'
+                      : 'bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700'
                   }`}
                   title="Klik untuk mengubah tier centang akun ini"
                 >
@@ -328,16 +334,20 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                     <BadgeCheck className="w-4 h-4 text-rose-500" />
                   ) : activeBadgeTier === 'blue' ? (
                     <Sparkles className="w-4 h-4 text-amber-500" />
-                  ) : (
+                  ) : activeBadgeTier === 'gray' ? (
                     <BadgeCheck className="w-4 h-4 text-blue-500" />
+                  ) : (
+                    <BadgeCheck className="w-4 h-4 text-slate-400" />
                   )}
 
                   <span className="hidden sm:inline">
                     {activeBadgeTier === 'gold'
-                      ? 'Cabut Centang'
+                      ? 'Cabut Badge'
                       : activeBadgeTier === 'blue'
                       ? '⭐ Upgrade Emas'
-                      : '+ Kasih Cenblu'}
+                      : activeBadgeTier === 'gray'
+                      ? '🔹 Upgrade Biru'
+                      : '+ Kasih Cen-Abu'}
                   </span>
                 </button>
               )}
@@ -408,7 +418,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
               <div className="flex items-center gap-1.5">
                 <Users className="w-4 h-4 text-amber-500 shrink-0" />
                 <span className="font-black text-slate-900 dark:text-zinc-100 leading-none">
-                  {followerCount > 0 ? `${followerCount}K` : 0}
+                  {followerCount > 0 ? followerCount : 0}
                 </span>
               </div>
               <span className="text-slate-500 dark:text-zinc-400 font-medium leading-none mt-0.5 xl:mt-0">Pengikut</span>
