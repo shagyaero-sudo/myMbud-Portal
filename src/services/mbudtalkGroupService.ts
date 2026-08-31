@@ -30,7 +30,6 @@ export const createGroup = async (
   memberNrps: string[],
   avatarUrl: string = ''
 ) => {
-  // Insert Grup
   const { data: group, error: groupErr } = await supabase
     .from('mbudtalk_groups')
     .insert([{ name, created_by: createdByNrp, avatar_url: avatarUrl }])
@@ -39,7 +38,6 @@ export const createGroup = async (
 
   if (groupErr) throw groupErr;
 
-  // Gabungkan pembuat + anggota pilihan
   const allMembers = Array.from(new Set([createdByNrp, ...memberNrps]));
   const memberData = allMembers.map((nrp) => ({
     group_id: group.id,
@@ -73,7 +71,6 @@ export const getUserGroups = async (userNrp: string): Promise<MbudTalkGroup[]> =
 
   if (groupErr) return [];
 
-  // Ambil pesan terakhir & cek unread status
   const formattedGroups = await Promise.all(
     groups.map(async (group) => {
       const memberInfo = memberRows.find((m) => m.group_id === group.id);
@@ -158,4 +155,32 @@ export const markGroupAsRead = async (groupId: string, userNrp: string) => {
     .update({ last_read_at: new Date().toISOString() })
     .eq('group_id', groupId)
     .eq('user_nrp', userNrp);
+};
+
+// 6. Tambah Anggota Baru ke Grup Eksisting
+export const addGroupMembers = async (groupId: string, newMemberNrps: string[]) => {
+  if (!newMemberNrps.length) return;
+
+  const memberData = newMemberNrps.map((nrp) => ({
+    group_id: groupId,
+    user_nrp: nrp,
+    role: 'member',
+  }));
+
+  const { error } = await supabase
+    .from('mbudtalk_group_members')
+    .insert(memberData);
+
+  if (error) throw error;
+};
+
+// 7. Ambil Daftar Anggota Grup Eksisting
+export const getGroupMembers = async (groupId: string) => {
+  const { data, error } = await supabase
+    .from('mbudtalk_group_members')
+    .select('user_nrp, role')
+    .eq('group_id', groupId);
+
+  if (error) return [];
+  return data;
 };

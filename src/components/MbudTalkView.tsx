@@ -10,10 +10,10 @@ import {
   X,
   ImagePlus,
   Users,
-  Plus,
   Edit3,
   Check,
-  Camera
+  Camera,
+  UserPlus
 } from 'lucide-react';
 import { supabase } from '../services/supabase';
 import { 
@@ -30,6 +30,8 @@ import {
   updateGroupProfile,
   sendGroupMessage,
   markGroupAsRead,
+  addGroupMembers,
+  getGroupMembers,
   MbudTalkGroup
 } from '../services/mbudtalkGroupService';
 import { uploadImageToCloudinary } from './mbudiary/lib/cloudinary';
@@ -120,16 +122,24 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
 
   const [searchQuery, setSearchQuery] = useState<string>('');
 
+  // Modals
   const [isNewChatModalOpen, setIsNewChatModalOpen] = useState<boolean>(false);
   const [isCreateGroupModalOpen, setIsCreateGroupModalOpen] = useState<boolean>(false);
   const [isEditGroupModalOpen, setIsEditGroupModalOpen] = useState<boolean>(false);
 
+  // Form states modal buat grup
   const [searchNewUser, setSearchNewUser] = useState<string>('');
+  const [searchGroupMemberInput, setSearchGroupMemberInput] = useState<string>('');
   const [newGroupName, setNewGroupName] = useState<string>('');
   const [selectedGroupMembers, setSelectedGroupMembers] = useState<string[]>([]);
+
+  // Form states edit grup & anggota
   const [editGroupName, setEditGroupName] = useState<string>('');
   const [editGroupAvatarFile, setEditGroupAvatarFile] = useState<File | null>(null);
   const [editGroupAvatarPreview, setEditGroupAvatarPreview] = useState<string>('');
+  const [existingMembers, setExistingMembers] = useState<{ user_nrp: string; role: string }[]>([]);
+  const [newMembersToAdd, setNewMembersToAdd] = useState<string[]>([]);
+  const [searchAddMemberInput, setSearchAddMemberInput] = useState<string>('');
 
   const [messages, setMessages] = useState<any[]>([]);
   const [inputText, setInputText] = useState<string>('');
@@ -143,16 +153,75 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
   const fileInputRef = useRef<HTMLInputElement>(null);
   const groupAvatarInputRef = useRef<HTMLInputElement>(null);
   const chatScrollContainerRef = useRef<HTMLDivElement>(null);
+  const lastTapRef = useRef<{ id: string; time: number } | null>(null);
   const [viewportHeight, setViewportHeight] = useState<string>('100%');
 
   const getUserDisplayName = (u?: UserProfile | null) => u?.nickname || u?.username || u?.nrp || 'Teman';
   const getUserAvatar = (u?: UserProfile | null) => u?.photo_url || u?.avatar_url || null;
+
+  // AUTO-LINK PARSER REVISION (MEMBAWA http/https MAUPUN DOMAIN POLOS)
+  const renderMessageTextWithLinks = (text: string, isMe: boolean) => {
+    if (!text) return null;
+    const urlRegex = /((?:https?:\/\/|www\.)[^\s]+|[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\/[^\s]*)/g;
+    const parts = text.split(urlRegex);
+
+    return parts.map((part, index) => {
+      if (part.match(urlRegex)) {
+        const href = part.startsWith('http') ? part : `https://${part}`;
+        return (
+          <a
+            key={index}
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className={`underline font-semibold break-all transition-opacity ${
+              isMe 
+                ? 'text-white/95 hover:text-white underline-offset-2' 
+                : 'text-blue-600 dark:text-blue-400 hover:opacity-80 underline-offset-2'
+            }`}
+          >
+            {part}
+          </a>
+        );
+      }
+      return part;
+    });
+  };
+
+  // ROUTING BROWSER HASH INTEGRATION (#mbudtalk/chat/nrp ATAU #mbudtalk/group/id)
+  useEffect(() => {
+    const handlePopState = () => {
+      if (activeChat) setActiveChat(null);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [activeChat]);
+
+  const handleSelectChat = (chat: { type: 'dm' | 'group'; data: UserProfile | MbudTalkGroup }) => {
+    setActiveChat(chat);
+    const hash = chat.type === 'dm' 
+      ? `#mbudtalk/chat/${(chat.data as UserProfile).nrp}` 
+      : `#mbudtalk/group/${(chat.data as MbudTalkGroup).id}`;
+    if (window.location.hash !== hash) {
+      window.history.pushState({ tab: 'mbudtalk', type: chat.type }, '', hash);
+    }
+  };
+
+  const handleCloseChat = () => {
+    setActiveChat(null);
+    if (window.location.hash.includes('/chat/') || window.location.hash.includes('/group/')) {
+      window.history.pushState({ tab: 'mbudtalk' }, '', '#mbudtalk');
+    }
+  };
 
   const fetchGroups = async () => {
     if (!currentUserNrp) return;
     try {
       const groups = await getUserGroups(currentUserNrp);
       setGroupList(groups);
+      return groups;
     } catch (err) {
       console.error('Gagal mengambil grup:', err);
     }
@@ -173,10 +242,18 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
           );
           setAllUsers(others);
 
-          if (targetNrp) {
-            const found = others.find(
-              (u: any) => String(u.nrp || '').trim().toLowerCase() === targetNrp.trim().toLowerCase()
-            );
+          const rawHash = typeof window !== 'undefined' ? window.location.hash : '';
+          if (rawHash.startsWith('#mbudtalk/chat/')) {
+            const target = rawHash.replace('#mbudtalk/chat/', '').trim().toLowerCase();
+            const found = others.find((u: any) => String(u.nrp).toLowerCase() === target);
+            if (found) setActiveChat({ type: 'dm', data: found });
+          } else if (rawHash.startsWith('#mbudtalk/group/')) {
+            const groupId = rawHash.replace('#mbudtalk/group/', '').trim();
+            const groups = await fetchGroups();
+            const foundGroup = groups?.find((g) => g.id === groupId);
+            if (foundGroup) setActiveChat({ type: 'group', data: foundGroup });
+          } else if (targetNrp) {
+            const found = others.find((u: any) => String(u.nrp).toLowerCase() === targetNrp.toLowerCase());
             if (found) setActiveChat({ type: 'dm', data: found });
           }
         }
@@ -214,6 +291,7 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
     return () => unsubscribe();
   }, [currentUserNrp, activeChat]);
 
+  // REALTIME GROUP MESSAGES WITH FAST LOCAL APPEND
   useEffect(() => {
     if (!activeChat || activeChat.type !== 'group') return;
     const group = activeChat.data as MbudTalkGroup;
@@ -250,15 +328,20 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
         { event: 'INSERT', schema: 'public', table: 'mbudtalk_group_messages', filter: `group_id=eq.${group.id}` },
         (payload) => {
           const m = payload.new;
-          const newMsg = {
-            id: m.id,
-            senderNrp: m.sender_nrp,
-            senderName: m.sender_name,
-            text: m.content,
-            replyTo: m.reply_to_id ? { id: m.reply_to_id, sender: m.reply_to_sender, text: m.reply_to_text } : undefined,
-            timestamp: new Date(m.created_at).getTime(),
-          };
-          setMessages((prev) => [...prev, newMsg]);
+          setMessages((prev) => {
+            if (prev.some((item) => item.id === m.id)) return prev;
+            return [
+              ...prev,
+              {
+                id: m.id,
+                senderNrp: m.sender_nrp,
+                senderName: m.sender_name,
+                text: m.content,
+                replyTo: m.reply_to_id ? { id: m.reply_to_id, sender: m.reply_to_sender, text: m.reply_to_text } : undefined,
+                timestamp: new Date(m.created_at).getTime(),
+              },
+            ];
+          });
         }
       )
       .subscribe();
@@ -310,6 +393,7 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
+  // SEND MESSAGE (FAST REALTIME LOCAL PUSH)
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if ((!inputText.trim() && !selectedImageFile) || isSending || !activeChat) return;
@@ -335,13 +419,27 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
         );
       } else {
         const group = activeChat.data as MbudTalkGroup;
-        await sendGroupMessage(
+        const sentMsg = await sendGroupMessage(
           group.id,
           currentUserNrp,
           currentUserName,
           text || (uploadedImageUrl ? '[Gambar]' : ''),
           replyTo ? { id: replyTo.id, sender: replyTo.sender, text: replyTo.text } : undefined
         );
+
+        if (sentMsg) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: sentMsg.id,
+              senderNrp: currentUserNrp,
+              senderName: currentUserName,
+              text: sentMsg.content,
+              replyTo: replyTo ? { id: replyTo.id, sender: replyTo.sender, text: replyTo.text } : undefined,
+              timestamp: new Date(sentMsg.created_at).getTime(),
+            },
+          ]);
+        }
       }
 
       setInputText('');
@@ -352,6 +450,23 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
       alert('Gagal mengirim pesan.');
     } finally {
       setIsSending(false);
+    }
+  };
+
+  // DOUBLE TAP TO REPLY HANDLER
+  const handleBubbleClick = (msg: any, senderDisplayName: string) => {
+    const now = Date.now();
+    const DOUBLE_TAP_DELAY = 300;
+
+    if (lastTapRef.current && lastTapRef.current.id === msg.id && (now - lastTapRef.current.time) < DOUBLE_TAP_DELAY) {
+      setReplyTo({
+        id: msg.id,
+        sender: senderDisplayName,
+        text: msg.text || (msg.imageUrl ? '[Gambar]' : ''),
+      });
+      lastTapRef.current = null;
+    } else {
+      lastTapRef.current = { id: msg.id, time: now };
     }
   };
 
@@ -370,13 +485,26 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
       setSelectedGroupMembers([]);
       setIsCreateGroupModalOpen(false);
       await fetchGroups();
-      setActiveChat({ type: 'group', data: newGroup });
+      handleSelectChat({ type: 'group', data: newGroup });
     } catch (err) {
       console.error('Gagal membuat grup:', err);
       alert('Gagal membuat grup.');
     } finally {
       setIsSending(false);
     }
+  };
+
+  // LOAD ANGGOTA GRUP SAAT BUKA MODAL EDIT GRUP
+  const handleOpenEditGroupModal = async () => {
+    if (!activeChat || activeChat.type !== 'group') return;
+    const group = activeChat.data as MbudTalkGroup;
+    setEditGroupName(group.name);
+    setEditGroupAvatarPreview(group.avatar_url);
+    setNewMembersToAdd([]);
+    
+    const members = await getGroupMembers(group.id);
+    setExistingMembers(members);
+    setIsEditGroupModalOpen(true);
   };
 
   const handleUpdateGroupSubmit = async (e: React.FormEvent) => {
@@ -390,6 +518,10 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
 
       if (editGroupAvatarFile) {
         avatarUrl = await uploadImageToCloudinary(editGroupAvatarFile);
+      }
+
+      if (newMembersToAdd.length > 0) {
+        await addGroupMembers(group.id, newMembersToAdd);
       }
 
       const updated = await updateGroupProfile(group.id, editGroupName.trim(), avatarUrl);
@@ -445,12 +577,28 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
     return nickname.includes(q) || username.includes(q) || nrp.includes(q);
   });
 
+  const filteredGroupUsers = allUsers.filter((u) => {
+    const q = searchGroupMemberInput.toLowerCase();
+    const nickname = (u.nickname || '').toLowerCase();
+    const username = (u.username || '').toLowerCase();
+    const nrp = String(u.nrp || '').toLowerCase();
+    return nickname.includes(q) || username.includes(q) || nrp.includes(q);
+  });
+
+  const nonMemberUsers = allUsers.filter(
+    (u) => !existingMembers.some((m) => m.user_nrp.toLowerCase() === u.nrp.toLowerCase()) &&
+    (
+      (u.nickname || '').toLowerCase().includes(searchAddMemberInput.toLowerCase()) ||
+      (u.username || '').toLowerCase().includes(searchAddMemberInput.toLowerCase())
+    )
+  );
+
   return (
     <div
       style={{ height: viewportHeight }}
       className="fixed inset-x-0 bottom-0 top-[68px] z-30 px-3 pb-2 pt-1 lg:static lg:h-[calc(100vh-10.5rem)] lg:max-h-[660px] lg:px-0 lg:py-0 w-full max-w-5xl mx-auto flex flex-col lg:flex-row gap-3 overflow-hidden select-none"
     >
-      {/* BILAH KIRI: DAFTAR OBROLAN */}
+      {/* BILAH KIRI: LIST CHAT */}
       <div
         className={`w-full lg:w-80 flex flex-col gap-2.5 h-full ${
           activeChat ? 'hidden lg:flex' : 'flex'
@@ -470,7 +618,6 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
             </h2>
           </div>
 
-          {/* TOMBOL BIRU INTEGRASI UNTUK PEMBUATAN CHAT/GRUP */}
           <button
             onClick={() => setIsNewChatModalOpen(true)}
             className="w-8 h-8 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20 flex items-center justify-center cursor-pointer transition-all shrink-0"
@@ -515,9 +662,9 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                   whileTap={{ scale: 0.98 }}
                   onClick={() => {
                     if (item.type === 'dm' && item.rawProfile) {
-                      setActiveChat({ type: 'dm', data: item.rawProfile });
+                      handleSelectChat({ type: 'dm', data: item.rawProfile });
                     } else if (item.type === 'group' && item.rawGroup) {
-                      setActiveChat({ type: 'group', data: item.rawGroup });
+                      handleSelectChat({ type: 'group', data: item.rawGroup });
                     }
                   }}
                   className={`flex items-center gap-3 p-3 rounded-3xl cursor-pointer transition-all backdrop-blur-md border ${
@@ -575,7 +722,7 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
               <div className="flex items-center gap-3 min-w-0">
                 <button
                   type="button"
-                  onClick={() => setActiveChat(null)}
+                  onClick={handleCloseChat}
                   className="lg:hidden p-1.5 rounded-2xl text-slate-400 hover:text-slate-800 dark:hover:text-white"
                 >
                   <ArrowLeft className="w-5 h-5" />
@@ -611,21 +758,16 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
 
               {activeChat.type === 'group' && (
                 <button
-                  onClick={() => {
-                    const g = activeChat.data as MbudTalkGroup;
-                    setEditGroupName(g.name);
-                    setEditGroupAvatarPreview(g.avatar_url);
-                    setIsEditGroupModalOpen(true);
-                  }}
-                  className="p-2 rounded-2xl text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/40 dark:hover:bg-zinc-800 transition-colors"
-                  title="Edit Info Grup"
+                  onClick={handleOpenEditGroupModal}
+                  className="p-2 rounded-2xl text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/40 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                  title="Edit Info Grup & Anggota"
                 >
                   <Edit3 className="w-4 h-4" />
                 </button>
               )}
             </div>
 
-            {/* MESSAGES STREAM BOX */}
+            {/* MESSAGES BOX WITH DOUBLE TAP TO REPLY */}
             <div 
               ref={chatScrollContainerRef}
               className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-2.5 custom-scrollbar rounded-3xl bg-white/30 dark:bg-zinc-900/25 backdrop-blur-md border border-white/40 dark:border-white/5"
@@ -633,8 +775,7 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
               {messages.map((msg, idx) => {
                 const isMe = String(msg.senderNrp).trim().toLowerCase() === currentUserNrp;
                 const showDateDivider = idx === 0 || isDifferentDay(messages[idx - 1].timestamp, msg.timestamp);
-                
-                // Cari nickname jika pengirim adalah orang lain di DM
+
                 let senderDisplayName = msg.senderName;
                 if (!senderDisplayName || senderDisplayName === msg.senderNrp) {
                   if (activeChat.type === 'dm') {
@@ -657,19 +798,13 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
 
                     <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
                       <div
-                        onClick={() => {
-                          setReplyTo({
-                            id: msg.id || String(idx),
-                            sender: senderDisplayName,
-                            text: msg.text || (msg.imageUrl ? '[Gambar]' : ''),
-                          });
-                        }}
-                        className={`max-w-[82%] sm:max-w-[70%] p-3 rounded-3xl text-xs sm:text-sm shadow-xs backdrop-blur-md cursor-pointer hover:opacity-95 transition-all ${
+                        onClick={() => handleBubbleClick(msg, senderDisplayName)}
+                        className={`max-w-[82%] sm:max-w-[70%] p-3 rounded-3xl text-xs sm:text-sm shadow-xs backdrop-blur-md cursor-pointer select-text ${
                           isMe
                             ? 'bg-blue-600 text-white rounded-br-xs'
                             : 'bg-white/80 dark:bg-zinc-800/80 text-slate-800 dark:text-zinc-100 rounded-bl-xs border border-white/60 dark:border-white/5'
                         }`}
-                        title="Klik untuk membalas pesan ini"
+                        title="Double-tap (klik 2x) untuk membalas"
                       >
                         {activeChat.type === 'group' && !isMe && (
                           <p className="text-[10px] font-bold text-blue-500 dark:text-blue-400 mb-1">
@@ -677,7 +812,6 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                           </p>
                         )}
 
-                        {/* BOX BALASAN PESAN DI DALAM BUBBLE */}
                         {msg.replyTo && (
                           <div className={`p-2 mb-2 rounded-xl text-[11px] border-l-4 ${isMe ? 'bg-blue-700/50 border-white text-white/90' : 'bg-slate-100 dark:bg-zinc-700 border-blue-500 text-slate-700 dark:text-zinc-200'}`}>
                             <p className="font-bold">Membalas {msg.replyTo.sender}</p>
@@ -700,7 +834,9 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                         )}
 
                         {msg.text && (
-                          <p className="whitespace-pre-wrap break-words leading-relaxed">{msg.text}</p>
+                          <p className="whitespace-pre-wrap break-words leading-relaxed">
+                            {renderMessageTextWithLinks(msg.text, isMe)}
+                          </p>
                         )}
                       </div>
                       <span className="text-[10px] text-slate-400 px-2 mt-1">
@@ -730,7 +866,6 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
               </div>
             )}
 
-            {/* PREVIEW BAR REPLIES INPUT */}
             {replyTo && (
               <div className="px-3 py-2 bg-blue-50/80 dark:bg-blue-950/40 border-l-4 border-blue-600 rounded-xl flex items-center justify-between text-xs shrink-0">
                 <div className="min-w-0 pr-2">
@@ -806,17 +941,18 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
         )}
       </AnimatePresence>
 
+      {/* MODAL EDIT GRUP + DAFTAR ANGGOTA & TAMBAH ANGGOTA */}
       <AnimatePresence>
         {isEditGroupModalOpen && activeChat?.type === 'group' && (
           <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsEditGroupModalOpen(false)} className="fixed inset-0 bg-slate-950/70 backdrop-blur-md" />
-            <motion.div initial={{ scale: 0.92, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.92, opacity: 0 }} className="relative z-10 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-2xl border border-white/50 dark:border-white/10 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
-              <div className="flex justify-between items-center">
-                <h3 className="text-base font-bold">Edit Info Grup</h3>
+            <motion.div initial={{ scale: 0.92, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.92, opacity: 0 }} className="relative z-10 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-2xl border border-white/50 dark:border-white/10 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-md w-full max-h-[85vh] flex flex-col p-6 shadow-2xl space-y-4">
+              <div className="flex justify-between items-center border-b border-slate-200/40 pb-2 shrink-0">
+                <h3 className="text-base font-bold">Edit Info & Anggota Grup</h3>
                 <button onClick={() => setIsEditGroupModalOpen(false)}><X className="w-5 h-5 text-slate-400" /></button>
               </div>
 
-              <form onSubmit={handleUpdateGroupSubmit} className="space-y-4">
+              <form onSubmit={handleUpdateGroupSubmit} className="flex-1 overflow-y-auto space-y-4 custom-scrollbar pr-1">
                 <div className="flex flex-col items-center gap-2">
                   <div className="relative w-20 h-20 rounded-full bg-slate-200 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border-2 border-blue-500">
                     {editGroupAvatarPreview ? (
@@ -859,10 +995,61 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                   />
                 </div>
 
+                {/* DAFTAR ANGGOTA EKSISTING */}
+                <div>
+                  <label className="block text-xs font-semibold mb-1">Anggota Grup ({existingMembers.length})</label>
+                  <div className="max-h-32 overflow-y-auto space-y-1.5 custom-scrollbar bg-slate-50 dark:bg-zinc-800/50 p-2 rounded-2xl">
+                    {existingMembers.map((m) => {
+                      const u = allUsers.find((user) => user.nrp.toLowerCase() === m.user_nrp.toLowerCase());
+                      const name = getUserDisplayName(u);
+                      return (
+                        <div key={m.user_nrp} className="flex items-center justify-between p-1.5 rounded-xl text-xs">
+                          <span className="font-semibold text-slate-800 dark:text-zinc-200">{name}</span>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-200 dark:bg-zinc-700 font-bold uppercase">{m.role}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* TAMBAH ANGGOTA BARU */}
+                <div>
+                  <label className="block text-xs font-semibold mb-1.5">Tambah Anggota Baru</label>
+                  <div className="relative flex items-center w-full rounded-xl bg-slate-100 dark:bg-zinc-800 px-3 py-1.5 mb-2">
+                    <Search className="w-3.5 h-3.5 text-slate-400 mr-2" />
+                    <input
+                      type="text"
+                      value={searchAddMemberInput}
+                      onChange={(e) => setSearchAddMemberInput(e.target.value)}
+                      placeholder="Cari teman untuk ditambahkan..."
+                      className="w-full bg-transparent text-xs focus:outline-none"
+                    />
+                  </div>
+                  <div className="max-h-36 overflow-y-auto space-y-1 custom-scrollbar">
+                    {nonMemberUsers.map((u) => {
+                      const isSelected = newMembersToAdd.includes(u.nrp);
+                      return (
+                        <div
+                          key={u.nrp}
+                          onClick={() => {
+                            setNewMembersToAdd((prev) =>
+                              isSelected ? prev.filter((id) => id !== u.nrp) : [...prev, u.nrp]
+                            );
+                          }}
+                          className={`flex items-center justify-between p-2 rounded-xl text-xs cursor-pointer ${isSelected ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-600 font-bold' : 'hover:bg-slate-100 dark:hover:bg-zinc-800'}`}
+                        >
+                          <span>{getUserDisplayName(u)}</span>
+                          {isSelected && <Check className="w-4 h-4 text-blue-600" />}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 <button
                   type="submit"
                   disabled={isSending}
-                  className="w-full py-2.5 rounded-2xl bg-blue-600 text-white font-bold text-xs hover:bg-blue-700 transition-all shadow-md shadow-blue-500/20"
+                  className="w-full py-2.5 rounded-2xl bg-blue-600 text-white font-bold text-xs hover:bg-blue-700 transition-all shadow-md shadow-blue-500/20 shrink-0"
                 >
                   {isSending ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Simpan Perubahan'}
                 </button>
@@ -872,7 +1059,7 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
         )}
       </AnimatePresence>
 
-      {/* MODAL INTEGRASI LENGKAP: MULAI CHAT BARU / BUAT GRUP */}
+      {/* MODAL TERINTEGRASI: MULAI CHAT BARU & BUAT GRUP */}
       <AnimatePresence>
         {isNewChatModalOpen && (
           <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
@@ -883,7 +1070,6 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                 <button onClick={() => setIsNewChatModalOpen(false)}><X className="w-5 h-5 text-slate-400" /></button>
               </div>
 
-              {/* ACTION ROW: TOMBOL KUSTOM BUAT GRUP BARU DI DALAM MODAL */}
               <div className="p-3 border-b border-slate-200/40 dark:border-white/10 shrink-0 space-y-2">
                 <button
                   type="button"
@@ -891,7 +1077,7 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                     setIsNewChatModalOpen(false);
                     setIsCreateGroupModalOpen(true);
                   }}
-                  className="w-full p-3 rounded-2xl bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/60 border border-blue-200/60 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
+                  className="w-full p-3 rounded-2xl bg-blue-600 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md shadow-blue-500/20"
                 >
                   <Users className="w-4 h-4" />
                   <span>+ Buat Grup Obrolan Baru</span>
@@ -918,7 +1104,7 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                     <div
                       key={user.nrp}
                       onClick={() => {
-                        setActiveChat({ type: 'dm', data: user });
+                        handleSelectChat({ type: 'dm', data: user });
                         setIsNewChatModalOpen(false);
                       }}
                       className="flex items-center gap-3 p-3 rounded-2xl cursor-pointer hover:bg-white/60 dark:hover:bg-zinc-800/60 transition-all"
@@ -940,17 +1126,18 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
         )}
       </AnimatePresence>
 
+      {/* MODAL BUAT GRUP (SEARCHBAR + RECAP CHIP ANGGOTA TERCENTANG) */}
       <AnimatePresence>
         {isCreateGroupModalOpen && (
           <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsCreateGroupModalOpen(false)} className="fixed inset-0 bg-slate-950/70 backdrop-blur-md" />
-            <motion.div initial={{ scale: 0.92, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.92, opacity: 0 }} className="relative z-10 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-2xl border border-white/50 dark:border-white/10 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
-              <div className="flex justify-between items-center border-b border-slate-200/40 dark:border-white/10 pb-3">
+            <motion.div initial={{ scale: 0.92, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.92, opacity: 0 }} className="relative z-10 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-2xl border border-white/50 dark:border-white/10 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-md w-full max-h-[85vh] flex flex-col p-6 shadow-2xl space-y-4">
+              <div className="flex justify-between items-center border-b border-slate-200/40 pb-3 shrink-0">
                 <h3 className="text-base font-bold">Buat Grup Obrolan Baru</h3>
                 <button onClick={() => setIsCreateGroupModalOpen(false)}><X className="w-5 h-5 text-slate-400" /></button>
               </div>
 
-              <form onSubmit={handleCreateGroupSubmit} className="space-y-4">
+              <form onSubmit={handleCreateGroupSubmit} className="flex-1 overflow-y-auto space-y-4 custom-scrollbar pr-1">
                 <div>
                   <label className="block text-xs font-semibold mb-1.5">Nama Grup</label>
                   <input
@@ -963,10 +1150,48 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                   />
                 </div>
 
+                {/* RECAP ANGGOTA TERPILIH */}
+                {selectedGroupMembers.length > 0 && (
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-500 mb-1">
+                      Terpilih ({selectedGroupMembers.length}):
+                    </label>
+                    <div className="flex flex-wrap gap-1.5 max-h-20 overflow-y-auto custom-scrollbar p-1">
+                      {selectedGroupMembers.map((nrp) => {
+                        const u = allUsers.find((user) => user.nrp === nrp);
+                        const name = getUserDisplayName(u);
+                        return (
+                          <span
+                            key={nrp}
+                            onClick={() => setSelectedGroupMembers((prev) => prev.filter((id) => id !== nrp))}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-600 text-white text-[10px] font-bold cursor-pointer hover:bg-rose-600 transition-colors"
+                          >
+                            <span>{name}</span>
+                            <X className="w-3 h-3" />
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-xs font-semibold mb-1.5">Pilih Anggota Grup</label>
-                  <div className="max-h-56 overflow-y-auto space-y-1.5 custom-scrollbar pr-1">
-                    {allUsers.map((u) => {
+                  
+                  {/* SEARCHBAR ANGGOTA GRUP */}
+                  <div className="relative flex items-center w-full rounded-2xl bg-slate-100 dark:bg-zinc-800 px-3 py-2 mb-2">
+                    <Search className="w-3.5 h-3.5 text-slate-400 mr-2" />
+                    <input
+                      type="text"
+                      value={searchGroupMemberInput}
+                      onChange={(e) => setSearchGroupMemberInput(e.target.value)}
+                      placeholder="Cari anggota untuk digabungkan..."
+                      className="w-full bg-transparent text-xs focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="max-h-48 overflow-y-auto space-y-1.5 custom-scrollbar pr-1">
+                    {filteredGroupUsers.map((u) => {
                       const isSelected = selectedGroupMembers.includes(u.nrp);
                       const displayName = getUserDisplayName(u);
                       const avatar = getUserAvatar(u);
@@ -1011,7 +1236,7 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                 <button
                   type="submit"
                   disabled={isSending || !newGroupName.trim()}
-                  className="w-full py-3 rounded-2xl bg-blue-600 text-white font-bold text-xs hover:bg-blue-700 disabled:opacity-50 transition-all shadow-md shadow-blue-500/20"
+                  className="w-full py-3 rounded-2xl bg-blue-600 text-white font-bold text-xs hover:bg-blue-700 disabled:opacity-50 transition-all shadow-md shadow-blue-500/20 shrink-0"
                 >
                   {isSending ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Terbitkan Grup'}
                 </button>
