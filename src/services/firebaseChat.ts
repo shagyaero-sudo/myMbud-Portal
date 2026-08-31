@@ -24,9 +24,15 @@ export const getChatRoomId = (nrp1: string, nrp2: string): string => {
 export interface ChatMessage {
   id?: string;
   senderNrp: string;
+  senderName?: string;
   text: string;
-  imageUrl?: string; // Properti opsional untuk URL gambar Cloudinary
+  imageUrl?: string;
   timestamp: number;
+  replyTo?: {
+    id: string;
+    sender: string;
+    text: string;
+  };
 }
 
 export interface RecentChatMeta {
@@ -35,13 +41,14 @@ export interface RecentChatMeta {
   lastTimestamp: number;
 }
 
-// 1. Kirim Pesan & Trigger Unread (Mendukung Teks, Gambar Cloudinary, atau Keduanya)
+// 1. Kirim Pesan PC Personal (Dukungan Reply & Sender Name)
 export const sendChatMessage = async (
   senderNrp: string, 
   recipientNrp: string, 
   text: string,
   senderDisplayName?: string,
-  imageUrl?: string
+  imageUrl?: string,
+  replyTo?: { id: string; sender: string; text: string }
 ) => {
   if (!text.trim() && !imageUrl) return;
 
@@ -51,14 +58,13 @@ export const sendChatMessage = async (
   const now = Date.now();
   const cleanText = text.trim();
 
-  // Format teks pratinjau pesan terakhir di daftar chat
   const lastMsgText = imageUrl 
     ? (cleanText ? `📷 ${cleanText}` : '📷 [Gambar]') 
     : cleanText;
 
-  // Payload pesan yang dikirim ke Realtime Database
   const payload: Record<string, any> = {
     senderNrp: sNrp,
+    senderName: senderDisplayName || sNrp,
     text: cleanText,
     timestamp: now,
   };
@@ -67,10 +73,13 @@ export const sendChatMessage = async (
     payload.imageUrl = imageUrl;
   }
 
+  if (replyTo) {
+    payload.replyTo = replyTo;
+  }
+
   const messagesRef = ref(rtdb, `chats/${roomId}/messages`);
   await push(messagesRef, payload);
 
-  // Update daftar chat terakhir pengirim
   const senderRecentRef = ref(rtdb, `recent_chats/${sNrp}/${rNrp}`);
   await set(senderRecentRef, {
     partnerNrp: rNrp,
@@ -78,7 +87,6 @@ export const sendChatMessage = async (
     lastTimestamp: now,
   });
 
-  // Update daftar chat terakhir penerima
   const recipientRecentRef = ref(rtdb, `recent_chats/${rNrp}/${sNrp}`);
   await set(recipientRecentRef, {
     partnerNrp: sNrp,
@@ -86,11 +94,9 @@ export const sendChatMessage = async (
     lastTimestamp: now,
   });
 
-  // Tandai unread untuk lawan bicara
   const unreadRef = ref(rtdb, `unread/${rNrp}/${sNrp}`);
   await set(unreadRef, true);
 
-  // Kirim notifikasi push
   notifyChatDirectMessage({
     recipientNrp: rNrp,
     senderNrp: sNrp,
@@ -99,7 +105,6 @@ export const sendChatMessage = async (
   }).catch((err) => console.error('[Push DM Error]:', err));
 };
 
-// 2. Listener Room Chat Aktif
 export const subscribeToChatRoom = (
   senderNrp: string,
   recipientNrp: string,
@@ -125,7 +130,6 @@ export const subscribeToChatRoom = (
   });
 };
 
-// 3. Listener Recent Chats
 export const subscribeToRecentChats = (
   myNrp: string,
   callback: (recentList: RecentChatMeta[]) => void
@@ -146,7 +150,6 @@ export const subscribeToRecentChats = (
   });
 };
 
-// 4. Listener Seluruh Status Unread Chat
 export const subscribeToUserUnreads = (
   myNrp: string,
   callback: (unreadMap: Record<string, boolean>) => void
@@ -159,7 +162,6 @@ export const subscribeToUserUnreads = (
   });
 };
 
-// 5. Bersihkan Unread Dot saat chat dibuka
 export const clearUnreadNotification = async (myNrp: string, partnerNrp: string) => {
   const cleanMyNrp = myNrp.trim().toLowerCase();
   const cleanPartnerNrp = partnerNrp.trim().toLowerCase();
@@ -167,7 +169,6 @@ export const clearUnreadNotification = async (myNrp: string, partnerNrp: string)
   await set(unreadRef, null);
 };
 
-// 6. Global Unread Listener untuk Tombol Dashboard
 export const subscribeToGlobalUnread = (myNrp: string, callback: (hasUnread: boolean) => void) => {
   const cleanNrp = myNrp.trim().toLowerCase();
   const userUnreadRef = ref(rtdb, `unread/${cleanNrp}`);

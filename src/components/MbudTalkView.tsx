@@ -6,15 +6,12 @@ import {
   MessageSquare, 
   Search, 
   Loader2, 
-  ShieldCheck, 
   MessageSquarePlus, 
   X,
   ImagePlus,
   Users,
   Plus,
   Edit3,
-  CornerUpLeft,
-  CheckCircle2,
   Check,
   Camera
 } from 'lucide-react';
@@ -25,7 +22,6 @@ import {
   clearUnreadNotification, 
   subscribeToRecentChats,
   subscribeToUserUnreads,
-  ChatMessage,
   RecentChatMeta
 } from '../services/firebaseChat';
 import {
@@ -34,8 +30,7 @@ import {
   updateGroupProfile,
   sendGroupMessage,
   markGroupAsRead,
-  MbudTalkGroup,
-  GroupMessage
+  MbudTalkGroup
 } from '../services/mbudtalkGroupService';
 import { uploadImageToCloudinary } from './mbudiary/lib/cloudinary';
 
@@ -115,10 +110,8 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
   const currentUserNrp = typeof window !== 'undefined' ? (localStorage.getItem('mymbud_user_nrp') || '').trim().toLowerCase() : '';
   const currentUserName = typeof window !== 'undefined' ? localStorage.getItem('mymbud_user_name') || 'Teman' : 'Teman';
 
-  // Active Chat State (Pilih antara DM atau Group)
   const [activeChat, setActiveChat] = useState<{ type: 'dm' | 'group'; data: UserProfile | MbudTalkGroup } | null>(null);
 
-  // Data States
   const [allUsers, setAllUsers] = useState<UserProfile[]>([]);
   const [recentChats, setRecentChats] = useState<RecentChatMeta[]>([]);
   const [groupList, setGroupList] = useState<MbudTalkGroup[]>([]);
@@ -127,12 +120,10 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
 
   const [searchQuery, setSearchQuery] = useState<string>('');
 
-  // Modals
   const [isNewChatModalOpen, setIsNewChatModalOpen] = useState<boolean>(false);
   const [isCreateGroupModalOpen, setIsCreateGroupModalOpen] = useState<boolean>(false);
   const [isEditGroupModalOpen, setIsEditGroupModalOpen] = useState<boolean>(false);
 
-  // Modal Form Inputs
   const [searchNewUser, setSearchNewUser] = useState<string>('');
   const [newGroupName, setNewGroupName] = useState<string>('');
   const [selectedGroupMembers, setSelectedGroupMembers] = useState<string[]>([]);
@@ -140,13 +131,11 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
   const [editGroupAvatarFile, setEditGroupAvatarFile] = useState<File | null>(null);
   const [editGroupAvatarPreview, setEditGroupAvatarPreview] = useState<string>('');
 
-  // Messages & Reply State
   const [messages, setMessages] = useState<any[]>([]);
   const [inputText, setInputText] = useState<string>('');
   const [isSending, setIsSending] = useState<boolean>(false);
   const [replyTo, setReplyTo] = useState<ReplyState | null>(null);
 
-  // Attachments & Image Preview
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [previewZoomImage, setPreviewZoomImage] = useState<string | null>(null);
@@ -159,7 +148,6 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
   const getUserDisplayName = (u?: UserProfile | null) => u?.nickname || u?.username || u?.nrp || 'Teman';
   const getUserAvatar = (u?: UserProfile | null) => u?.photo_url || u?.avatar_url || null;
 
-  // Load Groups
   const fetchGroups = async () => {
     if (!currentUserNrp) return;
     try {
@@ -174,7 +162,6 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
     fetchGroups();
   }, [currentUserNrp]);
 
-  // Fetch Users
   useEffect(() => {
     const fetchUsers = async () => {
       setLoading(true);
@@ -202,7 +189,6 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
     fetchUsers();
   }, [currentUserNrp, targetNrp]);
 
-  // Subscribe DM & Unreads
   useEffect(() => {
     if (!currentUserNrp) return;
     const unsubRecent = subscribeToRecentChats(currentUserNrp, setRecentChats);
@@ -213,7 +199,6 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
     };
   }, [currentUserNrp]);
 
-  // Subscribe Active Direct Messages
   useEffect(() => {
     if (!currentUserNrp || !activeChat || activeChat.type !== 'dm') return;
     const partner = activeChat.data as UserProfile;
@@ -229,7 +214,6 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
     return () => unsubscribe();
   }, [currentUserNrp, activeChat]);
 
-  // Subscribe Active Group Messages
   useEffect(() => {
     if (!activeChat || activeChat.type !== 'group') return;
     const group = activeChat.data as MbudTalkGroup;
@@ -284,14 +268,12 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
     };
   }, [activeChat]);
 
-  // Scroll to Bottom
   useEffect(() => {
     if (chatScrollContainerRef.current) {
       chatScrollContainerRef.current.scrollTop = chatScrollContainerRef.current.scrollHeight;
     }
   }, [messages, imagePreviewUrl, replyTo]);
 
-  // Viewport Adjustment Mobile Keyboard
   useEffect(() => {
     const handleViewportChange = () => {
       if (typeof window !== 'undefined' && window.visualViewport) {
@@ -314,7 +296,6 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
     };
   }, []);
 
-  // Image Selection Handlers
   const handleSelectImageFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -329,7 +310,6 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  // Send Message (DM & Group)
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if ((!inputText.trim() && !selectedImageFile) || isSending || !activeChat) return;
@@ -350,7 +330,8 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
           partner.nrp,
           text,
           currentUserName,
-          uploadedImageUrl
+          uploadedImageUrl,
+          replyTo ? { id: replyTo.id, sender: replyTo.sender, text: replyTo.text } : undefined
         );
       } else {
         const group = activeChat.data as MbudTalkGroup;
@@ -374,7 +355,6 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
     }
   };
 
-  // Create Group
   const handleCreateGroupSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newGroupName.trim()) return;
@@ -399,7 +379,6 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
     }
   };
 
-  // Update Group Profile
   const handleUpdateGroupSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!activeChat || activeChat.type !== 'group' || !editGroupName.trim()) return;
@@ -425,7 +404,6 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
     }
   };
 
-  // CONSOLIDATE LIST (DM + GROUPS INTO 1 LIST LIKE WHATSAPP)
   const combinedChatList: CombinedChatItem[] = [
     ...recentChats.map((item) => {
       const userProfile = allUsers.find(
@@ -472,13 +450,12 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
       style={{ height: viewportHeight }}
       className="fixed inset-x-0 bottom-0 top-[68px] z-30 px-3 pb-2 pt-1 lg:static lg:h-[calc(100vh-10.5rem)] lg:max-h-[660px] lg:px-0 lg:py-0 w-full max-w-5xl mx-auto flex flex-col lg:flex-row gap-3 overflow-hidden select-none"
     >
-      {/* BILAH KIRI: SEMUA OBROLAN (PERSONAL + GRUP DIJADIKAN SATU) */}
+      {/* BILAH KIRI: DAFTAR OBROLAN */}
       <div
         className={`w-full lg:w-80 flex flex-col gap-2.5 h-full ${
           activeChat ? 'hidden lg:flex' : 'flex'
         }`}
       >
-        {/* Top Header Pill */}
         <div className="flex items-center justify-between gap-3 p-2.5 px-4 rounded-3xl bg-white/60 dark:bg-zinc-900/50 backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-xs shrink-0">
           <div className="flex items-center gap-2.5">
             <button
@@ -493,25 +470,16 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
             </h2>
           </div>
 
-          <div className="flex items-center gap-1.5">
-            <button
-              onClick={() => setIsCreateGroupModalOpen(true)}
-              className="p-2 rounded-2xl bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 hover:bg-slate-200 dark:hover:bg-zinc-700 transition-all cursor-pointer"
-              title="Buat Grup Baru"
-            >
-              <Users className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setIsNewChatModalOpen(true)}
-              className="w-8 h-8 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20 flex items-center justify-center cursor-pointer transition-all shrink-0"
-              title="Mulai Chat Baru"
-            >
-              <MessageSquarePlus className="w-4 h-4" />
-            </button>
-          </div>
+          {/* TOMBOL BIRU INTEGRASI UNTUK PEMBUATAN CHAT/GRUP */}
+          <button
+            onClick={() => setIsNewChatModalOpen(true)}
+            className="w-8 h-8 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20 flex items-center justify-center cursor-pointer transition-all shrink-0"
+            title="Mulai Chat atau Buat Grup Baru"
+          >
+            <MessageSquarePlus className="w-4 h-4" />
+          </button>
         </div>
 
-        {/* SEARCH BAR */}
         <div className="relative flex items-center shrink-0 w-full rounded-2xl bg-white/50 dark:bg-zinc-900/40 backdrop-blur-lg border border-white/50 dark:border-white/5 px-3 py-1.5 shadow-xs">
           <Search className="w-4 h-4 text-slate-400 dark:text-zinc-400 shrink-0 mr-2.5 pointer-events-none" />
           <input
@@ -523,7 +491,6 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
           />
         </div>
 
-        {/* RECENT CHATS LIST (UNIFIED WHATSAPP STYLE) */}
         <div className="flex-1 overflow-y-auto space-y-1.5 custom-scrollbar pr-0.5">
           {loading ? (
             <div className="flex flex-col items-center justify-center p-8 space-y-2 text-slate-400">
@@ -604,7 +571,6 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
       >
         {activeChat ? (
           <>
-            {/* Header Chat */}
             <div className="flex items-center justify-between gap-3 p-2 px-4 rounded-3xl bg-white/60 dark:bg-zinc-900/50 backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-xs shrink-0">
               <div className="flex items-center gap-3 min-w-0">
                 <button
@@ -659,7 +625,7 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
               )}
             </div>
 
-            {/* Messages Container */}
+            {/* MESSAGES STREAM BOX */}
             <div 
               ref={chatScrollContainerRef}
               className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-2.5 custom-scrollbar rounded-3xl bg-white/30 dark:bg-zinc-900/25 backdrop-blur-md border border-white/40 dark:border-white/5"
@@ -667,7 +633,17 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
               {messages.map((msg, idx) => {
                 const isMe = String(msg.senderNrp).trim().toLowerCase() === currentUserNrp;
                 const showDateDivider = idx === 0 || isDifferentDay(messages[idx - 1].timestamp, msg.timestamp);
-                const senderDisplayName = msg.senderName || msg.senderNrp;
+                
+                // Cari nickname jika pengirim adalah orang lain di DM
+                let senderDisplayName = msg.senderName;
+                if (!senderDisplayName || senderDisplayName === msg.senderNrp) {
+                  if (activeChat.type === 'dm') {
+                    senderDisplayName = getUserDisplayName(activeChat.data as UserProfile);
+                  } else {
+                    const foundUser = allUsers.find(u => u.nrp.toLowerCase() === String(msg.senderNrp).toLowerCase());
+                    senderDisplayName = foundUser ? getUserDisplayName(foundUser) : msg.senderNrp;
+                  }
+                }
 
                 return (
                   <React.Fragment key={msg.id || idx}>
@@ -680,7 +656,6 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                     )}
 
                     <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                      {/* TAP TO REPLY: Balon chat bisa diklik untuk mereply */}
                       <div
                         onClick={() => {
                           setReplyTo({
@@ -696,14 +671,13 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                         }`}
                         title="Klik untuk membalas pesan ini"
                       >
-                        {/* Pengirim (Khusus Grup) */}
                         {activeChat.type === 'group' && !isMe && (
                           <p className="text-[10px] font-bold text-blue-500 dark:text-blue-400 mb-1">
                             {senderDisplayName}
                           </p>
                         )}
 
-                        {/* Box Balasan / Reply */}
+                        {/* BOX BALASAN PESAN DI DALAM BUBBLE */}
                         {msg.replyTo && (
                           <div className={`p-2 mb-2 rounded-xl text-[11px] border-l-4 ${isMe ? 'bg-blue-700/50 border-white text-white/90' : 'bg-slate-100 dark:bg-zinc-700 border-blue-500 text-slate-700 dark:text-zinc-200'}`}>
                             <p className="font-bold">Membalas {msg.replyTo.sender}</p>
@@ -711,7 +685,6 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                           </div>
                         )}
 
-                        {/* Gambar Lampiran */}
                         {msg.imageUrl && (
                           <div className="mb-2 overflow-hidden rounded-2xl border border-black/10 dark:border-white/10">
                             <img
@@ -726,7 +699,6 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                           </div>
                         )}
 
-                        {/* Teks Pesan */}
                         {msg.text && (
                           <p className="whitespace-pre-wrap break-words leading-relaxed">{msg.text}</p>
                         )}
@@ -740,7 +712,6 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
               })}
             </div>
 
-            {/* PREVIEW GAMBAR SEBELUM DIKIRIM */}
             {imagePreviewUrl && (
               <div className="relative px-3 py-2 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-2xl flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-3">
@@ -759,11 +730,11 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
               </div>
             )}
 
-            {/* PREVIEW BAR MEMBALAS PESAN (NICKNAME REVISION) */}
+            {/* PREVIEW BAR REPLIES INPUT */}
             {replyTo && (
               <div className="px-3 py-2 bg-blue-50/80 dark:bg-blue-950/40 border-l-4 border-blue-600 rounded-xl flex items-center justify-between text-xs shrink-0">
                 <div className="min-w-0 pr-2">
-                  <p className="font-bold text-blue-600 dark:text-blue-400">Membalas ke {replyTo.sender}</p>
+                  <p className="font-bold text-blue-600 dark:text-blue-400">Membalas {replyTo.sender}</p>
                   <p className="truncate text-slate-600 dark:text-zinc-300">{replyTo.text}</p>
                 </div>
                 <button onClick={() => setReplyTo(null)} className="p-1 text-slate-400 hover:text-slate-600">
@@ -772,7 +743,6 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
               </div>
             )}
 
-            {/* FORM INPUT PESAN & TOMBOL UPLOAD GAMBAR */}
             <form
               onSubmit={handleSendMessage}
               className="p-1.5 pl-3 rounded-3xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-xl border border-white/70 dark:border-white/10 shadow-xs flex items-center gap-2 shrink-0"
@@ -823,7 +793,6 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
         )}
       </div>
 
-      {/* FULLVIEW IMAGE ZOOM MODAL */}
       <AnimatePresence>
         {previewZoomImage && (
           <div className="fixed inset-0 z-[999999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
@@ -837,7 +806,6 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
         )}
       </AnimatePresence>
 
-      {/* MODAL EDIT GRUP */}
       <AnimatePresence>
         {isEditGroupModalOpen && activeChat?.type === 'group' && (
           <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
@@ -904,14 +872,81 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
         )}
       </AnimatePresence>
 
-      {/* MODAL BUAT GRUP BARU (AESTHETIC AVATAR + CHECKBOX REVISION) */}
+      {/* MODAL INTEGRASI LENGKAP: MULAI CHAT BARU / BUAT GRUP */}
+      <AnimatePresence>
+        {isNewChatModalOpen && (
+          <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsNewChatModalOpen(false)} className="fixed inset-0 bg-slate-950/70 backdrop-blur-md" />
+            <motion.div initial={{ scale: 0.92, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.92, opacity: 0 }} className="relative z-10 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-2xl border border-white/50 dark:border-white/10 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-md w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-200/50 dark:border-white/10 flex items-center justify-between shrink-0">
+                <h3 className="text-base font-bold">Mulai Chat Baru</h3>
+                <button onClick={() => setIsNewChatModalOpen(false)}><X className="w-5 h-5 text-slate-400" /></button>
+              </div>
+
+              {/* ACTION ROW: TOMBOL KUSTOM BUAT GRUP BARU DI DALAM MODAL */}
+              <div className="p-3 border-b border-slate-200/40 dark:border-white/10 shrink-0 space-y-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsNewChatModalOpen(false);
+                    setIsCreateGroupModalOpen(true);
+                  }}
+                  className="w-full p-3 rounded-2xl bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/60 border border-blue-200/60 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
+                >
+                  <Users className="w-4 h-4" />
+                  <span>+ Buat Grup Obrolan Baru</span>
+                </button>
+
+                <div className="relative flex items-center w-full rounded-2xl bg-white/60 dark:bg-zinc-800/60 border border-white/40 dark:border-white/10 px-3 py-2">
+                  <Search className="w-4 h-4 text-slate-400 mr-2.5" />
+                  <input
+                    type="text"
+                    value={searchNewUser}
+                    onChange={(e) => setSearchNewUser(e.target.value)}
+                    placeholder="Cari nama atau username teman..."
+                    className="w-full bg-transparent text-xs text-slate-800 dark:text-zinc-200 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-3 space-y-1 custom-scrollbar">
+                {filteredNewUsers.map((user) => {
+                  const displayName = getUserDisplayName(user);
+                  const avatar = getUserAvatar(user);
+
+                  return (
+                    <div
+                      key={user.nrp}
+                      onClick={() => {
+                        setActiveChat({ type: 'dm', data: user });
+                        setIsNewChatModalOpen(false);
+                      }}
+                      className="flex items-center gap-3 p-3 rounded-2xl cursor-pointer hover:bg-white/60 dark:hover:bg-zinc-800/60 transition-all"
+                    >
+                      <div className="w-10 h-10 rounded-2xl bg-slate-200 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-white/40 shrink-0">
+                        {avatar ? <img src={avatar} alt={displayName} className="w-full h-full object-cover" /> : <span className="text-xs font-bold">{displayName.charAt(0).toUpperCase()}</span>}
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold truncate">{displayName}</p>
+                        <p className="text-[11px] text-slate-400 truncate">@{user.username || user.nrp}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       <AnimatePresence>
         {isCreateGroupModalOpen && (
           <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsCreateGroupModalOpen(false)} className="fixed inset-0 bg-slate-950/70 backdrop-blur-md" />
             <motion.div initial={{ scale: 0.92, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.92, opacity: 0 }} className="relative z-10 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-2xl border border-white/50 dark:border-white/10 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
               <div className="flex justify-between items-center border-b border-slate-200/40 dark:border-white/10 pb-3">
-                <h3 className="text-base font-bold">Buat Grup Obrolan</h3>
+                <h3 className="text-base font-bold">Buat Grup Obrolan Baru</h3>
                 <button onClick={() => setIsCreateGroupModalOpen(false)}><X className="w-5 h-5 text-slate-400" /></button>
               </div>
 
@@ -981,61 +1016,6 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                   {isSending ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Terbitkan Grup'}
                 </button>
               </form>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* MODAL MULAI CHAT BARU */}
-      <AnimatePresence>
-        {isNewChatModalOpen && (
-          <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsNewChatModalOpen(false)} className="fixed inset-0 bg-slate-950/70 backdrop-blur-md" />
-            <motion.div initial={{ scale: 0.92, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.92, opacity: 0 }} className="relative z-10 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-2xl border border-white/50 dark:border-white/10 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-md w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
-              <div className="px-6 py-4 border-b border-slate-200/50 dark:border-white/10 flex items-center justify-between shrink-0">
-                <h3 className="text-base font-bold">Mulai Chat Baru</h3>
-                <button onClick={() => setIsNewChatModalOpen(false)}><X className="w-5 h-5 text-slate-400" /></button>
-              </div>
-
-              <div className="p-3 border-b border-slate-200/30 shrink-0">
-                <div className="relative flex items-center w-full rounded-2xl bg-white/60 dark:bg-zinc-800/60 border border-white/40 dark:border-white/10 px-3 py-2">
-                  <Search className="w-4 h-4 text-slate-400 mr-2.5" />
-                  <input
-                    type="text"
-                    value={searchNewUser}
-                    onChange={(e) => setSearchNewUser(e.target.value)}
-                    placeholder="Cari nama atau username..."
-                    className="w-full bg-transparent text-xs text-slate-800 dark:text-zinc-200 focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="flex-1 overflow-y-auto p-3 space-y-1 custom-scrollbar">
-                {filteredNewUsers.map((user) => {
-                  const displayName = getUserDisplayName(user);
-                  const avatar = getUserAvatar(user);
-
-                  return (
-                    <div
-                      key={user.nrp}
-                      onClick={() => {
-                        setActiveChat({ type: 'dm', data: user });
-                        setIsNewChatModalOpen(false);
-                      }}
-                      className="flex items-center gap-3 p-3 rounded-2xl cursor-pointer hover:bg-white/60 dark:hover:bg-zinc-800/60 transition-all"
-                    >
-                      <div className="w-10 h-10 rounded-2xl bg-slate-200 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-white/40 shrink-0">
-                        {avatar ? <img src={avatar} alt={displayName} className="w-full h-full object-cover" /> : <span className="text-xs font-bold">{displayName.charAt(0).toUpperCase()}</span>}
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-bold truncate">{displayName}</p>
-                        <p className="text-[11px] text-slate-400 truncate">@{user.username || user.nrp}</p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
             </motion.div>
           </div>
         )}
