@@ -199,6 +199,15 @@ export async function addTaskApi(task: Omit<Task, 'id'>): Promise<AppState | nul
     const id = crypto.randomUUID();
     const courseValue = (task as any).course || (task as any).courseName || '';
 
+    // Normalisasi lampiran: dukung baik `attachments` (array, baru)
+    // maupun `attachment` (tunggal, lama) sebagai fallback.
+    const attachmentsArray =
+      task.attachments && task.attachments.length > 0
+        ? task.attachments
+        : task.attachment
+        ? [task.attachment]
+        : [];
+
     const { error } = await supabase.from('tasks').insert({
       id,
       title: task.title || '',
@@ -211,7 +220,10 @@ export async function addTaskApi(task: Omit<Task, 'id'>): Promise<AppState | nul
       status: task.status || 'todo',
       priority: task.priority || 'Medium',
       classroom_url: task.classroomUrl || null,
-      attachment: task.attachment || null,
+      // Kolom lama, tetap diisi (file pertama) untuk kompatibilitas data/kode lama.
+      attachment: attachmentsArray[0] || null,
+      // Kolom baru (jsonb array) — pastikan kolom `attachments` sudah ada di tabel `tasks`.
+      attachments: attachmentsArray,
       created_at: new Date().toISOString(),
     });
 
@@ -239,7 +251,19 @@ export async function updateTaskApi(id: string, updates: Partial<Task>): Promise
     if (updates.status !== undefined) payload.status = updates.status;
     if (updates.priority !== undefined) payload.priority = updates.priority;
     if (updates.classroomUrl !== undefined) payload.classroom_url = updates.classroomUrl;
-    if (updates.attachment !== undefined) payload.attachment = updates.attachment;
+
+    // Normalisasi lampiran sama seperti di addTaskApi.
+    if (updates.attachments !== undefined || updates.attachment !== undefined) {
+      const attachmentsArray =
+        updates.attachments && updates.attachments.length > 0
+          ? updates.attachments
+          : updates.attachment
+          ? [updates.attachment]
+          : [];
+
+      payload.attachment = attachmentsArray[0] || null;
+      payload.attachments = attachmentsArray;
+    }
 
     const { error } = await supabase.from('tasks').update(payload).eq('id', id);
     if (error) throw error;
