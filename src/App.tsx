@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { AnimatePresence } from 'framer-motion';
 
 import { subscribeAnnouncements } from './services/announcements';
@@ -14,24 +14,21 @@ import { Header } from './components/Header';
 import { Sidebar, TabType } from './components/Sidebar';
 import { DashboardView } from './components/DashboardView';
 import { ContactsView } from './components/ContactsView';
-
-// LAZY LOADING KOMPONEN BERAT (HANYA DIMUAT SAAT DIKLIK BIAR ENTENG)
-const KnowledgeBaseView = lazy(() => import('./components/KnowledgeBaseView').then(m => ({ default: m.KnowledgeBaseView })));
-const TaskTrackerView = lazy(() => import('./components/TaskTrackerView').then(m => ({ default: m.TaskTrackerView })));
-const SpinwheelView = lazy(() => import('./components/SpinwheelView').then(m => ({ default: m.SpinwheelView })));
-const GradeCalculatorView = lazy(() => import('./components/GradeCalculatorView').then(m => ({ default: m.GradeCalculatorView })));
-const LetterGeneratorView = lazy(() => import('./components/LetterGeneratorView').then(m => ({ default: m.LetterGeneratorView })));
-const BlockBlastView = lazy(() => import('./components/blockblast/BlockBlastView').then(m => ({ default: m.BlockBlastView })));
-const MbudiaryView = lazy(() => import('./components/MbudiaryView').then(m => ({ default: m.MbudiaryView })));
-const MbudTalkView = lazy(() => import('./components/MbudTalkView').then(m => ({ default: m.MbudTalkView })));
-const NotebookLmView = lazy(() => import('./components/NotebookLmView').then(m => ({ default: m.NotebookLmView })));
-
+import { KnowledgeBaseView } from './components/KnowledgeBaseView';
+import { TaskTrackerView } from './components/TaskTrackerView';
+import { SpinwheelView } from './components/SpinwheelView';
+import { GradeCalculatorView } from './components/GradeCalculatorView';
+import { LetterGeneratorView } from './components/LetterGeneratorView';
 import { PdfViewerModal } from './components/PdfViewerModal';
 import { SoftForceModal } from './components/SoftForceModal';
+import { BlockBlastView } from './components/blockblast/BlockBlastView';
+import { MbudiaryView } from './components/MbudiaryView';
+import { MbudTalkView } from './components/MbudTalkView';
 import { GpaCalculatorModal } from './components/GpaCalculatorModal';
 import { LoginScreen } from './components/LoginScreen';
 import { OnboardingScreen } from './components/OnboardingScreen';
 import { SplashScreen } from './components/SplashScreen';
+import { NotebookLmView } from './components/NotebookLmView';
 
 import {
   AppState,
@@ -693,16 +690,16 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      <div className="relative min-h-screen bg-slate-100 dark:bg-[#0e0f12] text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-300 transform-gpu">
+      <div className="relative min-h-screen bg-slate-100 dark:bg-[#0e0f12] text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-300">
         
         {/* LIGHTWEIGHT ACCELERATED BACKGROUND GLOW */}
-        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden gpu-layer">
+        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
           <div 
-            className="absolute top-[-50px] left-[-50px] w-[500px] h-[500px] rounded-full opacity-10 dark:opacity-15 gpu-layer" 
+            className="absolute top-[-50px] left-[-50px] w-[500px] h-[500px] rounded-full opacity-10 dark:opacity-15" 
             style={{ backgroundColor: 'var(--glow-1)', filter: 'blur(90px)' }}
           />
           <div 
-            className="hidden lg:block absolute bottom-[-50px] right-[-50px] w-[500px] h-[500px] rounded-full opacity-10 dark:opacity-15 gpu-layer" 
+            className="hidden lg:block absolute bottom-[-50px] right-[-50px] w-[500px] h-[500px] rounded-full opacity-10 dark:opacity-15" 
             style={{ backgroundColor: 'var(--glow-2)', filter: 'blur(90px)' }}
           />
         </div>
@@ -738,92 +735,90 @@ export default function App() {
               {isInitialLoad ? (
                 <AppSkeleton />
               ) : (
-                <Suspense fallback={<AppSkeleton />}>
-                  <div key={activeTab} className="gpu-layer">
-                    {activeTab === 'dashboard' && (
-                      <DashboardView
-                        state={{ ...appState, tasks: accessibleTasks }}
-                        isOfficer={isOfficer}
-                        onAddAnnouncement={() => {}}
-                        onDeleteAnnouncement={() => {}}
-                        onNavigateTab={handleNavigateTab}
-                      />
-                    )}
+                <div key={activeTab}>
+                  {activeTab === 'dashboard' && (
+                    <DashboardView
+                      state={{ ...appState, tasks: accessibleTasks }}
+                      isOfficer={isOfficer}
+                      onAddAnnouncement={() => {}}
+                      onDeleteAnnouncement={() => {}}
+                      onNavigateTab={handleNavigateTab}
+                    />
+                  )}
 
-                    {activeTab === 'contacts' && (
-                      <ContactsView
-                        key={`contacts-${selectedContactCourse}`}
-                        contacts={appState.contacts}
-                        isOfficer={isOfficer}
-                        initialCourseFilter={selectedContactCourse}
-                        onAddContact={handleAddContact}
-                        onUpdateContact={handleUpdateContact}
-                        onDeleteContact={handleDeleteContact}
-                      />
-                    )}
+                  {activeTab === 'contacts' && (
+                    <ContactsView
+                      key={`contacts-${selectedContactCourse}`}
+                      contacts={appState.contacts}
+                      isOfficer={isOfficer}
+                      initialCourseFilter={selectedContactCourse}
+                      onAddContact={handleAddContact}
+                      onUpdateContact={handleUpdateContact}
+                      onDeleteContact={handleDeleteContact}
+                    />
+                  )}
 
-                    {activeTab === 'materials' && (
-                      <KnowledgeBaseView
-                        materials={accessibleMaterials}
-                        isOfficer={isOfficer}
-                        availableCourses={accessibleCourseNames}
-                        onAddMaterial={handleAddMaterial}
-                        onDeleteMaterial={handleDeleteMaterial}
-                        onPreviewPdf={(material) => setPreviewMaterial(material)}
-                        onOpenNotebookLm={() => handleNavigateTab('notebooklm' as TabType)}
-                      />
-                    )}
+                  {activeTab === 'materials' && (
+                    <KnowledgeBaseView
+                      materials={accessibleMaterials}
+                      isOfficer={isOfficer}
+                      availableCourses={accessibleCourseNames}
+                      onAddMaterial={handleAddMaterial}
+                      onDeleteMaterial={handleDeleteMaterial}
+                      onPreviewPdf={(material) => setPreviewMaterial(material)}
+                      onOpenNotebookLm={() => handleNavigateTab('notebooklm' as TabType)}
+                    />
+                  )}
 
-                    {activeTab === ('notebooklm' as TabType) && (
-                      <NotebookLmView
-                        isOfficer={isOfficer}
-                        onBack={() => handleNavigateTab('materials')}
-                      />
-                    )}
+                  {activeTab === ('notebooklm' as TabType) && (
+                    <NotebookLmView
+                      isOfficer={isOfficer}
+                      onBack={() => handleNavigateTab('materials')}
+                    />
+                  )}
 
-                    {activeTab === 'tasks' && (
-                      <TaskTrackerView
-                        tasks={accessibleTasks}
-                        contacts={accessibleContacts}
-                        isOfficer={isOfficer}
-                        completedTaskIds={completedTaskIds}
-                        onAddTask={handleAddTask}
-                        onUpdateTask={handleUpdateTask}
-                        onUpdateTaskStatus={handleUpdateTaskStatus}
-                        onDeleteTask={handleDeleteTask}
-                      />
-                    )}
+                  {activeTab === 'tasks' && (
+                    <TaskTrackerView
+                      tasks={accessibleTasks}
+                      contacts={accessibleContacts}
+                      isOfficer={isOfficer}
+                      completedTaskIds={completedTaskIds}
+                      onAddTask={handleAddTask}
+                      onUpdateTask={handleUpdateTask}
+                      onUpdateTaskStatus={handleUpdateTaskStatus}
+                      onDeleteTask={handleDeleteTask}
+                    />
+                  )}
 
-                    {activeTab === 'spinwheel' && (
-                      <SpinwheelView
-                        onSaveGroupResult={handleSaveGroupResult}
-                        savedResults={appState.groupResults}
-                        isOfficer={isOfficer}
-                      />
-                    )}
+                  {activeTab === 'spinwheel' && (
+                    <SpinwheelView
+                      onSaveGroupResult={handleSaveGroupResult}
+                      savedResults={appState.groupResults}
+                      isOfficer={isOfficer}
+                    />
+                  )}
 
-                    {activeTab === 'calculator' && (
-                      <GradeCalculatorView courseGrades={appState.courseGrades} />
-                    )}
+                  {activeTab === 'calculator' && (
+                    <GradeCalculatorView courseGrades={appState.courseGrades} />
+                  )}
 
-                    {activeTab === 'letter' && <LetterGeneratorView />}
+                  {activeTab === 'letter' && <LetterGeneratorView />}
 
-                    {activeTab === 'blockblast' && <BlockBlastView />}
+                  {activeTab === 'blockblast' && <BlockBlastView />}
 
-                    {activeTab === 'mbudiary' && (
-                      <MbudiaryView
-                        onNavigateToChat={(targetNrp) => handleNavigateTab('mbudtalk', targetNrp)}
-                      />
-                    )}
+                  {activeTab === 'mbudiary' && (
+                    <MbudiaryView
+                      onNavigateToChat={(targetNrp) => handleNavigateTab('mbudtalk', targetNrp)}
+                    />
+                  )}
 
-                    {activeTab === 'mbudtalk' && (
-                      <MbudTalkView
-                        onBack={() => handleNavigateTab('dashboard')}
-                        targetNrp={chatTargetNrp}
-                      />
-                    )}
-                  </div>
-                </Suspense>
+                  {activeTab === 'mbudtalk' && (
+                    <MbudTalkView
+                      onBack={() => handleNavigateTab('dashboard')}
+                      targetNrp={chatTargetNrp}
+                    />
+                  )}
+                </div>
               )}
             </main>
           </div>

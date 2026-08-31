@@ -16,13 +16,7 @@
     margin: 0 !important;
   }
 
-  /* GPU Acceleration global untuk mencegah stuttering di layar 144Hz+ */
-  *, ::before, ::after {
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-  }
-
-  /* Custom Soft Scrollbar (Diakselerasi GPU) */
+  /* Custom Soft Scrollbar */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -39,15 +33,6 @@
 
   ::-webkit-scrollbar-thumb:hover {
     background: rgba(150, 150, 150, 0.45);
-  }
-
-  /* Optimasi elemen dengan overflow scroll */
-  .custom-scrollbar,
-  [class*="overflow-y-auto"],
-  [class*="overflow-x-auto"] {
-    will-change: transform;
-    transform: translateZ(0);
-    -webkit-overflow-scrolling: touch;
   }
 
   /* BASE SURFACE PALETTE */
@@ -148,8 +133,7 @@
 }
 
 @layer utilities {
-  .gpu-layer {
-    transform: translateZ(0);
-    will-change: transform, opacity;
+  .custom-scrollbar {
+    -webkit-overflow-scrolling: touch;
   }
 }
