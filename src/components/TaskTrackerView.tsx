@@ -129,6 +129,8 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
   const [celebrationTask, setCelebrationTask] = useState<Task | null>(null);
   const audioCelebrationRef = useRef<HTMLAudioElement | null>(null);
 
+  const totalClassMembers = contacts.length > 0 ? contacts.length : 45;
+
   const playCelebrationSound = () => {
     if (completionSoundUrl) {
       try {
@@ -537,9 +539,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
         status: 'todo',
         priority,
         classroomUrl: finalClassroomUrl,
-        // `attachment` (singular) tetap diisi dengan file pertama untuk kompatibilitas
-        // dengan kode/data lama yang hanya membaca satu lampiran.
-        // `attachments` (array) menyimpan seluruh lampiran (maks 5).
         attachment: finalAttachments[0],
         attachments: finalAttachments,
       };
@@ -768,6 +767,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
               {filteredTasks.map((t) => {
                 const badge = getDeadlineBadge(t.deadline);
                 const isDone = completedTaskIds.includes(t.id);
+                const completedCount = isDone ? 1 : 0;
                 const formattedDate = new Date(t.deadline).toLocaleString('id-ID', {
                   day: 'numeric',
                   month: 'short',
@@ -792,12 +792,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                         <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50/80 dark:bg-blue-950/60 px-3 py-1 rounded-full border border-blue-100/50 dark:border-blue-900/40">
                           {t.course}
                         </span>
-
-                        {badge && (
-                          <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${badge.bg}`}>
-                            {badge.label}
-                          </span>
-                        )}
                       </div>
 
                       <div>
@@ -822,11 +816,17 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                           </span>
                         </div>
 
-                        <div className="flex items-center justify-between gap-2 pt-1 font-medium">
+                        <div className="flex items-center justify-between gap-2 pt-1 font-medium flex-wrap">
                           <span className="flex items-center gap-1.5">
-                            <Clock className="w-3.5 h-3.5" />
+                            <Clock className="w-3.5 h-3.5 shrink-0" />
                             <span>Deadline: {formattedDate} WIB</span>
                           </span>
+
+                          {badge && (
+                            <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${badge.bg}`}>
+                              {badge.label}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -836,26 +836,31 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                         Detail Tugas <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                       </span>
 
-                      <button
-                        onClick={(e) => handleToggleComplete(e, t)}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
-                          isDone
-                            ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50'
-                            : 'bg-white/80 dark:bg-zinc-800/80 hover:bg-white dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 border border-slate-200/60 dark:border-white/10'
-                        }`}
-                      >
-                        {isDone ? (
-                          <>
-                            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                            <span>Selesai</span>
-                          </>
-                        ) : (
-                          <>
-                            <Circle className="w-4 h-4 text-slate-400 dark:text-zinc-500" />
-                            <span>Tandai Selesai</span>
-                          </>
-                        )}
-                      </button>
+                      <div className="flex flex-col items-end gap-1">
+                        <button
+                          onClick={(e) => handleToggleComplete(e, t)}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
+                            isDone
+                              ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50'
+                              : 'bg-white/80 dark:bg-zinc-800/80 hover:bg-white dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 border border-slate-200/60 dark:border-white/10'
+                          }`}
+                        >
+                          {isDone ? (
+                            <>
+                              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                              <span>Selesai</span>
+                            </>
+                          ) : (
+                            <>
+                              <Circle className="w-4 h-4 text-slate-400 dark:text-zinc-500" />
+                              <span>Tandai Selesai</span>
+                            </>
+                          )}
+                        </button>
+                        <span className="text-[10px] font-medium text-slate-400 dark:text-zinc-500 select-none">
+                          {completedCount}/{totalClassMembers} Menandai
+                        </span>
+                      </div>
                     </div>
                   </motion.div>
                 );
