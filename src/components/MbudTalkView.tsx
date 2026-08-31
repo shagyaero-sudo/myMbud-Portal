@@ -9,8 +9,13 @@ import {
   ShieldCheck, 
   MessageSquarePlus, 
   X,
-  Image as ImageIcon,
-  ImagePlus
+  ImagePlus,
+  Users,
+  Plus,
+  Edit3,
+  CornerUpLeft,
+  CheckCircle2,
+  Camera
 } from 'lucide-react';
 import { supabase } from '../services/supabase';
 import { 
@@ -22,7 +27,15 @@ import {
   ChatMessage,
   RecentChatMeta
 } from '../services/firebaseChat';
-// Impor helper upload Cloudinary eksisting
+import {
+  createGroup,
+  getUserGroups,
+  updateGroupProfile,
+  sendGroupMessage,
+  markGroupAsRead,
+  MbudTalkGroup,
+  GroupMessage
+} from '../services/mbudtalkGroupService';
 import { uploadImageToCloudinary } from './mbudiary/lib/cloudinary';
 
 interface UserProfile {
@@ -38,7 +51,12 @@ interface MbudTalkViewProps {
   targetNrp?: string | null;
 }
 
-// Helper Format Sekat Tanggal
+interface ReplyState {
+  id: string;
+  sender: string;
+  text: string;
+}
+
 const formatChatDateDivider = (timestamp: number): string => {
   const date = new Date(timestamp);
   const now = new Date();
@@ -84,61 +102,172 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
   const currentUserNrp = typeof window !== 'undefined' ? (localStorage.getItem('mymbud_user_nrp') || '').trim().toLowerCase() : '';
   const currentUserName = typeof window !== 'undefined' ? localStorage.getItem('mymbud_user_name') || 'Teman' : 'Teman';
 
+  const [activeTab, setActiveTab] = useState<'dm' | 'groups'>('dm');
+
+  // Data State
   const [allUsers, setAllUsers] = useState<UserProfile[]>([]);
   const [recentChats, setRecentChats] = useState<RecentChatMeta[]>([]);
+  const [groupList, setGroupList] = useState<MbudTalkGroup[]>([]);
   const [unreadMap, setUnreadMap] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState<boolean>(true);
 
   const [searchHistory, setSearchHistory] = useState<string>('');
   const [selectedPartner, setSelectedPartner] = useState<UserProfile | null>(null);
+  const [selectedGroup, setSelectedGroup] = useState<MbudTalkGroup | null>(null);
 
-  // Modal Mulai Chat Baru
+  // Modals
   const [isNewChatModalOpen, setIsNewChatModalOpen] = useState<boolean>(false);
-  const [searchNewUser, setSearchNewUser] = useState<string>('');
+  const [isCreateGroupModalOpen, setIsCreateGroupModalOpen] = useState<boolean>(false);
+  const [isEditGroupModalOpen, setIsEditGroupModalOpen] = useState<boolean>(false);
 
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  // Modal Form Inputs
+  const [searchNewUser, setSearchNewUser] = useState<string>('');
+  const [newGroupName, setNewGroupName] = useState<string>('');
+  const [selectedGroupMembers, setSelectedGroupMembers] = useState<string[]>([]);
+  const [editGroupName, setEditGroupName] = useState<string>('');
+  const [editGroupAvatarFile, setEditGroupAvatarFile] = useState<File | null>(null);
+  const [editGroupAvatarPreview, setEditGroupAvatarPreview] = useState<string>('');
+
+  // Messages & Reply State
+  const [messages, setMessages] = useState<any[]>([]);
   const [inputText, setInputText] = useState<string>('');
   const [isSending, setIsSending] = useState<boolean>(false);
+  const [replyTo, setReplyTo] = useState<ReplyState | null>(null);
 
-  // State Gambar / Cloudinary Attachment
+  // Attachments
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [previewZoomImage, setPreviewZoomImage] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const groupAvatarInputRef = useRef<HTMLInputElement>(null);
   const chatScrollContainerRef = useRef<HTMLDivElement>(null);
   const [viewportHeight, setViewportHeight] = useState<string>('100%');
 
-  // Integrasi Browser Popstate (Gesture Swipe Back / Tombol Back HP)
+  // Load Groups
+  const fetchGroups = async () => {
+    if (!currentUserNrp) return;
+    try {
+      const groups = await getUserGroups(currentUserNrp);
+      setGroupList(groups);
+    } catch (err) {
+      console.error('Gagal mengambil grup:', err);
+    }
+  };
+
   useEffect(() => {
-    const handlePopState = () => {
-      if (selectedPartner) {
-        setSelectedPartner(null);
+    fetchGroups();
+  }, [currentUserNrp]);
+
+  // Fetch Users
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setLoading(true);
+      try {
+        const { data, error } = await supabase.from('mbudiary_users').select('*');
+        if (!error && data) {
+          const others = data.filter(
+            (u: any) => String(u.nrp || '').trim().toLowerCase() !== currentUserNrp
+          );
+          setAllUsers(others);
+        }
+      } catch (err) {
+        console.error('Gagal memuat kontak:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUsers();
+  }, [currentUserNrp]);
+
+  // Subscribe DM & Unreads
+  useEffect(() => {
+    if (!currentUserNrp) return;
+    const unsubRecent = subscribeToRecentChats(currentUserNrp, setRecentChats);
+    const unsubUnreads = subscribeToUserUnreads(currentUserNrp, setUnreadMap);
+    return () => {
+      unsubRecent();
+      unsubUnreads();
+    };
+  }, [currentUserNrp]);
+
+  // Subscribe Direct Messages
+  useEffect(() => {
+    if (!currentUserNrp || !selectedPartner?.nrp || activeTab !== 'dm') return;
+    clearUnreadNotification(currentUserNrp, selectedPartner.nrp);
+
+    const unsubscribe = subscribeToChatRoom(
+      currentUserNrp,
+      selectedPartner.nrp,
+      (incomingMessages) => {
+        setMessages(incomingMessages);
+      }
+    );
+    return () => unsubscribe();
+  }, [currentUserNrp, selectedPartner, activeTab]);
+
+  // Load & Realtime Group Messages
+  useEffect(() => {
+    if (!selectedGroup || activeTab !== 'groups') return;
+
+    markGroupAsRead(selectedGroup.id, currentUserNrp).then(fetchGroups);
+
+    const fetchGroupMessages = async () => {
+      const { data } = await supabase
+        .from('mbudtalk_group_messages')
+        .select('*')
+        .eq('group_id', selectedGroup.id)
+        .order('created_at', { ascending: true });
+
+      if (data) {
+        setMessages(
+          data.map((m) => ({
+            id: m.id,
+            senderNrp: m.sender_nrp,
+            senderName: m.sender_name,
+            text: m.content,
+            replyTo: m.reply_to_id ? { id: m.reply_to_id, sender: m.reply_to_sender, text: m.reply_to_text } : undefined,
+            timestamp: new Date(m.created_at).getTime(),
+          }))
+        );
       }
     };
 
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, [selectedPartner]);
+    fetchGroupMessages();
 
-  // Handler Buka Chat dengan pencatatan Hash / State History
-  const handleOpenPartnerChat = (user: UserProfile) => {
-    setSelectedPartner(user);
-    const cleanNrp = String(user.nrp || '').trim().toLowerCase();
-    if (window.location.hash !== `#mbudtalk/chat/${cleanNrp}`) {
-      window.history.pushState({ tab: 'mbudtalk', sub: 'chat', partner: cleanNrp }, '', `#mbudtalk/chat/${cleanNrp}`);
+    const channel = supabase
+      .channel(`group-messages-${selectedGroup.id}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'mbudtalk_group_messages', filter: `group_id=eq.${selectedGroup.id}` },
+        (payload) => {
+          const m = payload.new;
+          const newMsg = {
+            id: m.id,
+            senderNrp: m.sender_nrp,
+            senderName: m.sender_name,
+            text: m.content,
+            replyTo: m.reply_to_id ? { id: m.reply_to_id, sender: m.reply_to_sender, text: m.reply_to_text } : undefined,
+            timestamp: new Date(m.created_at).getTime(),
+          };
+          setMessages((prev) => [...prev, newMsg]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [selectedGroup, activeTab]);
+
+  // Scroll to Bottom
+  useEffect(() => {
+    if (chatScrollContainerRef.current) {
+      chatScrollContainerRef.current.scrollTop = chatScrollContainerRef.current.scrollHeight;
     }
-  };
+  }, [messages, imagePreviewUrl, replyTo]);
 
-  // Handler Tombol Back di Header Room Chat
-  const handleClosePartnerChat = () => {
-    setSelectedPartner(null);
-    if (window.location.hash.includes('/chat/')) {
-      window.history.pushState({ tab: 'mbudtalk' }, '', '#mbudtalk');
-    }
-  };
-
-  // Deteksi tinggi visual keyboard mobile
+  // Viewport Adjustment for Mobile
   useEffect(() => {
     const handleViewportChange = () => {
       if (typeof window !== 'undefined' && window.visualViewport) {
@@ -161,164 +290,98 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
     };
   }, []);
 
-  const getUserDisplayName = (u?: UserProfile | null) => {
-    if (!u) return 'Teman';
-    return u.nickname || u.username || u.nrp || 'Teman';
-  };
-
+  const getUserDisplayName = (u?: UserProfile | null) => u?.nickname || u?.username || u?.nrp || 'Teman';
   const getUserAvatar = (u?: UserProfile | null) => u?.photo_url || u?.avatar_url || null;
 
-  // Helper Auto-detect Clickable URLs di Pesan Chat
-  const renderMessageTextWithLinks = (text: string, isMe: boolean) => {
-    if (!text) return '';
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
-    const parts = text.split(urlRegex);
-
-    return parts.map((part, index) => {
-      if (part.match(urlRegex)) {
-        return (
-          <a
-            key={index}
-            href={part}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
-            className={`underline font-semibold break-all transition-opacity ${
-              isMe 
-                ? 'text-white/95 hover:text-white underline-offset-2' 
-                : 'text-blue-600 dark:text-blue-400 hover:opacity-80 underline-offset-2'
-            }`}
-          >
-            {part}
-          </a>
-        );
-      }
-      return part;
-    });
-  };
-
-  // 1. Fetch seluruh kontak dari mbudiary_users
-  useEffect(() => {
-    const fetchUsers = async () => {
-      setLoading(true);
-      try {
-        const { data, error } = await supabase.from('mbudiary_users').select('*');
-        if (!error && data) {
-          const others = data.filter(
-            (u: any) => String(u.nrp || '').trim().toLowerCase() !== currentUserNrp
-          );
-          setAllUsers(others);
-
-          const rawHash = typeof window !== 'undefined' ? window.location.hash : '';
-          const hashNrp = rawHash.startsWith('#mbudtalk/chat/') ? rawHash.replace('#mbudtalk/chat/', '').trim() : null;
-          const initialTarget = targetNrp || hashNrp;
-
-          if (initialTarget) {
-            const found = others.find(
-              (u: any) => String(u.nrp || '').trim().toLowerCase() === initialTarget.trim().toLowerCase()
-            );
-            if (found) setSelectedPartner(found);
-          }
-        }
-      } catch (err) {
-        console.error('Gagal memuat kontak:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUsers();
-  }, [currentUserNrp, targetNrp]);
-
-  // 2. Subscribe ke Riwayat Chat (Recent Chats) & Unread Per Kontak
-  useEffect(() => {
-    if (!currentUserNrp) return;
-
-    const unsubRecent = subscribeToRecentChats(currentUserNrp, (recentList) => {
-      setRecentChats(recentList);
-    });
-
-    const unsubUnreads = subscribeToUserUnreads(currentUserNrp, (map) => {
-      setUnreadMap(map);
-    });
-
-    return () => {
-      unsubRecent();
-      unsubUnreads();
-    };
-  }, [currentUserNrp]);
-
-  // 3. Subscribe ke Room Percakapan Aktif
-  useEffect(() => {
-    if (!currentUserNrp || !selectedPartner?.nrp) return;
-
-    clearUnreadNotification(currentUserNrp, selectedPartner.nrp);
-
-    const unsubscribe = subscribeToChatRoom(
-      currentUserNrp,
-      selectedPartner.nrp,
-      (incomingMessages) => {
-        setMessages(incomingMessages);
-      }
-    );
-
-    return () => unsubscribe();
-  }, [currentUserNrp, selectedPartner]);
-
-  // 4. Scroll ke bawah hanya dalam ruang pesan
-  useEffect(() => {
-    if (chatScrollContainerRef.current) {
-      chatScrollContainerRef.current.scrollTop = chatScrollContainerRef.current.scrollHeight;
-    }
-  }, [messages, viewportHeight, imagePreviewUrl]);
-
-  // Handler Pilih File Gambar
-  const handleSelectImageFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedImageFile(file);
-      setImagePreviewUrl(URL.createObjectURL(file));
-    }
-  };
-
-  const handleClearSelectedImage = () => {
-    setSelectedImageFile(null);
-    setImagePreviewUrl(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
-
-  // Handler Kirim Pesan & Upload Gambar
+  // Handle Send Message (DM & Group)
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if ((!inputText.trim() && !selectedImageFile) || !selectedPartner?.nrp || isSending) return;
+    if ((!inputText.trim() && !selectedImageFile) || isSending) return;
 
     const text = inputText.trim();
     setIsSending(true);
 
     try {
       let uploadedImageUrl: string | undefined = undefined;
-
-      // Unggah gambar ke Cloudinary terlebih dahulu (jika ada lampiran gambar)
       if (selectedImageFile) {
         uploadedImageUrl = await uploadImageToCloudinary(selectedImageFile);
       }
 
-      await sendChatMessage(
-        currentUserNrp,
-        selectedPartner.nrp,
-        text,
-        currentUserName,
-        uploadedImageUrl
-      );
+      if (activeTab === 'dm' && selectedPartner) {
+        await sendChatMessage(
+          currentUserNrp,
+          selectedPartner.nrp,
+          text,
+          currentUserName,
+          uploadedImageUrl
+        );
+      } else if (activeTab === 'groups' && selectedGroup) {
+        await sendGroupMessage(
+          selectedGroup.id,
+          currentUserNrp,
+          currentUserName,
+          text || (uploadedImageUrl ? '[Gambar]' : ''),
+          replyTo ? { id: replyTo.id, sender: replyTo.sender, text: replyTo.text } : undefined
+        );
+      }
 
-      // Reset form input & preview
       setInputText('');
-      handleClearSelectedImage();
+      setSelectedImageFile(null);
+      setImagePreviewUrl(null);
+      setReplyTo(null);
     } catch (error) {
       console.error('Gagal mengirim pesan:', error);
-      alert('Gagal mengirim pesan atau unggah gambar.');
+      alert('Gagal mengirim pesan.');
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  // Handle Create Group
+  const handleCreateGroupSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newGroupName.trim()) return;
+
+    try {
+      setIsSending(true);
+      const newGroup = await createGroup(
+        newGroupName.trim(),
+        currentUserNrp,
+        selectedGroupMembers
+      );
+      setNewGroupName('');
+      setSelectedGroupMembers([]);
+      setIsCreateGroupModalOpen(false);
+      await fetchGroups();
+      setSelectedGroup(newGroup);
+    } catch (err) {
+      console.error('Gagal membuat grup:', err);
+      alert('Gagal membuat grup.');
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  // Handle Update Group Profile (Edit PP & Nama)
+  const handleUpdateGroupSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedGroup || !editGroupName.trim()) return;
+
+    try {
+      setIsSending(true);
+      let avatarUrl = selectedGroup.avatar_url;
+
+      if (editGroupAvatarFile) {
+        avatarUrl = await uploadImageToCloudinary(editGroupAvatarFile);
+      }
+
+      const updated = await updateGroupProfile(selectedGroup.id, editGroupName.trim(), avatarUrl);
+      setSelectedGroup(updated);
+      await fetchGroups();
+      setIsEditGroupModalOpen(false);
+    } catch (err) {
+      console.error('Gagal memperbarui grup:', err);
+      alert('Gagal memperbarui info grup.');
     } finally {
       setIsSending(false);
     }
@@ -339,31 +402,22 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
     .filter((item) => {
       const q = searchHistory.toLowerCase();
       const name = getUserDisplayName(item.profile).toLowerCase();
-      const username = (item.profile.username || '').toLowerCase();
-      return name.includes(q) || username.includes(q) || item.lastMessage.toLowerCase().includes(q);
+      return name.includes(q) || item.lastMessage.toLowerCase().includes(q);
     });
-
-  const filteredNewUsers = allUsers.filter((u) => {
-    const q = searchNewUser.toLowerCase();
-    const nickname = (u.nickname || '').toLowerCase();
-    const username = (u.username || '').toLowerCase();
-    const nrp = String(u.nrp || '').toLowerCase();
-    return nickname.includes(q) || username.includes(q) || nrp.includes(q);
-  });
 
   return (
     <div
       style={{ height: viewportHeight }}
       className="fixed inset-x-0 bottom-0 top-[68px] z-30 px-3 pb-2 pt-1 lg:static lg:h-[calc(100vh-10.5rem)] lg:max-h-[660px] lg:px-0 lg:py-0 w-full max-w-5xl mx-auto flex flex-col lg:flex-row gap-3 overflow-hidden select-none"
     >
-      {/* ================= BILAH KIRI: RIWAYAT CHAT ================= */}
+      {/* BILAH KIRI: LIST CHAT & GRUP */}
       <div
         className={`w-full lg:w-80 flex flex-col gap-2.5 h-full ${
-          selectedPartner ? 'hidden lg:flex' : 'flex'
+          selectedPartner || selectedGroup ? 'hidden lg:flex' : 'flex'
         }`}
       >
-        {/* Top Header Pill */}
-        <div className="flex items-center justify-between gap-3 p-2.5 px-4 rounded-3xl bg-white/60 dark:bg-zinc-900/50 backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.03)] dark:shadow-none shrink-0">
+        {/* Top Header */}
+        <div className="flex items-center justify-between gap-3 p-2.5 px-4 rounded-3xl bg-white/60 dark:bg-zinc-900/50 backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-xs shrink-0">
           <div className="flex items-center gap-2.5">
             <button
               type="button"
@@ -372,441 +426,488 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
-            <div className="flex items-center gap-1.5">
-              <h2 className="text-sm font-bold text-slate-800 dark:text-zinc-100 tracking-tight">
-                mbudTalk
-              </h2>
-              <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
-              #SayHi!
-              </span>
-            </div>
+            <h2 className="text-sm font-bold text-slate-800 dark:text-zinc-100 tracking-tight">
+              mbudTalk
+            </h2>
           </div>
 
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => {
-              setSearchNewUser('');
-              setIsNewChatModalOpen(true);
-            }}
-            className="w-8 h-8 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20 flex items-center justify-center cursor-pointer transition-all shrink-0"
-            title="Mulai Chat Baru"
-          >
-            <MessageSquarePlus className="w-4 h-4" />
-          </motion.button>
+          <div className="flex items-center gap-1">
+            {activeTab === 'dm' ? (
+              <button
+                onClick={() => setIsNewChatModalOpen(true)}
+                className="w-8 h-8 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20 flex items-center justify-center cursor-pointer transition-all shrink-0"
+                title="Mulai Chat Baru"
+              >
+                <MessageSquarePlus className="w-4 h-4" />
+              </button>
+            ) : (
+              <button
+                onClick={() => setIsCreateGroupModalOpen(true)}
+                className="w-8 h-8 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20 flex items-center justify-center cursor-pointer transition-all shrink-0"
+                title="Buat Grup Baru"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* Search Riwayat */}
+        {/* TAB SWITCHER: DM VS GROUPS */}
+        <div className="grid grid-cols-2 p-1 bg-white/50 dark:bg-zinc-900/40 backdrop-blur-lg border border-white/50 dark:border-white/5 rounded-2xl gap-1 shrink-0">
+          <button
+            onClick={() => {
+              setActiveTab('dm');
+              setSelectedGroup(null);
+            }}
+            className={`py-1.5 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+              activeTab === 'dm'
+                ? 'bg-blue-600 text-white shadow-xs'
+                : 'text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-200'
+            }`}
+          >
+            <MessageSquare className="w-3.5 h-3.5" />
+            <span>Pesan (DM)</span>
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab('groups');
+              setSelectedPartner(null);
+            }}
+            className={`py-1.5 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+              activeTab === 'groups'
+                ? 'bg-blue-600 text-white shadow-xs'
+                : 'text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-200'
+            }`}
+          >
+            <Users className="w-3.5 h-3.5" />
+            <span>Grup</span>
+          </button>
+        </div>
+
+        {/* SEARCH BAR */}
         <div className="relative flex items-center shrink-0 w-full rounded-2xl bg-white/50 dark:bg-zinc-900/40 backdrop-blur-lg border border-white/50 dark:border-white/5 px-3 py-1.5 shadow-xs">
           <Search className="w-4 h-4 text-slate-400 dark:text-zinc-400 shrink-0 mr-2.5 pointer-events-none" />
           <input
             type="text"
             value={searchHistory}
             onChange={(e) => setSearchHistory(e.target.value)}
-            placeholder="Cari obrolan..."
-            className="w-full bg-transparent text-xs text-slate-800 dark:text-zinc-200 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none"
+            placeholder={activeTab === 'dm' ? "Cari obrolan..." : "Cari grup..."}
+            className="w-full bg-transparent text-xs text-slate-800 dark:text-zinc-200 placeholder-slate-400 focus:outline-none"
           />
         </div>
 
-        {/* Recent Chats Floating List */}
+        {/* LIST DM ATAU GRUP */}
         <div className="flex-1 overflow-y-auto space-y-1.5 custom-scrollbar pr-0.5">
-          {loading ? (
-            <div className="flex flex-col items-center justify-center p-8 space-y-2 text-slate-400 dark:text-zinc-500">
-              <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
-              <span className="text-xs">Memuat obrolan...</span>
-            </div>
-          ) : populatedRecentChats.length === 0 ? (
-            <div className="flex flex-col items-center justify-center p-8 text-center space-y-3 rounded-3xl bg-white/40 dark:bg-zinc-900/30 backdrop-blur-md border border-white/40 dark:border-white/5 text-slate-400 dark:text-zinc-500 my-auto">
-              <div className="w-12 h-12 rounded-full bg-blue-50/60 dark:bg-blue-950/40 flex items-center justify-center text-blue-600 dark:text-blue-400">
-                <MessageSquare className="w-5 h-5" />
-              </div>
-              <div className="space-y-0.5">
+          {activeTab === 'dm' ? (
+            populatedRecentChats.length === 0 ? (
+              <div className="flex flex-col items-center justify-center p-8 text-center space-y-2 rounded-3xl bg-white/40 dark:bg-zinc-900/30 backdrop-blur-md border border-white/40 dark:border-white/5 text-slate-400 dark:text-zinc-500 my-auto">
+                <MessageSquare className="w-6 h-6 text-blue-500" />
                 <p className="text-xs font-bold text-slate-800 dark:text-zinc-200">Belum ada obrolan</p>
-                <p className="text-[11px] text-slate-400 dark:text-zinc-500 max-w-[180px] leading-relaxed">
-                  Klik tombol pensil di atas untuk memulai chat baru.
-                </p>
               </div>
-            </div>
-          ) : (
-            populatedRecentChats.map((item) => {
-              const isSelected = selectedPartner?.nrp === item.partnerNrp;
-              const displayName = getUserDisplayName(item.profile);
-              const avatar = getUserAvatar(item.profile);
+            ) : (
+              populatedRecentChats.map((item) => {
+                const isSelected = selectedPartner?.nrp === item.partnerNrp;
+                const displayName = getUserDisplayName(item.profile);
+                const avatar = getUserAvatar(item.profile);
 
-              return (
-                <motion.div
-                  key={item.partnerNrp}
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => handleOpenPartnerChat(item.profile)}
-                  className={`relative flex items-center gap-3 p-3 rounded-3xl cursor-pointer transition-all backdrop-blur-md border ${
-                    isSelected
-                      ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-500/20'
-                      : 'bg-white/50 dark:bg-zinc-900/40 border-white/50 dark:border-white/5 hover:bg-white/75 dark:hover:bg-zinc-800/60 text-slate-800 dark:text-zinc-200'
-                  }`}
-                >
-                  <div className="relative w-10 h-10 rounded-2xl bg-slate-200 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-white/40 dark:border-zinc-700/60 shrink-0 shadow-xs">
-                    {avatar ? (
-                      <img src={avatar} alt={displayName} className="w-full h-full object-cover" />
-                    ) : (
-                      <span className={`text-xs font-bold ${isSelected ? 'text-white' : 'text-slate-700 dark:text-zinc-200'}`}>
-                        {displayName.charAt(0).toUpperCase()}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-1">
-                      <p className={`text-xs font-bold truncate ${isSelected ? 'text-white' : item.isUnread ? 'text-slate-900 dark:text-white font-extrabold' : 'text-slate-800 dark:text-zinc-100'}`}>
-                        {displayName}
-                      </p>
-                      <span className={`text-[10px] shrink-0 tabular-nums ${isSelected ? 'text-blue-100' : item.isUnread ? 'text-rose-500 font-bold' : 'text-slate-400 dark:text-zinc-500'}`}>
-                        {new Date(item.lastTimestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between gap-2 mt-0.5">
-                      <p className={`text-[11px] truncate flex-1 ${isSelected ? 'text-blue-100' : item.isUnread ? 'text-slate-900 dark:text-zinc-100 font-bold' : 'text-slate-500 dark:text-zinc-400'}`}>
-                        {item.lastMessage}
-                      </p>
-                      {/* DOT UNREAD INDIKATOR CHAT BELUM DIBACA */}
-                      {item.isUnread && !isSelected && (
-                        <span className="flex h-2.5 w-2.5 shrink-0">
-                          <span className="animate-ping absolute inline-flex h-2.5 w-2.5 rounded-full bg-rose-400 opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500 shadow-xs"></span>
+                return (
+                  <motion.div
+                    key={item.partnerNrp}
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      setSelectedPartner(item.profile);
+                      setSelectedGroup(null);
+                    }}
+                    className={`flex items-center gap-3 p-3 rounded-3xl cursor-pointer transition-all backdrop-blur-md border ${
+                      isSelected
+                        ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-500/20'
+                        : 'bg-white/50 dark:bg-zinc-900/40 border-white/50 dark:border-white/5 hover:bg-white/75 dark:hover:bg-zinc-800/60 text-slate-800 dark:text-zinc-200'
+                    }`}
+                  >
+                    <div className="w-10 h-10 rounded-2xl bg-slate-200 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-white/40 shrink-0">
+                      {avatar ? (
+                        <img src={avatar} alt={displayName} className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-xs font-bold text-slate-700 dark:text-zinc-200">
+                          {displayName.charAt(0).toUpperCase()}
                         </span>
                       )}
                     </div>
-                  </div>
-                </motion.div>
-              );
-            })
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-1">
+                        <p className={`text-xs font-bold truncate ${isSelected ? 'text-white' : 'text-slate-800 dark:text-zinc-100'}`}>
+                          {displayName}
+                        </p>
+                        <span className={`text-[10px] shrink-0 ${isSelected ? 'text-blue-100' : 'text-slate-400'}`}>
+                          {new Date(item.lastTimestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                      <p className={`text-[11px] truncate ${isSelected ? 'text-blue-100' : 'text-slate-500 dark:text-zinc-400'}`}>
+                        {item.lastMessage}
+                      </p>
+                    </div>
+                  </motion.div>
+                );
+              })
+            )
+          ) : (
+            groupList.length === 0 ? (
+              <div className="flex flex-col items-center justify-center p-8 text-center space-y-2 rounded-3xl bg-white/40 dark:bg-zinc-900/30 backdrop-blur-md border border-white/40 dark:border-white/5 text-slate-400 my-auto">
+                <Users className="w-6 h-6 text-blue-500" />
+                <p className="text-xs font-bold text-slate-800 dark:text-zinc-200">Belum ada grup</p>
+              </div>
+            ) : (
+              groupList.map((g) => {
+                const isSelected = selectedGroup?.id === g.id;
+                return (
+                  <motion.div
+                    key={g.id}
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      setSelectedGroup(g);
+                      setSelectedPartner(null);
+                    }}
+                    className={`flex items-center gap-3 p-3 rounded-3xl cursor-pointer transition-all backdrop-blur-md border ${
+                      isSelected
+                        ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-500/20'
+                        : 'bg-white/50 dark:bg-zinc-900/40 border-white/50 dark:border-white/5 hover:bg-white/75 dark:hover:bg-zinc-800/60 text-slate-800 dark:text-zinc-200'
+                    }`}
+                  >
+                    <div className="w-10 h-10 rounded-2xl bg-blue-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-white/40 shrink-0">
+                      {g.avatar_url ? (
+                        <img src={g.avatar_url} alt={g.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <Users className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-blue-600 dark:text-blue-400'}`} />
+                      )}
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-1">
+                        <p className={`text-xs font-bold truncate ${isSelected ? 'text-white' : 'text-slate-800 dark:text-zinc-100'}`}>
+                          {g.name}
+                        </p>
+                        {g.has_unread && !isSelected && (
+                          <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse" />
+                        )}
+                      </div>
+                      <p className={`text-[11px] truncate ${isSelected ? 'text-blue-100' : 'text-slate-500 dark:text-zinc-400'}`}>
+                        {g.last_message}
+                      </p>
+                    </div>
+                  </motion.div>
+                );
+              })
+            )
           )}
         </div>
       </div>
 
-      {/* ================= BILAH KANAN: RUANG CHAT ================= */}
+      {/* BILAH KANAN: RUANG CHAT */}
       <div
         className={`flex-1 flex flex-col gap-2.5 h-full overflow-hidden ${
-          !selectedPartner ? 'hidden lg:flex' : 'flex'
+          !selectedPartner && !selectedGroup ? 'hidden lg:flex' : 'flex'
         }`}
       >
-        {selectedPartner ? (
+        {selectedPartner || selectedGroup ? (
           <>
-            {/* Top Header Pill Partner */}
-            <div className="flex items-center justify-between gap-3 p-2 px-4 rounded-3xl bg-white/60 dark:bg-zinc-900/50 backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.03)] dark:shadow-none shrink-0">
+            {/* Header Chat */}
+            <div className="flex items-center justify-between gap-3 p-2 px-4 rounded-3xl bg-white/60 dark:bg-zinc-900/50 backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-xs shrink-0">
               <div className="flex items-center gap-3 min-w-0">
                 <button
                   type="button"
-                  onClick={handleClosePartnerChat}
-                  className="lg:hidden p-1.5 rounded-2xl text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-white/40 dark:hover:bg-zinc-800"
+                  onClick={() => {
+                    setSelectedPartner(null);
+                    setSelectedGroup(null);
+                  }}
+                  className="lg:hidden p-1.5 rounded-2xl text-slate-400 hover:text-slate-800 dark:hover:text-white"
                 >
                   <ArrowLeft className="w-5 h-5" />
                 </button>
 
-                <div className="w-8 h-8 rounded-2xl bg-slate-200 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-white/40 dark:border-zinc-700 shrink-0 shadow-xs">
-                  {getUserAvatar(selectedPartner) ? (
-                    <img src={getUserAvatar(selectedPartner)!} alt={getUserDisplayName(selectedPartner)} className="w-full h-full object-cover" />
+                <div className="w-8 h-8 rounded-2xl bg-slate-200 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-white/40 shrink-0">
+                  {activeTab === 'dm' ? (
+                    getUserAvatar(selectedPartner) ? (
+                      <img src={getUserAvatar(selectedPartner)!} alt={getUserDisplayName(selectedPartner)} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-xs font-bold text-slate-700 dark:text-zinc-200">
+                        {getUserDisplayName(selectedPartner).charAt(0).toUpperCase()}
+                      </span>
+                    )
                   ) : (
-                    <span className="text-xs font-bold text-slate-700 dark:text-zinc-200">
-                      {getUserDisplayName(selectedPartner).charAt(0).toUpperCase()}
-                    </span>
+                    selectedGroup?.avatar_url ? (
+                      <img src={selectedGroup.avatar_url} alt={selectedGroup.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                    )
                   )}
                 </div>
 
                 <div className="min-w-0">
                   <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-zinc-100 leading-tight truncate">
-                    {getUserDisplayName(selectedPartner)}
+                    {activeTab === 'dm' ? getUserDisplayName(selectedPartner) : selectedGroup?.name}
                   </h3>
-                  <p className="text-[10px] text-slate-400 dark:text-zinc-500 truncate">
-                    @{selectedPartner.username || selectedPartner.nrp}
+                  <p className="text-[10px] text-slate-400 truncate">
+                    {activeTab === 'dm' ? `@${selectedPartner?.username || selectedPartner?.nrp}` : 'Grup Obrolan'}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20 shrink-0">
-                <ShieldCheck className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline"></span>
-              </div>
-            </div>
-
-            {/* Bubble Messages Stream Box */}
-            <div 
-              ref={chatScrollContainerRef}
-              className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-2.5 custom-scrollbar overscroll-contain rounded-3xl bg-white/30 dark:bg-zinc-900/25 backdrop-blur-md border border-white/40 dark:border-white/5"
-            >
-              {messages.length === 0 ? (
-                <div className="flex h-full flex-col items-center justify-center text-center p-6 text-slate-400 dark:text-zinc-500 space-y-2 my-auto">
-                  <div className="w-12 h-12 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
-                    <MessageSquare className="w-6 h-6" />
-                  </div>
-                  <p className="text-xs sm:text-sm font-bold text-slate-800 dark:text-zinc-200">
-                    Mulai obrolan dengan {getUserDisplayName(selectedPartner)}
-                  </p>
-                  <p className="text-[11px] text-slate-400 dark:text-zinc-500 max-w-xs">
-                    Kirim pesan instan dan ringan
-                  </p>
-                </div>
-              ) : (
-                messages.map((msg, idx) => {
-                  const isMe = String(msg.senderNrp).trim().toLowerCase() === currentUserNrp;
-                  const showDateDivider =
-                    idx === 0 || isDifferentDay(messages[idx - 1].timestamp, msg.timestamp);
-
-                  return (
-                    <React.Fragment key={msg.id || idx}>
-                      {showDateDivider && (
-                        <div className="flex items-center justify-center my-2.5">
-                          <span className="px-3 py-1 rounded-full text-[10px] font-semibold tracking-wide bg-white/60 dark:bg-zinc-800/60 backdrop-blur-md border border-white/50 dark:border-white/5 text-slate-500 dark:text-zinc-400 shadow-xs">
-                            {formatChatDateDivider(msg.timestamp)}
-                          </span>
-                        </div>
-                      )}
-
-                      <motion.div
-                        initial={{ opacity: 0, y: 4 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}
-                      >
-                        <div
-                          className={`max-w-[82%] sm:max-w-[70%] p-3 rounded-3xl text-xs sm:text-sm shadow-xs backdrop-blur-md ${
-                            isMe
-                              ? 'bg-blue-600 text-white rounded-br-xs shadow-blue-500/15'
-                              : 'bg-white/80 dark:bg-zinc-800/80 text-slate-800 dark:text-zinc-100 rounded-bl-xs border border-white/60 dark:border-white/5'
-                          }`}
-                        >
-                          {/* Gambar jika ada di pesan */}
-                          {msg.imageUrl && (
-                            <div className="mb-2 overflow-hidden rounded-2xl border border-black/10 dark:border-white/10">
-                              <img
-                                src={msg.imageUrl}
-                                alt="Attachment"
-                                onClick={() => setPreviewZoomImage(msg.imageUrl || null)}
-                                className="w-full max-h-60 object-cover cursor-pointer hover:scale-105 transition-transform duration-200"
-                                loading="lazy"
-                              />
-                            </div>
-                          )}
-
-                          {/* Teks Pesan */}
-                          {msg.text && (
-                            <p className="whitespace-pre-wrap break-words leading-relaxed px-1">
-                              {renderMessageTextWithLinks(msg.text, isMe)}
-                            </p>
-                          )}
-                        </div>
-                        <span className="text-[10px] text-slate-400 dark:text-zinc-500 px-2 mt-1 tabular-nums">
-                          {new Date(msg.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                      </motion.div>
-                    </React.Fragment>
-                  );
-                })
+              {/* Edit Group Info Button */}
+              {activeTab === 'groups' && selectedGroup && (
+                <button
+                  onClick={() => {
+                    setEditGroupName(selectedGroup.name);
+                    setEditGroupAvatarPreview(selectedGroup.avatar_url);
+                    setIsEditGroupModalOpen(true);
+                  }}
+                  className="p-2 rounded-2xl text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/40 dark:hover:bg-zinc-800 transition-colors"
+                  title="Edit Info Grup"
+                >
+                  <Edit3 className="w-4 h-4" />
+                </button>
               )}
             </div>
 
-            {/* PREVIEW LAMPIRAN GAMBAR DILAMPIRKAN */}
-            {imagePreviewUrl && (
-              <div className="relative px-3 py-2 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-2xl flex items-center justify-between shrink-0">
-                <div className="flex items-center gap-3">
-                  <img src={imagePreviewUrl} alt="Preview Upload" className="w-12 h-12 rounded-xl object-cover border border-slate-200 dark:border-zinc-700" />
-                  <div>
-                    <p className="text-xs font-bold text-slate-800 dark:text-zinc-100">Siap Dikirim!</p>
-                  </div>
+            {/* Messages Container with Swipe-to-Reply */}
+            <div 
+              ref={chatScrollContainerRef}
+              className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-2.5 custom-scrollbar rounded-3xl bg-white/30 dark:bg-zinc-900/25 backdrop-blur-md border border-white/40 dark:border-white/5"
+            >
+              {messages.map((msg, idx) => {
+                const isMe = String(msg.senderNrp).trim().toLowerCase() === currentUserNrp;
+                const showDateDivider = idx === 0 || isDifferentDay(messages[idx - 1].timestamp, msg.timestamp);
+
+                return (
+                  <React.Fragment key={msg.id || idx}>
+                    {showDateDivider && (
+                      <div className="flex items-center justify-center my-2.5">
+                        <span className="px-3 py-1 rounded-full text-[10px] font-semibold bg-white/60 dark:bg-zinc-800/60 border border-white/50 dark:border-white/5 text-slate-500">
+                          {formatChatDateDivider(msg.timestamp)}
+                        </span>
+                      </div>
+                    )}
+
+                    <motion.div
+                      drag="x"
+                      dragConstraints={{ left: 0, right: 80 }}
+                      onDragEnd={(_, info) => {
+                        if (info.offset.x > 50) {
+                          setReplyTo({
+                            id: msg.id || String(idx),
+                            sender: msg.senderName || msg.senderNrp,
+                            text: msg.text,
+                          });
+                        }
+                      }}
+                      className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}
+                    >
+                      <div
+                        className={`max-w-[82%] sm:max-w-[70%] p-3 rounded-3xl text-xs sm:text-sm shadow-xs backdrop-blur-md ${
+                          isMe
+                            ? 'bg-blue-600 text-white rounded-br-xs'
+                            : 'bg-white/80 dark:bg-zinc-800/80 text-slate-800 dark:text-zinc-100 rounded-bl-xs border border-white/60 dark:border-white/5'
+                        }`}
+                      >
+                        {/* Pengirim (khusus grup) */}
+                        {activeTab === 'groups' && !isMe && (
+                          <p className="text-[10px] font-bold text-blue-500 dark:text-blue-400 mb-1">
+                            {msg.senderName}
+                          </p>
+                        )}
+
+                        {/* Balasan/Reply Box */}
+                        {msg.replyTo && (
+                          <div className={`p-2 mb-2 rounded-xl text-[11px] border-l-4 ${isMe ? 'bg-blue-700/50 border-white text-white/90' : 'bg-slate-100 dark:bg-zinc-700 border-blue-500 text-slate-700 dark:text-zinc-200'}`}>
+                            <p className="font-bold">{msg.replyTo.sender}</p>
+                            <p className="truncate opacity-80">{msg.replyTo.text}</p>
+                          </div>
+                        )}
+
+                        {/* Teks Pesan */}
+                        <p className="whitespace-pre-wrap break-words leading-relaxed">{msg.text}</p>
+                      </div>
+                      <span className="text-[10px] text-slate-400 px-2 mt-1">
+                        {new Date(msg.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </motion.div>
+                  </React.Fragment>
+                );
+              })}
+            </div>
+
+            {/* Reply Preview Bar */}
+            {replyTo && (
+              <div className="px-3 py-2 bg-blue-50/80 dark:bg-blue-950/40 border-l-4 border-blue-600 rounded-xl flex items-center justify-between text-xs shrink-0">
+                <div className="min-w-0 pr-2">
+                  <p className="font-bold text-blue-600 dark:text-blue-400">Membalas {replyTo.sender}</p>
+                  <p className="truncate text-slate-600 dark:text-zinc-300">{replyTo.text}</p>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleClearSelectedImage}
-                  className="p-1 rounded-full bg-slate-200 dark:bg-zinc-800 hover:bg-rose-500 hover:text-white transition-colors"
-                >
+                <button onClick={() => setReplyTo(null)} className="p-1 text-slate-400 hover:text-slate-600">
                   <X className="w-4 h-4" />
                 </button>
               </div>
             )}
 
-            {/* Sticky Bottom Floating Input Pill */}
+            {/* Input Form */}
             <form
               onSubmit={handleSendMessage}
-              className="p-1.5 pl-3 rounded-3xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-xl border border-white/70 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none flex items-center gap-2 shrink-0"
+              className="p-1.5 pl-3 rounded-3xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-xl border border-white/70 dark:border-white/10 shadow-xs flex items-center gap-2 shrink-0"
             >
-              {/* Hidden File Input */}
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleSelectImageFile}
-                accept="image/*"
-                className="hidden"
-              />
-
-              {/* Tombol Lampiran Gambar */}
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isSending}
-                className="p-2 rounded-2xl text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/60 dark:hover:bg-zinc-800 transition-colors shrink-0 disabled:opacity-50 cursor-pointer"
-                title="Pilih Gambar"
-              >
-                <ImagePlus className="w-5 h-5" />
-              </button>
-
               <input
                 type="text"
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
-                onFocus={() => {
-                  setTimeout(() => {
-                    if (chatScrollContainerRef.current) {
-                      chatScrollContainerRef.current.scrollTop = chatScrollContainerRef.current.scrollHeight;
-                    }
-                  }, 300);
-                }}
-                placeholder={isSending ? "Mengunggah gambar & mengirim..." : `Ketik pesan ke ${getUserDisplayName(selectedPartner)}...`}
+                placeholder="Ketik pesan..."
                 disabled={isSending}
-                className="flex-1 bg-transparent text-xs sm:text-sm text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none disabled:opacity-50"
+                className="flex-1 bg-transparent text-xs sm:text-sm text-slate-900 dark:text-zinc-100 focus:outline-none"
               />
 
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 type="submit"
-                disabled={(!inputText.trim() && !selectedImageFile) || isSending}
+                disabled={!inputText.trim() || isSending}
                 className="w-10 h-10 rounded-2xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white flex items-center justify-center shadow-md shadow-blue-500/25 transition-all shrink-0 cursor-pointer"
               >
-                {isSending ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Send className="w-4 h-4 stroke-[2.2] -rotate-12 translate-y-[-0.5px] -translate-x-[0.5px]" />
-                )}
+                {isSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4 -rotate-12" />}
               </motion.button>
             </form>
           </>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-center p-8 space-y-3 rounded-3xl bg-white/30 dark:bg-zinc-900/25 backdrop-blur-md border border-white/40 dark:border-white/5 text-slate-400 dark:text-zinc-500">
-            <div className="w-14 h-14 rounded-3xl bg-white/50 dark:bg-zinc-800/50 border border-white/40 dark:border-white/10 flex items-center justify-center text-blue-600 dark:text-blue-400 shadow-xs">
-              <MessageSquare className="w-7 h-7" />
-            </div>
-            <div className="space-y-1">
-              <h3 className="text-sm sm:text-base font-bold text-slate-800 dark:text-zinc-200">
-              
-              </h3>
-              <p className="text-xs text-slate-400 dark:text-zinc-400 max-w-sm mx-auto leading-relaxed">
-                Pilih obrolan dari daftar sebelah kiri atau mulai obrolan baru dengan temanmu.
-              </p>
-            </div>
+          <div className="flex-1 flex flex-col items-center justify-center text-center p-8 space-y-3 rounded-3xl bg-white/30 dark:bg-zinc-900/25 backdrop-blur-md border border-white/40 dark:border-white/5 text-slate-400">
+            <MessageSquare className="w-8 h-8 text-blue-500" />
+            <p className="text-xs">Pilih obrolan dari daftar sebelah kiri.</p>
           </div>
         )}
       </div>
 
-      {/* ================= MODAL FULLVIEW / ZOOM GAMBAR ================= */}
+      {/* MODAL EDIT GRUP (GANTI NAMA & PP) */}
       <AnimatePresence>
-        {previewZoomImage && (
-          <div className="fixed inset-0 z-[999999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              className="relative max-w-4xl max-h-[90vh]"
-            >
-              <button
-                onClick={() => setPreviewZoomImage(null)}
-                className="absolute -top-10 right-0 p-2 text-white/80 hover:text-white"
-              >
-                <X className="w-6 h-6" />
-              </button>
-              <img src={previewZoomImage} alt="Full Zoom" className="max-w-full max-h-[85vh] rounded-2xl object-contain shadow-2xl" />
+        {isEditGroupModalOpen && selectedGroup && (
+          <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsEditGroupModalOpen(false)} className="fixed inset-0 bg-slate-950/70 backdrop-blur-md" />
+            <motion.div initial={{ scale: 0.92, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.92, opacity: 0 }} className="relative z-10 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-2xl border border-white/50 dark:border-white/10 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
+              <div className="flex justify-between items-center">
+                <h3 className="text-base font-bold">Edit Info Grup</h3>
+                <button onClick={() => setIsEditGroupModalOpen(false)}><X className="w-5 h-5 text-slate-400" /></button>
+              </div>
+
+              <form onSubmit={handleUpdateGroupSubmit} className="space-y-4">
+                {/* Upload PP Grup */}
+                <div className="flex flex-col items-center gap-2">
+                  <div className="relative w-20 h-20 rounded-full bg-slate-200 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border-2 border-blue-500">
+                    {editGroupAvatarPreview ? (
+                      <img src={editGroupAvatarPreview} alt="Group Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      <Users className="w-8 h-8 text-slate-400" />
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => groupAvatarInputRef.current?.click()}
+                      className="absolute inset-0 bg-black/40 flex items-center justify-center text-white opacity-0 hover:opacity-100 transition-opacity"
+                    >
+                      <Camera className="w-6 h-6" />
+                    </button>
+                  </div>
+                  <input
+                    type="file"
+                    ref={groupAvatarInputRef}
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setEditGroupAvatarFile(file);
+                        setEditGroupAvatarPreview(URL.createObjectURL(file));
+                      }
+                    }}
+                  />
+                  <span className="text-[11px] text-slate-400">Klik untuk mengganti foto grup</span>
+                </div>
+
+                {/* Input Nama Grup */}
+                <div>
+                  <label className="block text-xs font-semibold mb-1">Nama Grup</label>
+                  <input
+                    type="text"
+                    value={editGroupName}
+                    onChange={(e) => setEditGroupName(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSending}
+                  className="w-full py-2.5 rounded-2xl bg-blue-600 text-white font-bold text-xs hover:bg-blue-700 transition-all shadow-md shadow-blue-500/20"
+                >
+                  {isSending ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Simpan Perubahan'}
+                </button>
+              </form>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
 
-      {/* ================= MODAL MULAI CHAT BARU (PILIH TEMAN) ================= */}
+      {/* MODAL BUAT GRUP BARU */}
       <AnimatePresence>
-        {isNewChatModalOpen && (
+        {isCreateGroupModalOpen && (
           <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsNewChatModalOpen(false)}
-              className="fixed inset-0 bg-slate-950/70 backdrop-blur-md transition-opacity"
-            />
-
-            <motion.div 
-              initial={{ scale: 0.92, opacity: 0, y: 15 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.92, opacity: 0, y: 15 }}
-              transition={{ type: 'spring', stiffness: 350, damping: 28 }}
-              className="relative z-10 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-2xl border border-white/50 dark:border-white/10 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-md w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden"
-            >
-              <div className="px-6 py-4 border-b border-slate-200/50 dark:border-white/10 flex items-center justify-between shrink-0 bg-white/40 dark:bg-zinc-900/40">
-                <h3 className="text-base font-bold text-slate-900 dark:text-zinc-100">
-                  Mulai Chat Baru
-                </h3>
-                <button
-                  onClick={() => setIsNewChatModalOpen(false)}
-                  className="p-1.5 rounded-2xl text-slate-400 hover:text-slate-800 dark:hover:text-zinc-200 hover:bg-white/40 dark:hover:bg-zinc-800 transition-colors shrink-0 cursor-pointer"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsCreateGroupModalOpen(false)} className="fixed inset-0 bg-slate-950/70 backdrop-blur-md" />
+            <motion.div initial={{ scale: 0.92, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.92, opacity: 0 }} className="relative z-10 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-2xl border border-white/50 dark:border-white/10 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
+              <div className="flex justify-between items-center">
+                <h3 className="text-base font-bold">Buat Grup Obrolan</h3>
+                <button onClick={() => setIsCreateGroupModalOpen(false)}><X className="w-5 h-5 text-slate-400" /></button>
               </div>
 
-              {/* Search Modal */}
-              <div className="p-3 border-b border-slate-200/30 dark:border-white/5 shrink-0">
-                <div className="relative flex items-center w-full rounded-2xl bg-white/60 dark:bg-zinc-800/60 border border-white/40 dark:border-white/10 px-3 py-2">
-                  <Search className="w-4 h-4 text-slate-400 shrink-0 mr-2.5 pointer-events-none" />
+              <form onSubmit={handleCreateGroupSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold mb-1">Nama Grup</label>
                   <input
                     type="text"
-                    value={searchNewUser}
-                    onChange={(e) => setSearchNewUser(e.target.value)}
-                    placeholder="Cari nickname, username, atau NRP..."
-                    className="w-full bg-transparent text-xs text-slate-800 dark:text-zinc-200 placeholder-slate-400 focus:outline-none"
+                    value={newGroupName}
+                    onChange={(e) => setNewGroupName(e.target.value)}
+                    placeholder="Misal: Kelompok 3 Basdat"
+                    className="w-full px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
                   />
                 </div>
-              </div>
 
-              <div className="flex-1 overflow-y-auto p-3 space-y-1 custom-scrollbar">
-                {filteredNewUsers.length === 0 ? (
-                  <div className="p-8 text-center text-xs text-slate-400">
-                    Teman tidak ditemukan.
+                <div>
+                  <label className="block text-xs font-semibold mb-1">Pilih Anggota</label>
+                  <div className="max-h-40 overflow-y-auto space-y-1 custom-scrollbar">
+                    {allUsers.map((u) => {
+                      const isSelected = selectedGroupMembers.includes(u.nrp);
+                      return (
+                        <div
+                          key={u.nrp}
+                          onClick={() => {
+                            setSelectedGroupMembers((prev) =>
+                              isSelected ? prev.filter((id) => id !== u.nrp) : [...prev, u.nrp]
+                            );
+                          }}
+                          className={`flex items-center justify-between p-2 rounded-xl text-xs cursor-pointer ${isSelected ? 'bg-blue-50 dark:bg-blue-950/50 text-blue-600' : 'hover:bg-slate-100 dark:hover:bg-zinc-800'}`}
+                        >
+                          <span>{getUserDisplayName(u)}</span>
+                          {isSelected && <CheckCircle2 className="w-4 h-4 text-blue-600" />}
+                        </div>
+                      );
+                    })}
                   </div>
-                ) : (
-                  filteredNewUsers.map((user) => {
-                    const displayName = getUserDisplayName(user);
-                    const avatar = getUserAvatar(user);
+                </div>
 
-                    return (
-                      <motion.div
-                        key={user.nrp}
-                        whileHover={{ scale: 1.01 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => {
-                          handleOpenPartnerChat(user);
-                          setIsNewChatModalOpen(false);
-                        }}
-                        className="flex items-center gap-3 p-3 rounded-2xl cursor-pointer hover:bg-white/60 dark:hover:bg-zinc-800/60 transition-all border border-transparent hover:border-white/20 dark:hover:border-white/10"
-                      >
-                        <div className="w-10 h-10 rounded-2xl bg-slate-200 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-white/40 dark:border-zinc-700 shrink-0 shadow-xs">
-                          {avatar ? (
-                            <img src={avatar} alt={displayName} className="w-full h-full object-cover" />
-                          ) : (
-                            <span className="text-xs font-bold text-slate-700 dark:text-zinc-200">
-                              {displayName.charAt(0).toUpperCase()}
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-bold text-slate-800 dark:text-zinc-100 truncate">
-                            {displayName}
-                          </p>
-                          <p className="text-[11px] text-slate-400 truncate">
-                            @{user.username || user.nrp}
-                          </p>
-                        </div>
-                      </motion.div>
-                    );
-                  })
-                )}
-              </div>
+                <button
+                  type="submit"
+                  disabled={isSending}
+                  className="w-full py-2.5 rounded-2xl bg-blue-600 text-white font-bold text-xs hover:bg-blue-700 transition-all shadow-md shadow-blue-500/20"
+                >
+                  {isSending ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Terbit Grup'}
+                </button>
+              </form>
             </motion.div>
           </div>
         )}
