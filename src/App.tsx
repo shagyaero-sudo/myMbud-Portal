@@ -420,7 +420,16 @@ export default function App() {
               ? 'Medium'
               : 'High',
           classroomUrl: d.classroom_url || d.classroomUrl || undefined,
+
+          // ============================================================
+          // ATTACHMENTS — SUPPORT MULTIPLE FILES (MAX 5)
+          // ============================================================
           attachment: d.attachment || undefined,
+          attachments: Array.isArray(d.attachments)
+            ? d.attachments
+            : d.attachment
+            ? [d.attachment]
+            : [],
         }));
 
         setAppState((prev) => ({
@@ -626,7 +635,7 @@ export default function App() {
       await deleteContactApi(id);
     } catch (error) {
       console.error('Gagal menghapus mata kuliah:', error);
-      alert('Gagal menghapus data mata kuliah.');
+      alert('Gagal menghapus mata kuliah.');
     }
   };
 
