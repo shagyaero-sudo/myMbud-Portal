@@ -178,21 +178,22 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     });
   }, [state.schedules, currentUserNrp]);
 
-  const hasFridaySchedule = useMemo(() => {
-    return visibleSchedules.some((s) => s.day === 'Jumat');
-  }, [visibleSchedules]);
+  const ALL_DAYS: DayOfWeek[] = useMemo(
+    () => ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'],
+    []
+  );
 
   const dayTabs: DayOfWeek[] = useMemo(() => {
-    const baseDays: DayOfWeek[] = ['Senin', 'Selasa', 'Rabu', 'Kamis'];
-    if (hasFridaySchedule) {
-      return [...baseDays, 'Jumat'];
-    }
-    return baseDays;
-  }, [hasFridaySchedule]);
+    return ALL_DAYS.filter((day) =>
+      visibleSchedules.some((s) => s.day === day)
+    );
+  }, [visibleSchedules, ALL_DAYS]);
 
   useEffect(() => {
     if (dayTabs.includes(todayActualName as DayOfWeek)) {
       setSelectedDay(todayActualName as DayOfWeek);
+    } else if (dayTabs.length > 0) {
+      setSelectedDay(dayTabs[0]);
     } else {
       setSelectedDay(null);
     }
@@ -809,8 +810,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               })()}
             </div>
 
-            {/* TAB HARI (SENIN - KAMIS ATAU +JUMAT) */}
-            <div className={`grid ${dayTabs.length === 5 ? 'grid-cols-5' : 'grid-cols-4'} gap-1 p-1 bg-slate-100/70 dark:bg-zinc-800/60 rounded-2xl w-full border border-slate-200/40 dark:border-white/5`}>
+            {/* TAB HARI DINAMIS */}
+            <div 
+              className="grid gap-1 p-1 bg-slate-100/70 dark:bg-zinc-800/60 rounded-2xl w-full border border-slate-200/40 dark:border-white/5"
+              style={{ gridTemplateColumns: `repeat(${Math.max(dayTabs.length, 1)}, minmax(0, 1fr))` }}
+            >
               {dayTabs.map((day) => {
                 const isActive = selectedDay === day;
                 return (
