@@ -71,7 +71,10 @@ export interface Task {
   status: 'todo' | 'in_progress' | 'done';
   priority: 'High' | 'Medium' | 'Low';
   classroomUrl?: string;
+  /** @deprecated Gunakan `attachments`. Tetap ada untuk kompatibilitas data lama (1 lampiran). */
   attachment?: TaskAttachment;
+  /** Lampiran tugas, bisa lebih dari satu (maks 5, diatur di UI). */
+  attachments?: TaskAttachment[];
 }
 
 export interface GroupResult {
