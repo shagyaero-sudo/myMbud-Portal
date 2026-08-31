@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
 import { AnimatePresence } from 'framer-motion';
 
 import { subscribeAnnouncements } from './services/announcements';
@@ -14,21 +14,24 @@ import { Header } from './components/Header';
 import { Sidebar, TabType } from './components/Sidebar';
 import { DashboardView } from './components/DashboardView';
 import { ContactsView } from './components/ContactsView';
-import { KnowledgeBaseView } from './components/KnowledgeBaseView';
-import { TaskTrackerView } from './components/TaskTrackerView';
-import { SpinwheelView } from './components/SpinwheelView';
-import { GradeCalculatorView } from './components/GradeCalculatorView';
-import { LetterGeneratorView } from './components/LetterGeneratorView';
+
+// LAZY LOADING KOMPONEN BERAT (HANYA DIMUAT SAAT DIKLIK BIAR ENTENG)
+const KnowledgeBaseView = lazy(() => import('./components/KnowledgeBaseView').then(m => ({ default: m.KnowledgeBaseView })));
+const TaskTrackerView = lazy(() => import('./components/TaskTrackerView').then(m => ({ default: m.TaskTrackerView })));
+const SpinwheelView = lazy(() => import('./components/SpinwheelView').then(m => ({ default: m.SpinwheelView })));
+const GradeCalculatorView = lazy(() => import('./components/GradeCalculatorView').then(m => ({ default: m.GradeCalculatorView })));
+const LetterGeneratorView = lazy(() => import('./components/LetterGeneratorView').then(m => ({ default: m.LetterGeneratorView })));
+const BlockBlastView = lazy(() => import('./components/blockblast/BlockBlastView').then(m => ({ default: m.BlockBlastView })));
+const MbudiaryView = lazy(() => import('./components/MbudiaryView').then(m => ({ default: m.MbudiaryView })));
+const MbudTalkView = lazy(() => import('./components/MbudTalkView').then(m => ({ default: m.MbudTalkView })));
+const NotebookLmView = lazy(() => import('./components/NotebookLmView').then(m => ({ default: m.NotebookLmView })));
+
 import { PdfViewerModal } from './components/PdfViewerModal';
 import { SoftForceModal } from './components/SoftForceModal';
-import { BlockBlastView } from './components/blockblast/BlockBlastView';
-import { MbudiaryView } from './components/MbudiaryView';
-import { MbudTalkView } from './components/MbudTalkView';
 import { GpaCalculatorModal } from './components/GpaCalculatorModal';
 import { LoginScreen } from './components/LoginScreen';
 import { OnboardingScreen } from './components/OnboardingScreen';
 import { SplashScreen } from './components/SplashScreen';
-import { NotebookLmView } from './components/NotebookLmView';
 
 import {
   AppState,
@@ -63,10 +66,6 @@ import { initializeMbudiary } from './components/mbudiary/lib/storage';
 
 const IS_MAINTENANCE = false;
 
-// =========================================================================
-// HELPER ROUTING AMAN & ANTI-BLANK SCREEN
-// =========================================================================
-
 const VALID_TABS: (TabType | 'mbudtalk')[] = [
   'dashboard',
   'contacts',
@@ -87,8 +86,6 @@ const getTabFromLocation = (): TabType | 'mbudtalk' => {
   return VALID_TABS.includes(rawHash as any) ? (rawHash as any) : 'dashboard';
 };
 
-// =========================================================================
-
 const AppSkeleton = () => (
   <div className="animate-pulse space-y-6">
     <div className="h-40 bg-slate-200/60 dark:bg-zinc-900/60 rounded-3xl w-full border border-slate-200 dark:border-zinc-800"></div>
@@ -108,8 +105,6 @@ export default function App() {
   if (IS_MAINTENANCE) {
     return (
       <div className="min-h-screen bg-zinc-950 text-slate-100 flex flex-col items-center justify-center p-6 text-center font-sans relative overflow-hidden">
-        <div className="fixed top-[-20%] left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-slate-500/10 rounded-full blur-[140px] pointer-events-none -z-10" />
-        
         <div className="bg-zinc-900/80 border border-zinc-800 rounded-3xl p-8 max-w-md w-full shadow-2xl backdrop-blur-md flex flex-col items-center space-y-4">
           <div className="w-16 h-16 bg-slate-800 text-slate-300 rounded-2xl flex items-center justify-center text-3xl mb-2 border border-zinc-700">
             🛠️
@@ -133,7 +128,6 @@ export default function App() {
 
   const [showSplash, setShowSplash] = useState<boolean>(true);
 
-  // PRE-FETCH & SINKRONISASI MBUDIARY SECARA SILENT DI BACKGROUND SEJAK DETIK PERTAMA
   useEffect(() => {
     const unsubMbudiary = initializeMbudiary();
     return () => unsubMbudiary();
@@ -262,11 +256,9 @@ export default function App() {
   const requiresLogin =
     !isAuthenticated && (!isMobileOrTabletOS || isStandalone);
 
-  // Inisialisasi activeTab terproteksi dari blank screen
   const [activeTab, setActiveTab] = useState<TabType | 'mbudtalk'>(() => getTabFromLocation());
   const [chatTargetNrp, setChatTargetNrp] = useState<string | null>(null);
 
-  // Listener tombol Back / Forward browser & gesture swipe HP
   useEffect(() => {
     const handlePopState = (event: PopStateEvent) => {
       if (event.state && event.state.tab && VALID_TABS.includes(event.state.tab)) {
@@ -294,7 +286,6 @@ export default function App() {
       
       setActiveTab(tab);
 
-      // Catat perpindahan tab ke riwayat browser tanpa reload
       if (window.history.state?.tab !== tab) {
         window.history.pushState({ tab }, '', `#${tab}`);
       }
@@ -324,7 +315,6 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  // --- SUPABASE REAL-TIME LISTENERS ---
   useEffect(() => {
     setIsSyncing(true);
 
@@ -345,7 +335,6 @@ export default function App() {
           const pj = d.pj_name || d.pj_matkul || d.pjName || '';
           const pjTel = d.pj_phone || d.pjPhone || '';
           const presensi = d.attendance_url || d.attendanceUrl || '';
-          
           const targetNrps = d.target_nrps || d.targetNrps || null;
 
           supabaseSchedules.push({
@@ -420,10 +409,6 @@ export default function App() {
               ? 'Medium'
               : 'High',
           classroomUrl: d.classroom_url || d.classroomUrl || undefined,
-
-          // ============================================================
-          // ATTACHMENTS — SUPPORT MULTIPLE FILES (MAX 5)
-          // ============================================================
           attachment: d.attachment || undefined,
           attachments: Array.isArray(d.attachments)
             ? d.attachments
@@ -455,27 +440,9 @@ export default function App() {
 
     const channel = supabase
       .channel('public:portal_realtime_changes')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'courses' },
-        () => {
-          loadCourses();
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'tasks' },
-        () => {
-          loadTasks();
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'materials' },
-        () => {
-          loadMaterials();
-        }
-      )
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'courses' }, () => loadCourses())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, () => loadTasks())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'materials' }, () => loadMaterials())
       .subscribe();
 
     return () => {
@@ -497,10 +464,6 @@ export default function App() {
     }
   }, []);
 
-  // =========================================================================
-  // LOGIKA PEWARISAN HAK AKSES TUGAS & MATERI (REGION LOCK / INHERITANCE)
-  // =========================================================================
-  
   const parseTargetNrps = useCallback((raw: any): string[] => {
     if (!raw) return [];
     if (Array.isArray(raw)) {
@@ -639,9 +602,7 @@ export default function App() {
     }
   };
 
-  const handleAddMaterial = async (
-    material: Omit<MaterialFile, 'id' | 'uploadDate'>
-  ) => {
+  const handleAddMaterial = async (material: Omit<MaterialFile, 'id' | 'uploadDate'>) => {
     try {
       await addMaterialToFirestore(material);
     } catch (error) {
@@ -679,10 +640,7 @@ export default function App() {
     }
   };
 
-  const handleUpdateTaskStatus = async (
-    id: string,
-    status: 'todo' | 'in_progress' | 'done'
-  ) => {
+  const handleUpdateTaskStatus = async (id: string, status: 'todo' | 'in_progress' | 'done') => {
     try {
       await updateTaskApi(id, { status });
     } catch (error) {
@@ -699,9 +657,7 @@ export default function App() {
     }
   };
 
-  const handleSaveGroupResult = async (
-    result: Omit<GroupResult, 'id' | 'createdAt'>
-  ) => {
+  const handleSaveGroupResult = async (result: Omit<GroupResult, 'id' | 'createdAt'>) => {
     try {
       const updated = await saveGroupResultApi(result);
       if (updated) {
@@ -737,30 +693,21 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      <div className="relative min-h-screen bg-slate-100 dark:bg-[#0e0f12] text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-500">
+      <div className="relative min-h-screen bg-slate-100 dark:bg-[#0e0f12] text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-300 transform-gpu">
         
-        {/* RESPONSIVE GRADIENT SYSTEM */}
+        {/* LIGHTWEIGHT ACCELERATED BACKGROUND GLOW */}
         <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden gpu-layer">
           <div 
-            className="block lg:hidden absolute -bottom-[10%] left-1/2 -translate-x-1/2 w-[130vw] h-[550px] rounded-[100%] blur-[120px] transition-all duration-700 opacity-20 dark:opacity-22 gpu-layer" 
-            style={{ backgroundColor: 'var(--glow-1)' }}
-          />
-
-          <div 
-            className="hidden lg:block absolute top-[-100px] left-[-80px] w-[850px] h-[850px] rounded-full blur-[140px] transition-all duration-700 opacity-10 dark:opacity-12 gpu-layer" 
-            style={{ backgroundColor: 'var(--glow-1)' }}
+            className="absolute top-[-50px] left-[-50px] w-[500px] h-[500px] rounded-full opacity-10 dark:opacity-15 gpu-layer" 
+            style={{ backgroundColor: 'var(--glow-1)', filter: 'blur(90px)' }}
           />
           <div 
-            className="hidden lg:block absolute top-[30%] right-[-100px] w-[800px] h-[800px] rounded-full blur-[150px] transition-all duration-700 opacity-10 dark:opacity-12 gpu-layer" 
-            style={{ backgroundColor: 'var(--glow-2)' }}
-          />
-          <div 
-            className="hidden lg:block absolute bottom-[-100px] left-[20%] w-[800px] h-[800px] rounded-full blur-[140px] transition-all duration-700 opacity-10 dark:opacity-12 gpu-layer" 
-            style={{ backgroundColor: 'var(--glow-1)' }}
+            className="hidden lg:block absolute bottom-[-50px] right-[-50px] w-[500px] h-[500px] rounded-full opacity-10 dark:opacity-15 gpu-layer" 
+            style={{ backgroundColor: 'var(--glow-2)', filter: 'blur(90px)' }}
           />
         </div>
 
-        {/* CONTENT LAYER WITH EXACT 1x SAFE AREA */}
+        {/* CONTENT LAYER */}
         <div 
           className="relative z-10 flex flex-col min-h-screen bg-transparent"
           style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 12px)' }}
@@ -791,93 +738,92 @@ export default function App() {
               {isInitialLoad ? (
                 <AppSkeleton />
               ) : (
-                <div
-                  key={activeTab}
-                  className="transition-opacity duration-150 ease-out opacity-100"
-                >
-                  {activeTab === 'dashboard' && (
-                    <DashboardView
-                      state={{ ...appState, tasks: accessibleTasks }}
-                      isOfficer={isOfficer}
-                      onAddAnnouncement={() => {}}
-                      onDeleteAnnouncement={() => {}}
-                      onNavigateTab={handleNavigateTab}
-                    />
-                  )}
+                <Suspense fallback={<AppSkeleton />}>
+                  <div key={activeTab} className="gpu-layer">
+                    {activeTab === 'dashboard' && (
+                      <DashboardView
+                        state={{ ...appState, tasks: accessibleTasks }}
+                        isOfficer={isOfficer}
+                        onAddAnnouncement={() => {}}
+                        onDeleteAnnouncement={() => {}}
+                        onNavigateTab={handleNavigateTab}
+                      />
+                    )}
 
-                  {activeTab === 'contacts' && (
-                    <ContactsView
-                      key={`contacts-${selectedContactCourse}`}
-                      contacts={appState.contacts}
-                      isOfficer={isOfficer}
-                      initialCourseFilter={selectedContactCourse}
-                      onAddContact={handleAddContact}
-                      onUpdateContact={handleUpdateContact}
-                      onDeleteContact={handleDeleteContact}
-                    />
-                  )}
+                    {activeTab === 'contacts' && (
+                      <ContactsView
+                        key={`contacts-${selectedContactCourse}`}
+                        contacts={appState.contacts}
+                        isOfficer={isOfficer}
+                        initialCourseFilter={selectedContactCourse}
+                        onAddContact={handleAddContact}
+                        onUpdateContact={handleUpdateContact}
+                        onDeleteContact={handleDeleteContact}
+                      />
+                    )}
 
-                  {activeTab === 'materials' && (
-                    <KnowledgeBaseView
-                      materials={accessibleMaterials}
-                      isOfficer={isOfficer}
-                      availableCourses={accessibleCourseNames}
-                      onAddMaterial={handleAddMaterial}
-                      onDeleteMaterial={handleDeleteMaterial}
-                      onPreviewPdf={(material) => setPreviewMaterial(material)}
-                      onOpenNotebookLm={() => handleNavigateTab('notebooklm' as TabType)}
-                    />
-                  )}
+                    {activeTab === 'materials' && (
+                      <KnowledgeBaseView
+                        materials={accessibleMaterials}
+                        isOfficer={isOfficer}
+                        availableCourses={accessibleCourseNames}
+                        onAddMaterial={handleAddMaterial}
+                        onDeleteMaterial={handleDeleteMaterial}
+                        onPreviewPdf={(material) => setPreviewMaterial(material)}
+                        onOpenNotebookLm={() => handleNavigateTab('notebooklm' as TabType)}
+                      />
+                    )}
 
-                  {activeTab === ('notebooklm' as TabType) && (
-                    <NotebookLmView
-                      isOfficer={isOfficer}
-                      onBack={() => handleNavigateTab('materials')}
-                    />
-                  )}
+                    {activeTab === ('notebooklm' as TabType) && (
+                      <NotebookLmView
+                        isOfficer={isOfficer}
+                        onBack={() => handleNavigateTab('materials')}
+                      />
+                    )}
 
-                  {activeTab === 'tasks' && (
-                    <TaskTrackerView
-                      tasks={accessibleTasks}
-                      contacts={accessibleContacts}
-                      isOfficer={isOfficer}
-                      completedTaskIds={completedTaskIds}
-                      onAddTask={handleAddTask}
-                      onUpdateTask={handleUpdateTask}
-                      onUpdateTaskStatus={handleUpdateTaskStatus}
-                      onDeleteTask={handleDeleteTask}
-                    />
-                  )}
+                    {activeTab === 'tasks' && (
+                      <TaskTrackerView
+                        tasks={accessibleTasks}
+                        contacts={accessibleContacts}
+                        isOfficer={isOfficer}
+                        completedTaskIds={completedTaskIds}
+                        onAddTask={handleAddTask}
+                        onUpdateTask={handleUpdateTask}
+                        onUpdateTaskStatus={handleUpdateTaskStatus}
+                        onDeleteTask={handleDeleteTask}
+                      />
+                    )}
 
-                  {activeTab === 'spinwheel' && (
-                    <SpinwheelView
-                      onSaveGroupResult={handleSaveGroupResult}
-                      savedResults={appState.groupResults}
-                      isOfficer={isOfficer}
-                    />
-                  )}
+                    {activeTab === 'spinwheel' && (
+                      <SpinwheelView
+                        onSaveGroupResult={handleSaveGroupResult}
+                        savedResults={appState.groupResults}
+                        isOfficer={isOfficer}
+                      />
+                    )}
 
-                  {activeTab === 'calculator' && (
-                    <GradeCalculatorView courseGrades={appState.courseGrades} />
-                  )}
+                    {activeTab === 'calculator' && (
+                      <GradeCalculatorView courseGrades={appState.courseGrades} />
+                    )}
 
-                  {activeTab === 'letter' && <LetterGeneratorView />}
+                    {activeTab === 'letter' && <LetterGeneratorView />}
 
-                  {activeTab === 'blockblast' && <BlockBlastView />}
+                    {activeTab === 'blockblast' && <BlockBlastView />}
 
-                  {activeTab === 'mbudiary' && (
-                    <MbudiaryView
-                      onNavigateToChat={(targetNrp) => handleNavigateTab('mbudtalk', targetNrp)}
-                    />
-                  )}
+                    {activeTab === 'mbudiary' && (
+                      <MbudiaryView
+                        onNavigateToChat={(targetNrp) => handleNavigateTab('mbudtalk', targetNrp)}
+                      />
+                    )}
 
-                  {activeTab === 'mbudtalk' && (
-                    <MbudTalkView
-                      onBack={() => handleNavigateTab('dashboard')}
-                      targetNrp={chatTargetNrp}
-                    />
-                  )}
-                </div>
+                    {activeTab === 'mbudtalk' && (
+                      <MbudTalkView
+                        onBack={() => handleNavigateTab('dashboard')}
+                        targetNrp={chatTargetNrp}
+                      />
+                    )}
+                  </div>
+                </Suspense>
               )}
             </main>
           </div>
