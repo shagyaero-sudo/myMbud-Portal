@@ -230,25 +230,28 @@ export default function App() {
     setIsAuthenticated(false);
   };
 
-  const userAgent = (navigator.userAgent || navigator.vendor || (window as any).opera || '').toLowerCase();
-  const platform = (navigator.platform || '').toLowerCase();
-  const maxTouchPoints = navigator.maxTouchPoints || 0;
+  const { isMobileOrTabletOS, isStandalone } = useMemo(() => {
+    const userAgent = (navigator.userAgent || navigator.vendor || (window as any).opera || '').toLowerCase();
+    const platform = (navigator.platform || '').toLowerCase();
+    const maxTouchPoints = navigator.maxTouchPoints || 0;
 
-  const isAndroid =
-    /android|samsungbrowser/i.test(userAgent) ||
-    /linux arm|android/i.test(platform) ||
-    (/linux/i.test(platform) && maxTouchPoints > 1 && !/windows|macintosh/i.test(userAgent));
+    const isAndroid =
+      /android|samsungbrowser/i.test(userAgent) ||
+      /linux arm|android/i.test(platform) ||
+      (/linux/i.test(platform) && maxTouchPoints > 1 && !/windows|macintosh/i.test(userAgent));
 
-  const isIOS =
-    /ipad|iphone|ipod/.test(userAgent) ||
-    (platform === 'macintel' && maxTouchPoints > 1 && !(window as any).MSStream);
+    const isIOS =
+      /ipad|iphone|ipod/.test(userAgent) ||
+      (platform === 'macintel' && maxTouchPoints > 1 && !(window as any).MSStream);
 
-  const isMobileOrTabletOS = isAndroid || isIOS;
-
-  const isStandalone =
-    window.matchMedia('(display-mode: standalone)').matches ||
-    ('standalone' in navigator && (navigator as any).standalone === true) ||
-    document.referrer.includes('android-app://');
+    return {
+      isMobileOrTabletOS: isAndroid || isIOS,
+      isStandalone:
+        window.matchMedia('(display-mode: standalone)').matches ||
+        ('standalone' in navigator && (navigator as any).standalone === true) ||
+        document.referrer.includes('android-app://'),
+    };
+  }, []);
 
   const requiresLogin =
     !isAuthenticated && (!isMobileOrTabletOS || isStandalone);
@@ -552,25 +555,30 @@ export default function App() {
     });
   }, [appState.materials, appState.contacts, isOfficer, currentUserNrp, parseTargetNrps]);
 
-  const activeTaskCount = accessibleTasks.filter((task) => {
-    const isExplicitlyDone = completedTaskIds.includes(task.id);
-    if (task.status === 'done' || isExplicitlyDone) return false;
+  const { activeTaskCount, urgentTaskCount } = useMemo(() => {
+    const now = Date.now();
+    let active = 0;
+    let urgent = 0;
 
-    const deadlineTime = new Date(task.deadline).getTime();
-    if (Number.isNaN(deadlineTime)) return false;
+    accessibleTasks.forEach((task) => {
+      const deadlineTime = new Date(task.deadline).getTime();
+      if (Number.isNaN(deadlineTime)) return;
 
-    return deadlineTime > Date.now();
-  }).length;
+      const isExplicitlyDone = completedTaskIds.includes(task.id);
+      if (task.status !== 'done' && !isExplicitlyDone && deadlineTime > now) {
+        active += 1;
+      }
 
-  const urgentTaskCount = accessibleTasks.filter((task) => {
-    if (task.status === 'done') return false;
+      if (task.status !== 'done') {
+        const diffHours = (deadlineTime - now) / (1000 * 3600);
+        if (diffHours >= 0 && diffHours < 48) {
+          urgent += 1;
+        }
+      }
+    });
 
-    const deadlineTime = new Date(task.deadline).getTime();
-    if (Number.isNaN(deadlineTime)) return false;
-
-    const diffHours = (deadlineTime - Date.now()) / (1000 * 3600);
-    return diffHours >= 0 && diffHours < 48;
-  }).length;
+    return { activeTaskCount: active, urgentTaskCount: urgent };
+  }, [accessibleTasks, completedTaskIds]);
 
   const handleAddContact = async (contact: Omit<Contact, 'id'>) => {
     try {
@@ -695,11 +703,11 @@ export default function App() {
         {/* LIGHTWEIGHT ACCELERATED BACKGROUND GLOW */}
         <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
           <div 
-            className="absolute top-[-50px] left-[-50px] w-[500px] h-[500px] rounded-full opacity-10 dark:opacity-15" 
+            className="gpu-glow absolute top-[-50px] left-[-50px] w-[500px] h-[500px] rounded-full opacity-10 dark:opacity-15" 
             style={{ backgroundColor: 'var(--glow-1)', filter: 'blur(90px)' }}
           />
           <div 
-            className="hidden lg:block absolute bottom-[-50px] right-[-50px] w-[500px] h-[500px] rounded-full opacity-10 dark:opacity-15" 
+            className="gpu-glow hidden lg:block absolute bottom-[-50px] right-[-50px] w-[500px] h-[500px] rounded-full opacity-10 dark:opacity-15" 
             style={{ backgroundColor: 'var(--glow-2)', filter: 'blur(90px)' }}
           />
         </div>

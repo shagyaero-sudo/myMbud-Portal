@@ -136,4 +136,13 @@
   .custom-scrollbar {
     -webkit-overflow-scrolling: touch;
   }
+
+  /* Promotes the blurred glow orbs to their own GPU compositing layer
+     so they don't get repainted every time unrelated app state updates
+     trigger a re-render. Same visuals, cheaper paint cost. */
+  .gpu-glow {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    will-change: transform;
+  }
 }
