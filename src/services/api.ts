@@ -98,7 +98,7 @@ export async function addContactApi(contact: Omit<Contact, 'id'>): Promise<AppSt
       schedule_day_time: contact.scheduleDayTime || `${day}, ${time}`,
       attendance_url: contact.attendanceUrl || '',
       credits: Number(contact.sks) || 0,
-      target_nrps: targetNrps, // <-- DIPERBAIKI: Disimpan ke database
+      target_nrps: targetNrps,
       created_at: new Date().toISOString(),
     });
 
@@ -133,7 +133,6 @@ export async function updateContactApi(id: string, contact: Partial<Contact>): P
     if (contact.attendanceUrl !== undefined) payload.attendance_url = contact.attendanceUrl;
     if (contact.sks !== undefined) payload.credits = Number(contact.sks) || 0;
 
-    // DIPERBAIKI: Handle update target_nrps
     if ((contact as any).target_nrps !== undefined || (contact as any).targetNrps !== undefined) {
       payload.target_nrps = (contact as any).target_nrps ?? (contact as any).targetNrps ?? null;
     }
@@ -199,8 +198,6 @@ export async function addTaskApi(task: Omit<Task, 'id'>): Promise<AppState | nul
     const id = crypto.randomUUID();
     const courseValue = (task as any).course || (task as any).courseName || '';
 
-    // Normalisasi lampiran: dukung baik `attachments` (array, baru)
-    // maupun `attachment` (tunggal, lama) sebagai fallback.
     const attachmentsArray =
       task.attachments && task.attachments.length > 0
         ? task.attachments
@@ -220,9 +217,7 @@ export async function addTaskApi(task: Omit<Task, 'id'>): Promise<AppState | nul
       status: task.status || 'todo',
       priority: task.priority || 'Medium',
       classroom_url: task.classroomUrl || null,
-      // Kolom lama, tetap diisi (file pertama) untuk kompatibilitas data/kode lama.
       attachment: attachmentsArray[0] || null,
-      // Kolom baru (jsonb array) — pastikan kolom `attachments` sudah ada di tabel `tasks`.
       attachments: attachmentsArray,
       created_at: new Date().toISOString(),
     });
@@ -252,7 +247,6 @@ export async function updateTaskApi(id: string, updates: Partial<Task>): Promise
     if (updates.priority !== undefined) payload.priority = updates.priority;
     if (updates.classroomUrl !== undefined) payload.classroom_url = updates.classroomUrl;
 
-    // Normalisasi lampiran sama seperti di addTaskApi.
     if (updates.attachments !== undefined || updates.attachment !== undefined) {
       const attachmentsArray =
         updates.attachments && updates.attachments.length > 0
@@ -286,10 +280,58 @@ export async function deleteTaskApi(id: string): Promise<AppState | null> {
 }
 
 // ============================================================
-// TASK COMPLETIONS PER USER (NRP) — SUPABASE
+// TASK COMPLETIONS PER USER & ALL (SUPABASE)
 // ============================================================
 
 const TASK_COMPLETIONS_TABLE = 'mbud_user_task_completions';
+
+export type TaskCompletionCounts = Record<string, number>;
+
+export function subscribeAllTaskCompletions(
+  callback: (completionCounts: TaskCompletionCounts) => void
+) {
+  const fetchAllCounts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from(TASK_COMPLETIONS_TABLE)
+        .select('task_id, nrp');
+
+      if (error) {
+        console.error('Gagal mengambil data agregat penyelesaian tugas:', error);
+        return;
+      }
+
+      if (data) {
+        const counts: TaskCompletionCounts = {};
+        data.forEach((item) => {
+          if (item.task_id) {
+            counts[item.task_id] = (counts[item.task_id] || 0) + 1;
+          }
+        });
+        callback(counts);
+      }
+    } catch (err) {
+      console.error('Error fetchAllCounts:', err);
+    }
+  };
+
+  fetchAllCounts();
+
+  const channel = supabase
+    .channel(`all-task-completions-realtime-${Math.random()}`)
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: TASK_COMPLETIONS_TABLE },
+      () => {
+        fetchAllCounts();
+      }
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}
 
 export function subscribeUserTaskCompletions(userNrp: string, callback: (completedTaskIds: string[]) => void) {
   const normalizedNrp = userNrp.trim().toLowerCase();

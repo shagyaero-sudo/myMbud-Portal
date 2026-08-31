@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -25,7 +25,7 @@ import {
   Users,
 } from 'lucide-react';
 import { Task, Contact } from '../types';
-import { toggleTaskCompletion } from '../services/api';
+import { toggleTaskCompletion, subscribeAllTaskCompletions, TaskCompletionCounts } from '../services/api';
 
 interface TaskTrackerViewProps {
   tasks: Task[];
@@ -123,13 +123,24 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
   const [activeTab, setActiveTab] = useState<'active' | 'history'>('active');
   const [selectedDetailTask, setSelectedDetailTask] = useState<Task | null>(null);
 
+  // Real-time task completions count map untuk seluruh mahasiswa
+  const [allCompletionCounts, setAllCompletionCounts] = useState<TaskCompletionCounts>({});
+
   const currentUserNrp = localStorage.getItem('mymbud_user_nrp') || 'unknown';
   const currentUserName = localStorage.getItem('mymbud_user_name') || 'Aero';
 
   const [celebrationTask, setCelebrationTask] = useState<Task | null>(null);
   const audioCelebrationRef = useRef<HTMLAudioElement | null>(null);
 
-  const totalClassMembers = contacts.length > 0 ? contacts.length : 45;
+  // Subscribe real-time penyelesaian tugas seluruh mahasiswa dari Supabase
+  useEffect(() => {
+    const unsubscribe = subscribeAllTaskCompletions((counts) => {
+      setAllCompletionCounts(counts);
+    });
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
   const playCelebrationSound = () => {
     if (completionSoundUrl) {
@@ -767,7 +778,10 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
               {filteredTasks.map((t) => {
                 const badge = getDeadlineBadge(t.deadline);
                 const isDone = completedTaskIds.includes(t.id);
-                const completedCount = isDone ? 1 : 0;
+
+                // Hitung real-time dari Supabase (dengan fallback ke lokal jika belum dimuat)
+                const completedCount = allCompletionCounts[t.id] ?? (isDone ? 1 : 0);
+
                 const formattedDate = new Date(t.deadline).toLocaleString('id-ID', {
                   day: 'numeric',
                   month: 'short',
@@ -858,7 +872,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                           )}
                         </button>
                         <span className="text-[10px] font-medium text-slate-400 dark:text-zinc-500 select-none">
-                          {completedCount}/{totalClassMembers} Menandai
+                          {completedCount}/45 Menandai Selesai
                         </span>
                       </div>
                     </div>
