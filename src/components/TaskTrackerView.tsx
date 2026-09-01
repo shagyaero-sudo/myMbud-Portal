@@ -266,23 +266,25 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
 
   const activeTaskCount = tasks.filter((t) => !isTaskHistory(t)).length;
 
-  const filteredTasks = tasks.filter((t) => {
-    const isHistory = isTaskHistory(t);
+  const filteredTasks = tasks
+    .filter((t) => {
+      const isHistory = isTaskHistory(t);
 
-    if (activeTab === 'active' && isHistory) return false;
-    if (activeTab === 'history' && !isHistory) return false;
+      if (activeTab === 'active' && isHistory) return false;
+      if (activeTab === 'history' && !isHistory) return false;
 
-    const searchLower = search.toLowerCase();
-    const matchSearch =
-      t.title.toLowerCase().includes(searchLower) ||
-      t.course.toLowerCase().includes(searchLower) ||
-      t.assigner.toLowerCase().includes(searchLower);
+      const searchLower = search.toLowerCase();
+      const matchSearch =
+        t.title.toLowerCase().includes(searchLower) ||
+        t.course.toLowerCase().includes(searchLower) ||
+        t.assigner.toLowerCase().includes(searchLower);
 
-    const matchCourse = filterCourse === 'ALL' || t.course === filterCourse;
-    const matchType = filterType === 'ALL' || t.type === filterType;
+      const matchCourse = filterCourse === 'ALL' || t.course === filterCourse;
+      const matchType = filterType === 'ALL' || t.type === filterType;
 
-    return matchSearch && matchCourse && matchType;
-  });
+      return matchSearch && matchCourse && matchType;
+    })
+    .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime());
 
   const getDeadlineBadge = (deadlineStr: string) => {
     const nowDate = new Date();
@@ -569,7 +571,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
     } catch (error) {
       console.error('Gagal menyimpan tugas:', error);
       alert(`Gagal menyimpan tugas.`);
-    } finally {
+    } fontally {
       setIsUploading(false);
     }
   };
