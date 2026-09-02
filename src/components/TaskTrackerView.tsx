@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -104,6 +104,13 @@ const renderTextWithLinks = (text: string) => {
     }
     return part;
   });
+};
+
+// Safe date parser untuk mencegah NaN pada pendaftaran sort
+const getSafeTime = (dateStr?: string) => {
+  if (!dateStr) return 0;
+  const t = new Date(dateStr).getTime();
+  return isNaN(t) ? 0 : t;
 };
 
 export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
@@ -260,31 +267,34 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
 
   const isTaskHistory = (task: Task) => {
     const isExplicitlyDone = completedTaskIds.includes(task.id);
-    const isDeadlinePassed = new Date(task.deadline).getTime() <= nowTime;
+    const isDeadlinePassed = getSafeTime(task.deadline) <= nowTime;
     return isExplicitlyDone || isDeadlinePassed;
   };
 
   const activeTaskCount = tasks.filter((t) => !isTaskHistory(t)).length;
 
-  const filteredTasks = tasks
-    .filter((t) => {
-      const isHistory = isTaskHistory(t);
+  // Optimasi Memoization & Stable Sorting Ascending berdasarkan Deadline Terdekat
+  const filteredTasks = useMemo(() => {
+    return tasks
+      .filter((t) => {
+        const isHistory = isTaskHistory(t);
 
-      if (activeTab === 'active' && isHistory) return false;
-      if (activeTab === 'history' && !isHistory) return false;
+        if (activeTab === 'active' && isHistory) return false;
+        if (activeTab === 'history' && !isHistory) return false;
 
-      const searchLower = search.toLowerCase();
-      const matchSearch =
-        t.title.toLowerCase().includes(searchLower) ||
-        t.course.toLowerCase().includes(searchLower) ||
-        t.assigner.toLowerCase().includes(searchLower);
+        const searchLower = search.toLowerCase();
+        const matchSearch =
+          t.title.toLowerCase().includes(searchLower) ||
+          t.course.toLowerCase().includes(searchLower) ||
+          t.assigner.toLowerCase().includes(searchLower);
 
-      const matchCourse = filterCourse === 'ALL' || t.course === filterCourse;
-      const matchType = filterType === 'ALL' || t.type === filterType;
+        const matchCourse = filterCourse === 'ALL' || t.course === filterCourse;
+        const matchType = filterType === 'ALL' || t.type === filterType;
 
-      return matchSearch && matchCourse && matchType;
-    })
-    .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime());
+        return matchSearch && matchCourse && matchType;
+      })
+      .sort((a, b) => getSafeTime(a.deadline) - getSafeTime(b.deadline));
+  }, [tasks, completedTaskIds, activeTab, search, filterCourse, filterType, nowTime]);
 
   const getDeadlineBadge = (deadlineStr: string) => {
     const nowDate = new Date();
@@ -571,7 +581,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
     } catch (error) {
       console.error('Gagal menyimpan tugas:', error);
       alert(`Gagal menyimpan tugas.`);
-    } fontally {
+    } finally {
       setIsUploading(false);
     }
   };
@@ -776,7 +786,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
           </div>
         ) : activeTab === 'active' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            <AnimatePresence mode="popLayout">
+            <AnimatePresence mode="popLayout" initial={false}>
               {filteredTasks.map((t) => {
                 const badge = getDeadlineBadge(t.deadline);
                 const isDone = completedTaskIds.includes(t.id);
@@ -797,6 +807,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.2 }}
                     whileHover={{ y: -4, scale: 1.01 }}
                     whileTap={{ scale: 0.99 }}
                     key={t.id}
@@ -885,10 +896,10 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <AnimatePresence mode="popLayout">
+            <AnimatePresence mode="popLayout" initial={false}>
               {filteredTasks.map((t) => {
                 const isExplicitDone = completedTaskIds.includes(t.id);
-                const isDeadlinePassed = new Date(t.deadline).getTime() <= nowTime;
+                const isDeadlinePassed = getSafeTime(t.deadline) <= nowTime;
                 const formattedDate = new Date(t.deadline).toLocaleString('id-ID', {
                   day: 'numeric',
                   month: 'short',
@@ -902,6 +913,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.2 }}
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.99 }}
                     key={t.id}
