@@ -823,7 +823,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
               : 'Belum ada riwayat tugas yang selesai'}
           </div>
         ) : activeTab === 'active' ? (
-          /* KARTU TUGAS AKTIF (MODEL RAMPING + DETAIL LINK TEKS BIRU) */
+          /* KARTU TUGAS AKTIF */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <AnimatePresence mode="popLayout" initial={false}>
               {filteredTasks.map((t) => {
@@ -851,34 +851,29 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                     onClick={() => setSelectedDetailTask(t)}
                     className="p-4 rounded-2xl bg-white/70 dark:bg-zinc-900/60 hover:bg-white/90 dark:hover:bg-zinc-850 backdrop-blur-md border border-white/60 dark:border-white/10 transition-all cursor-pointer flex flex-col justify-between space-y-3.5 group shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none"
                   >
-                    {/* BARIS ATAS: Matkul & Badge Deadline + Detail Link */}
-                    <div className="flex items-start justify-between gap-2">
-                      <span className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-50/80 dark:bg-blue-950/60 px-2.5 py-0.5 rounded-full border border-blue-100/50 dark:border-blue-900/40 shrink-0 max-w-[60%] truncate">
+                    {/* BARIS ATAS: Matkul & Badge Deadline */}
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-50/80 dark:bg-blue-950/60 px-2.5 py-0.5 rounded-full border border-blue-100/50 dark:border-blue-900/40 truncate">
                         {t.course}
                       </span>
 
-                      <div className="flex flex-col items-end gap-1 shrink-0">
-                        {badge && (
-                          <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${badge.bg}`}>
-                            {badge.label}
-                          </span>
-                        )}
-                        <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 group-hover:underline flex items-center gap-0.5 pr-0.5">
-                          Detail <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                      {badge && (
+                        <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${badge.bg}`}>
+                          {badge.label}
                         </span>
-                      </div>
+                      )}
                     </div>
 
-                    {/* BARIS TENGAH: Judul Tugas (Wrap Otomatis jika Hampir Nabrak) */}
+                    {/* BARIS TENGAH: Judul Tugas */}
                     <div className="pt-0.5">
                       <h3 className="text-sm font-bold text-slate-800 dark:text-zinc-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-snug break-words">
                         {t.title}
                       </h3>
                     </div>
 
-                    {/* BARIS BAWAH: Metadata & Action Complete */}
+                    {/* BARIS BAWAH: Metadata, Detail Link & Action Complete */}
                     <div className="pt-2 border-t border-slate-200/40 dark:border-white/5 flex items-center justify-between gap-2">
-                      <div className="space-y-0.5 text-[11px] text-slate-500 dark:text-zinc-400">
+                      <div className="space-y-1 text-[11px] text-slate-500 dark:text-zinc-400">
                         <span className="font-medium text-slate-700 dark:text-zinc-300 flex items-center gap-1">
                           {t.type === 'Kelompok' ? (
                             <Users className="w-3.5 h-3.5 text-slate-400" />
@@ -891,9 +886,16 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                           <Clock className="w-3 h-3 text-slate-400" />
                           <span>DL: {formattedDate} WIB</span>
                         </div>
+
+                        {/* DETAIL TEKS BIRU DI BAWAH JAM DEADLINE */}
+                        <div className="pt-0.5">
+                          <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 group-hover:underline inline-flex items-center gap-0.5">
+                            Detail <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                          </span>
+                        </div>
                       </div>
 
-                      <div className="flex flex-col items-end gap-0.5">
+                      <div className="flex flex-col items-end gap-0.5 shrink-0 self-end">
                         <button
                           onClick={(e) => handleToggleComplete(e, t)}
                           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
@@ -925,7 +927,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
             </AnimatePresence>
           </div>
         ) : (
-          /* KARTU RIWAYAT (TERLEWAT MERAH SOFT vs SELESAI HIJAU) */
+          /* KARTU RIWAYAT */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <AnimatePresence mode="popLayout" initial={false}>
               {filteredTasks.map((t) => {
