@@ -890,7 +890,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                         {/* DETAIL TEKS BIRU DI BAWAH JAM DEADLINE */}
                         <div className="pt-0.5">
                           <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 group-hover:underline inline-flex items-center gap-0.5">
-                            Lihat Detail Tugas <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                            Detail Tugas <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                           </span>
                         </div>
                       </div>
@@ -1454,7 +1454,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                         className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-xs font-bold transition-colors flex items-center gap-1.5 shadow-sm shadow-blue-500/20 cursor-pointer"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
-                        <span>Link Pengumpulan</span>
+                        <span>myITS Classroom</span>
                       </a>
                     </div>
                   </div>
