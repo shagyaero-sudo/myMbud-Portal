@@ -74,7 +74,7 @@ export const AspirationFormModal: React.FC<AspirationFormModalProps> = ({
             Feedback Pengguna myMbud 
           </h2>
           <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed">
-            Halo <span className="font-bold text-slate-700 dark:text-zinc-200">{userName}</span>! Bantu isi 3 pertanyaan ini untuk peningkatan myMbud!
+            Halo <span className="font-bold text-slate-700 dark:text-zinc-200">{userName}</span>, yuk isi untuk peningkatan myMbud!
           </p>
         </div>
 
@@ -122,7 +122,7 @@ export const AspirationFormModal: React.FC<AspirationFormModalProps> = ({
           {/* Pertanyaan 2 */}
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">
-              2. Apakah ada kendala, bug, atau hal yang bingungin?
+              2. Apakah ada kendala, bug, atau hal yang ngebingungin?
             </label>
             <textarea
               rows={2}
@@ -158,12 +158,12 @@ export const AspirationFormModal: React.FC<AspirationFormModalProps> = ({
             {isSubmitting ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Menyimpan ke Supabase...</span>
+                <span>Menyimpan...</span>
               </>
             ) : (
               <>
                 <Send className="w-4 h-4" />
-                <span>Kirim Aspirasi</span>
+                <span>Kirim Feedback</span>
               </>
             )}
           </motion.button>
