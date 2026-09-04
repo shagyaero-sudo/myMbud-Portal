@@ -485,18 +485,19 @@ export async function checkAspirationStatus(nrp: string): Promise<boolean> {
     const { data, error } = await supabase
       .from('aspiration_feedbacks')
       .select('id')
-      .eq('nrp', normalizedNrp)
+      .ilike('nrp', normalizedNrp)
       .limit(1);
 
     if (error) {
-      console.error('Gagal mengecek status aspirasi:', error);
-      return false;
+      console.error('[AspirationCheck] Supabase Error:', error.message);
+      // Fail-safe: jika ada error kueri, izinkan user masuk agar tidak ke-lock
+      return true;
     }
 
-    return data && data.length > 0;
+    return Boolean(data && data.length > 0);
   } catch (err) {
-    console.error('Error server saat cek status aspirasi:', err);
-    return false;
+    console.error('[AspirationCheck] Catch Error:', err);
+    return true; // Fail-safe fallback
   }
 }
 
