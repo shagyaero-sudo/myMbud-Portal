@@ -633,7 +633,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                 </span>
               </div>
               <h2 className="text-base sm:text-xl font-extrabold text-slate-900 dark:text-zinc-100 tracking-tight leading-snug">
-                Tugas Yang Telah {currentUserName} Selesaikan
+                Tugas Yang {currentUserName} Selesaikan
               </h2>
               <p className="text-[11px] sm:text-xs text-slate-500 dark:text-zinc-400">
                 Pantau & tuntaskan deadline tugasmu!
@@ -823,7 +823,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
               : 'Belum ada riwayat tugas yang selesai'}
           </div>
         ) : activeTab === 'active' ? (
-          /* KARTU TUGAS AKTIF (MODEL RAMPING / CLEAN) */
+          /* KARTU TUGAS AKTIF (MODEL RAMPING + DETAIL LINK TEKS BIRU) */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <AnimatePresence mode="popLayout" initial={false}>
               {filteredTasks.map((t) => {
@@ -851,22 +851,27 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                     onClick={() => setSelectedDetailTask(t)}
                     className="p-4 rounded-2xl bg-white/70 dark:bg-zinc-900/60 hover:bg-white/90 dark:hover:bg-zinc-850 backdrop-blur-md border border-white/60 dark:border-white/10 transition-all cursor-pointer flex flex-col justify-between space-y-3.5 group shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none"
                   >
-                    {/* BARIS ATAS: Matkul & Badge Deadline */}
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-50/80 dark:bg-blue-950/60 px-2.5 py-0.5 rounded-full border border-blue-100/50 dark:border-blue-900/40">
+                    {/* BARIS ATAS: Matkul & Badge Deadline + Detail Link */}
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-50/80 dark:bg-blue-950/60 px-2.5 py-0.5 rounded-full border border-blue-100/50 dark:border-blue-900/40 shrink-0 max-w-[60%] truncate">
                         {t.course}
                       </span>
 
-                      {badge && (
-                        <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${badge.bg}`}>
-                          {badge.label}
+                      <div className="flex flex-col items-end gap-1 shrink-0">
+                        {badge && (
+                          <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${badge.bg}`}>
+                            {badge.label}
+                          </span>
+                        )}
+                        <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 group-hover:underline flex items-center gap-0.5 pr-0.5">
+                          Detail <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                         </span>
-                      )}
+                      </div>
                     </div>
 
-                    {/* BARIS TENGAH: Judul Tugas */}
-                    <div>
-                      <h3 className="text-sm font-bold text-slate-800 dark:text-zinc-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-1">
+                    {/* BARIS TENGAH: Judul Tugas (Wrap Otomatis jika Hampir Nabrak) */}
+                    <div className="pt-0.5">
+                      <h3 className="text-sm font-bold text-slate-800 dark:text-zinc-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-snug break-words">
                         {t.title}
                       </h3>
                     </div>
@@ -884,7 +889,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                         </span>
                         <div className="flex items-center gap-1 text-[10px]">
                           <Clock className="w-3 h-3 text-slate-400" />
-                          <span>{formattedDate} WIB</span>
+                          <span>DL: {formattedDate} WIB</span>
                         </div>
                       </div>
 
@@ -910,7 +915,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                           )}
                         </button>
                         <span className="text-[9px] font-medium text-slate-400 dark:text-zinc-500 select-none">
-                          {completedCount}/45 Selesai
+                          {completedCount}/45 Anak Telah Selesai
                         </span>
                       </div>
                     </div>
@@ -968,7 +973,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                     </div>
 
                     <div className="space-y-1">
-                      <h3 className="text-sm font-bold text-slate-800 dark:text-zinc-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-1">
+                      <h3 className="text-sm font-bold text-slate-800 dark:text-zinc-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-snug break-words">
                         {t.title}
                       </h3>
                     </div>

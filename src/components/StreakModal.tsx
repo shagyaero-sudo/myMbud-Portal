@@ -413,7 +413,6 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                 </button>
 
                 <p className="mt-2.5 text-[11px] font-normal text-slate-400 dark:text-zinc-500 leading-snug">
-                  Buka myMbud tiap hari untuk menaikkan streak!
                 </p>
               </motion.div>
             )}
