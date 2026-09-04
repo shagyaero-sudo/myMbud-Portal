@@ -23,6 +23,7 @@ import {
   Circle,
   User,
   Users,
+  AlertCircle,
 } from 'lucide-react';
 import { Task, Contact } from '../types';
 import { toggleTaskCompletion, subscribeAllTaskCompletions, TaskCompletionCounts } from '../services/api';
@@ -303,8 +304,8 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
 
     if (diffDays < 0) {
       return {
-        label: 'Selesai',
-        bg: 'bg-slate-100/80 dark:bg-zinc-800/80 text-slate-600 dark:text-zinc-400 border-slate-200/60 dark:border-white/5',
+        label: 'Terlewat',
+        bg: 'bg-rose-50/80 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border-rose-200/60 dark:border-rose-900/50',
       };
     }
 
@@ -935,7 +936,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
             <AnimatePresence mode="popLayout" initial={false}>
               {filteredTasks.map((t) => {
                 const isExplicitDone = completedTaskIds.includes(t.id);
-                const isDeadlinePassed = getSafeTime(t.deadline) <= nowTime;
                 const formattedDate = new Date(t.deadline).toLocaleString('id-ID', {
                   day: 'numeric',
                   month: 'short',
@@ -961,18 +961,20 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                         {t.course}
                       </span>
 
-                      {isDeadlinePassed && !isExplicitDone ? (
-                        <span className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 bg-slate-100/80 dark:bg-zinc-800/80 px-2 py-0.5 rounded-md border border-slate-200/50 dark:border-white/5">
-                          Selesai
-                        </span>
-                      ) : (
+                      {isExplicitDone ? (
                         <button
                           onClick={(e) => handleToggleComplete(e, t)}
                           className="flex items-center gap-1 px-2.5 py-1 rounded-xl text-[11px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-all cursor-pointer"
+                          title="Klik untuk membatalkan status selesai"
                         >
                           <CheckCircle2 className="w-3.5 h-3.5" />
                           <span>Selesai</span>
                         </button>
+                      ) : (
+                        <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400 bg-rose-50/80 dark:bg-rose-950/50 px-2.5 py-1 rounded-xl border border-rose-200/60 dark:border-rose-900/40 flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3" />
+                          <span>Terlewat</span>
+                        </span>
                       )}
                     </div>
 
