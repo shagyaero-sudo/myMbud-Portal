@@ -463,3 +463,56 @@ export async function toggleMaterialBookmark(userNrp: string, materialId: string
     await supabase.from(MATERIAL_BOOKMARKS_TABLE).delete().eq('id', docId);
   }
 }
+
+// ============================================================
+// ASPIRATION FEEDBACKS (SUPABASE)
+// ============================================================
+
+export interface AspirationPayload {
+  nrp: string;
+  nama: string;
+  rating: number;
+  favorite_feature: string;
+  issues_found: string;
+  aspirations: string;
+}
+
+export async function checkAspirationStatus(nrp: string): Promise<boolean> {
+  const normalizedNrp = nrp.trim().toLowerCase();
+  if (!normalizedNrp || normalizedNrp === 'unknown') return true;
+
+  try {
+    const { data, error } = await supabase
+      .from('aspiration_feedbacks')
+      .select('id')
+      .eq('nrp', normalizedNrp)
+      .limit(1);
+
+    if (error) {
+      console.error('Gagal mengecek status aspirasi:', error);
+      return false;
+    }
+
+    return data && data.length > 0;
+  } catch (err) {
+    console.error('Error server saat cek status aspirasi:', err);
+    return false;
+  }
+}
+
+export async function submitAspirationFeedback(payload: AspirationPayload): Promise<void> {
+  const normalizedPayload = {
+    ...payload,
+    nrp: payload.nrp.trim().toLowerCase(),
+    created_at: new Date().toISOString(),
+  };
+
+  const { error } = await supabase
+    .from('aspiration_feedbacks')
+    .insert([normalizedPayload]);
+
+  if (error) {
+    console.error('Error submitting aspiration to Supabase:', error);
+    throw error;
+  }
+}

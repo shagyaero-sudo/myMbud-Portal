@@ -29,6 +29,7 @@ import { LoginScreen } from './components/LoginScreen';
 import { OnboardingScreen } from './components/OnboardingScreen';
 import { SplashScreen } from './components/SplashScreen';
 import { NotebookLmView } from './components/NotebookLmView';
+import { AspirationFormModal } from './components/AspirationFormModal';
 
 import {
   AppState,
@@ -51,6 +52,7 @@ import {
   deleteTaskApi,
   saveGroupResultApi,
   subscribeUserTaskCompletions,
+  checkAspirationStatus,
 } from './services/api';
 
 import {
@@ -138,8 +140,28 @@ export default function App() {
     return localStorage.getItem('mymbud_onboarded') === 'true';
   });
 
+  // State untuk penguncian Modal Aspirasi via Supabase
+  const [hasSubmittedAspiration, setHasSubmittedAspiration] = useState<boolean>(true);
+  const [isCheckingAspiration, setIsCheckingAspiration] = useState<boolean>(true);
+
   const [completedTaskIds, setCompletedTaskIds] = useState<string[]>([]);
   const currentUserNrp = localStorage.getItem('mymbud_user_nrp') || 'unknown';
+  const currentUserName = localStorage.getItem('mymbud_user_name') || 'Mbuders';
+
+  // Verifikasi status pengisian aspirasi via Supabase
+  useEffect(() => {
+    const verifyAspirationStatus = async () => {
+      if (isAuthenticated && currentUserNrp && currentUserNrp !== 'unknown') {
+        const isDone = await checkAspirationStatus(currentUserNrp);
+        setHasSubmittedAspiration(isDone);
+      } else {
+        setHasSubmittedAspiration(true);
+      }
+      setIsCheckingAspiration(false);
+    };
+
+    verifyAspirationStatus();
+  }, [isAuthenticated, currentUserNrp]);
 
   useEffect(() => {
     const checkSessionStatus = async () => {
@@ -678,10 +700,10 @@ export default function App() {
   }
 
   if (isAuthenticated && !hasCompletedOnboarding) {
-    const currentUserName = localStorage.getItem('mymbud_user_name') || 'Mbuders';
+    const currentUserNameOnboarding = localStorage.getItem('mymbud_user_name') || 'Mbuders';
     return (
       <OnboardingScreen
-        userName={currentUserName}
+        userName={currentUserNameOnboarding}
         onComplete={() => setHasCompletedOnboarding(true)}
       />
     );
@@ -698,7 +720,15 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      <div className="relative min-h-screen bg-slate-100 dark:bg-[#0e0f12] text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-300">
+      {!isCheckingAspiration && !hasSubmittedAspiration && (
+        <AspirationFormModal
+          userNrp={currentUserNrp}
+          userName={currentUserName}
+          onSubmitted={() => setHasSubmittedAspiration(true)}
+        />
+      )}
+
+      <div className={`relative min-h-screen bg-slate-100 dark:bg-[#0e0f12] text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-300 ${!hasSubmittedAspiration ? 'pointer-events-none blur-sm select-none' : ''}`}>
         
         {/* LIGHTWEIGHT ACCELERATED BACKGROUND GLOW */}
         <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
