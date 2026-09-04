@@ -629,7 +629,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <span className="text-[10px] sm:text-xs font-extrabold uppercase tracking-wider text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2.5 py-0.5 rounded-full border border-blue-100 dark:border-blue-900/40">
-                  TUGAS TRACKER
+                  TRACKER TUGAS MATKUL
                 </span>
               </div>
               <h2 className="text-base sm:text-xl font-extrabold text-slate-900 dark:text-zinc-100 tracking-tight leading-snug">
