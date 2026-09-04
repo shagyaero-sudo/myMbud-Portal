@@ -603,19 +603,24 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                 {/* Sisi Atas Glossy Highlight */}
                 <div className="absolute inset-x-0 top-0 h-1/2 bg-white/10 rounded-t-2xl pointer-events-none" />
 
-                {/* Angka Selesai Animasi Flip */}
-                <AnimatePresence mode="popLayout">
-                  <motion.span
-                    key={completedTaskIds.length}
-                    initial={{ rotateX: -90, opacity: 0 }}
-                    animate={{ rotateX: 0, opacity: 1 }}
-                    exit={{ rotateX: 90, opacity: 0 }}
-                    transition={{ duration: 0.25, ease: 'easeOut' }}
-                    className="text-2xl sm:text-3xl font-extrabold text-blue-400 dark:text-blue-400 tracking-tight z-10"
-                  >
-                    {String(completedTaskIds.length).padStart(2, '0')}
-                  </motion.span>
-                </AnimatePresence>
+                {/* Angka Selesai Animasi Flip (Murni Tugas Yang Dicentang User) */}
+                {(() => {
+                  const activeCompletedCount = tasks.filter((t) => completedTaskIds.includes(t.id)).length;
+                  return (
+                    <AnimatePresence mode="popLayout">
+                      <motion.span
+                        key={activeCompletedCount}
+                        initial={{ rotateX: -90, opacity: 0 }}
+                        animate={{ rotateX: 0, opacity: 1 }}
+                        exit={{ rotateX: 90, opacity: 0 }}
+                        transition={{ duration: 0.25, ease: 'easeOut' }}
+                        className="text-2xl sm:text-3xl font-extrabold text-blue-400 dark:text-blue-400 tracking-tight z-10"
+                      >
+                        {String(activeCompletedCount).padStart(2, '0')}
+                      </motion.span>
+                    </AnimatePresence>
+                  );
+                })()}
               </div>
             </div>
 
@@ -623,14 +628,14 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <span className="text-[10px] sm:text-xs font-extrabold uppercase tracking-wider text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2.5 py-0.5 rounded-full border border-blue-100 dark:border-blue-900/40">
-                  Pencapaian Kamu
+                  TUGAS TRACKER
                 </span>
               </div>
               <h2 className="text-base sm:text-xl font-extrabold text-slate-900 dark:text-zinc-100 tracking-tight leading-snug">
-                Tugas Yang Telah Diselesaikan ({currentUserName})
+                Tugas Yang Telah {currentUserName} Selesaikan
               </h2>
               <p className="text-[11px] sm:text-xs text-slate-500 dark:text-zinc-400">
-                Pantau & tuntaskan deadline perkuliahanmu!
+                Pantau & tuntaskan deadline tugasmu!
               </p>
             </div>
           </div>
