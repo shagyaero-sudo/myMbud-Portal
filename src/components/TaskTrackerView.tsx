@@ -884,13 +884,13 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                         </span>
                         <div className="flex items-center gap-1 text-[10px]">
                           <Clock className="w-3 h-3 text-slate-400" />
-                          <span>DL: {formattedDate} WIB</span>
+                          <span>{formattedDate} WIB</span>
                         </div>
 
                         {/* DETAIL TEKS BIRU DI BAWAH JAM DEADLINE */}
                         <div className="pt-0.5">
                           <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 group-hover:underline inline-flex items-center gap-0.5">
-                            Detail <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                            Lihat Detail Tugas <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                           </span>
                         </div>
                       </div>
@@ -917,7 +917,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                           )}
                         </button>
                         <span className="text-[9px] font-medium text-slate-400 dark:text-zinc-500 select-none">
-                          {completedCount}/45 Anak Telah Selesai
+                          {completedCount}/45 Telah Selesai
                         </span>
                       </div>
                     </div>
@@ -1352,7 +1352,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                     <div className="bg-white/60 dark:bg-zinc-800/50 p-4 rounded-2xl text-xs border border-slate-200/40 dark:border-white/5 space-y-2">
                       <div>
                         <span className="text-slate-400 dark:text-zinc-400 block mb-0.5">
-                          Tenggat:
+                          Deadline:
                         </span>
                         <span className="font-bold text-blue-600 dark:text-blue-400 text-sm">
                           {formatDeadlineDetails(selectedDetailTask.deadline)}
