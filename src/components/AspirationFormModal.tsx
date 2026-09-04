@@ -16,7 +16,7 @@ export const AspirationFormModal: React.FC<AspirationFormModalProps> = ({
   onSubmitted,
   onClose,
 }) => {
-  const [rating, setRating] = useState<number>(5);
+  const [rating, setRating] = useState<number>(1);
   const [favoriteFeature, setFavoriteFeature] = useState<string>('');
   const [issuesFound, setIssuesFound] = useState<string>('');
   const [aspirations, setAspirations] = useState<string>('');
