@@ -403,6 +403,15 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                   <span>Leaderboard Streak</span>
                 </motion.button>
 
+                {/* Tombol Tutup Sederhana Tambahan */}
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="w-full py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-600 dark:text-zinc-300 font-semibold text-xs transition-colors cursor-pointer mt-2"
+                >
+                  Tutup
+                </button>
+
                 <p className="mt-2.5 text-[11px] font-normal text-slate-400 dark:text-zinc-500 leading-snug">
                   Buka myMbud tiap hari untuk menaikkan streak!
                 </p>

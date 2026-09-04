@@ -106,7 +106,6 @@ const renderTextWithLinks = (text: string) => {
   });
 };
 
-// Safe date parser untuk mencegah NaN pada pendaftaran sort
 const getSafeTime = (dateStr?: string) => {
   if (!dateStr) return 0;
   const t = new Date(dateStr).getTime();
@@ -130,7 +129,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
   const [activeTab, setActiveTab] = useState<'active' | 'history'>('active');
   const [selectedDetailTask, setSelectedDetailTask] = useState<Task | null>(null);
 
-  // Real-time task completions count map untuk seluruh mahasiswa
   const [allCompletionCounts, setAllCompletionCounts] = useState<TaskCompletionCounts>({});
 
   const currentUserNrp = localStorage.getItem('mymbud_user_nrp') || 'unknown';
@@ -139,7 +137,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
   const [celebrationTask, setCelebrationTask] = useState<Task | null>(null);
   const audioCelebrationRef = useRef<HTMLAudioElement | null>(null);
 
-  // Subscribe real-time penyelesaian tugas seluruh mahasiswa dari Supabase
   useEffect(() => {
     const unsubscribe = subscribeAllTaskCompletions((counts) => {
       setAllCompletionCounts(counts);
@@ -273,7 +270,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
 
   const activeTaskCount = tasks.filter((t) => !isTaskHistory(t)).length;
 
-  // Optimasi Memoization & Stable Sorting Ascending berdasarkan Deadline Terdekat
   const filteredTasks = useMemo(() => {
     return tasks
       .filter((t) => {
@@ -593,15 +589,51 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
       transition={{ duration: 0.3 }}
       className="space-y-4 sm:space-y-5 pb-32 sm:pb-36"
     >
-      {/* HEADER BANNER */}
-      <div className="flex items-center justify-between gap-3 px-1 pt-4 sm:pt-6 pb-2">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
-            Tracker Tugas Matkul
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1">
-            Pantau dan Kelola Deadline Tugas
-          </p>
+      {/* HEADER BANNER CARD DENGAN FLIP NUMBER */}
+      <div className="pt-4 sm:pt-6 pb-2">
+        <div className="p-5 sm:p-6 rounded-3xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4 sm:gap-5">
+            {/* FLIP CALENDAR / FLIP NUMBER CARD */}
+            <div className="relative group">
+              <div className="w-14 h-16 sm:w-16 sm:h-20 bg-slate-900 dark:bg-zinc-950 text-white rounded-2xl border border-slate-700/80 dark:border-zinc-800 shadow-xl flex items-center justify-center relative overflow-hidden font-mono select-none">
+                {/* Garis Lipatan Tengah Flip Clock */}
+                <div className="absolute inset-x-0 top-1/2 h-[1px] bg-black/60 dark:bg-zinc-900/80 z-20" />
+                <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[2px] bg-slate-800/40 dark:bg-zinc-800/40 z-20" />
+
+                {/* Sisi Atas Glossy Highlight */}
+                <div className="absolute inset-x-0 top-0 h-1/2 bg-white/10 rounded-t-2xl pointer-events-none" />
+
+                {/* Angka Selesai Animasi Flip */}
+                <AnimatePresence mode="popLayout">
+                  <motion.span
+                    key={completedTaskIds.length}
+                    initial={{ rotateX: -90, opacity: 0 }}
+                    animate={{ rotateX: 0, opacity: 1 }}
+                    exit={{ rotateX: 90, opacity: 0 }}
+                    transition={{ duration: 0.25, ease: 'easeOut' }}
+                    className="text-2xl sm:text-3xl font-extrabold text-blue-400 dark:text-blue-400 tracking-tight z-10"
+                  >
+                    {String(completedTaskIds.length).padStart(2, '0')}
+                  </motion.span>
+                </AnimatePresence>
+              </div>
+            </div>
+
+            {/* Label Kanan Header */}
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] sm:text-xs font-extrabold uppercase tracking-wider text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2.5 py-0.5 rounded-full border border-blue-100 dark:border-blue-900/40">
+                  Pencapaian Kamu
+                </span>
+              </div>
+              <h2 className="text-base sm:text-xl font-extrabold text-slate-900 dark:text-zinc-100 tracking-tight leading-snug">
+                Tugas Yang Telah Diselesaikan ({currentUserName})
+              </h2>
+              <p className="text-[11px] sm:text-xs text-slate-500 dark:text-zinc-400">
+                Pantau & tuntaskan deadline perkuliahanmu!
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -791,7 +823,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                 const badge = getDeadlineBadge(t.deadline);
                 const isDone = completedTaskIds.includes(t.id);
 
-                // Hitung real-time dari Supabase (dengan fallback ke lokal jika belum dimuat)
                 const completedCount = allCompletionCounts[t.id] ?? (isDone ? 1 : 0);
 
                 const formattedDate = new Date(t.deadline).toLocaleString('id-ID', {
@@ -1085,7 +1116,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                         </div>
                       </div>
 
-                      {/* HIDDEN INPUTS: Dosen Pemberi Tugas & Prioritas */}
+                      {/* HIDDEN INPUTS */}
                       <div className="hidden">
                         <input
                           type="text"
