@@ -71,10 +71,10 @@ export const AspirationFormModal: React.FC<AspirationFormModalProps> = ({
             <MessageSquareHeart className="w-6 h-6" />
           </div>
           <h2 className="text-lg sm:text-xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-            Evaluasi & Aspirasi Seminggu myMbud ✨
+            Feedback Pengguna myMbud 
           </h2>
           <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed">
-            Halo <span className="font-bold text-slate-700 dark:text-zinc-200">{userName}</span>! Bantu isi 3 pertanyaan singkat ini untuk evaluasi myMbud ya.
+            Halo <span className="font-bold text-slate-700 dark:text-zinc-200">{userName}</span>! Bantu isi 3 pertanyaan ini untuk peningkatan myMbud!
           </p>
         </div>
 
