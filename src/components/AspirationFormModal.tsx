@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { MessageSquareHeart, Send, Loader2, Star } from 'lucide-react';
+import { MessageSquareHeart, Send, Loader2, Star, X } from 'lucide-react';
 import { submitAspirationFeedback } from '../services/api';
 
 interface AspirationFormModalProps {
   userNrp: string;
   userName: string;
   onSubmitted: () => void;
+  onClose?: () => void;
 }
 
 export const AspirationFormModal: React.FC<AspirationFormModalProps> = ({
   userNrp,
   userName,
   onSubmitted,
+  onClose,
 }) => {
   const [rating, setRating] = useState<number>(5);
   const [favoriteFeature, setFavoriteFeature] = useState<string>('');
@@ -36,7 +38,6 @@ export const AspirationFormModal: React.FC<AspirationFormModalProps> = ({
         aspirations: aspirations.trim(),
       });
 
-      // Panggil callback untuk membuka proteksi
       onSubmitted();
     } catch (error) {
       alert('Gagal mengirim respon ke Supabase, silakan coba lagi.');
@@ -51,9 +52,21 @@ export const AspirationFormModal: React.FC<AspirationFormModalProps> = ({
         initial={{ scale: 0.9, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-        className="bg-white/95 dark:bg-zinc-900/95 backdrop-blur-2xl border border-white/60 dark:border-white/10 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl space-y-5 text-slate-800 dark:text-zinc-100 max-h-[90vh] overflow-y-auto custom-scrollbar"
+        className="relative bg-white/95 dark:bg-zinc-900/95 backdrop-blur-2xl border border-white/60 dark:border-white/10 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl space-y-5 text-slate-800 dark:text-zinc-100 max-h-[90vh] overflow-y-auto custom-scrollbar"
       >
-        <div className="text-center space-y-1.5">
+        {/* Tombol Close X */}
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute top-4 right-4 p-2 rounded-2xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+            aria-label="Tutup"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
+
+        <div className="text-center space-y-1.5 pt-2 sm:pt-0">
           <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200/80 dark:border-blue-800/60 flex items-center justify-center text-blue-600 dark:text-blue-400 mx-auto shadow-sm">
             <MessageSquareHeart className="w-6 h-6" />
           </div>
@@ -61,7 +74,7 @@ export const AspirationFormModal: React.FC<AspirationFormModalProps> = ({
             Evaluasi & Aspirasi Seminggu myMbud ✨
           </h2>
           <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed">
-            Halo <span className="font-bold text-slate-700 dark:text-zinc-200">{userName}</span>! Bantu isi 3 pertanyaan singkat ini untuk pembukaan akses web (Cukup 1x).
+            Halo <span className="font-bold text-slate-700 dark:text-zinc-200">{userName}</span>! Bantu isi 3 pertanyaan singkat ini untuk evaluasi myMbud ya.
           </p>
         </div>
 
@@ -150,7 +163,7 @@ export const AspirationFormModal: React.FC<AspirationFormModalProps> = ({
             ) : (
               <>
                 <Send className="w-4 h-4" />
-                <span>Kirim & Buka Akses myMbud</span>
+                <span>Kirim Aspirasi</span>
               </>
             )}
           </motion.button>
