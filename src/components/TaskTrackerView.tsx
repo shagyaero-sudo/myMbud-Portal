@@ -629,7 +629,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <span className="text-[10px] sm:text-xs font-extrabold uppercase tracking-wider text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2.5 py-0.5 rounded-full border border-blue-100 dark:border-blue-900/40">
-                  TRACKER TUGAS MATKUL
+                  TRACKER TUGAS 
                 </span>
               </div>
               <h2 className="text-base sm:text-xl font-extrabold text-slate-900 dark:text-zinc-100 tracking-tight leading-snug">
@@ -823,12 +823,12 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
               : 'Belum ada riwayat tugas yang selesai'}
           </div>
         ) : activeTab === 'active' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          /* KARTU TUGAS AKTIF (MODEL RAMPING / CLEAN) */
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <AnimatePresence mode="popLayout" initial={false}>
               {filteredTasks.map((t) => {
                 const badge = getDeadlineBadge(t.deadline);
                 const isDone = completedTaskIds.includes(t.id);
-
                 const completedCount = allCompletionCounts[t.id] ?? (isDone ? 1 : 0);
 
                 const formattedDate = new Date(t.deadline).toLocaleString('id-ID', {
@@ -845,62 +845,50 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ duration: 0.2 }}
-                    whileHover={{ y: -4, scale: 1.01 }}
+                    whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.99 }}
                     key={t.id}
                     onClick={() => setSelectedDetailTask(t)}
-                    className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none space-y-4 border border-white/60 dark:border-white/10 transition-all cursor-pointer flex flex-col justify-between group"
+                    className="p-4 rounded-2xl bg-white/70 dark:bg-zinc-900/60 hover:bg-white/90 dark:hover:bg-zinc-850 backdrop-blur-md border border-white/60 dark:border-white/10 transition-all cursor-pointer flex flex-col justify-between space-y-3.5 group shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none"
                   >
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between gap-2 flex-wrap">
-                        <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50/80 dark:bg-blue-950/60 px-3 py-1 rounded-full border border-blue-100/50 dark:border-blue-900/40">
-                          {t.course}
-                        </span>
-                      </div>
-
-                      <div>
-                        <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100 group-hover:text-blue-600 transition-colors leading-snug">
-                          {t.title}
-                        </h3>
-                      </div>
-
-                      <div className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed bg-white/60 dark:bg-zinc-800/40 p-3 rounded-2xl line-clamp-2 overflow-hidden text-ellipsis break-words border border-slate-200/50 dark:border-white/5">
-                        {t.description ? renderTextWithLinks(t.description) : 'Klik untuk melihat rincian instruksi tugas lengkap.'}
-                      </div>
-
-                      <div className="space-y-1 pt-1 text-xs text-slate-500 dark:text-zinc-400 border-t border-slate-200/40 dark:border-white/5">
-                        <div className="flex items-center justify-between text-[11px] pt-1">
-                          <span className="font-semibold text-slate-700 dark:text-zinc-300 flex items-center gap-1.5">
-                            {t.type === 'Kelompok' ? (
-                              <Users className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500" />
-                            ) : (
-                              <User className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500" />
-                            )}
-                            <span>Tugas {t.type}</span>
-                          </span>
-                        </div>
-
-                        <div className="flex items-center justify-between gap-2 pt-1 font-medium flex-wrap">
-                          <span className="flex items-center gap-1.5">
-                            <Clock className="w-3.5 h-3.5 shrink-0" />
-                            <span>Deadline: {formattedDate} WIB</span>
-                          </span>
-
-                          {badge && (
-                            <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${badge.bg}`}>
-                              {badge.label}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="pt-3 flex items-center justify-between text-xs font-semibold border-t border-slate-200/40 dark:border-white/5 gap-2">
-                      <span className="text-blue-600 dark:text-blue-400 group-hover:underline flex items-center gap-1">
-                        Detail Tugas <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                    {/* BARIS ATAS: Matkul & Badge Deadline */}
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-50/80 dark:bg-blue-950/60 px-2.5 py-0.5 rounded-full border border-blue-100/50 dark:border-blue-900/40">
+                        {t.course}
                       </span>
 
-                      <div className="flex flex-col items-end gap-1">
+                      {badge && (
+                        <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${badge.bg}`}>
+                          {badge.label}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* BARIS TENGAH: Judul Tugas */}
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-800 dark:text-zinc-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-1">
+                        {t.title}
+                      </h3>
+                    </div>
+
+                    {/* BARIS BAWAH: Metadata & Action Complete */}
+                    <div className="pt-2 border-t border-slate-200/40 dark:border-white/5 flex items-center justify-between gap-2">
+                      <div className="space-y-0.5 text-[11px] text-slate-500 dark:text-zinc-400">
+                        <span className="font-medium text-slate-700 dark:text-zinc-300 flex items-center gap-1">
+                          {t.type === 'Kelompok' ? (
+                            <Users className="w-3.5 h-3.5 text-slate-400" />
+                          ) : (
+                            <User className="w-3.5 h-3.5 text-slate-400" />
+                          )}
+                          <span>Tugas {t.type}</span>
+                        </span>
+                        <div className="flex items-center gap-1 text-[10px]">
+                          <Clock className="w-3 h-3 text-slate-400" />
+                          <span>{formattedDate} WIB</span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col items-end gap-0.5">
                         <button
                           onClick={(e) => handleToggleComplete(e, t)}
                           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
@@ -911,18 +899,18 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                         >
                           {isDone ? (
                             <>
-                              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
                               <span>Selesai</span>
                             </>
                           ) : (
                             <>
-                              <Circle className="w-4 h-4 text-slate-400 dark:text-zinc-500" />
+                              <Circle className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500" />
                               <span>Tandai Selesai</span>
                             </>
                           )}
                         </button>
-                        <span className="text-[10px] font-medium text-slate-400 dark:text-zinc-500 select-none">
-                          {completedCount}/45 Menandai Selesai
+                        <span className="text-[9px] font-medium text-slate-400 dark:text-zinc-500 select-none">
+                          {completedCount}/45 Selesai
                         </span>
                       </div>
                     </div>
@@ -932,6 +920,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
             </AnimatePresence>
           </div>
         ) : (
+          /* KARTU RIWAYAT (TERLEWAT MERAH SOFT vs SELESAI HIJAU) */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <AnimatePresence mode="popLayout" initial={false}>
               {filteredTasks.map((t) => {
