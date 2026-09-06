@@ -25,9 +25,8 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="myMbud" />
 
-    <!-- Meta Tag Transparan & Color Scheme Dinamis -->
-    <meta name="theme-color" content="transparent" />
-    <meta name="color-scheme" content="dark" />
+    <!-- DENGAN MENGHAPUS META THEME-COLOR, ANDROID TIDAK AKAN MEMBUAT BALOK TERPISAH -->
+    <meta name="color-scheme" content="dark light" />
 
     <!-- SCRIPT CEGAH FLICKER & MEMBACA SISTEM TEMA -->
     <script>
@@ -49,11 +48,6 @@
         const metaColorScheme = document.querySelector("meta[name='color-scheme']");
         if (metaColorScheme) {
           metaColorScheme.setAttribute('content', savedMode === 'dark' ? 'dark' : 'light');
-        }
-
-        const metaThemeColor = document.querySelector("meta[name='theme-color']");
-        if (metaThemeColor) {
-          metaThemeColor.setAttribute('content', 'transparent');
         }
       })();
     </script>

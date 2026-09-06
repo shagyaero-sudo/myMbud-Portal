@@ -127,30 +127,30 @@ export default function App() {
 
   const [showSplash, setShowSplash] = useState<boolean>(true);
 
-  // PENANGANAN STATUS BAR TRANSPARAN DENGAN ICON ADAPTIF
+  // MENGHAPUS META THEME-COLOR AGAR ANDROID TRANSPARAN SEPENUHNYA
   useEffect(() => {
-    const updateThemeColor = () => {
+    const updateColorScheme = () => {
       const isDark = document.documentElement.classList.contains('dark');
       
+      const metaThemeColor = document.querySelector("meta[name='theme-color']");
+      if (metaThemeColor) {
+        metaThemeColor.remove();
+      }
+
       let metaColorScheme = document.querySelector("meta[name='color-scheme']");
       if (metaColorScheme) {
         metaColorScheme.setAttribute('content', isDark ? 'dark' : 'light');
-      }
-
-      let metaThemeColor = document.querySelector("meta[name='theme-color']");
-      if (metaThemeColor) {
-        metaThemeColor.setAttribute('content', 'transparent');
       } else {
         const meta = document.createElement('meta');
-        meta.name = 'theme-color';
-        meta.content = 'transparent';
+        meta.name = 'color-scheme';
+        meta.content = isDark ? 'dark' : 'light';
         document.head.appendChild(meta);
       }
     };
 
-    updateThemeColor();
+    updateColorScheme();
 
-    const observer = new MutationObserver(updateThemeColor);
+    const observer = new MutationObserver(updateColorScheme);
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
     return () => observer.disconnect();
@@ -780,7 +780,7 @@ export default function App() {
 
       <div className={`relative min-h-screen bg-slate-100 dark:bg-[#0e0f12] text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-300 ${shouldShowAspirationModal ? 'pointer-events-none blur-sm select-none' : ''}`}>
         
-        {/* GLOW DIPINDAHKAN KE BAWAH AGAR AREA ATAS TIDAK BENTROK */}
+        {/* GLOW DIPINDAHKAN KE BAWAH AGAR STATUS BAR ATAS BERSIH & PEKAT */}
         <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
           <div 
             className="gpu-glow absolute bottom-[-100px] left-[-100px] w-[500px] h-[500px] rounded-full opacity-10 dark:opacity-15" 
@@ -793,10 +793,7 @@ export default function App() {
         </div>
 
         {/* CONTENT LAYER */}
-        <div 
-          className="relative z-10 flex flex-col min-h-screen bg-transparent"
-          style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 12px)' }}
-        >
+        <div className="relative z-10 flex flex-col min-h-screen bg-transparent pt-[env(safe-area-inset-top,12px)] sm:pt-4">
           {/* HEADER DESKTOP ONLY */}
           <div className="hidden lg:block">
             <Header
