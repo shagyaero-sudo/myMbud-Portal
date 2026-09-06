@@ -517,10 +517,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <span>Kelola Tugas</span>
             </button>
             <button
-              onClick={() => onNavigateTab('contacts')}
-              className="px-3 py-1.5 rounded-xl bg-slate-200 dark:bg-zinc-800 hover:bg-slate-300 text-slate-800 dark:text-zinc-200 text-xs font-bold transition-all active:scale-95 cursor-pointer"
+              onClick={() => setIsOfficer && setIsOfficer(false)}
+              className="px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 text-xs font-bold transition-all active:scale-95 cursor-pointer"
             >
-              Kelola Kontak
+              Keluar Mode PJ
             </button>
           </div>
         </motion.div>
@@ -860,13 +860,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         <div className="absolute right-10 -top-8 w-20 h-20 rounded-full bg-indigo-500/10 dark:bg-indigo-400/10 blur-lg pointer-events-none" />
 
                         <div className="space-y-2 min-w-0 flex-1 relative z-10">
-                          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 text-[11px] font-bold">
-                            <span className="flex items-center gap-1">
+                          {/* RUANGAN SAJA DI DALAM BADGE ROUNDED CIRCLE, JAM TANPA BADGE DENGAN WARNA PUTIH/TERANG */}
+                          <div className="inline-flex items-center gap-2 text-[11px] font-bold">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900/40 text-blue-600 dark:text-blue-400">
                               <Building2 className="w-3 h-3 stroke-[2.2]" />
                               <span>{item.room}</span>
                             </span>
-                            <span className="opacity-40">•</span>
-                            <span>{item.time} WIB</span>
+                            <span className="opacity-40 text-slate-400 dark:text-zinc-500">•</span>
+                            <span className="text-slate-800 dark:text-white font-semibold">{item.time} WIB</span>
                           </div>
 
                           <h3 className="text-sm sm:text-base font-extrabold text-slate-800 dark:text-zinc-100 leading-snug max-w-[220px] sm:max-w-[280px]">
