@@ -300,7 +300,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({
       },
       {
         title: 'Lainnya... (Format Pesan Bebas & Sopan)',
-        msg: `Selamat pagi/siang Yth. Bapak/Ibu ${templateTarget.name}, mohon maaf mengganggu waktunya. Saya [Nama Mahasiswa] (NRP: [NRP]) dari Kelas A mata kuliah ${templateTarget.course}.\n\n[Tuliskan isi pesan atau keperluanmu di sini...]\n\nTerima kasih banyak atas perhatian dan arahan Bapak/Ibu.`,
+        msg: `Selamat pagi/siang Yth. Bapak/Ibu ${templateTarget.name}, mohon maaf mengganggu waktunya. Saya [Nama Mahasiswa] (NRP: [NRP]) dari Kelas A mata kuliah ${templateTarget.course}.\n\n[Tuliskan isi pesan atau keperluanmu di sini..]\n\nTerima kasih banyak atas perhatian dan arahan Bapak/Ibu.`,
       },
     ];
   };
