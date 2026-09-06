@@ -180,11 +180,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     );
   }, [visibleSchedules, ALL_DAYS]);
 
+  // HANDLE SELECTED DAY (IF WEEKEND, SHOW NULL / NOTICE FIRST)
   useEffect(() => {
     if (dayTabs.includes(todayActualName as DayOfWeek)) {
       setSelectedDay(todayActualName as DayOfWeek);
-    } else if (dayTabs.length > 0) {
-      setSelectedDay(dayTabs[0]);
     } else {
       setSelectedDay(null);
     }
@@ -450,7 +449,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 Classroom
               </span>
               <span className="text-[10px] text-slate-400 dark:text-zinc-500 block truncate">
-                LMS Academic
+                Materi & Tugas
               </span>
             </div>
           </a>
@@ -485,10 +484,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
             <div className="min-w-0">
               <span className="text-xs font-bold text-slate-800 dark:text-zinc-100 block truncate">
-                Cek Nilai
+                Cek Nilai KRS
               </span>
               <span className="text-[10px] text-slate-400 dark:text-zinc-500 block truncate">
-                KHS & Transkrip
+                Transkrip
               </span>
             </div>
           </a>
@@ -502,17 +501,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
             <div className="min-w-0">
               <span className="text-xs font-bold text-slate-800 dark:text-zinc-100 block truncate">
-                Menu Lainnya
+                Menu Lainnya >
               </span>
               <span className="text-[10px] text-slate-400 dark:text-zinc-500 block truncate">
-                Akses Fitur
+                Akses Lengkap
               </span>
             </div>
           </button>
         </div>
       </div>
 
-      {/* PC & MOBILE MAIN GRID (2 KOLOM SEJAJAR DI PC, TANPA BILAH PENGUMUMAN KANAN) */}
+      {/* PC & MOBILE MAIN GRID (2 KOLOM SEJAJAR DI PC) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 items-start">
         
         {/* KOLOM KIRI: BAR MBUDTALK + JADWAL PERKULIAHAN */}
@@ -571,7 +570,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </motion.button>
           </div>
 
-          {/* JADWAL PERKULIAHAN (SIMPLIFIED & CLEAN) */}
+          {/* JADWAL PERKULIAHAN (CLEAN & AUTO-ENTER) */}
           <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-5 sm:p-7 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none space-y-3.5 transition-all">
             
             <div className="flex items-center justify-between">
@@ -623,10 +622,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   </div>
                   <div className="space-y-1">
                     <h4 className="text-xs sm:text-sm font-bold text-slate-800 dark:text-zinc-100">
-                      Tidak ada kelas di hari {todayActualName}
+                      Tidak ada perkuliahan pada hari {todayActualName}
                     </h4>
                     <p className="text-[11px] sm:text-xs text-slate-500 dark:text-zinc-400 max-w-sm mx-auto">
-                      Klik tab hari di atas untuk mengecek jadwal
+                      {dayTabs.length > 0 
+                        ? 'Klik tab hari di atas untuk melihat jadwal perkuliahan pekan ini' 
+                        : 'Nikmati waktu istirahatmu!'}
                     </p>
                   </div>
                 </div>
@@ -650,15 +651,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         key={item.id}
                         className="p-4 rounded-2xl bg-white/60 dark:bg-zinc-800/40 hover:bg-white/90 dark:hover:bg-zinc-800/70 transition-all flex flex-col space-y-3 border border-slate-200/60 dark:border-white/5"
                       >
-                        {/* KARTU SIMPEL: NAMA MATKUL, SKS, RUANGAN & JAM */}
-                        <div className="flex items-center justify-between gap-3">
-                          <div className="space-y-1 min-w-0 flex-1">
-                            <h3 className="text-sm font-bold text-slate-800 dark:text-zinc-100 leading-snug truncate">
+                        {/* ROW 1: NAMA MATKUL (AUTO-ENTER) & RUANGAN/JAM */}
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0 flex-1">
+                            <h3 className="text-sm font-extrabold text-slate-800 dark:text-zinc-100 leading-tight max-w-[200px] sm:max-w-[240px]">
                               {item.course}
                             </h3>
-                            <span className="inline-block text-[11px] font-semibold text-slate-500 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-700/50 px-2 py-0.5 rounded-md">
-                              {item.sks} SKS
-                            </span>
                           </div>
 
                           <div className="flex flex-col items-end space-y-0.5 shrink-0 text-right">
@@ -672,8 +670,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                           </div>
                         </div>
 
-                        {/* TOMBOL PRESENSI & TOMBOL "DOSEN / PJ >" */}
-                        <div className="flex items-center gap-2 pt-2 border-t border-slate-200/50 dark:border-white/5 w-full">
+                        {/* ROW 2: TOMBOL PRESENSI & DOSEN/PJ */}
+                        <div className="flex items-center gap-2 pt-1.5 border-t border-slate-200/50 dark:border-white/5 w-full">
                           <a
                             href={
                               item.attendanceUrl && item.attendanceUrl.trim() !== ''
@@ -692,7 +690,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                             onClick={() => setSelectedCourseDetail(item)}
                             className="shrink-0 px-3.5 py-2 rounded-xl bg-slate-200/70 dark:bg-zinc-700/60 hover:bg-slate-200 dark:hover:bg-zinc-600 text-slate-700 dark:text-zinc-200 text-[11px] sm:text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer"
                           >
-                            <span>Dosen / PJ &gt;</span>
+                            <span>Dosen / PJ</span>
                           </button>
                         </div>
                       </motion.div>

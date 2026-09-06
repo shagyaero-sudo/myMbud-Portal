@@ -152,16 +152,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
     setIsBottomSheetOpen(false);
   };
 
-  // INSTANT TAB SWITCHING HANDLER
-  const handleDiaryClick = (e: React.MouseEvent | React.TouchEvent) => {
+  // INSTANT ZERO-DELAY TAB SWITCHING
+  const handleDiaryClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
+    e.stopPropagation();
     setActiveTab('mbudiary');
-    
-    if (typeof window !== 'undefined') {
-      setTimeout(() => {
-        window.location.hash = 'mbudiary';
-      }, 0);
-    }
   };
 
   return (
@@ -456,18 +451,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
             count={activeTaskCount > 0 ? activeTaskCount : null}
           />
 
-          {/* TOMBOL MBUDIARY TENGAH FLOATING (INSTANT TRIGGER) */}
+          {/* TOMBOL MBUDIARY TENGAH FLOATING (INSTANT ZERO DELAY) */}
           <div className="relative flex flex-col items-center justify-center -top-2.5 px-1 shrink-0">
             <div className="p-1 rounded-full bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-white/80 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/30">
-              <motion.button
+              <button
                 type="button"
                 aria-label="Buka mBudiary"
-                whileTap={{ scale: 0.9 }}
                 onClick={handleDiaryClick}
-                className="w-10 h-10 bg-blue-600 dark:bg-blue-500 text-white rounded-full flex items-center justify-center shadow-md shadow-blue-500/30 transition-transform cursor-pointer"
+                className="w-10 h-10 bg-blue-600 dark:bg-blue-500 text-white rounded-full flex items-center justify-center shadow-md shadow-blue-500/30 active:scale-90 transition-transform cursor-pointer"
               >
                 <Plus className="w-5 h-5" />
-              </motion.button>
+              </button>
             </div>
             <span className="text-[9px] font-bold text-slate-500 dark:text-zinc-400 mt-0.5">
               Diary
