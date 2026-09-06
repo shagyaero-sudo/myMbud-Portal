@@ -333,10 +333,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   const getGreeting = () => {
     const hour = new Date().getHours();
-    if (hour >= 4 && hour < 11) return `Selamat Pagi, ${userName}!`;
-    if (hour >= 11 && hour < 15) return `Selamat Siang, ${userName}!`;
-    if (hour >= 15 && hour < 18) return `Selamat Sore, ${userName}!`;
-    return `Selamat Malam, ${userName}!`;
+    if (hour >= 4 && hour < 11) return `Pagi, ${userName}!`;
+    if (hour >= 11 && hour < 15) return `Siang, ${userName}!`;
+    if (hour >= 15 && hour < 18) return `Sore, ${userName}!`;
+    return `Malam, ${userName}!`;
   };
 
   return (
@@ -501,7 +501,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
             <div className="min-w-0">
               <span className="text-xs font-bold text-slate-800 dark:text-zinc-100 block truncate">
-                Menu Lainnya >
+                Menu Lainnya 
               </span>
               <span className="text-[10px] text-slate-400 dark:text-zinc-500 block truncate">
                 Akses Lengkap
