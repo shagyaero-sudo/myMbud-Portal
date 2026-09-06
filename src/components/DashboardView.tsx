@@ -15,14 +15,12 @@ import {
   Handshake,
   FileSpreadsheet,
   LayoutGrid,
-  Globe,
   ClipboardList,
   GraduationCap,
   Dices,
   Calculator,
   FileEdit,
   Award,
-  Gamepad2,
   X,
   User,
   PhoneCall,
@@ -30,12 +28,11 @@ import {
   Bell,
   BellRing,
   CheckCheck,
-  Timer,
   Sun,
   Moon,
   LogOut,
-  Play,
-  RotateCcw
+  Lock,
+  Check
 } from 'lucide-react';
 import { supabase } from '../services/supabase';
 import { AppState, DayOfWeek, ScheduleItem } from '../types';
@@ -67,7 +64,11 @@ interface DashboardViewProps {
   ) => void;
   onOpenGpaModal?: () => void;
   onLogout?: () => void;
+  setIsOfficer?: (value: boolean) => void;
 }
+
+type ThemeMode = 'light' | 'dark';
+type ThemeAccent = 'blue' | 'purple' | 'pink' | 'orange' | 'green' | 'teal' | 'cyan';
 
 const NATIONAL_HOLIDAYS_2026: Record<string, string> = {
   '2026-01-01': 'Tahun Baru 2026 Masehi',
@@ -134,13 +135,20 @@ const getCurrentAcademicWeek = () => {
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
   state,
+  isOfficer,
   onNavigateTab,
   onOpenGpaModal,
-  onLogout
+  onLogout,
+  setIsOfficer
 }) => {
   const [selectedDay, setSelectedDay] = useState<DayOfWeek | null>(null);
   const [showMoreMenuModal, setShowMoreMenuModal] = useState(false);
   const [selectedCourseDetail, setSelectedCourseDetail] = useState<ScheduleItem | null>(null);
+
+  // STATE MODAL OFFICER PIN (MODE EDIT PJ)
+  const [isOfficerModalOpen, setIsOfficerModalOpen] = useState(false);
+  const [pinInput, setPinInput] = useState('');
+  const [pinError, setPinError] = useState('');
 
   // NOTIFICATION STATE
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
@@ -151,14 +159,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [isStreakModalOpen, setIsStreakModalOpen] = useState(false);
   const [hasUnreadChat, setHasUnreadChat] = useState<boolean>(false);
 
-  // POMODORO STATE IN MENU
-  const [pomodoroMode, setPomodoroMode] = useState<'focus' | 'break'>('focus');
-  const [pomoTimeLeft, setPomoTimeLeft] = useState<number>(25 * 60);
-  const [isPomoRunning, setIsPomoRunning] = useState<boolean>(false);
-
   // THEME STATE
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
-  const [activeAccentColor, setActiveAccentColor] = useState<string>('blue');
+  const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('mymbud_theme_mode') as ThemeMode) || 'dark';
+    }
+    return 'dark';
+  });
+  const [themeAccent, setThemeAccent] = useState<ThemeAccent>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('mymbud_theme_accent') as ThemeAccent) || 'blue';
+    }
+    return 'blue';
+  });
 
   const [currentMonthDate, setCurrentMonthDate] = useState<Date>(new Date());
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date>(new Date());
@@ -175,13 +188,21 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     return days[new Date().getDay()];
   }, []);
 
-  const formattedTodayDate = useMemo(() => {
-    return new Intl.DateTimeFormat('id-ID', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    }).format(new Date());
+  // Format Tanggal Singkat: Contoh "Min, 6 Sep 2026"
+  const formattedTodayDateShort = useMemo(() => {
+    const date = new Date();
+    const daysShort = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+    const monthsShort = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+      'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
+    ];
+    
+    const dayName = daysShort[date.getDay()];
+    const dayNum = date.getDate();
+    const monthName = monthsShort[date.getMonth()];
+    const year = date.getFullYear();
+
+    return `${dayName}, ${dayNum} ${monthName} ${year}`;
   }, []);
 
   // SUBSCRIBE TO NOTIFICATIONS REALTIME
@@ -223,23 +244,36 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }
   };
 
-  // TIMER POMODORO EFFECT
-  useEffect(() => {
-    let timer: any = null;
-    if (isPomoRunning && pomoTimeLeft > 0) {
-      timer = setInterval(() => {
-        setPomoTimeLeft((prev) => prev - 1);
-      }, 1000);
-    } else if (pomoTimeLeft === 0) {
-      setIsPomoRunning(false);
-    }
-    return () => clearInterval(timer);
-  }, [isPomoRunning, pomoTimeLeft]);
+  // FUNGSIONALITAS THEME CHANGER (KOMPAK)
+  const handleApplyTheme = (mode: ThemeMode, accent: ThemeAccent) => {
+    setThemeMode(mode);
+    setThemeAccent(accent);
 
-  const togglePomodoro = () => setIsPomoRunning(!isPomoRunning);
-  const resetPomodoro = () => {
-    setIsPomoRunning(false);
-    setPomoTimeLeft(pomodoroMode === 'focus' ? 25 * 60 : 5 * 60);
+    localStorage.setItem('mymbud_theme_mode', mode);
+    localStorage.setItem('mymbud_theme_accent', accent);
+
+    const root = document.documentElement;
+    root.setAttribute('data-mode', mode);
+    root.setAttribute('data-accent', accent);
+
+    if (mode === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+  };
+
+  // VERIFIKASI PIN OFFICER (MODE EDIT PJ)
+  const handleVerifyPin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (pinInput === '1234' || pinInput === '2026') {
+      if (setIsOfficer) setIsOfficer(true);
+      setIsOfficerModalOpen(false);
+      setPinInput('');
+      setPinError('');
+    } else {
+      setPinError('PIN salah! Silakan coba lagi.');
+    }
   };
 
   const parseTargetNrps = (raw: any): string[] => {
@@ -443,18 +477,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         })
     : [];
 
-  const getGreeting = () => {
+  const getGreetingText = () => {
     const hour = new Date().getHours();
     if (hour >= 4 && hour < 11) return `Pagi, ${userName}!`;
     if (hour >= 11 && hour < 15) return `Siang, ${userName}!`;
     if (hour >= 15 && hour < 18) return `Sore, ${userName}!`;
     return `Malam, ${userName}!`;
-  };
-
-  const formatPomoTime = (seconds: number) => {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
   };
 
   return (
@@ -505,10 +533,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </motion.div>
       )}
 
-      {/* HEADER MOBILE (SEAMLESS) */}
+      {/* HEADER MOBILE & DESKTOP GREETING INTEGRATION */}
       <div className="block lg:hidden space-y-3 pt-1">
         <div className="flex items-center justify-between gap-2 px-1">
-          {/* PROFIL & GREETING (KIRI) */}
+          {/* PROFIL & GREETING INTERAKTIF (Bisa dipencet untuk buka Mode PJ) */}
           <div className="flex items-center gap-2.5 min-w-0">
             <button
               onClick={() => onNavigateTab('mbudiary')}
@@ -525,12 +553,22 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </button>
 
             <div className="min-w-0">
-              <h2 className="text-base font-extrabold text-slate-900 dark:text-zinc-100 tracking-tight leading-tight truncate">
-                {getGreeting()}
-              </h2>
+              <button
+                onClick={() => setIsOfficerModalOpen(true)}
+                className="group flex items-center gap-1.5 text-left focus:outline-none"
+              >
+                <h2 className="text-base font-extrabold text-slate-900 dark:text-zinc-100 tracking-tight leading-tight truncate group-hover:text-blue-500 transition-colors">
+                  {getGreetingText()}
+                </h2>
+                {isOfficer && (
+                  <span className="inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">
+                    PJ
+                  </span>
+                )}
+              </button>
               <div className="flex items-center gap-1 text-[10px] font-medium text-slate-500 dark:text-zinc-400">
                 <CalendarIcon className="w-3 h-3 text-slate-400 dark:text-zinc-500 shrink-0" />
-                <span className="truncate">{formattedTodayDate}</span>
+                <span className="truncate">{formattedTodayDateShort}</span>
               </div>
             </div>
           </div>
@@ -552,7 +590,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </span>
             </motion.button>
 
-            {/* TOMBOL NOTIFIKASI (MEMBERIKAN POPUP NOTIFIKASI) */}
+            {/* TOMBOL NOTIFIKASI */}
             <button
               onClick={() => setIsNotificationOpen(true)}
               className="relative w-9 h-9 rounded-full bg-slate-900/80 dark:bg-zinc-800/80 backdrop-blur-md border border-white/10 flex items-center justify-center text-slate-200 active:scale-95 transition-transform cursor-pointer"
@@ -648,7 +686,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
       </div>
 
-      {/* PC & MOBILE MAIN GRID (2 KOLOM SEJAJAR DI PC) */}
+      {/* PC & MOBILE MAIN GRID */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 items-start">
         
         {/* KOLOM KIRI: BAR MBUDTALK + JADWAL PERKULIAHAN */}
@@ -788,11 +826,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         key={item.id}
                         className="relative overflow-hidden p-5 rounded-3xl bg-white/70 dark:bg-zinc-800/50 hover:bg-white/90 dark:hover:bg-zinc-800/80 transition-all border border-slate-200/60 dark:border-white/10 shadow-xs flex items-center justify-between gap-4 group"
                       >
-                        {/* BACKGROUND ORNAMENTS */}
                         <div className="absolute -right-6 -bottom-6 w-28 h-28 rounded-full bg-blue-500/10 dark:bg-blue-400/10 blur-xl pointer-events-none group-hover:scale-125 transition-transform duration-500" />
                         <div className="absolute right-10 -top-8 w-20 h-20 rounded-full bg-indigo-500/10 dark:bg-indigo-400/10 blur-lg pointer-events-none" />
 
-                        {/* KONTEN KIRI */}
                         <div className="space-y-2 min-w-0 flex-1 relative z-10">
                           <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 text-[11px] font-bold">
                             <span className="flex items-center gap-1">
@@ -816,7 +852,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                           </button>
                         </div>
 
-                        {/* KONTEN KANAN: PRESENSI */}
                         <div className="relative z-10 shrink-0">
                           <a
                             href={
@@ -1028,6 +1063,75 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         userName={userName}
         onStreakUpdate={(updated) => setStreakData(updated)}
       />
+
+      {/* MODAL INPUT PIN OFFICER (MODE EDIT PJ) */}
+      {isOfficerModalOpen && (
+        <div className="fixed inset-0 z-[999999] bg-black/75 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#16171b] border border-slate-200 dark:border-zinc-800 rounded-3xl w-full max-w-sm p-6 space-y-5 shadow-2xl relative animate-in fade-in zoom-in duration-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-slate-900 dark:text-white font-bold">
+                <Lock className="w-5 h-5 text-blue-500" />
+                <h3>Akses Mode Edit PJ</h3>
+              </div>
+              <button
+                onClick={() => {
+                  setIsOfficerModalOpen(false);
+                  setPinError('');
+                  setPinInput('');
+                }}
+                className="p-1 text-slate-400 hover:text-white rounded-lg"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {isOfficer ? (
+              <div className="space-y-4 text-center">
+                <p className="text-xs text-slate-600 dark:text-zinc-300">
+                  Kamu sedang dalam Mode PJ (Bisa mengubah jadwal, kontak & tugas).
+                </p>
+                <button
+                  onClick={() => {
+                    if (setIsOfficer) setIsOfficer(false);
+                    setIsOfficerModalOpen(false);
+                  }}
+                  className="w-full py-2.5 bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20 rounded-xl text-xs font-semibold transition-colors"
+                >
+                  Keluar Mode PJ
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleVerifyPin} className="space-y-4">
+                <p className="text-xs text-slate-500 dark:text-zinc-400">
+                  Masukkan PIN khusus pengurus untuk mengaktifkan fitur edit portal.
+                </p>
+                <div>
+                  <input
+                    type="password"
+                    maxLength={6}
+                    value={pinInput}
+                    onChange={(e) => setPinInput(e.target.value)}
+                    placeholder="Masukkan PIN..."
+                    className="w-full px-4 py-2.5 bg-slate-100 dark:bg-zinc-900/80 border border-slate-300 dark:border-zinc-700 rounded-xl text-sm text-center tracking-widest text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                    autoFocus
+                  />
+                  {pinError && (
+                    <p className="text-[11px] text-red-500 mt-1 text-center">
+                      {pinError}
+                    </p>
+                  )}
+                </div>
+                <button
+                  type="submit"
+                  className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition-colors"
+                >
+                  Verifikasi PIN
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* MODAL NOTIFIKASI DASHBOARD */}
       {typeof document !== 'undefined' &&
@@ -1285,140 +1389,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     </button>
                   </div>
 
-                  <div className="flex-1 overflow-y-auto p-5 space-y-6 custom-scrollbar">
-                    {/* WIDGET POMODORO TIMER */}
-                    <div className="p-4 rounded-3xl bg-slate-900 text-white space-y-3.5 border border-white/10 shadow-lg relative overflow-hidden">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Timer className="w-4 h-4 text-rose-500" />
-                          <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
-                            POMODORO TIMER
-                          </span>
-                        </div>
-
-                        <div className="flex p-0.5 rounded-full bg-zinc-800 border border-white/10 text-[10px] font-bold">
-                          <button
-                            onClick={() => {
-                              setPomodoroMode('focus');
-                              setPomoTimeLeft(25 * 60);
-                              setIsPomoRunning(false);
-                            }}
-                            className={`px-2.5 py-0.5 rounded-full transition-all ${
-                              pomodoroMode === 'focus' ? 'bg-rose-600 text-white' : 'text-slate-400'
-                            }`}
-                          >
-                            Focus
-                          </button>
-                          <button
-                            onClick={() => {
-                              setPomodoroMode('break');
-                              setPomoTimeLeft(5 * 60);
-                              setIsPomoRunning(false);
-                            }}
-                            className={`px-2.5 py-0.5 rounded-full transition-all ${
-                              pomodoroMode === 'break' ? 'bg-emerald-600 text-white' : 'text-slate-400'
-                            }`}
-                          >
-                            Break
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="text-center py-1">
-                        <span className="text-4xl font-black tracking-tight font-mono text-white">
-                          {formatPomoTime(pomoTimeLeft)}
-                        </span>
-                        <p className="text-[10px] text-slate-400 mt-0.5">
-                          {pomodoroMode === 'focus' ? '🔥 Waktu Fokus Belajar' : '☕ Istirahat Sejenak'}
-                        </p>
-                      </div>
-
-                      <div className="flex items-center justify-center gap-2 pt-1">
-                        <button
-                          onClick={togglePomodoro}
-                          className="flex-1 py-2.5 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-95 cursor-pointer"
-                        >
-                          <Play className="w-3.5 h-3.5 fill-white" />
-                          <span>{isPomoRunning ? 'Pause' : 'Start'}</span>
-                        </button>
-                        <button
-                          onClick={resetPomodoro}
-                          className="p-2.5 rounded-2xl bg-zinc-800 hover:bg-zinc-700 text-slate-300 transition-all cursor-pointer"
-                          title="Reset Timer"
-                        >
-                          <RotateCcw className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* PERSONALISASI TAMPILAN */}
-                    <div className="space-y-3 pt-1 border-t border-slate-200/50 dark:border-white/5">
-                      <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-1">
-                        PERSONALISASI TAMPILAN
-                      </p>
-
-                      <div className="space-y-1.5">
-                        <span className="text-xs font-semibold text-slate-700 dark:text-zinc-300 px-1">
-                          Mode Tampilan
-                        </span>
-                        <div className="grid grid-cols-2 gap-2">
-                          <button
-                            onClick={() => setIsDarkMode(false)}
-                            className={`flex items-center justify-center gap-2 p-2.5 rounded-2xl border text-xs font-bold transition-all ${
-                              !isDarkMode
-                                ? 'border-blue-500 bg-blue-50/80 text-blue-600'
-                                : 'border-slate-200/50 dark:border-white/5 bg-slate-50 dark:bg-zinc-900 text-slate-500'
-                            }`}
-                          >
-                            <Sun className="w-4 h-4" />
-                            <span>Terang</span>
-                          </button>
-                          <button
-                            onClick={() => setIsDarkMode(true)}
-                            className={`flex items-center justify-center gap-2 p-2.5 rounded-2xl border text-xs font-bold transition-all ${
-                              isDarkMode
-                                ? 'border-blue-500 bg-blue-950/60 text-blue-400'
-                                : 'border-slate-200/50 dark:border-white/5 bg-slate-50 dark:bg-zinc-900 text-slate-500'
-                            }`}
-                          >
-                            <Moon className="w-4 h-4" />
-                            <span>Gelap</span>
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="space-y-1.5 pt-1">
-                        <span className="text-xs font-semibold text-slate-700 dark:text-zinc-300 px-1">
-                          Warna Aksen
-                        </span>
-                        <div className="flex items-center gap-2 p-2 rounded-2xl bg-slate-50 dark:bg-zinc-900 border border-slate-200/50 dark:border-white/5">
-                          {['blue', 'purple', 'rose', 'amber', 'emerald', 'cyan'].map((color) => {
-                            const bgMap: any = {
-                              blue: 'bg-blue-500',
-                              purple: 'bg-purple-500',
-                              rose: 'bg-rose-500',
-                              amber: 'bg-amber-500',
-                              emerald: 'bg-emerald-500',
-                              cyan: 'bg-cyan-500',
-                            };
-                            return (
-                              <button
-                                key={color}
-                                onClick={() => setActiveAccentColor(color)}
-                                className={`w-7 h-7 rounded-full ${bgMap[color]} flex items-center justify-center transition-transform cursor-pointer ${
-                                  activeAccentColor === color ? 'scale-110 ring-2 ring-white' : 'opacity-70'
-                                }`}
-                              >
-                                {activeAccentColor === color && <span className="w-2 h-2 rounded-full bg-white" />}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    </div>
-
+                  <div className="flex-1 overflow-y-auto p-5 space-y-5 custom-scrollbar">
+                    
                     {/* myITS ACADEMICS 2.0 */}
-                    <div className="space-y-2 pt-1 border-t border-slate-200/50 dark:border-white/5">
+                    <div className="space-y-2">
                       <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 tracking-wider px-1">
                         <span className="lowercase">my</span>ITS ACADEMICS 2.0
                       </p>
@@ -1521,6 +1495,68 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       </div>
                     </div>
 
+                    {/* PERSONALISASI TAMPILAN KOMPAK DI PALING BAWAH */}
+                    <div className="pt-3 border-t border-slate-200/50 dark:border-white/5 space-y-2.5">
+                      <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-1">
+                        PERSONALISASI TAMPILAN
+                      </p>
+
+                      <div className="flex items-center justify-between bg-slate-50 dark:bg-zinc-900 p-2 rounded-2xl border border-slate-200/60 dark:border-white/5">
+                        {/* Switcher Mode Terang / Gelap */}
+                        <div className="flex bg-slate-200/60 dark:bg-zinc-800/80 p-0.5 rounded-xl">
+                          <button
+                            onClick={() => handleApplyTheme('light', themeAccent)}
+                            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+                              themeMode === 'light'
+                                ? 'bg-white text-slate-900 shadow-xs'
+                                : 'text-slate-500 dark:text-zinc-400'
+                            }`}
+                          >
+                            <Sun className="w-3.5 h-3.5" />
+                            <span>Terang</span>
+                          </button>
+                          <button
+                            onClick={() => handleApplyTheme('dark', themeAccent)}
+                            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+                              themeMode === 'dark'
+                                ? 'bg-zinc-700 text-white shadow-xs'
+                                : 'text-slate-500 dark:text-zinc-400'
+                            }`}
+                          >
+                            <Moon className="w-3.5 h-3.5" />
+                            <span>Gelap</span>
+                          </button>
+                        </div>
+
+                        {/* Lingkaran Warna Aksen Kompak */}
+                        <div className="flex items-center gap-1.5 pr-1">
+                          {(['blue', 'purple', 'pink', 'orange', 'green', 'cyan'] as ThemeAccent[]).map((accent) => {
+                            const colorMap: Record<ThemeAccent, string> = {
+                              blue: 'bg-blue-500',
+                              purple: 'bg-purple-500',
+                              pink: 'bg-pink-500',
+                              orange: 'bg-orange-500',
+                              green: 'bg-emerald-500',
+                              teal: 'bg-teal-500',
+                              cyan: 'bg-cyan-500',
+                            };
+
+                            return (
+                              <button
+                                key={accent}
+                                onClick={() => handleApplyTheme(themeMode, accent)}
+                                className={`w-5 h-5 rounded-full ${colorMap[accent]} flex items-center justify-center transition-transform ${
+                                  themeAccent === accent ? 'scale-110 ring-2 ring-white dark:ring-zinc-400' : 'opacity-70 hover:opacity-100'
+                                }`}
+                              >
+                                {themeAccent === accent && <Check className="w-3 h-3 text-white" />}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+
                     {/* TOMBOL KELUAR AKUN */}
                     {onLogout && (
                       <div className="pt-2 border-t border-slate-200/50 dark:border-white/5">
@@ -1529,7 +1565,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                             setShowMoreMenuModal(false);
                             onLogout();
                           }}
-                          className="w-full py-3 px-4 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer border border-rose-500/20 active:scale-95"
+                          className="w-full py-2.5 px-4 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer border border-rose-500/20 active:scale-95"
                         >
                           <LogOut className="w-4 h-4" />
                           <span>Keluar Akun</span>
