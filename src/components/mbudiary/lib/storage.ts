@@ -71,8 +71,8 @@ function normalizeUser(data: Record<string, any>): MbudiaryUser {
   }
 
   return {
-    nrp: String(data.nrp || '').toLowerCase(),
-    username: String(data.username || 'mbuders').toLowerCase(),
+    nrp: String(data.nrp || '').trim().toLowerCase(),
+    username: String(data.username || 'mbuders').trim().toLowerCase(),
     nickname: String(data.nickname || 'Mbuders'),
     isOfficer: Boolean(data.is_officer),
     emoji: String(data.emoji || '😊'),
@@ -87,9 +87,9 @@ function normalizeUser(data: Record<string, any>): MbudiaryUser {
 function normalizePost(data: Record<string, any>): MbudiaryPost {
   return {
     id: data.id,
-    authorNrp: String(data.author_nrp || 'unknown').toLowerCase(),
+    authorNrp: String(data.author_nrp || 'unknown').trim().toLowerCase(),
     content: data.content || '',
-    likes: Array.isArray(data.likes) ? data.likes.map((like: string) => String(like).toLowerCase()) : [],
+    likes: Array.isArray(data.likes) ? data.likes.map((like: string) => String(like).trim().toLowerCase()) : [],
     replyCount: Number(data.reply_count) || 0,
     isOfficerPost: Boolean(data.is_officer_post),
     imageUrls: Array.isArray(data.image_urls) ? data.image_urls : [],
@@ -105,7 +105,7 @@ function normalizeReply(data: Record<string, any>): MbudiaryReply {
   return {
     id: data.id,
     postId: data.post_id || '',
-    authorNrp: String(data.author_nrp || 'unknown').toLowerCase(),
+    authorNrp: String(data.author_nrp || 'unknown').trim().toLowerCase(),
     content: data.content || '',
     createdAt: data.created_at || new Date().toISOString(),
   };
@@ -113,16 +113,16 @@ function normalizeReply(data: Record<string, any>): MbudiaryReply {
 
 function normalizeFollow(data: Record<string, any>): MbudiaryFollow {
   return {
-    followerNrp: String(data.follower_nrp || '').toLowerCase(),
-    targetNrp: String(data.target_nrp || '').toLowerCase(),
+    followerNrp: String(data.follower_nrp || '').trim().toLowerCase(),
+    targetNrp: String(data.target_nrp || '').trim().toLowerCase(),
     createdAt: data.created_at || new Date().toISOString(),
   };
 }
 
 export function getUserProfile(): UserProfile {
-  const nrp = localStorage.getItem(USER_NRP_KEY) || 'unknown';
+  const nrp = (localStorage.getItem(USER_NRP_KEY) || 'unknown').trim().toLowerCase();
   const nickname = localStorage.getItem(USER_NAME_KEY) || 'Mbuders';
-  const username = localStorage.getItem(USER_USERNAME_KEY) || 'mbuders';
+  const username = (localStorage.getItem(USER_USERNAME_KEY) || 'mbuders').trim().toLowerCase();
   const isOfficer = localStorage.getItem(USER_OFFICER_KEY) === 'true';
   const emoji = localStorage.getItem(USER_EMOJI_KEY) || '😊';
   const photoUrl = localStorage.getItem(USER_PHOTO_URL_KEY) || undefined;
@@ -192,7 +192,7 @@ export async function isUsernameAvailable(newUsername: string, currentNrp: strin
     .eq('username', normalizedUsername);
 
   if (error || !data || data.length === 0) return true;
-  return data.every((item) => item.nrp.toLowerCase() === normalizedNrp);
+  return data.every((item) => String(item.nrp).trim().toLowerCase() === normalizedNrp);
 }
 
 export async function syncUserProfileWithFirebase(): Promise<UserProfile> {
@@ -384,13 +384,13 @@ export async function createNotification({
   type: 'like' | 'reply' | 'repost' | 'follow' | 'mention';
   postId?: string;
 }) {
-  if (recipientNrp.toLowerCase() === senderNrp.toLowerCase()) return;
+  if (recipientNrp.trim().toLowerCase() === senderNrp.trim().toLowerCase()) return;
 
   try {
     await supabase.from('mbudiary_notifications').insert({
       id: crypto.randomUUID(),
-      recipient_nrp: recipientNrp.toLowerCase(),
-      sender_nrp: senderNrp.toLowerCase(),
+      recipient_nrp: recipientNrp.trim().toLowerCase(),
+      sender_nrp: senderNrp.trim().toLowerCase(),
       type,
       post_id: postId || null,
       is_read: false,
@@ -421,7 +421,7 @@ export async function processMentionsInContent({
   for (const username of uniqueUsernames) {
     try {
       const targetUser = await getUserByUsername(username);
-      if (targetUser && targetUser.nrp !== senderNrp.toLowerCase()) {
+      if (targetUser && targetUser.nrp !== senderNrp.trim().toLowerCase()) {
         await createNotification({
           recipientNrp: targetUser.nrp,
           senderNrp: senderNrp,
@@ -640,30 +640,44 @@ export async function deletePost(postId: string) {
   await supabase.from('mbudiary_posts').delete().eq('id', postId);
 }
 
+// FIX UTAMA: SANITASI & PASTI ROLLBACK JIKA DATABASE GAGAL
 export async function toggleLikePost(postId: string, userNrp: string): Promise<MbudiaryPost | null> {
   const normalizedNrp = userNrp.trim().toLowerCase();
   const current = postsCache.find((p) => p.id === postId);
   if (!current) return null;
 
-  const likes = [...current.likes];
-  const index = likes.indexOf(normalizedNrp);
+  const currentLikes = (current.likes || []).map((n) => String(n).trim().toLowerCase());
+  const index = currentLikes.indexOf(normalizedNrp);
   let isNowLiked = false;
 
+  const updatedLikes = [...currentLikes];
   if (index >= 0) {
-    likes.splice(index, 1);
+    updatedLikes.splice(index, 1);
     isNowLiked = false;
   } else {
-    likes.push(normalizedNrp);
+    updatedLikes.push(normalizedNrp);
     isNowLiked = true;
   }
 
-  const updatedPost = { ...current, likes };
+  const updatedPost: MbudiaryPost = { ...current, likes: updatedLikes };
+  
+  // 1. Update cache lokal dulu
   postsCache = postsCache.map((p) => (p.id === postId ? updatedPost : p));
   saveLocalCache(CACHED_POSTS_KEY, postsCache);
-  emit('mbud_posts_change');
 
-  const { error } = await supabase.from('mbudiary_posts').update({ likes }).eq('id', postId);
-  if (error) return null;
+  // 2. Kirim update ke Supabase
+  const { error } = await supabase.from('mbudiary_posts').update({ likes: updatedLikes }).eq('id', postId);
+
+  if (error) {
+    console.error('[Supabase] Gagal menyimpan like:', error);
+    // Rollback jika database gagal
+    postsCache = postsCache.map((p) => (p.id === postId ? current : p));
+    saveLocalCache(CACHED_POSTS_KEY, postsCache);
+    emit('mbud_posts_change');
+    return current;
+  }
+
+  emit('mbud_posts_change');
 
   if (isNowLiked && current.authorNrp) {
     createNotification({

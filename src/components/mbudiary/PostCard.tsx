@@ -57,36 +57,26 @@ export const getBadgeTier = (
 ): BadgeTier => {
   if (!authorNrp) return null;
 
-  // 1. Ambil data real-time follower & total postingan user
   const followerCount = getFollowerCount(authorNrp);
   const userPosts = (getPosts() || []).filter(
-    (p) => p.authorNrp.toLowerCase() === authorNrp.toLowerCase()
+    (p) => p.authorNrp.trim().toLowerCase() === authorNrp.trim().toLowerCase()
   );
   const postCount = userPosts.length;
 
-  // 2. Override khusus dari Admin/Officer
   if (isExplicitlyVerified === 'gold') return 'gold';
   if (isExplicitlyVerified === 'blue') return 'blue';
   if (isExplicitlyVerified === 'gray') return 'gray';
 
-  // Jika isExplicitlyVerified bernilai true (legacy flag centang biru lama)
   if (isExplicitlyVerified === true || isExplicitlyVerified === 'true') {
     if (followerCount >= 30 && postCount >= 100) return 'gold';
     if (followerCount >= 10 && postCount >= 30) return 'blue';
     if (followerCount >= 10 && postCount >= 1) return 'gray';
-    return 'blue'; // Fallback aman untuk legacy override
-  }
-
-  // 3. Kalkulasi Otomatis Berdasarkan New Rule
-  if (followerCount >= 30 && postCount >= 100) {
-    return 'gold';
-  }
-  if (followerCount >= 10 && postCount >= 30) {
     return 'blue';
   }
-  if (followerCount >= 10 && postCount >= 1) {
-    return 'gray';
-  }
+
+  if (followerCount >= 30 && postCount >= 100) return 'gold';
+  if (followerCount >= 10 && postCount >= 30) return 'blue';
+  if (followerCount >= 10 && postCount >= 1) return 'gray';
 
   return null;
 };
@@ -293,8 +283,14 @@ export const PostCard: React.FC<PostCardProps> = ({
   const [replyContent, setReplyContent] = useState('');
   const [isSubmittingReply, setIsSubmittingReply] = useState(false);
   
-  const [isLiked, setIsLiked] = useState<boolean>(() => (post.likes || []).includes(currentUser.nrp.toLowerCase()));
+  // FIX LIKE STATE DENGAN CLEANING NRP
+  const [isLiked, setIsLiked] = useState<boolean>(() => {
+    const cleanUserNrp = (currentUser.nrp || '').trim().toLowerCase();
+    const cleanLikes = (post.likes || []).map((n) => String(n).trim().toLowerCase());
+    return cleanLikes.includes(cleanUserNrp);
+  });
   const [likeCount, setLikeCount] = useState<number>((post.likes || []).length);
+
   const [isDeleting, setIsDeleting] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState<boolean>(() => getBookmarkedPostIds().includes(post.id));
 
@@ -348,8 +344,10 @@ export const PostCard: React.FC<PostCardProps> = ({
   }, []);
 
   const refreshComponentData = () => {
-    setIsLiked((post.likes || []).includes(currentUser.nrp.toLowerCase()));
-    setLikeCount((post.likes || []).length);
+    const cleanUserNrp = (currentUser.nrp || '').trim().toLowerCase();
+    const cleanLikes = (post.likes || []).map((n) => String(n).trim().toLowerCase());
+    setIsLiked(cleanLikes.includes(cleanUserNrp));
+    setLikeCount(cleanLikes.length);
     setReplies(getReplies(post.id) || []);
     setAuthorProfile(getCachedUserByNrp(post.authorNrp));
     setIsBookmarked(getBookmarkedPostIds().includes(post.id));
@@ -435,22 +433,48 @@ export const PostCard: React.FC<PostCardProps> = ({
   const quoteTargetAuthorEmoji = post.isRepost && originalPost ? originalAuthorEmoji : authorEmoji;
   const quoteTargetAuthorPhotoUrl = post.isRepost && originalPost ? originalAuthorPhotoUrl : authorPhotoUrl;
 
+  // FIX UTAMA: OPTIMISTIC TOGGLE LIKE DENGAN HANDLING ROLLBACK
   const handleLikeToggle = async () => {
+    const cleanUserNrp = (currentUser.nrp || '').trim().toLowerCase();
     const wasLiked = isLiked;
-    const updated = await toggleLikePost(post.id, currentUser.nrp);
-    if (!updated) return;
+    const initialLikeCount = likeCount;
 
-    const nowLiked = (updated.likes || []).includes(currentUser.nrp.toLowerCase());
-    setIsLiked(nowLiked);
-    setLikeCount((updated.likes || []).length);
+    // 1. Ubah Tampilan Dulu (Optimistic UI)
+    const nextLiked = !wasLiked;
+    const nextCount = nextLiked ? initialLikeCount + 1 : Math.max(0, initialLikeCount - 1);
 
-    if (!wasLiked && nowLiked) {
-      void notifyPostLiked({
-        postAuthorNrp: post.authorNrp,
-        actorNrp: currentUser.nrp,
-        actorName,
-        postId: post.id,
-      });
+    setIsLiked(nextLiked);
+    setLikeCount(nextCount);
+
+    try {
+      // 2. Eksekusi ke storage/database
+      const updated = await toggleLikePost(post.id, cleanUserNrp);
+
+      if (updated) {
+        const cleanLikes = (updated.likes || []).map((n) => String(n).trim().toLowerCase());
+        const nowLiked = cleanLikes.includes(cleanUserNrp);
+
+        setIsLiked(nowLiked);
+        setLikeCount(cleanLikes.length);
+
+        if (!wasLiked && nowLiked) {
+          void notifyPostLiked({
+            postAuthorNrp: post.authorNrp,
+            actorNrp: currentUser.nrp,
+            actorName,
+            postId: post.id,
+          });
+        }
+      } else {
+        // Rollback jika respons null
+        setIsLiked(wasLiked);
+        setLikeCount(initialLikeCount);
+      }
+    } catch (error) {
+      console.error('[mbudiary] Gagal toggle like:', error);
+      // Rollback jika terjadi exception
+      setIsLiked(wasLiked);
+      setLikeCount(initialLikeCount);
     }
   };
 
@@ -555,7 +579,7 @@ export const PostCard: React.FC<PostCardProps> = ({
     alert('Laporan Anda telah diterima. Tim moderator akan meninjau postingan ini.');
   };
 
-  const isAuthor = post.authorNrp.toLowerCase() === currentUser.nrp.toLowerCase();
+  const isAuthor = post.authorNrp.trim().toLowerCase() === currentUser.nrp.trim().toLowerCase();
   const canDelete = isAuthor || currentUser.isOfficer;
   const displayAuthorIsVerified = isPlainRepost && originalPost ? (originalAuthorProfile as any)?.isVerified : (authorProfile as any)?.isVerified;
 
@@ -904,7 +928,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                 )}
               </div>
 
-              {/* FORM INPUT KOMENTAR (MANUAL FOCUS) */}
+              {/* FORM INPUT KOMENTAR */}
               <form onSubmit={handleAddReply} className="flex items-center gap-2 pt-1 relative">
                 <div className="relative flex-1">
                   <input
