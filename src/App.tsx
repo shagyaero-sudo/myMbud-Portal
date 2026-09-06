@@ -492,7 +492,7 @@ export default function App() {
       }
     } catch (error) {
       console.error('Gagal sinkronisasi manual:', error);
-    } finally {
+    } fontally {
       setIsSyncing(false);
     }
   }, []);
@@ -770,17 +770,20 @@ export default function App() {
           className="relative z-10 flex flex-col min-h-screen bg-transparent"
           style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 12px)' }}
         >
-          <Header
-            isOfficer={isOfficer}
-            setIsOfficer={setIsOfficer}
-            activeTab={activeTab as TabType}
-            setActiveTab={(tab) => handleNavigateTab(tab)}
-            isSyncing={isSyncing}
-            lastUpdated={appState.lastUpdated}
-            onRefresh={syncState}
-            urgentTaskCount={urgentTaskCount}
-            onLogout={handleLogout}
-          />
+          {/* HEADER BAR: DISEMBUNYIKAN DI MOBILE (hidden), HANYA MUNCUL DI DESKTOP (lg:block) */}
+          <div className="hidden lg:block">
+            <Header
+              isOfficer={isOfficer}
+              setIsOfficer={setIsOfficer}
+              activeTab={activeTab as TabType}
+              setActiveTab={(tab) => handleNavigateTab(tab)}
+              isSyncing={isSyncing}
+              lastUpdated={appState.lastUpdated}
+              onRefresh={syncState}
+              urgentTaskCount={urgentTaskCount}
+              onLogout={handleLogout}
+            />
+          </div>
 
           <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 flex flex-col lg:flex-row gap-6 pt-4 pb-28 lg:pb-8">
             {activeTab !== 'mbudiary' && activeTab !== 'mbudtalk' && (
