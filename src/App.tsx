@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useTransition } from 'react';
 import { AnimatePresence } from 'framer-motion';
 
 import { subscribeAnnouncements } from './services/announcements';
@@ -126,6 +126,7 @@ export default function App() {
   }
 
   const [showSplash, setShowSplash] = useState<boolean>(true);
+  const [, startTransition] = useTransition();
 
   useEffect(() => {
     const updateColorScheme = () => {
@@ -258,7 +259,9 @@ export default function App() {
     const handleOneSignalRedirect = (e: any) => {
       const targetTab = e?.detail?.tab || localStorage.getItem('mbud_target_tab') || 'mbudiary';
       const cleanTab = VALID_TABS.includes(targetTab as any) ? (targetTab as any) : 'mbudiary';
-      setActiveTab(cleanTab);
+      startTransition(() => {
+        setActiveTab(cleanTab);
+      });
       window.dispatchEvent(new Event('mbud_notification_navigate'));
     };
 
@@ -267,7 +270,9 @@ export default function App() {
       const targetTab = localStorage.getItem('mbud_target_tab');
       if (targetTab) {
         const cleanTab = VALID_TABS.includes(targetTab as any) ? (targetTab as any) : 'mbudiary';
-        setActiveTab(cleanTab);
+        startTransition(() => {
+          setActiveTab(cleanTab);
+        });
         localStorage.removeItem('mbud_target_tab');
       }
     });
@@ -320,11 +325,13 @@ export default function App() {
 
   useEffect(() => {
     const handlePopState = (event: PopStateEvent) => {
-      if (event.state && event.state.tab && VALID_TABS.includes(event.state.tab)) {
-        setActiveTab(event.state.tab as any);
-      } else {
-        setActiveTab(getTabFromLocation());
-      }
+      const targetTab = (event.state && event.state.tab && VALID_TABS.includes(event.state.tab))
+        ? (event.state.tab as any)
+        : getTabFromLocation();
+
+      startTransition(() => {
+        setActiveTab(targetTab);
+      });
     };
 
     window.addEventListener('popstate', handlePopState);
@@ -343,7 +350,9 @@ export default function App() {
         setChatTargetNrp(courseFilterOrTargetNrp || null);
       }
       
-      setActiveTab(tab);
+      startTransition(() => {
+        setActiveTab(tab);
+      });
 
       if (window.history.state?.tab !== tab) {
         window.history.pushState({ tab }, '', `#${tab}`);
@@ -899,7 +908,6 @@ export default function App() {
                     />
                   </div>
 
-                  {/* FIX NAVIGASI BACK MBUDTALK KEMBALI KE MBUDIARY */}
                   <div className={activeTab === 'mbudtalk' ? 'block' : 'hidden'}>
                     <MbudTalkView
                       onBack={() => handleNavigateTab('mbudiary')}

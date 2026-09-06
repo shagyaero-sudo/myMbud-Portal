@@ -19,7 +19,9 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) 
   const [currentUser, setCurrentUser] = useState<UserProfile>(getUserProfile());
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [selectedAuthorNrp, setSelectedAuthorNrp] = useState<string | null>(null);
-  const [, forceRefresh] = useState(0);
+  const [refreshKey, forceRefresh] = useState(0);
+
+  const [allPosts, setAllPosts] = useState<MbudiaryPost[]>([]);
 
   const feedScrollPositionRef = useRef<number>(0);
 
@@ -37,6 +39,13 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) 
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const isFeedActive = !selectedAuthorNrp && !selectedPostId;
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      setAllPosts(getPosts());
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [refreshKey]);
 
   const dismissSwipeHint = () => {
     setShowSwipeHint(false);
@@ -259,7 +268,6 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) 
     }
   };
 
-  const allPosts = getPosts();
   const selectedPost: MbudiaryPost | undefined = allPosts.find((post) => post.id === selectedPostId);
 
   return (
