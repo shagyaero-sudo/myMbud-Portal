@@ -11,6 +11,9 @@ import { UserProfileView } from './mbudiary/UserProfileView';
 const ONBOARDING_PROFILE_KEY = 'mbud_onboarded_mbudiary_profile';
 const SWIPE_HINT_KEY = 'mbud_swipe_hint_seen';
 
+// MEMORY CACHE BIAR 0.00001 DETIK
+let cachedPosts: MbudiaryPost[] | null = null;
+
 interface MbudiaryViewProps {
   onNavigateToChat?: (targetNrp?: string) => void;
 }
@@ -21,7 +24,13 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) 
   const [selectedAuthorNrp, setSelectedAuthorNrp] = useState<string | null>(null);
   const [refreshKey, forceRefresh] = useState(0);
 
-  const [allPosts, setAllPosts] = useState<MbudiaryPost[]>([]);
+  // LANGSUNG AMBIL DARI MEMORY CACHE KALO ADA (INSTANT 0ms)
+  const [allPosts, setAllPosts] = useState<MbudiaryPost[]>(() => {
+    if (cachedPosts) return cachedPosts;
+    const initial = getPosts();
+    cachedPosts = initial;
+    return initial;
+  });
 
   const feedScrollPositionRef = useRef<number>(0);
 
@@ -40,11 +49,11 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) 
 
   const isFeedActive = !selectedAuthorNrp && !selectedPostId;
 
+  // SYNC DATA TANPA BIKIN UNNECESSARY DELAY
   useEffect(() => {
-    const frame = requestAnimationFrame(() => {
-      setAllPosts(getPosts());
-    });
-    return () => cancelAnimationFrame(frame);
+    const updated = getPosts();
+    cachedPosts = updated;
+    setAllPosts(updated);
   }, [refreshKey]);
 
   const dismissSwipeHint = () => {
@@ -272,7 +281,6 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) 
 
   return (
     <div className="w-full text-slate-900 dark:text-zinc-100 font-sans transition-colors duration-300 antialiased relative">
-      
       <AnimatePresence>
         {isEdgeSwiping && (
           <motion.div
@@ -289,7 +297,6 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) 
       </AnimatePresence>
 
       <main className="w-full max-w-3xl mx-auto px-0 sm:px-2 py-2 sm:py-4 pb-24 sm:pb-8 relative z-10 space-y-3 sm:space-y-4">
-        
         <AnimatePresence>
           {!isFeedActive && showSwipeHint && (
             <motion.div
@@ -371,7 +378,6 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) 
             onNavigateToChat={onNavigateToChat}
           />
         </div>
-
       </main>
 
       <AnimatePresence>
