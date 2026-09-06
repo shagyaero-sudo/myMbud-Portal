@@ -127,7 +127,6 @@ export default function App() {
 
   const [showSplash, setShowSplash] = useState<boolean>(true);
 
-  // SET THEME-COLOR TRANSPARENT UNTUK STATUS BAR INFINITY VISION
   useEffect(() => {
     let metaThemeColor = document.querySelector("meta[name='theme-color']");
     if (metaThemeColor) {
@@ -153,7 +152,6 @@ export default function App() {
     return localStorage.getItem('mymbud_onboarded') === 'true';
   });
 
-  // State untuk Modal Aspirasi via Supabase + Sesi
   const [hasSubmittedAspiration, setHasSubmittedAspiration] = useState<boolean>(true);
   const [isCheckingAspiration, setIsCheckingAspiration] = useState<boolean>(true);
   const [isDismissedForSession, setIsDismissedForSession] = useState<boolean>(false);
@@ -162,7 +160,6 @@ export default function App() {
   const currentUserNrp = localStorage.getItem('mymbud_user_nrp') || 'unknown';
   const currentUserName = localStorage.getItem('mymbud_user_name') || 'Mbuders';
 
-  // Verifikasi status pengisian aspirasi via Supabase & LocalStorage
   useEffect(() => {
     const verifyAspirationStatus = async () => {
       if (isAuthenticated && currentUserNrp && currentUserNrp !== 'unknown') {
@@ -766,7 +763,6 @@ export default function App() {
 
       <div className={`relative min-h-screen bg-slate-100 dark:bg-[#0e0f12] text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-300 ${shouldShowAspirationModal ? 'pointer-events-none blur-sm select-none' : ''}`}>
         
-        {/* LIGHTWEIGHT ACCELERATED BACKGROUND GLOW */}
         <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
           <div 
             className="gpu-glow absolute top-[-50px] left-[-50px] w-[500px] h-[500px] rounded-full opacity-10 dark:opacity-15" 
@@ -778,12 +774,10 @@ export default function App() {
           />
         </div>
 
-        {/* CONTENT LAYER */}
         <div 
           className="relative z-10 flex flex-col min-h-screen bg-transparent"
           style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 12px)' }}
         >
-          {/* HEADER BAR: DISEMBUNYIKAN DI MOBILE (hidden), HANYA MUNCUL DI DESKTOP (lg:block) */}
           <div className="hidden lg:block">
             <Header
               isOfficer={isOfficer}
@@ -817,9 +811,12 @@ export default function App() {
                     <DashboardView
                       state={{ ...appState, tasks: accessibleTasks }}
                       isOfficer={isOfficer}
+                      setIsOfficer={setIsOfficer}
                       onAddAnnouncement={() => {}}
                       onDeleteAnnouncement={() => {}}
                       onNavigateTab={handleNavigateTab}
+                      onLogout={handleLogout}
+                      onOpenGpaModal={() => setIsGpaModalOpen(true)}
                     />
                   )}
 
@@ -883,14 +880,12 @@ export default function App() {
 
                   {activeTab === 'blockblast' && <BlockBlastView />}
 
-                  {/* MBUDIARY VIEW: ALWAYS MOUNTED & HIDDEN (KEEP-ALIVE FOR 0MS SWITCHING) */}
                   <div className={activeTab === 'mbudiary' ? 'block' : 'hidden'}>
                     <MbudiaryView
                       onNavigateToChat={(targetNrp) => handleNavigateTab('mbudtalk', targetNrp)}
                     />
                   </div>
 
-                  {/* MBUDTALK VIEW: ALWAYS MOUNTED & HIDDEN (KEEP-ALIVE FOR 0MS SWITCHING) */}
                   <div className={activeTab === 'mbudtalk' ? 'block' : 'hidden'}>
                     <MbudTalkView
                       onBack={() => handleNavigateTab('dashboard')}

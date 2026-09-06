@@ -32,7 +32,9 @@ import {
   Moon,
   LogOut,
   Lock,
-  Check
+  Check,
+  ShieldCheck,
+  Plus
 } from 'lucide-react';
 import { supabase } from '../services/supabase';
 import { AppState, DayOfWeek, ScheduleItem } from '../types';
@@ -188,7 +190,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     return days[new Date().getDay()];
   }, []);
 
-  // Format Tanggal Singkat: Contoh "Min, 6 Sep 2026"
   const formattedTodayDateShort = useMemo(() => {
     const date = new Date();
     const daysShort = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
@@ -205,7 +206,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     return `${dayName}, ${dayNum} ${monthName} ${year}`;
   }, []);
 
-  // SUBSCRIBE TO NOTIFICATIONS REALTIME
   useEffect(() => {
     if (!currentUserNrp || currentUserNrp === 'unknown') {
       setNotifications([]);
@@ -244,7 +244,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }
   };
 
-  // FUNGSIONALITAS THEME CHANGER (KOMPAK)
   const handleApplyTheme = (mode: ThemeMode, accent: ThemeAccent) => {
     setThemeMode(mode);
     setThemeAccent(accent);
@@ -263,11 +262,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }
   };
 
-  // VERIFIKASI PIN OFFICER (MODE EDIT PJ)
+  // VERIFIKASI PIN OFFICER (SINKRON DENGAN PIN HEADER 1234/2025/2026)
   const handleVerifyPin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (pinInput === '1234' || pinInput === '2026') {
-      if (setIsOfficer) setIsOfficer(true);
+    if (pinInput === '1234' || pinInput === '2025' || pinInput === '2026') {
+      if (setIsOfficer) {
+        setIsOfficer(true);
+      }
       setIsOfficerModalOpen(false);
       setPinInput('');
       setPinError('');
@@ -492,6 +493,39 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       transition={{ duration: 0.3 }}
       className="space-y-4 sm:space-y-5 pb-8 lg:pb-2"
     >
+      {/* QUICK ACTIONS BAR JIKA MODE PJ AKTIF */}
+      {isOfficer && (
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-4 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 backdrop-blur-md flex flex-wrap items-center justify-between gap-3 shadow-xs"
+        >
+          <div className="flex items-center gap-2.5 text-indigo-600 dark:text-indigo-300">
+            <ShieldCheck className="w-5 h-5 shrink-0" />
+            <div className="min-w-0">
+              <p className="text-xs font-bold leading-tight">Mode Edit PJ Aktif</p>
+              <p className="text-[11px] opacity-80 truncate">Kamu memiliki akses penuh pengeditan data portal.</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => onNavigateTab('tasks')}
+              className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs active:scale-95 cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Kelola Tugas</span>
+            </button>
+            <button
+              onClick={() => onNavigateTab('contacts')}
+              className="px-3 py-1.5 rounded-xl bg-slate-200 dark:bg-zinc-800 hover:bg-slate-300 text-slate-800 dark:text-zinc-200 text-xs font-bold transition-all active:scale-95 cursor-pointer"
+            >
+              Kelola Kontak
+            </button>
+          </div>
+        </motion.div>
+      )}
+
       {/* BANNER WAR FRS DIRECT BYPASS */}
       {IS_FRS_WAR_ACTIVE && (
         <motion.div
@@ -536,7 +570,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       {/* HEADER MOBILE & DESKTOP GREETING INTEGRATION */}
       <div className="block lg:hidden space-y-3 pt-1">
         <div className="flex items-center justify-between gap-2 px-1">
-          {/* PROFIL & GREETING INTERAKTIF (Bisa dipencet untuk buka Mode PJ) */}
           <div className="flex items-center gap-2.5 min-w-0">
             <button
               onClick={() => onNavigateTab('mbudiary')}
@@ -555,7 +588,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <div className="min-w-0">
               <button
                 onClick={() => setIsOfficerModalOpen(true)}
-                className="group flex items-center gap-1.5 text-left focus:outline-none"
+                className="group flex items-center gap-1.5 text-left focus:outline-none cursor-pointer"
               >
                 <h2 className="text-base font-extrabold text-slate-900 dark:text-zinc-100 tracking-tight leading-tight truncate group-hover:text-blue-500 transition-colors">
                   {getGreetingText()}
@@ -573,9 +606,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
           </div>
 
-          {/* ACTIONS KANAN: STREAK + NOTIFIKASI REALTIME */}
           <div className="flex items-center gap-2 shrink-0">
-            {/* BADGE STREAK */}
             <motion.button
               type="button"
               whileTap={{ scale: 0.95 }}
@@ -590,7 +621,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </span>
             </motion.button>
 
-            {/* TOMBOL NOTIFIKASI */}
             <button
               onClick={() => setIsNotificationOpen(true)}
               className="relative w-9 h-9 rounded-full bg-slate-900/80 dark:bg-zinc-800/80 backdrop-blur-md border border-white/10 flex items-center justify-center text-slate-200 active:scale-95 transition-transform cursor-pointer"
@@ -843,13 +873,27 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                             {item.course}
                           </h3>
 
-                          <button
-                            onClick={() => setSelectedCourseDetail(item)}
-                            className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-500 hover:text-blue-600 dark:text-zinc-400 dark:hover:text-blue-400 transition-colors cursor-pointer group/btn pt-0.5"
-                          >
-                            <span>Dosen / PJ</span>
-                            <ChevronRight className="w-3 h-3 group-hover/btn:translate-x-0.5 transition-transform" />
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => setSelectedCourseDetail(item)}
+                              className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-500 hover:text-blue-600 dark:text-zinc-400 dark:hover:text-blue-400 transition-colors cursor-pointer group/btn pt-0.5"
+                            >
+                              <span>Dosen / PJ</span>
+                              <ChevronRight className="w-3 h-3 group-hover/btn:translate-x-0.5 transition-transform" />
+                            </button>
+
+                            {/* AKSI EDIT PJ LANGSUNG PADA ITEM JADWAL */}
+                            {isOfficer && (
+                              <button
+                                onClick={() => onNavigateTab('contacts', item.course)}
+                                className="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-500 hover:text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-md border border-indigo-500/20 transition-colors cursor-pointer"
+                                title="Edit data matkul/kontak ini"
+                              >
+                                <Pencil className="w-2.5 h-2.5" />
+                                <span>Edit Data</span>
+                              </button>
+                            )}
+                          </div>
                         </div>
 
                         <div className="relative z-10 shrink-0">
@@ -1079,7 +1123,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   setPinError('');
                   setPinInput('');
                 }}
-                className="p-1 text-slate-400 hover:text-white rounded-lg"
+                className="p-1 text-slate-400 hover:text-white rounded-lg cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1095,7 +1139,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     if (setIsOfficer) setIsOfficer(false);
                     setIsOfficerModalOpen(false);
                   }}
-                  className="w-full py-2.5 bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20 rounded-xl text-xs font-semibold transition-colors"
+                  className="w-full py-2.5 bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
                 >
                   Keluar Mode PJ
                 </button>
@@ -1123,7 +1167,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 </div>
                 <button
                   type="submit"
-                  className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition-colors"
+                  className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer"
                 >
                   Verifikasi PIN
                 </button>
@@ -1502,7 +1546,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       </p>
 
                       <div className="flex items-center justify-between bg-slate-50 dark:bg-zinc-900 p-2 rounded-2xl border border-slate-200/60 dark:border-white/5">
-                        {/* Switcher Mode Terang / Gelap */}
                         <div className="flex bg-slate-200/60 dark:bg-zinc-800/80 p-0.5 rounded-xl">
                           <button
                             onClick={() => handleApplyTheme('light', themeAccent)}
@@ -1528,7 +1571,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                           </button>
                         </div>
 
-                        {/* Lingkaran Warna Aksen Kompak */}
                         <div className="flex items-center gap-1.5 pr-1">
                           {(['blue', 'purple', 'pink', 'orange', 'green', 'cyan'] as ThemeAccent[]).map((accent) => {
                             const colorMap: Record<ThemeAccent, string> = {
