@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, startTransition } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   CalendarDays,
@@ -148,15 +148,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   const navigateFromSheet = (tab: TabType) => {
-    setActiveTab(tab);
+    startTransition(() => {
+      setActiveTab(tab);
+    });
     setIsBottomSheetOpen(false);
   };
 
-  // INSTANT ZERO-DELAY TAB SWITCHING
+  // NON-BLOCKING TRANSITION HANDLER FOR INSTANT TOUCH RESPONSE
   const handleDiaryClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    setActiveTab('mbudiary');
+    
+    // Meringankan eksekusi state agar UI langsung berpindah tanpa tertahan re-render mBudiary
+    startTransition(() => {
+      setActiveTab('mbudiary');
+    });
   };
 
   return (
@@ -185,7 +191,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   if (item.isModal) {
                     item.action();
                   } else {
-                    setActiveTab(item.id);
+                    startTransition(() => {
+                      setActiveTab(item.id);
+                    });
                   }
                 }}
                 className={`relative w-full flex items-center h-11 px-3 rounded-2xl text-xs font-medium transition-all cursor-pointer ${
@@ -365,7 +373,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
               type="button"
               whileTap={{ scale: 0.96 }}
               title={!isExpanded ? 'myMbudblox' : undefined}
-              onClick={() => setActiveTab('blockblast')}
+              onClick={() => {
+                startTransition(() => {
+                  setActiveTab('blockblast');
+                });
+              }}
               className={`group relative w-full overflow-hidden rounded-2xl p-2.5 text-xs font-bold transition-all border ${
                 activeTab === 'blockblast'
                   ? 'bg-gradient-to-r from-purple-600 via-fuchsia-500 to-pink-500 text-white border-transparent shadow-lg shadow-purple-500/30'
@@ -439,7 +451,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             label="Jadwal"
             icon={CalendarDays}
             activeTab={activeTab}
-            onClick={setActiveTab}
+            onClick={(id) => startTransition(() => setActiveTab(id))}
           />
 
           <BottomTabItem
@@ -447,11 +459,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
             label="Tugas"
             icon={FolderKanban}
             activeTab={activeTab}
-            onClick={setActiveTab}
+            onClick={(id) => startTransition(() => setActiveTab(id))}
             count={activeTaskCount > 0 ? activeTaskCount : null}
           />
 
-          {/* TOMBOL MBUDIARY TENGAH FLOATING (INSTANT ZERO DELAY) */}
+          {/* TOMBOL MBUDIARY TENGAH FLOATING (NON-BLOCKING DEFERRED RENDER) */}
           <div className="relative flex flex-col items-center justify-center -top-2.5 px-1 shrink-0">
             <div className="p-1 rounded-full bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-white/80 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/30">
               <button
@@ -473,7 +485,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             label="Kontak"
             icon={Users}
             activeTab={activeTab}
-            onClick={setActiveTab}
+            onClick={(id) => startTransition(() => setActiveTab(id))}
           />
 
           <BottomTabItem
@@ -481,7 +493,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             label="Materi"
             icon={FileText}
             activeTab={activeTab}
-            onClick={setActiveTab}
+            onClick={(id) => startTransition(() => setActiveTab(id))}
           />
         </nav>
       </div>
