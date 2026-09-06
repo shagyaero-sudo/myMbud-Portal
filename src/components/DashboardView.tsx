@@ -570,7 +570,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </motion.button>
           </div>
 
-          {/* JADWAL PERKULIAHAN (CLEAN & AUTO-ENTER) */}
+          {/* JADWAL PERKULIAHAN (LAYOUTING MODERN & CLEAN) */}
           <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-5 sm:p-7 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none space-y-3.5 transition-all">
             
             <div className="flex items-center justify-between">
@@ -613,8 +613,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               })}
             </div>
 
-            {/* KONTEN JADWAL SIMPEL */}
-            <div className="space-y-2.5 pt-1">
+            {/* KONTEN JADWAL MODEREN */}
+            <div className="space-y-3 pt-1">
               {selectedDay === null ? (
                 <div className="p-8 text-center space-y-3 bg-slate-50/50 dark:bg-zinc-800/30 rounded-2xl border border-slate-200/40 dark:border-white/5">
                   <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center mx-auto shadow-xs">
@@ -643,35 +643,47 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.2 }}
-                    className="space-y-2.5"
+                    className="space-y-3"
                   >
                     {filteredSchedule.map((item) => (
                       <motion.div
-                        whileHover={{ scale: 1.005 }}
+                        whileHover={{ scale: 1.01 }}
                         key={item.id}
-                        className="p-4 rounded-2xl bg-white/60 dark:bg-zinc-800/40 hover:bg-white/90 dark:hover:bg-zinc-800/70 transition-all flex flex-col space-y-3 border border-slate-200/60 dark:border-white/5"
+                        className="relative overflow-hidden p-5 rounded-3xl bg-white/70 dark:bg-zinc-800/50 hover:bg-white/90 dark:hover:bg-zinc-800/80 transition-all border border-slate-200/60 dark:border-white/10 shadow-xs flex items-center justify-between gap-4 group"
                       >
-                        {/* ROW 1: NAMA MATKUL (AUTO-ENTER) & RUANGAN/JAM */}
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0 flex-1">
-                            <h3 className="text-sm font-extrabold text-slate-800 dark:text-zinc-100 leading-tight max-w-[200px] sm:max-w-[240px]">
-                              {item.course}
-                            </h3>
-                          </div>
+                        {/* BACKGROUND ORNAMENTS */}
+                        <div className="absolute -right-6 -bottom-6 w-28 h-28 rounded-full bg-blue-500/10 dark:bg-blue-400/10 blur-xl pointer-events-none group-hover:scale-125 transition-transform duration-500" />
+                        <div className="absolute right-10 -top-8 w-20 h-20 rounded-full bg-indigo-500/10 dark:bg-indigo-400/10 blur-lg pointer-events-none" />
 
-                          <div className="flex flex-col items-end space-y-0.5 shrink-0 text-right">
-                            <span className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap">
-                              <Building2 className="w-3.5 h-3.5 shrink-0 stroke-[2.2]" />
+                        {/* KONTEN KIRI (RATA KIRI) */}
+                        <div className="space-y-2 min-w-0 flex-1 relative z-10">
+                          {/* BADGE RUANGAN & JAM */}
+                          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 text-[11px] font-bold">
+                            <span className="flex items-center gap-1">
+                              <Building2 className="w-3 h-3 stroke-[2.2]" />
                               <span>{item.room}</span>
                             </span>
-                            <span className="text-xs font-bold text-slate-900 dark:text-zinc-100 font-sans whitespace-nowrap">
-                              {item.time}
-                            </span>
+                            <span className="opacity-40">•</span>
+                            <span>{item.time} WIB</span>
                           </div>
+
+                          {/* NAMA MATKUL (AUTO ENTER) */}
+                          <h3 className="text-sm sm:text-base font-extrabold text-slate-800 dark:text-zinc-100 leading-snug max-w-[220px] sm:max-w-[280px]">
+                            {item.course}
+                          </h3>
+
+                          {/* SUB-ACTION: LIHAT DOSEN / PJ */}
+                          <button
+                            onClick={() => setSelectedCourseDetail(item)}
+                            className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-500 hover:text-blue-600 dark:text-zinc-400 dark:hover:text-blue-400 transition-colors cursor-pointer group/btn pt-0.5"
+                          >
+                            <span>Dosen / PJ</span>
+                            <ChevronRight className="w-3 h-3 group-hover/btn:translate-x-0.5 transition-transform" />
+                          </button>
                         </div>
 
-                        {/* ROW 2: TOMBOL PRESENSI & DOSEN/PJ */}
-                        <div className="flex items-center gap-2 pt-1.5 border-t border-slate-200/50 dark:border-white/5 w-full">
+                        {/* KONTEN KANAN: TOMBOL SHORTCUT PRESENSI */}
+                        <div className="relative z-10 shrink-0">
                           <a
                             href={
                               item.attendanceUrl && item.attendanceUrl.trim() !== ''
@@ -680,18 +692,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                             }
                             target="_blank"
                             rel="noreferrer"
-                            className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-[11px] sm:text-xs font-bold flex items-center justify-center gap-2 rounded-xl transition-all shadow-sm shadow-blue-500/20 cursor-pointer"
+                            title="Input Presensi"
+                            className="flex items-center justify-center sm:px-4 py-3 px-3 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-500/25 hover:shadow-lg hover:shadow-blue-500/40 active:scale-95 transition-all cursor-pointer border border-blue-400/30 group/presensi"
                           >
-                            <UserCheck className="w-4 h-4" />
-                            <span>Input Presensi</span>
+                            <UserCheck className="w-5 h-5 shrink-0" />
+                            <span className="hidden sm:inline-block text-xs font-bold ml-2 whitespace-nowrap">
+                              Presensi
+                            </span>
                           </a>
-
-                          <button
-                            onClick={() => setSelectedCourseDetail(item)}
-                            className="shrink-0 px-3.5 py-2 rounded-xl bg-slate-200/70 dark:bg-zinc-700/60 hover:bg-slate-200 dark:hover:bg-zinc-600 text-slate-700 dark:text-zinc-200 text-[11px] sm:text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer"
-                          >
-                            <span>Dosen / PJ</span>
-                          </button>
                         </div>
                       </motion.div>
                     ))}
