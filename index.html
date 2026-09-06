@@ -25,11 +25,11 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="myMbud" />
 
-    <!-- Meta Tag Status Bar menyatu penuh dengan warna background #0e0f12 -->
-    <meta name="theme-color" content="#0e0f12" />
+    <!-- Meta Tag Status Bar Transparan agar Gradasi Background Tembus ke Atas -->
+    <meta name="theme-color" content="transparent" />
     <meta name="color-scheme" content="dark light" />
 
-    <!-- SCRIPT CEGAH FLICKER & MEMBACA SISTEM TEMA 2-LAYER -->
+    <!-- SCRIPT CEGAH FLICKER & MEMBACA SISTEM TEMA -->
     <script>
       (function() {
         const savedMode = localStorage.getItem('mymbud_theme_mode') || 'dark';
@@ -47,7 +47,7 @@
 
         const metaThemeColor = document.querySelector("meta[name='theme-color']");
         if (metaThemeColor) {
-          metaThemeColor.setAttribute('content', savedMode === 'dark' ? '#0e0f12' : '#f1f5f9');
+          metaThemeColor.setAttribute('content', 'transparent');
         }
       })();
     </script>

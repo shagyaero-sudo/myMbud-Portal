@@ -127,15 +127,15 @@ export default function App() {
 
   const [showSplash, setShowSplash] = useState<boolean>(true);
 
-  // AUTO SET THEME-COLOR STATUS BAR UNTUK HP (INFINITY VISION)
+  // SET THEME-COLOR TRANSPARENT UNTUK STATUS BAR INFINITY VISION
   useEffect(() => {
     let metaThemeColor = document.querySelector("meta[name='theme-color']");
     if (metaThemeColor) {
-      metaThemeColor.setAttribute('content', '#0e0f12');
+      metaThemeColor.setAttribute('content', 'transparent');
     } else {
       const meta = document.createElement('meta');
       meta.name = 'theme-color';
-      meta.content = '#0e0f12';
+      meta.content = 'transparent';
       document.head.appendChild(meta);
     }
   }, []);
