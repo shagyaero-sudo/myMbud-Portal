@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo, Suspense, lazy } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { AnimatePresence } from 'framer-motion';
 
 import { subscribeAnnouncements } from './services/announcements';
@@ -22,25 +22,14 @@ import { LetterGeneratorView } from './components/LetterGeneratorView';
 import { PdfViewerModal } from './components/PdfViewerModal';
 import { SoftForceModal } from './components/SoftForceModal';
 import { BlockBlastView } from './components/blockblast/BlockBlastView';
+import { MbudiaryView } from './components/MbudiaryView';
+import { MbudTalkView } from './components/MbudTalkView';
 import { GpaCalculatorModal } from './components/GpaCalculatorModal';
 import { LoginScreen } from './components/LoginScreen';
 import { OnboardingScreen } from './components/OnboardingScreen';
 import { SplashScreen } from './components/SplashScreen';
 import { NotebookLmView } from './components/NotebookLmView';
 import { AspirationFormModal } from './components/AspirationFormModal';
-
-// LAZY LOAD MBUDIARY & MBUDTALK DENGAN NAMED IMPORT ASLI
-const MbudiaryView = lazy(() =>
-  import('./components/MbudiaryView').then((module) => ({
-    default: module.MbudiaryView,
-  }))
-);
-
-const MbudTalkView = lazy(() =>
-  import('./components/MbudTalkView').then((module) => ({
-    default: module.MbudTalkView,
-  }))
-);
 
 import {
   AppState,
@@ -108,13 +97,6 @@ const AppSkeleton = () => (
 
       <div className="h-96 bg-slate-200/60 dark:bg-zinc-900/60 rounded-3xl w-full border border-slate-200 dark:border-zinc-800"></div>
     </div>
-  </div>
-);
-
-const ViewSpinner = () => (
-  <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-3">
-    <div className="w-9 h-9 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
-    <span className="text-xs font-bold text-slate-400 dark:text-zinc-500">Memuat mBudiary...</span>
   </div>
 );
 
@@ -814,7 +796,7 @@ export default function App() {
               {isInitialLoad ? (
                 <AppSkeleton />
               ) : (
-                <div key={activeTab}>
+                <>
                   {activeTab === 'dashboard' && (
                     <DashboardView
                       state={{ ...appState, tasks: accessibleTasks }}
@@ -885,23 +867,21 @@ export default function App() {
 
                   {activeTab === 'blockblast' && <BlockBlastView />}
 
-                  {activeTab === 'mbudiary' && (
-                    <Suspense fallback={<ViewSpinner />}>
-                      <MbudiaryView
-                        onNavigateToChat={(targetNrp) => handleNavigateTab('mbudtalk', targetNrp)}
-                      />
-                    </Suspense>
-                  )}
+                  {/* MBUDIARY VIEW: ALWAYS MOUNTED & HIDDEN (KEEP-ALIVE FOR 0MS SWITCHING) */}
+                  <div className={activeTab === 'mbudiary' ? 'block' : 'hidden'}>
+                    <MbudiaryView
+                      onNavigateToChat={(targetNrp) => handleNavigateTab('mbudtalk', targetNrp)}
+                    />
+                  </div>
 
-                  {activeTab === 'mbudtalk' && (
-                    <Suspense fallback={<ViewSpinner />}>
-                      <MbudTalkView
-                        onBack={() => handleNavigateTab('dashboard')}
-                        targetNrp={chatTargetNrp}
-                      />
-                    </Suspense>
-                  )}
-                </div>
+                  {/* MBUDTALK VIEW: ALWAYS MOUNTED & HIDDEN (KEEP-ALIVE FOR 0MS SWITCHING) */}
+                  <div className={activeTab === 'mbudtalk' ? 'block' : 'hidden'}>
+                    <MbudTalkView
+                      onBack={() => handleNavigateTab('dashboard')}
+                      targetNrp={chatTargetNrp}
+                    />
+                  </div>
+                </>
               )}
             </main>
           </div>
