@@ -582,7 +582,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
     } catch (error) {
       console.error('Gagal menyimpan tugas:', error);
       alert(`Gagal menyimpan tugas.`);
-    } fontally {
+    } finally {
       setIsUploading(false);
     }
   };
