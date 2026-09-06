@@ -127,19 +127,23 @@ export default function App() {
 
   const [showSplash, setShowSplash] = useState<boolean>(true);
 
-  // STATUS BAR HP DINAMIS (TIDAK TRANSPARENT LAGI AGAR SINKRON DENGAN TEMA)
+  // PENANGANAN STATUS BAR TRANSPARAN DENGAN ICON ADAPTIF
   useEffect(() => {
     const updateThemeColor = () => {
       const isDark = document.documentElement.classList.contains('dark');
-      const targetColor = isDark ? '#0e0f12' : '#f1f5f9';
       
+      let metaColorScheme = document.querySelector("meta[name='color-scheme']");
+      if (metaColorScheme) {
+        metaColorScheme.setAttribute('content', isDark ? 'dark' : 'light');
+      }
+
       let metaThemeColor = document.querySelector("meta[name='theme-color']");
       if (metaThemeColor) {
-        metaThemeColor.setAttribute('content', targetColor);
+        metaThemeColor.setAttribute('content', 'transparent');
       } else {
         const meta = document.createElement('meta');
         meta.name = 'theme-color';
-        meta.content = targetColor;
+        meta.content = 'transparent';
         document.head.appendChild(meta);
       }
     };
@@ -776,7 +780,7 @@ export default function App() {
 
       <div className={`relative min-h-screen bg-slate-100 dark:bg-[#0e0f12] text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-300 ${shouldShowAspirationModal ? 'pointer-events-none blur-sm select-none' : ''}`}>
         
-        {/* GLOW DIPINDAHKAN KE BAWAH AGAR STATUS BAR ATAS SELALU PEKAT & BERSIH */}
+        {/* GLOW DIPINDAHKAN KE BAWAH AGAR AREA ATAS TIDAK BENTROK */}
         <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
           <div 
             className="gpu-glow absolute bottom-[-100px] left-[-100px] w-[500px] h-[500px] rounded-full opacity-10 dark:opacity-15" 

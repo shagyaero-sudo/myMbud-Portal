@@ -6,7 +6,11 @@
   html {
     scroll-behavior: smooth;
     -webkit-tap-highlight-color: transparent;
-    background-color: transparent;
+    background-color: #f1f5f9; /* Default Light Mode background */
+  }
+
+  html.dark {
+    background-color: #0e0f12; /* Dark Mode background */
   }
 
   body {
@@ -15,8 +19,14 @@
     -moz-osx-font-smoothing: grayscale;
     padding: 0 !important;
     margin: 0 !important;
-    background-color: #0e0f12;
+    background-color: #f1f5f9; /* DYNAMIC BACKGROUND UNTUK LIGHTMODE */
     overscroll-behavior-y: none;
+  }
+
+  /* Mengikuti class dark Tailwind */
+  body.dark,
+  html.dark body {
+    background-color: #0e0f12 !important; /* DYNAMIC BACKGROUND UNTUK DARKMODE */
   }
 
   /* Custom Soft Scrollbar */
