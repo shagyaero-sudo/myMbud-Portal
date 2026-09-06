@@ -306,27 +306,31 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
       return {
         label: 'Terlewat',
         bg: 'bg-rose-50/80 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border-rose-200/60 dark:border-rose-900/50',
+        gradient: 'from-rose-500/20 via-rose-500/5 to-transparent',
       };
     }
 
     if (diffDays <= 2) {
       const dayText = diffDays <= 0 ? 'H-0' : `H-${diffDays}`;
       return {
-        label: `URGENT ${dayText}`,
-        bg: 'bg-rose-50/80 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 border-rose-200/60 dark:border-rose-900/50 animate-pulse',
+        label: `Mepet ${dayText}`,
+        bg: 'bg-amber-500/10 text-amber-500 border-amber-500/30',
+        gradient: 'from-amber-500/25 via-amber-500/5 to-transparent',
       };
     }
 
     if (diffDays <= 5) {
       return {
         label: `Mepet H-${diffDays}`,
-        bg: 'bg-amber-50/80 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border-amber-200/60 dark:border-amber-900/50',
+        bg: 'bg-amber-500/10 text-amber-500 border-amber-500/30',
+        gradient: 'from-amber-500/20 via-amber-500/5 to-transparent',
       };
     }
 
     return {
       label: `Masih H-${diffDays}`,
-      bg: 'bg-emerald-50/80 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border-emerald-200/60 dark:border-emerald-900/50',
+      bg: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
+      gradient: 'from-emerald-500/20 via-emerald-500/5 to-transparent',
     };
   };
 
@@ -578,7 +582,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
     } catch (error) {
       console.error('Gagal menyimpan tugas:', error);
       alert(`Gagal menyimpan tugas.`);
-    } finally {
+    } fontally {
       setIsUploading(false);
     }
   };
@@ -849,10 +853,15 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                     whileTap={{ scale: 0.99 }}
                     key={t.id}
                     onClick={() => setSelectedDetailTask(t)}
-                    className="p-4 rounded-2xl bg-white/70 dark:bg-zinc-900/60 hover:bg-white/90 dark:hover:bg-zinc-850 backdrop-blur-md border border-white/60 dark:border-white/10 transition-all cursor-pointer flex flex-col justify-between space-y-3.5 group shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none"
+                    className="relative overflow-hidden p-4 rounded-2xl bg-white/70 dark:bg-zinc-900/60 hover:bg-white/90 dark:hover:bg-zinc-850 backdrop-blur-md border border-white/60 dark:border-white/10 transition-all cursor-pointer flex flex-col justify-between space-y-3.5 group shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none"
                   >
+                    {/* GRADASI WARNA STATUS DI POJOK KANAN ATAS */}
+                    {badge && (
+                      <div className={`absolute -right-8 -top-8 w-32 h-32 rounded-full bg-gradient-to-bl ${badge.gradient} blur-xl pointer-events-none transition-transform duration-500 group-hover:scale-125`} />
+                    )}
+
                     {/* BARIS ATAS: Matkul & Badge Deadline */}
-                    <div className="flex items-center justify-between gap-2">
+                    <div className="relative z-10 flex items-center justify-between gap-2">
                       <span className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-50/80 dark:bg-blue-950/60 px-2.5 py-0.5 rounded-full border border-blue-100/50 dark:border-blue-900/40 truncate">
                         {t.course}
                       </span>
@@ -865,14 +874,14 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                     </div>
 
                     {/* BARIS TENGAH: Judul Tugas */}
-                    <div className="pt-0.5">
+                    <div className="relative z-10 pt-0.5">
                       <h3 className="text-sm font-bold text-slate-800 dark:text-zinc-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-snug break-words">
                         {t.title}
                       </h3>
                     </div>
 
                     {/* BARIS BAWAH: Metadata, Detail Link & Action Complete */}
-                    <div className="pt-2 border-t border-slate-200/40 dark:border-white/5 flex items-center justify-between gap-2">
+                    <div className="relative z-10 pt-2 border-t border-slate-200/40 dark:border-white/5 flex items-center justify-between gap-2">
                       <div className="space-y-1 text-[11px] text-slate-500 dark:text-zinc-400">
                         <span className="font-medium text-slate-700 dark:text-zinc-300 flex items-center gap-1">
                           {t.type === 'Kelompok' ? (
