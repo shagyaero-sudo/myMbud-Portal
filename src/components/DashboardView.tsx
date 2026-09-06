@@ -673,7 +673,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 StudentConnect
               </span>
               <span className="text-[10px] text-slate-400 dark:text-zinc-500 block truncate">
-                Kemahasiswaan
+                SKEM & Porto
               </span>
             </div>
           </a>
@@ -867,7 +867,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                               <span>{item.room}</span>
                             </span>
                             <span className="opacity-40 text-slate-400 dark:text-zinc-500">•</span>
-                            <span className="text-slate-800 dark:text-white font-semibold">{item.time} WIB</span>
+                            <span className="text-slate-800 dark:text-white font-semibold">{item.time}</span>
                           </div>
 
                           <h3 className="text-sm sm:text-base font-extrabold text-slate-800 dark:text-zinc-100 leading-snug max-w-[220px] sm:max-w-[280px]">
