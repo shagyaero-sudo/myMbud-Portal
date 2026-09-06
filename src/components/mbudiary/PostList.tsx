@@ -13,6 +13,7 @@ interface PostListProps {
   onSelectAuthor?: (authorNrp: string) => void;
   onExitToDashboard?: () => void;
   onOpenOwnProfile?: () => void;
+  onNavigateToChat?: (targetNrp?: string) => void;
 }
 
 type FeedTab = 'for_you' | 'following';
@@ -23,6 +24,7 @@ export const PostList: React.FC<PostListProps> = ({
   onSelectAuthor,
   onExitToDashboard,
   onOpenOwnProfile,
+  onNavigateToChat,
 }) => {
   const [posts, setPosts] = useState<MbudiaryPost[]>(() => getPosts());
   const [activeTab, setActiveTab] = useState<FeedTab>('for_you');
@@ -104,9 +106,9 @@ export const PostList: React.FC<PostListProps> = ({
   return (
     <div className="space-y-3 sm:space-y-4 w-full">
       
-      {/* 1-ROW TOPBAR */}
-      <div className="flex items-center gap-2.5 sm:gap-4 w-full px-1 py-1">
-        <div className="flex items-center gap-2 shrink-0">
+      {/* 1-ROW TOPBAR DENGAN TOMBOL MBUDTALK DI POJOK KANAN */}
+      <div className="flex items-center gap-2 sm:gap-3 w-full px-1 py-1">
+        <div className="flex items-center gap-1.5 shrink-0">
           <button
             type="button"
             onClick={onExitToDashboard}
@@ -121,6 +123,7 @@ export const PostList: React.FC<PostListProps> = ({
           </span>
         </div>
 
+        {/* BAR PENCARIAN */}
         <div className="relative flex-1 min-w-0 flex items-center">
           <div className="absolute left-3.5 flex items-center pointer-events-none z-10">
             <Search className="w-4 h-4 text-slate-400 dark:text-zinc-400" />
@@ -141,6 +144,16 @@ export const PostList: React.FC<PostListProps> = ({
             </button>
           )}
         </div>
+
+        {/* TOMBOL MBUDTALK LINGKARAN DI SEBELAH KANAN SEARCH BAR */}
+        <button
+          type="button"
+          onClick={() => onNavigateToChat?.()}
+          className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 text-slate-700 dark:text-zinc-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/90 dark:hover:bg-zinc-800/80 flex items-center justify-center shrink-0 shadow-xs transition-all active:scale-95 cursor-pointer"
+          title="Buka mbudTalk Obrolan"
+        >
+          <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 dark:text-blue-400" />
+        </button>
       </div>
 
       {/* HASIL PENCARIAN AKUN */}

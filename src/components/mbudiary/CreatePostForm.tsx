@@ -9,8 +9,6 @@ import {
   X,
   CheckCircle2,
   ImagePlus,
-  Camera,
-  Images,
   Loader2,
   AtSign,
   User,
@@ -52,7 +50,6 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isUploadMenuOpen, setIsUploadMenuOpen] = useState(false);
   
   // State Audience: Default Public
   const [isFollowersOnly, setIsFollowersOnly] = useState(false);
@@ -62,7 +59,6 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
   const [mentionQuery, setMentionQuery] = useState<string | null>(null);
 
   const galleryInputRef = useRef<HTMLInputElement>(null);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -136,7 +132,6 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
     const remainingSlots = MAX_IMAGES - selectedImages.length;
     if (remainingSlots <= 0) {
       alert(`Maksimal ${MAX_IMAGES} gambar per postingan.`);
-      setIsUploadMenuOpen(false);
       return;
     }
 
@@ -155,16 +150,12 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
       validFiles.push(file);
     }
 
-    if (!validFiles.length) {
-      setIsUploadMenuOpen(false);
-      return;
-    }
+    if (!validFiles.length) return;
 
     const newPreviews = validFiles.map((file) => URL.createObjectURL(file));
 
     setSelectedImages((prev) => [...prev, ...validFiles]);
     setPreviewUrls((prev) => [...prev, ...newPreviews]);
-    setIsUploadMenuOpen(false);
   };
 
   const handleSubmitPost = async (e: React.FormEvent) => {
@@ -407,13 +398,13 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
                 {/* MODAL FOOTER */}
                 <div className="px-4 py-2.5 sm:px-5 border-t border-slate-200/40 dark:border-white/10 bg-white/50 dark:bg-zinc-900/50 flex items-center justify-between shrink-0 relative z-20 rounded-b-3xl">
                   
-                  {/* SISI KIRI: UPLOAD GAMBAR */}
-                  <div className="relative">
+                  {/* SISI KIRI: DIRECT UPLOAD GAMBAR */}
+                  <div>
                     <button
                       type="button"
                       onClick={() => {
                         setIsAudienceDropdownOpen(false);
-                        setIsUploadMenuOpen((prev) => !prev);
+                        galleryInputRef.current?.click();
                       }}
                       disabled={isPosting || selectedImages.length >= MAX_IMAGES}
                       className="px-3 py-1.5 rounded-2xl hover:bg-white/80 dark:hover:bg-zinc-800 disabled:opacity-50 text-blue-600 dark:text-blue-400 text-xs font-semibold transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
@@ -426,57 +417,13 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
                         </span>
                       )}
                     </button>
-
-                    <AnimatePresence>
-                      {isUploadMenuOpen && (
-                        <>
-                          <div className="fixed inset-0 z-30" onClick={() => setIsUploadMenuOpen(false)} />
-                          <motion.div
-                            initial={{ opacity: 0, y: 5, scale: 0.97 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: 5, scale: 0.97 }}
-                            className="absolute left-0 bottom-full mb-2 z-40 w-48 bg-white/95 dark:bg-zinc-800/95 backdrop-blur-xl border border-white/60 dark:border-zinc-700 rounded-2xl p-1.5 shadow-xl"
-                          >
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setIsUploadMenuOpen(false);
-                                cameraInputRef.current?.click();
-                              }}
-                              className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left text-xs font-semibold text-slate-700 dark:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
-                            >
-                              <span className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center">
-                                <Camera className="w-3.5 h-3.5" />
-                              </span>
-                              <span>Ambil Gambar</span>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setIsUploadMenuOpen(false);
-                                galleryInputRef.current?.click();
-                              }}
-                              className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left text-xs font-semibold text-slate-700 dark:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
-                            >
-                              <span className="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-                                <Images className="w-3.5 h-3.5" />
-                              </span>
-                              <span>Pilih dari Galeri</span>
-                            </button>
-                          </motion.div>
-                        </>
-                      )}
-                    </AnimatePresence>
                   </div>
 
                   {/* SISI KANAN: AUDIENCE DROPDOWN (ABU-ABU MINIMALIS) */}
                   <div className="relative">
                     <button
                       type="button"
-                      onClick={() => {
-                        setIsUploadMenuOpen(false);
-                        setIsAudienceDropdownOpen((prev) => !prev);
-                      }}
+                      onClick={() => setIsAudienceDropdownOpen((prev) => !prev)}
                       className="px-2.5 py-1.5 rounded-xl bg-slate-100/80 dark:bg-zinc-800/80 hover:bg-slate-200/80 dark:hover:bg-zinc-700 text-slate-600 dark:text-zinc-400 text-xs font-medium transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer border border-slate-200/50 dark:border-white/5"
                     >
                       {isFollowersOnly ? (
@@ -554,7 +501,6 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
         document.body
       )}
 
-      <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" multiple className="hidden" onChange={handleImageSelection} />
       <input ref={galleryInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple className="hidden" onChange={handleImageSelection} />
     </>
   );

@@ -12,7 +12,7 @@ const ONBOARDING_PROFILE_KEY = 'mbud_onboarded_mbudiary_profile';
 const SWIPE_HINT_KEY = 'mbud_swipe_hint_seen';
 
 interface MbudiaryViewProps {
-  onNavigateToChat?: (targetNrp: string) => void;
+  onNavigateToChat?: (targetNrp?: string) => void;
 }
 
 export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) => {
@@ -360,6 +360,7 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) 
             onSelectAuthor={(authorNrp) => handleSelectAuthor(authorNrp, true)}
             onExitToDashboard={handleExitToDashboard}
             onOpenOwnProfile={() => handleSelectAuthor(currentUser.nrp, true)}
+            onNavigateToChat={onNavigateToChat}
           />
         </div>
 
