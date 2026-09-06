@@ -127,7 +127,6 @@ export default function App() {
 
   const [showSplash, setShowSplash] = useState<boolean>(true);
 
-  // MENGHAPUS META THEME-COLOR AGAR ANDROID TRANSPARAN SEPENUHNYA
   useEffect(() => {
     const updateColorScheme = () => {
       const isDark = document.documentElement.classList.contains('dark');
@@ -780,7 +779,6 @@ export default function App() {
 
       <div className={`relative min-h-screen bg-slate-100 dark:bg-[#0e0f12] text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-300 ${shouldShowAspirationModal ? 'pointer-events-none blur-sm select-none' : ''}`}>
         
-        {/* GLOW DIPINDAHKAN KE BAWAH AGAR STATUS BAR ATAS BERSIH & PEKAT */}
         <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
           <div 
             className="gpu-glow absolute bottom-[-100px] left-[-100px] w-[500px] h-[500px] rounded-full opacity-10 dark:opacity-15" 
@@ -792,9 +790,7 @@ export default function App() {
           />
         </div>
 
-        {/* CONTENT LAYER */}
         <div className="relative z-10 flex flex-col min-h-screen bg-transparent pt-[env(safe-area-inset-top,12px)] sm:pt-4">
-          {/* HEADER DESKTOP ONLY */}
           <div className="hidden lg:block">
             <Header
               isOfficer={isOfficer}
@@ -903,9 +899,10 @@ export default function App() {
                     />
                   </div>
 
+                  {/* FIX NAVIGASI BACK MBUDTALK KEMBALI KE MBUDIARY */}
                   <div className={activeTab === 'mbudtalk' ? 'block' : 'hidden'}>
                     <MbudTalkView
-                      onBack={() => handleNavigateTab('dashboard')}
+                      onBack={() => handleNavigateTab('mbudiary')}
                       targetNrp={chatTargetNrp}
                     />
                   </div>

@@ -159,7 +159,7 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
   const getUserDisplayName = (u?: UserProfile | null) => u?.nickname || u?.username || u?.nrp || 'Teman';
   const getUserAvatar = (u?: UserProfile | null) => u?.photo_url || u?.avatar_url || null;
 
-  // AUTO-LINK PARSER REVISION (MEMBAWA http/https MAUPUN DOMAIN POLOS)
+  // AUTO-LINK PARSER REVISION
   const renderMessageTextWithLinks = (text: string, isMe: boolean) => {
     if (!text) return null;
     const urlRegex = /((?:https?:\/\/|www\.)[^\s]+|[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\/[^\s]*)/g;
@@ -189,7 +189,7 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
     });
   };
 
-  // ROUTING BROWSER HASH INTEGRATION (#mbudtalk/chat/nrp ATAU #mbudtalk/group/id)
+  // ROUTING BROWSER HASH INTEGRATION
   useEffect(() => {
     const handlePopState = () => {
       if (activeChat) setActiveChat(null);
@@ -393,7 +393,7 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  // SEND MESSAGE (FAST REALTIME LOCAL PUSH)
+  // SEND MESSAGE
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if ((!inputText.trim() && !selectedImageFile) || isSending || !activeChat) return;
@@ -606,10 +606,18 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
       >
         <div className="flex items-center justify-between gap-3 p-2.5 px-4 rounded-3xl bg-white/60 dark:bg-zinc-900/50 backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-xs shrink-0">
           <div className="flex items-center gap-2.5">
+            {/* FIX: TOMBOL BACK HEADER DENGAN CONDITIONAL CLOSE CHAT / ONBACK */}
             <button
               type="button"
-              onClick={onBack}
+              onClick={() => {
+                if (activeChat) {
+                  handleCloseChat();
+                } else {
+                  onBack();
+                }
+              }}
               className="p-1.5 rounded-2xl text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-white/40 dark:hover:bg-zinc-800/60 transition-colors cursor-pointer"
+              title="Kembali ke mbudiary"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
@@ -767,7 +775,7 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
               )}
             </div>
 
-            {/* MESSAGES BOX WITH DOUBLE TAP TO REPLY */}
+            {/* MESSAGES BOX */}
             <div 
               ref={chatScrollContainerRef}
               className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-2.5 custom-scrollbar rounded-3xl bg-white/30 dark:bg-zinc-900/25 backdrop-blur-md border border-white/40 dark:border-white/5"
@@ -941,7 +949,7 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
         )}
       </AnimatePresence>
 
-      {/* MODAL EDIT GRUP + DAFTAR ANGGOTA & TAMBAH ANGGOTA */}
+      {/* MODAL EDIT GRUP */}
       <AnimatePresence>
         {isEditGroupModalOpen && activeChat?.type === 'group' && (
           <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
@@ -995,7 +1003,6 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                   />
                 </div>
 
-                {/* DAFTAR ANGGOTA EKSISTING */}
                 <div>
                   <label className="block text-xs font-semibold mb-1">Anggota Grup ({existingMembers.length})</label>
                   <div className="max-h-32 overflow-y-auto space-y-1.5 custom-scrollbar bg-slate-50 dark:bg-zinc-800/50 p-2 rounded-2xl">
@@ -1012,7 +1019,6 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                   </div>
                 </div>
 
-                {/* TAMBAH ANGGOTA BARU */}
                 <div>
                   <label className="block text-xs font-semibold mb-1.5">Tambah Anggota Baru</label>
                   <div className="relative flex items-center w-full rounded-xl bg-slate-100 dark:bg-zinc-800 px-3 py-1.5 mb-2">
@@ -1059,7 +1065,7 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
         )}
       </AnimatePresence>
 
-      {/* MODAL TERINTEGRASI: MULAI CHAT BARU & BUAT GRUP */}
+      {/* MODAL MULAI CHAT BARU */}
       <AnimatePresence>
         {isNewChatModalOpen && (
           <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
@@ -1126,7 +1132,7 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
         )}
       </AnimatePresence>
 
-      {/* MODAL BUAT GRUP (SEARCHBAR + RECAP CHIP ANGGOTA TERCENTANG) */}
+      {/* MODAL BUAT GRUP */}
       <AnimatePresence>
         {isCreateGroupModalOpen && (
           <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
@@ -1150,7 +1156,6 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                   />
                 </div>
 
-                {/* RECAP ANGGOTA TERPILIH */}
                 {selectedGroupMembers.length > 0 && (
                   <div>
                     <label className="block text-[11px] font-semibold text-slate-500 mb-1">
@@ -1178,7 +1183,6 @@ export const MbudTalkView: React.FC<MbudTalkViewProps> = ({ onBack, targetNrp })
                 <div>
                   <label className="block text-xs font-semibold mb-1.5">Pilih Anggota Grup</label>
                   
-                  {/* SEARCHBAR ANGGOTA GRUP */}
                   <div className="relative flex items-center w-full rounded-2xl bg-slate-100 dark:bg-zinc-800 px-3 py-2 mb-2">
                     <Search className="w-3.5 h-3.5 text-slate-400 mr-2" />
                     <input

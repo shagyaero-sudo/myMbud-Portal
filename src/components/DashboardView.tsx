@@ -709,7 +709,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 StudentConnect
               </span>
               <span className="text-[10px] text-slate-400 dark:text-zinc-500 block truncate">
-                SKEM & Porto
+                SKEM Portofolio
               </span>
             </div>
           </a>
@@ -742,10 +742,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
             <div className="min-w-0">
               <span className="text-xs font-bold text-slate-800 dark:text-zinc-100 block truncate">
-                Menu Lainnya 
+                Menu Lainnya &gt;
               </span>
               <span className="text-[10px] text-slate-400 dark:text-zinc-500 block truncate">
-                Akses Lengkap
+                Eksplor Fitur
               </span>
             </div>
           </button>
