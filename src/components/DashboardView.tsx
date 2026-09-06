@@ -16,6 +16,18 @@ import {
   Building2,
   Coffee,
   MessageSquare,
+  BookOpenCheck,
+  Handshake,
+  FileSpreadsheet,
+  LayoutGrid,
+  Globe,
+  ClipboardList,
+  GraduationCap,
+  Dices,
+  Calculator,
+  FileEdit,
+  Award,
+  Gamepad2,
 } from 'lucide-react';
 import { supabase } from '../services/supabase';
 import { AppState, DayOfWeek, Announcement } from '../types';
@@ -42,9 +54,10 @@ interface DashboardViewProps {
   onAddAnnouncement: (announcement: Omit<Announcement, 'id' | 'date'>) => void;
   onDeleteAnnouncement: (id: string) => void;
   onNavigateTab: (
-    tab: 'tasks' | 'contacts' | 'materials' | 'spinwheel' | 'calculator' | 'mbudiary' | 'mbudtalk' | any,
+    tab: 'tasks' | 'contacts' | 'materials' | 'spinwheel' | 'calculator' | 'letter' | 'mbudiary' | 'mbudtalk' | 'blockblast' | any,
     courseFilterOrTaskId?: string
   ) => void;
+  onOpenGpaModal?: () => void;
 }
 
 const NATIONAL_HOLIDAYS_2026: Record<string, string> = {
@@ -90,9 +103,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   state,
   isOfficer,
   onNavigateTab,
+  onOpenGpaModal
 }) => {
   const [selectedDay, setSelectedDay] = useState<DayOfWeek | null>(null);
   const [showAnnModal, setShowAnnModal] = useState(false);
+  const [showMoreMenuModal, setShowMoreMenuModal] = useState(false);
   const [editingAnnId, setEditingAnnId] = useState<string | null>(null);
   const [isSubmittingAnn, setIsSubmittingAnn] = useState(false);
 
@@ -112,10 +127,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [newAnnPinned, setNewAnnPinned] = useState(true);
 
   const [selectedAnnModal, setSelectedAnnModal] = useState<Announcement | null>(null);
-
-  const [mobileAnnIndex, setMobileAnnIndex] = useState(0);
-  const [touchStartX, setTouchStartX] = useState<number | null>(null);
-  const [isPaused, setIsPaused] = useState(false);
 
   const [userAvatarUrl, setUserAvatarUrl] = useState<string | null>(() => {
     return typeof window !== 'undefined' ? localStorage.getItem('mymbud_user_photo_url') || null : null;
@@ -217,7 +228,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     return () => window.removeEventListener('mbud_streak_change', refreshStreak);
   }, [currentUserNrp, userName]);
 
-  // Listener Dot Merah Chat Masuk
   useEffect(() => {
     if (!currentUserNrp || currentUserNrp === 'unknown') return;
 
@@ -275,51 +285,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     };
   }, [currentUserNrp]);
 
-  const totalAnn = realAnnouncements.length;
-  const activeAnnIndex = Math.min(mobileAnnIndex, Math.max(0, totalAnn - 1));
-  const currentMobileAnn = realAnnouncements[activeAnnIndex];
-
   useEffect(() => {
     const unsubscribe = subscribeAnnouncements((data) => {
       setRealAnnouncements(data);
     });
     return () => unsubscribe();
   }, []);
-
-  useEffect(() => {
-    if (totalAnn <= 1 || isPaused || selectedAnnModal !== null) return;
-    const interval = setInterval(() => {
-      setMobileAnnIndex((prev) => (prev < totalAnn - 1 ? prev + 1 : 0));
-    }, 4000);
-    return () => clearInterval(interval);
-  }, [totalAnn, isPaused, selectedAnnModal]);
-
-  const handlePrevAnn = () => {
-    if (totalAnn <= 1) return;
-    setMobileAnnIndex((prev) => (prev > 0 ? prev - 1 : totalAnn - 1));
-  };
-
-  const handleNextAnn = () => {
-    if (totalAnn <= 1) return;
-    setMobileAnnIndex((prev) => (prev < totalAnn - 1 ? prev + 1 : 0));
-  };
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setIsPaused(true);
-    setTouchStartX(e.touches[0].clientX);
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    setIsPaused(false);
-    if (touchStartX === null) return;
-    const touchEndX = e.changedTouches[0].clientX;
-    const diff = touchStartX - touchEndX;
-    if (Math.abs(diff) > 40) {
-      if (diff > 0) handleNextAnn();
-      else handlePrevAnn();
-    }
-    setTouchStartX(null);
-  };
 
   const daysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
   const firstDayOfMonth = (year: number, month: number) => {
@@ -583,16 +554,32 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </motion.div>
       )}
 
-      {/* CLUSTER HEADER & PENGUMUMAN MOBILE */}
+      {/* HEADER MOBILE (DENGAN FOTO PROFIL MBUDIARY) */}
       <div className="block lg:hidden space-y-3">
         <div className="flex items-center justify-between gap-3 px-1 pt-1">
-          <div>
-            <h2 className="text-xl font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
-              {getGreeting()}
-            </h2>
-            <div className="flex items-center gap-1.5 mt-0.5 text-xs font-medium text-slate-500 dark:text-zinc-400 leading-relaxed">
-              <CalendarIcon className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500 shrink-0" />
-              <span>{formattedTodayDate}</span>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => onNavigateTab('mbudiary')}
+              className="w-11 h-11 rounded-full bg-slate-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-slate-200/80 dark:border-zinc-700 shrink-0 cursor-pointer shadow-xs active:scale-95 transition-transform"
+              title="Ke mBudiary"
+            >
+              {userAvatarUrl ? (
+                <img src={userAvatarUrl} alt="Foto Profil" className="w-full h-full object-cover rounded-full" />
+              ) : (
+                <span className="text-sm font-extrabold text-slate-700 dark:text-zinc-200">
+                  {userName.charAt(0).toUpperCase()}
+                </span>
+              )}
+            </button>
+
+            <div>
+              <h2 className="text-lg font-bold text-slate-900 dark:text-zinc-100 tracking-tight leading-tight">
+                {getGreeting()}
+              </h2>
+              <div className="flex items-center gap-1.5 mt-0.5 text-[11px] font-medium text-slate-500 dark:text-zinc-400">
+                <CalendarIcon className="w-3 h-3 text-slate-400 dark:text-zinc-500 shrink-0" />
+                <span>{formattedTodayDate}</span>
+              </div>
             </div>
           </div>
 
@@ -613,122 +600,81 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </motion.button>
         </div>
 
-        {/* GLASS CARD PENGUMUMAN MOBILE */}
-        <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-4 sm:p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none transition-all relative">
-          {isOfficer && (
-            <div className="flex justify-end pb-2">
-              <button
-                onClick={handleOpenAddAnn}
-                className="px-2.5 py-1 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-all text-xs font-semibold flex items-center gap-1 shadow-xs cursor-pointer"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Buat</span>
-              </button>
+        {/* 4 BENTO BUTTONS MOBILE */}
+        <div className="grid grid-cols-2 gap-2.5 pt-1">
+          <a
+            href="https://classroom.its.ac.id/auth/oidc"
+            target="_blank"
+            rel="noreferrer"
+            className="p-3.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none flex items-center gap-3 hover:bg-white/90 dark:hover:bg-zinc-850 transition-all active:scale-95 cursor-pointer"
+          >
+            <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900/40 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
+              <BookOpenCheck className="w-5 h-5" />
             </div>
-          )}
-
-          {totalAnn === 0 ? (
-            <div className="p-4 text-center text-slate-400 dark:text-zinc-500 text-xs bg-slate-50/50 dark:bg-zinc-800/30 rounded-2xl">
-              Belum ada pengumuman kelas.
+            <div className="min-w-0">
+              <span className="text-xs font-bold text-slate-800 dark:text-zinc-100 block truncate">
+                Classroom
+              </span>
+              <span className="text-[10px] text-slate-400 dark:text-zinc-500 block truncate">
+                LMS Academic
+              </span>
             </div>
-          ) : (
-            <div className="relative">
-              {totalAnn > 1 && (
-                <>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handlePrevAnn();
-                    }}
-                    className="absolute left-1 top-1/2 -translate-y-1/2 z-20 text-slate-400 dark:text-zinc-500 hover:text-slate-800 dark:hover:text-zinc-100 opacity-70 hover:opacity-100 transition-all active:scale-90 p-1 cursor-pointer"
-                    aria-label="Pengumuman Sebelumnya"
-                  >
-                    <ChevronLeft className="w-5 h-5" />
-                  </button>
+          </a>
 
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleNextAnn();
-                    }}
-                    className="absolute right-1 top-1/2 -translate-y-1/2 z-20 text-slate-400 dark:text-zinc-500 hover:text-slate-800 dark:hover:text-zinc-100 opacity-70 hover:opacity-100 transition-all active:scale-90 p-1 cursor-pointer"
-                    aria-label="Pengumuman Selanjutnya"
-                  >
-                    <ChevronRight className="w-5 h-5" />
-                  </button>
-                </>
-              )}
-
-              <motion.div
-                key={currentMobileAnn?.id}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                onClick={() => setSelectedAnnModal(currentMobileAnn)}
-                onMouseEnter={() => setIsPaused(true)}
-                onMouseLeave={() => setIsPaused(false)}
-                onTouchStart={handleTouchStart}
-                onTouchEnd={handleTouchEnd}
-                className="p-4 sm:p-5 rounded-2xl bg-white/60 dark:bg-zinc-800/50 backdrop-blur-sm border border-slate-200/50 dark:border-white/5 space-y-2 transition-colors select-none cursor-pointer hover:bg-white/80 dark:hover:bg-zinc-800/70 active:scale-[0.99]"
-              >
-                <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-zinc-400">
-                  <span className="font-semibold text-blue-600 dark:text-blue-400 bg-blue-50/80 dark:bg-blue-950/60 px-2.5 py-0.5 rounded-full text-[10px]">
-                    {currentMobileAnn?.category}
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-slate-400 dark:text-zinc-500">
-                      {formatAnnouncementDate(currentMobileAnn?.date)}
-                    </span>
-                    {isOfficer && (
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleOpenEditAnn(currentMobileAnn);
-                          }}
-                          className="text-slate-400 hover:text-blue-600 transition-colors p-0.5 cursor-pointer"
-                        >
-                          <Edit2 className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteAnn(currentMobileAnn.id);
-                          }}
-                          className="text-slate-400 hover:text-rose-600 transition-colors p-0.5 cursor-pointer"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <h4 className="text-xs font-bold text-slate-800 dark:text-zinc-100 line-clamp-1">
-                  {currentMobileAnn?.title}
-                </h4>
-                <p className="text-xs text-slate-600 dark:text-zinc-300 leading-relaxed line-clamp-2">
-                  {renderFormattedContent(currentMobileAnn?.content)}
-                </p>
-              </motion.div>
+          <a
+            href="https://kemahasiswaan.its.ac.id/beranda"
+            target="_blank"
+            rel="noreferrer"
+            className="p-3.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none flex items-center gap-3 hover:bg-white/90 dark:hover:bg-zinc-850 transition-all active:scale-95 cursor-pointer"
+          >
+            <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
+              <Handshake className="w-5 h-5" />
             </div>
-          )}
-
-          {/* MICRO DOT INDICATORS */}
-          {totalAnn > 1 && (
-            <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex items-center gap-1 pointer-events-none z-10">
-              {realAnnouncements.map((_, idx) => (
-                <div
-                  key={idx}
-                  className={`h-1 rounded-full transition-all duration-300 ${
-                    activeAnnIndex === idx
-                      ? 'w-3 bg-blue-500 dark:bg-blue-400 opacity-90'
-                      : 'w-1 bg-slate-400/40 dark:bg-zinc-600/40'
-                  }`}
-                />
-              ))}
+            <div className="min-w-0">
+              <span className="text-xs font-bold text-slate-800 dark:text-zinc-100 block truncate">
+                StudentConnect
+              </span>
+              <span className="text-[10px] text-slate-400 dark:text-zinc-500 block truncate">
+                Kemahasiswaan
+              </span>
             </div>
-          )}
+          </a>
+
+          <a
+            href="https://mia.its.ac.id/penilaian/"
+            target="_blank"
+            rel="noreferrer"
+            className="p-3.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none flex items-center gap-3 hover:bg-white/90 dark:hover:bg-zinc-850 transition-all active:scale-95 cursor-pointer"
+          >
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-900/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+              <FileSpreadsheet className="w-5 h-5" />
+            </div>
+            <div className="min-w-0">
+              <span className="text-xs font-bold text-slate-800 dark:text-zinc-100 block truncate">
+                Cek Nilai
+              </span>
+              <span className="text-[10px] text-slate-400 dark:text-zinc-500 block truncate">
+                KHS & Transkrip
+              </span>
+            </div>
+          </a>
+
+          <button
+            onClick={() => setShowMoreMenuModal(true)}
+            className="p-3.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none flex items-center gap-3 hover:bg-white/90 dark:hover:bg-zinc-850 transition-all active:scale-95 cursor-pointer text-left"
+          >
+            <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-950/60 border border-amber-100 dark:border-amber-900/40 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
+              <LayoutGrid className="w-5 h-5" />
+            </div>
+            <div className="min-w-0">
+              <span className="text-xs font-bold text-slate-800 dark:text-zinc-100 block truncate">
+                Menu Lainnya
+              </span>
+              <span className="text-[10px] text-slate-400 dark:text-zinc-500 block truncate">
+                Akses Fitur
+              </span>
+            </div>
+          </button>
         </div>
       </div>
 
@@ -736,8 +682,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
         <div className="lg:col-span-2 space-y-4 sm:space-y-5">
 
-          {/* MBUDIARY & MBUDTALK INPUT BAR */}
-          <div className="flex items-center gap-2.5 sm:gap-3">
+          {/* MBUDTALK INPUT BAR DESKTOP / SHORTCUT */}
+          <div className="hidden lg:flex items-center gap-2.5 sm:gap-3">
             <motion.div
               whileHover={{ scale: 1.004 }}
               whileTap={{ scale: 0.99 }}
@@ -764,7 +710,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
             </motion.div>
 
-            {/* TOMBOL SQUARE MBUDTALK (OUTLINE SAAT KOSONG, SOLID/FILL + DOT SAAT UNREAD) */}
             <motion.button
               type="button"
               whileHover={{ scale: 1.05 }}
@@ -1209,6 +1154,204 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         onStreakUpdate={(updated) => setStreakData(updated)}
       />
 
+      {/* MODAL MENU LAINNYA (PORTAL) */}
+      {typeof document !== 'undefined' &&
+        createPortal(
+          <AnimatePresence>
+            {showMoreMenuModal && (
+              <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setShowMoreMenuModal(false)}
+                  className="fixed inset-0 bg-slate-950/75 backdrop-blur-md transition-opacity"
+                />
+
+                <motion.div 
+                  initial={{ scale: 0.92, opacity: 0, y: 15 }}
+                  animate={{ scale: 1, opacity: 1, y: 0 }}
+                  exit={{ scale: 0.92, opacity: 0, y: 15 }}
+                  transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+                  className="relative z-10 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border border-white/40 dark:border-white/10 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-md w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden"
+                >
+                  <div className="px-6 py-5 border-b border-slate-200/40 dark:border-white/10 flex items-center justify-between shrink-0 bg-white/50 dark:bg-zinc-900/50">
+                    <div>
+                      <h3 className="text-base font-bold text-slate-900 dark:text-zinc-100">
+                        Menu & Akses Portal
+                      </h3>
+                      <p className="text-[11px] text-slate-400 dark:text-zinc-500 mt-0.5">
+                        Layanan akademis & tools pendukung
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() => setShowMoreMenuModal(false)}
+                      className="p-2 rounded-2xl text-slate-400 hover:text-slate-800 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors shrink-0 cursor-pointer"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  <div className="flex-1 overflow-y-auto p-5 space-y-5 custom-scrollbar">
+                    {/* myITS ACADEMICS 2.0 */}
+                    <div className="space-y-2">
+                      <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 tracking-wider px-1">
+                        <span className="lowercase">my</span>ITS ACADEMICS 2.0
+                      </p>
+
+                      <div className="grid grid-cols-1 gap-2">
+                        <a
+                          href="https://mia.its.ac.id/presensi/"
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-zinc-900 border border-slate-200/50 dark:border-white/5 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold"
+                        >
+                          <span className="flex items-center gap-2.5 truncate">
+                            <ClipboardList className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                            <span className="truncate">Presensi Kuliah</span>
+                          </span>
+                          <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
+                        </a>
+
+                        <a
+                          href="https://mia.its.ac.id/rencana-studi/"
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-zinc-900 border border-slate-200/50 dark:border-white/5 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold"
+                        >
+                          <span className="flex items-center gap-2.5 truncate">
+                            <GraduationCap className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                            <span className="truncate">Rencana Studi (FRS)</span>
+                          </span>
+                          <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
+                        </a>
+                      </div>
+                    </div>
+
+                    {/* PORTAL SIAKAD LAMA */}
+                    <div className="space-y-2 pt-2 border-t border-slate-200/50 dark:border-white/5">
+                      <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-1">
+                        PORTAL LAMA
+                      </p>
+
+                      <a
+                        href="https://akademik.its.ac.id/home.php"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-zinc-900 border border-slate-200/50 dark:border-white/5 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold"
+                      >
+                        <span className="flex items-center gap-2.5 truncate">
+                          <Globe className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                          <span className="truncate">SIAKAD 1.0</span>
+                        </span>
+                        <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
+                      </a>
+                    </div>
+
+                    {/* TOOLS LAINNYA */}
+                    <div className="space-y-2 pt-2 border-t border-slate-200/50 dark:border-white/5">
+                      <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-1">
+                        TOOLS LAINNYA
+                      </p>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowMoreMenuModal(false);
+                            onNavigateTab('spinwheel');
+                          }}
+                          className="flex items-center justify-between p-3 rounded-2xl text-xs font-semibold transition-all bg-blue-50/70 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 active:bg-blue-100"
+                        >
+                          <div className="flex items-center gap-2 truncate">
+                            <Dices className="w-4 h-4 shrink-0" />
+                            <span className="truncate">Spinwheel</span>
+                          </div>
+                          <ChevronRight className="w-3.5 h-3.5 opacity-70 shrink-0" />
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowMoreMenuModal(false);
+                            onNavigateTab('calculator');
+                          }}
+                          className="flex items-center justify-between p-3 rounded-2xl text-xs font-semibold transition-all bg-indigo-50/70 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 active:bg-indigo-100"
+                        >
+                          <div className="flex items-center gap-2 truncate">
+                            <Calculator className="w-4 h-4 shrink-0" />
+                            <span className="truncate">Kalkulator Nilai</span>
+                          </div>
+                          <ChevronRight className="w-3.5 h-3.5 opacity-70 shrink-0" />
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowMoreMenuModal(false);
+                            onNavigateTab('letter');
+                          }}
+                          className="flex items-center justify-between p-3 rounded-2xl text-xs font-semibold transition-all bg-emerald-50/70 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 active:bg-emerald-100"
+                        >
+                          <div className="flex items-center gap-2 truncate">
+                            <FileEdit className="w-4 h-4 shrink-0" />
+                            <span className="truncate">Surat Turlap</span>
+                          </div>
+                          <ChevronRight className="w-3.5 h-3.5 opacity-70 shrink-0" />
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowMoreMenuModal(false);
+                            if (onOpenGpaModal) onOpenGpaModal();
+                          }}
+                          className="flex items-center justify-between p-3 rounded-2xl text-xs font-semibold transition-all bg-amber-50/70 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 active:bg-amber-100"
+                        >
+                          <div className="flex items-center gap-2 truncate">
+                            <Award className="w-4 h-4 shrink-0" />
+                            <span className="truncate">Hitung IP</span>
+                          </div>
+                          <ChevronRight className="w-3.5 h-3.5 opacity-70 shrink-0" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* MINIGAME */}
+                    <div className="space-y-2 pt-2 border-t border-slate-200/50 dark:border-white/5">
+                      <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-1">
+                        MINIGAME
+                      </p>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowMoreMenuModal(false);
+                          onNavigateTab('blockblast');
+                        }}
+                        className="group relative w-full overflow-hidden rounded-2xl p-3 text-xs font-bold transition-all border bg-gradient-to-r from-purple-50/80 via-fuchsia-50/80 to-pink-50/80 dark:from-purple-950/40 dark:via-fuchsia-950/30 dark:to-pink-950/30 text-purple-700 dark:text-purple-300 border-purple-200/70 dark:border-purple-800/50 active:scale-95"
+                      >
+                        <div className="relative flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-white/80 dark:bg-zinc-900/80 shadow-xs">
+                              <Gamepad2 className="w-4 h-4 text-purple-500" />
+                            </div>
+                            <span>myMbudblox</span>
+                          </div>
+                          <ChevronRight className="w-4 h-4 opacity-70" />
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
+            )}
+          </AnimatePresence>,
+          document.body
+        )}
+
+      {/* MODAL PENGUMUMAN */}
       {typeof document !== 'undefined' &&
         createPortal(
           <AnimatePresence>
