@@ -34,7 +34,10 @@ import {
   Lock,
   Check,
   ShieldCheck,
-  Plus
+  Plus,
+  Megaphone,
+  Send,
+  Users
 } from 'lucide-react';
 import { supabase } from '../services/supabase';
 import { AppState, DayOfWeek, ScheduleItem } from '../types';
@@ -51,6 +54,7 @@ import {
   markNotificationAsRead,
   markAllNotificationsAsRead,
 } from '../services/notifications';
+import { sendOfficerNotification } from '../services/oneSignalNotification';
 
 const IS_FRS_WAR_ACTIVE = false;
 const FRS_DIRECT_URL = 'https://mia.its.ac.id/rencana-studi/';
@@ -156,6 +160,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
 
+  // OFFICER BROADCAST NOTIFICATION STATE
+  const [isOfficerFormOpen, setIsOfficerFormOpen] = useState(false);
+  const [officerTargetNrp, setOfficerTargetNrp] = useState('');
+  const [officerTitle, setOfficerTitle] = useState('');
+  const [officerMessage, setOfficerMessage] = useState('');
+  const [isSendingOfficerNotif, setIsSendingOfficerNotif] = useState(false);
+
   // STREAK & CHAT STATE
   const [streakData, setStreakData] = useState<UserStreak>(getLocalStreak);
   const [isStreakModalOpen, setIsStreakModalOpen] = useState(false);
@@ -241,6 +252,31 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       await markAllNotificationsAsRead(currentUserNrp);
     } catch (error) {
       console.error('[Notifications] Failed to mark all as read:', error);
+    }
+  };
+
+  const handleSendOfficerNotif = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!officerTargetNrp.trim() || !officerTitle.trim() || !officerMessage.trim() || isSendingOfficerNotif) return;
+
+    setIsSendingOfficerNotif(true);
+    try {
+      await sendOfficerNotification({
+        targetNrp: officerTargetNrp.trim(),
+        title: officerTitle.trim(),
+        message: officerMessage.trim(),
+      });
+
+      alert(officerTargetNrp.toUpperCase() === 'ALL' ? 'Notifikasi broadcast berhasil dikirim ke seluruh teman!' : 'Notifikasi berhasil dikirim!');
+      setOfficerTargetNrp('');
+      setOfficerTitle('');
+      setOfficerMessage('');
+      setIsOfficerFormOpen(false);
+    } catch (error) {
+      console.error('[Officer Notif Error]:', error);
+      alert('Gagal mengirim notifikasi.');
+    } finally {
+      setIsSendingOfficerNotif(false);
     }
   };
 
@@ -679,7 +715,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </a>
 
           <a
-            href="https://mia.its.ac.id/penilaian/"
+            href="https://mia.its.ac.id/"
             target="_blank"
             rel="noreferrer"
             className="p-3.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none flex items-center gap-3 hover:bg-white/90 dark:hover:bg-zinc-850 transition-all active:scale-95 cursor-pointer"
@@ -689,10 +725,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
             <div className="min-w-0">
               <span className="text-xs font-bold text-slate-800 dark:text-zinc-100 block truncate">
-                Cek Nilai KRS
+                MIAcademics
               </span>
               <span className="text-[10px] text-slate-400 dark:text-zinc-500 block truncate">
-                Transkrip
+                Cek Nilai / FRS-an
               </span>
             </div>
           </a>
@@ -1205,6 +1241,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         <h3 className="text-base font-bold text-slate-900 dark:text-zinc-100">
                           Notifikasi
                         </h3>
+
                         {unreadNotifCount > 0 && (
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/50 text-rose-500">
                             {unreadNotifCount} baru
@@ -1217,13 +1254,28 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     </div>
 
                     <div className="flex items-center gap-2">
+                      {isOfficer && (
+                        <button
+                          onClick={() => setIsOfficerFormOpen(!isOfficerFormOpen)}
+                          className={`px-2.5 py-1.5 rounded-xl text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs ${
+                            isOfficerFormOpen 
+                              ? 'bg-indigo-600 text-white' 
+                              : 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800/60 hover:bg-indigo-100'
+                          }`}
+                          title="Kirim Pengumuman Broadcast"
+                        >
+                          <Megaphone className="w-3.5 h-3.5" />
+                          <span>Pengumuman</span>
+                        </button>
+                      )}
+
                       {unreadNotifCount > 0 && (
                         <button
                           onClick={handleMarkAllRead}
                           className="flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-500 transition-colors cursor-pointer mr-1"
                         >
                           <CheckCheck className="w-4 h-4" />
-                          <span>Tandai Semua</span>
+                          <span>Tandai</span>
                         </button>
                       )}
 
@@ -1235,6 +1287,67 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       </button>
                     </div>
                   </div>
+
+                  {/* FORM BROADCAST PENGUMUMAN PJ */}
+                  <AnimatePresence>
+                    {isOfficer && isOfficerFormOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="px-4 pt-3 overflow-hidden"
+                      >
+                        <div className="p-3.5 rounded-2xl bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/60 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] font-bold text-indigo-700 dark:text-indigo-300">Target Penerima:</span>
+                            <button
+                              type="button"
+                              onClick={() => setOfficerTargetNrp('ALL')}
+                              className="px-2.5 py-0.5 rounded-full bg-indigo-600 text-white text-[10px] font-bold hover:bg-indigo-500 transition-all flex items-center gap-1 active:scale-95 cursor-pointer"
+                            >
+                              <Users className="w-3 h-3" />
+                              <span>Semua User (ALL)</span>
+                            </button>
+                          </div>
+
+                          <form onSubmit={handleSendOfficerNotif} className="space-y-2">
+                            <input
+                              type="text"
+                              value={officerTargetNrp}
+                              onChange={(e) => setOfficerTargetNrp(e.target.value)}
+                              placeholder="NRP Target (atau ketik ALL)"
+                              required
+                              className="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-800 text-xs border border-indigo-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                            />
+                            <input
+                              type="text"
+                              value={officerTitle}
+                              onChange={(e) => setOfficerTitle(e.target.value)}
+                              placeholder="Judul Notifikasi"
+                              required
+                              className="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-800 text-xs border border-indigo-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                            />
+                            <textarea
+                              value={officerMessage}
+                              onChange={(e) => setOfficerMessage(e.target.value)}
+                              placeholder="Isi pesan notifikasi..."
+                              rows={2}
+                              required
+                              className="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-800 text-xs border border-indigo-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 resize-none"
+                            />
+                            <button
+                              type="submit"
+                              disabled={isSendingOfficerNotif}
+                              className="w-full py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-xs active:scale-95 cursor-pointer"
+                            >
+                              <Send className="w-3.5 h-3.5" />
+                              <span>{isSendingOfficerNotif ? 'Mengirim Broadcast...' : 'Kirim Pengumuman'}</span>
+                            </button>
+                          </form>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
 
                   <div className="max-h-[380px] overflow-y-auto p-4 space-y-2 custom-scrollbar">
                     {notifications.length === 0 ? (
@@ -1439,32 +1552,32 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     {/* myITS ACADEMICS 2.0 */}
                     <div className="space-y-2">
                       <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 tracking-wider px-1">
-                        <span className="lowercase">my</span>ITS ACADEMICS 2.0
+                        <span className="lowercase">my</span>ITS Portal
                       </p>
 
                       <div className="grid grid-cols-1 gap-2">
                         <a
-                          href="https://mia.its.ac.id/presensi/"
+                          href="https://akademik.its.ac.id/home.php"
                           target="_blank"
                           rel="noreferrer"
                           className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-zinc-900 border border-slate-200/50 dark:border-white/5 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold"
                         >
                           <span className="flex items-center gap-2.5 truncate">
                             <ClipboardList className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
-                            <span className="truncate">Presensi Kuliah</span>
+                            <span className="truncate">SIAKAD 1.0</span>
                           </span>
                           <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
                         </a>
 
                         <a
-                          href="https://mia.its.ac.id/rencana-studi/"
+                          href="https://wali.its.ac.id/"
                           target="_blank"
                           rel="noreferrer"
                           className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-zinc-900 border border-slate-200/50 dark:border-white/5 text-slate-700 dark:text-zinc-300 active:bg-slate-100 transition-all text-xs font-semibold"
                         >
                           <span className="flex items-center gap-2.5 truncate">
                             <GraduationCap className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
-                            <span className="truncate">Rencana Studi (FRS)</span>
+                            <span className="truncate">myITS Wali</span>
                           </span>
                           <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
                         </a>
