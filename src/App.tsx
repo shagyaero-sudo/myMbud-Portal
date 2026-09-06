@@ -127,16 +127,29 @@ export default function App() {
 
   const [showSplash, setShowSplash] = useState<boolean>(true);
 
+  // STATUS BAR HP DINAMIS (TIDAK TRANSPARENT LAGI AGAR SINKRON DENGAN TEMA)
   useEffect(() => {
-    let metaThemeColor = document.querySelector("meta[name='theme-color']");
-    if (metaThemeColor) {
-      metaThemeColor.setAttribute('content', 'transparent');
-    } else {
-      const meta = document.createElement('meta');
-      meta.name = 'theme-color';
-      meta.content = 'transparent';
-      document.head.appendChild(meta);
-    }
+    const updateThemeColor = () => {
+      const isDark = document.documentElement.classList.contains('dark');
+      const targetColor = isDark ? '#0e0f12' : '#f1f5f9';
+      
+      let metaThemeColor = document.querySelector("meta[name='theme-color']");
+      if (metaThemeColor) {
+        metaThemeColor.setAttribute('content', targetColor);
+      } else {
+        const meta = document.createElement('meta');
+        meta.name = 'theme-color';
+        meta.content = targetColor;
+        document.head.appendChild(meta);
+      }
+    };
+
+    updateThemeColor();
+
+    const observer = new MutationObserver(updateThemeColor);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
+    return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
@@ -763,21 +776,24 @@ export default function App() {
 
       <div className={`relative min-h-screen bg-slate-100 dark:bg-[#0e0f12] text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-300 ${shouldShowAspirationModal ? 'pointer-events-none blur-sm select-none' : ''}`}>
         
+        {/* GLOW DIPINDAHKAN KE BAWAH AGAR STATUS BAR ATAS SELALU PEKAT & BERSIH */}
         <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
           <div 
-            className="gpu-glow absolute top-[-50px] left-[-50px] w-[500px] h-[500px] rounded-full opacity-10 dark:opacity-15" 
-            style={{ backgroundColor: 'var(--glow-1)', filter: 'blur(90px)' }}
+            className="gpu-glow absolute bottom-[-100px] left-[-100px] w-[500px] h-[500px] rounded-full opacity-10 dark:opacity-15" 
+            style={{ backgroundColor: 'var(--glow-1)', filter: 'blur(100px)' }}
           />
           <div 
             className="gpu-glow hidden lg:block absolute bottom-[-50px] right-[-50px] w-[500px] h-[500px] rounded-full opacity-10 dark:opacity-15" 
-            style={{ backgroundColor: 'var(--glow-2)', filter: 'blur(90px)' }}
+            style={{ backgroundColor: 'var(--glow-2)', filter: 'blur(100px)' }}
           />
         </div>
 
+        {/* CONTENT LAYER */}
         <div 
           className="relative z-10 flex flex-col min-h-screen bg-transparent"
           style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 12px)' }}
         >
+          {/* HEADER DESKTOP ONLY */}
           <div className="hidden lg:block">
             <Header
               isOfficer={isOfficer}

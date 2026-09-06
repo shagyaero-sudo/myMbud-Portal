@@ -22,11 +22,11 @@
     
     <!-- Meta Tags Khusus iOS/iPadOS Web App -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="myMbud" />
 
-    <!-- Meta Tag Status Bar Transparan agar Gradasi Background Tembus ke Atas -->
-    <meta name="theme-color" content="transparent" />
+    <!-- Meta Tag Status Bar Dinamis (Sesuai Mode Background) -->
+    <meta name="theme-color" content="#0e0f12" />
     <meta name="color-scheme" content="dark light" />
 
     <!-- SCRIPT CEGAH FLICKER & MEMBACA SISTEM TEMA -->
@@ -39,6 +39,8 @@
         root.setAttribute('data-mode', savedMode);
         root.setAttribute('data-accent', savedAccent);
 
+        const targetColor = savedMode === 'dark' ? '#0e0f12' : '#f1f5f9';
+
         if (savedMode === 'dark') {
           root.classList.add('dark');
         } else {
@@ -47,12 +49,12 @@
 
         const metaThemeColor = document.querySelector("meta[name='theme-color']");
         if (metaThemeColor) {
-          metaThemeColor.setAttribute('content', 'transparent');
+          metaThemeColor.setAttribute('content', targetColor);
         }
       })();
     </script>
   </head>
-  <body class="bg-slate-50 dark:bg-[#0e0f12] text-slate-800 dark:text-zinc-100 transition-colors duration-200">
+  <body class="bg-slate-100 dark:bg-[#0e0f12] text-slate-800 dark:text-zinc-100 transition-colors duration-200">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
