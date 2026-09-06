@@ -6,6 +6,7 @@
   html {
     scroll-behavior: smooth;
     -webkit-tap-highlight-color: transparent;
+    background-color: #0e0f12;
   }
 
   body {
@@ -14,6 +15,8 @@
     -moz-osx-font-smoothing: grayscale;
     padding: 0 !important;
     margin: 0 !important;
+    background-color: #0e0f12;
+    overscroll-behavior-y: none;
   }
 
   /* Custom Soft Scrollbar */
@@ -137,9 +140,6 @@
     -webkit-overflow-scrolling: touch;
   }
 
-  /* Promotes the blurred glow orbs to their own GPU compositing layer
-     so they don't get repainted every time unrelated app state updates
-     trigger a re-render. Same visuals, cheaper paint cost. */
   .gpu-glow {
     transform: translateZ(0);
     backface-visibility: hidden;

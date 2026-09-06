@@ -25,8 +25,8 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="myMbud" />
 
-    <!-- Meta Tag Android / PWA Status Bar Default Charcoal -->
-    <meta name="theme-color" content="#121214" />
+    <!-- Meta Tag Status Bar menyatu penuh dengan warna background #0e0f12 -->
+    <meta name="theme-color" content="#0e0f12" />
     <meta name="color-scheme" content="dark light" />
 
     <!-- SCRIPT CEGAH FLICKER & MEMBACA SISTEM TEMA 2-LAYER -->
@@ -47,12 +47,12 @@
 
         const metaThemeColor = document.querySelector("meta[name='theme-color']");
         if (metaThemeColor) {
-          metaThemeColor.setAttribute('content', savedMode === 'dark' ? '#121214' : '#ffffff');
+          metaThemeColor.setAttribute('content', savedMode === 'dark' ? '#0e0f12' : '#f1f5f9');
         }
       })();
     </script>
   </head>
-  <body class="bg-slate-50 dark:bg-zinc-950 text-slate-800 dark:text-zinc-100 transition-colors duration-200">
+  <body class="bg-slate-50 dark:bg-[#0e0f12] text-slate-800 dark:text-zinc-100 transition-colors duration-200">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
