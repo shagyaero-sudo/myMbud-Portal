@@ -2,7 +2,7 @@ import React from 'react';
 
 export const PostSkeleton: React.FC = () => {
   return (
-    <div className="p-4 sm:p-5 rounded-3xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 space-y-4 animate-pulse shadow-xs">
+    <div className="p-4 sm:p-5 rounded-3xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 space-y-4 animate-pulse shadow-xs transform-gpu">
       {/* Header Profile Skeleton */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">

@@ -42,13 +42,6 @@ import {
   notifyPostCommented,
 } from '../../services/oneSignalNotification';
 
-// =========================================================================
-// LOGIKA VERIFIED BADGE 3-TIER TERBARU
-// 1. Emas (Gold): >= 30 Followers & >= 100 Posts
-// 2. Biru (Blue): >= 10 Followers & >= 30 Posts
-// 3. Abu-abu (Gray): >= 10 Followers & >= 1 Post (Bridge buat user lama)
-// =========================================================================
-
 export type BadgeTier = 'gold' | 'blue' | 'gray' | null;
 
 export const getBadgeTier = (
@@ -168,7 +161,7 @@ const PostImageItem: React.FC<{
       <button
         type="button"
         onClick={onImageClick}
-        className="relative block w-full overflow-hidden rounded-2xl border border-slate-200/60 dark:border-white/10 cursor-zoom-in group text-left leading-none bg-transparent"
+        className="relative block w-full overflow-hidden rounded-2xl border border-slate-200 dark:border-zinc-800 cursor-zoom-in group text-left leading-none bg-transparent transform-gpu"
       >
         <img
           src={getOptimizedImageUrl(imageUrl)}
@@ -191,7 +184,7 @@ const PostImageItem: React.FC<{
     <button
       type="button"
       onClick={onImageClick}
-      className={`relative overflow-hidden rounded-xl bg-slate-100 dark:bg-zinc-800/60 border border-slate-200/50 dark:border-white/5 cursor-zoom-in group ${containerClasses[layoutType]}`}
+      className={`relative overflow-hidden rounded-xl bg-slate-100 dark:bg-zinc-800 border border-slate-200/80 dark:border-zinc-800 cursor-zoom-in group transform-gpu ${containerClasses[layoutType]}`}
     >
       <img
         src={getOptimizedImageUrl(imageUrl)}
@@ -283,7 +276,6 @@ export const PostCard: React.FC<PostCardProps> = ({
   const [replyContent, setReplyContent] = useState('');
   const [isSubmittingReply, setIsSubmittingReply] = useState(false);
   
-  // FIX LIKE STATE DENGAN CLEANING NRP
   const [isLiked, setIsLiked] = useState<boolean>(() => {
     const cleanUserNrp = (currentUser.nrp || '').trim().toLowerCase();
     const cleanLikes = (post.likes || []).map((n) => String(n).trim().toLowerCase());
@@ -433,13 +425,15 @@ export const PostCard: React.FC<PostCardProps> = ({
   const quoteTargetAuthorEmoji = post.isRepost && originalPost ? originalAuthorEmoji : authorEmoji;
   const quoteTargetAuthorPhotoUrl = post.isRepost && originalPost ? originalAuthorPhotoUrl : authorPhotoUrl;
 
-  // FIX UTAMA: OPTIMISTIC TOGGLE LIKE DENGAN HANDLING ROLLBACK
+  // HANDLE LIKE TOGGLE UNTUK MENCEGAH FLICKER/KUMAT STATE
   const handleLikeToggle = async () => {
     const cleanUserNrp = (currentUser.nrp || '').trim().toLowerCase();
+    if (!cleanUserNrp) return;
+
     const wasLiked = isLiked;
     const initialLikeCount = likeCount;
 
-    // 1. Ubah Tampilan Dulu (Optimistic UI)
+    // 1. Langsung update UI duluan (Optimistic)
     const nextLiked = !wasLiked;
     const nextCount = nextLiked ? initialLikeCount + 1 : Math.max(0, initialLikeCount - 1);
 
@@ -447,11 +441,12 @@ export const PostCard: React.FC<PostCardProps> = ({
     setLikeCount(nextCount);
 
     try {
-      // 2. Eksekusi ke storage/database
+      // 2. Simpan perubahan ke storage
       const updated = await toggleLikePost(post.id, cleanUserNrp);
 
-      if (updated) {
-        const cleanLikes = (updated.likes || []).map((n) => String(n).trim().toLowerCase());
+      // 3. Verifikasi ketersediaan data terbaru
+      if (updated && Array.isArray(updated.likes)) {
+        const cleanLikes = updated.likes.map((n) => String(n).trim().toLowerCase());
         const nowLiked = cleanLikes.includes(cleanUserNrp);
 
         setIsLiked(nowLiked);
@@ -465,10 +460,6 @@ export const PostCard: React.FC<PostCardProps> = ({
             postId: post.id,
           });
         }
-      } else {
-        // Rollback jika respons null
-        setIsLiked(wasLiked);
-        setLikeCount(initialLikeCount);
       }
     } catch (error) {
       console.error('[mbudiary] Gagal toggle like:', error);
@@ -585,9 +576,9 @@ export const PostCard: React.FC<PostCardProps> = ({
 
   return (
     <>
-      <article className={`px-3.5 py-3 sm:px-4 sm:py-3.5 transition-colors duration-200 hover:bg-slate-500/5 w-full ${
+      <article className={`px-3.5 py-3 sm:px-4 sm:py-3.5 transition-colors duration-200 hover:bg-slate-50/50 dark:hover:bg-zinc-800/40 w-full transform-gpu ${
         isDetailPage 
-          ? 'bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none' 
+          ? 'bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-3xl shadow-xs' 
           : 'bg-transparent'
       }`}>
         {isPlainRepost && (
@@ -601,11 +592,17 @@ export const PostCard: React.FC<PostCardProps> = ({
           
           <div
             onClick={() => onSelectAuthor?.(displayAuthorNrp)}
-            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/60 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden border border-slate-200/80 dark:border-zinc-700/80 cursor-pointer hover:opacity-90 transition-opacity mt-0.5"
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-slate-100 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden border border-slate-200/80 dark:border-zinc-700/80 cursor-pointer hover:opacity-90 transition-opacity mt-0.5"
             title={`Lihat profil ${displayAuthorName}`}
           >
             {displayAuthorPhotoUrl ? (
-              <img src={getOptimizedImageUrl(displayAuthorPhotoUrl)} alt={displayAuthorName} className="w-full h-full object-cover rounded-full" />
+              <img 
+                src={getOptimizedImageUrl(displayAuthorPhotoUrl)} 
+                alt={displayAuthorName} 
+                loading="lazy"
+                decoding="async"
+                className="w-full h-full object-cover rounded-full" 
+              />
             ) : (
               <span className="text-lg leading-none">{displayAuthorEmoji}</span>
             )}
@@ -644,7 +641,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                   type="button"
                   onClick={() => setIsMenuOpen((prev) => !prev)}
                   disabled={isDeleting}
-                  className="p-1 rounded-lg text-slate-400 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-white/80 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                  className="p-1 rounded-lg text-slate-400 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                 >
                   <MoreVertical className="w-3.5 h-3.5" />
                 </button>
@@ -656,14 +653,14 @@ export const PostCard: React.FC<PostCardProps> = ({
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.95 }}
                       transition={{ duration: 0.12 }}
-                      className="absolute right-0 top-full mt-1 z-30 w-44 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-white/60 dark:border-white/10 rounded-2xl p-1.5 shadow-xl"
+                      className="absolute right-0 top-full mt-1 z-30 w-44 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl p-1.5 shadow-xl"
                     >
                       {canDelete ? (
                         <button
                           type="button"
                           onClick={handleDeletePost}
                           disabled={isDeleting}
-                          className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50/80 dark:hover:bg-rose-950/30 transition-colors disabled:opacity-50 cursor-pointer"
+                          className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors disabled:opacity-50 cursor-pointer"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                           <span>Hapus Postingan</span>
@@ -672,7 +669,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                         <button
                           type="button"
                           onClick={handleReportPost}
-                          className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left text-xs font-semibold text-amber-600 dark:text-amber-400 hover:bg-amber-50/80 dark:hover:bg-amber-950/30 transition-colors cursor-pointer"
+                          className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left text-xs font-semibold text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 transition-colors cursor-pointer"
                         >
                           <Flag className="w-3.5 h-3.5" />
                           <span>Laporkan Postingan</span>
@@ -704,14 +701,20 @@ export const PostCard: React.FC<PostCardProps> = ({
                     onSelectPost(originalPost.id);
                   }
                 }}
-                className="mb-2 rounded-2xl border border-slate-200/60 dark:border-white/10 overflow-hidden bg-white/50 dark:bg-zinc-950/40 cursor-pointer hover:bg-white/80 dark:hover:bg-zinc-950/60 transition-colors w-full"
+                className="mb-2 rounded-2xl border border-slate-200 dark:border-zinc-800 overflow-hidden bg-slate-50 dark:bg-zinc-950/60 cursor-pointer hover:bg-slate-100 dark:hover:bg-zinc-950 transition-colors w-full"
               >
                 {originalPost ? (
                   <>
                     <div className="px-3 pt-2.5 pb-1 flex items-center gap-1 leading-none">
                       <div className="w-4 h-4 rounded-full bg-slate-200 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden">
                         {originalAuthorPhotoUrl ? (
-                          <img src={getOptimizedImageUrl(originalAuthorPhotoUrl)} alt={originalAuthorName} className="w-full h-full object-cover" />
+                          <img 
+                            src={getOptimizedImageUrl(originalAuthorPhotoUrl)} 
+                            alt={originalAuthorName} 
+                            loading="lazy"
+                            decoding="async"
+                            className="w-full h-full object-cover" 
+                          />
                         ) : (
                           <span className="text-[10px] leading-none">{originalAuthorEmoji}</span>
                         )}
@@ -871,7 +874,7 @@ export const PostCard: React.FC<PostCardProps> = ({
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="mt-2 pt-2.5 border-t border-slate-200/40 dark:border-white/5 space-y-2 overflow-visible"
+              className="mt-2 pt-2.5 border-t border-slate-100 dark:border-zinc-800 space-y-2 overflow-visible"
             >
               <h4 className="text-[11px] font-bold text-slate-600 dark:text-zinc-400 flex items-center gap-1.5 pl-1">
                 <CornerDownRight className="w-3 h-3 text-blue-500" />
@@ -880,7 +883,7 @@ export const PostCard: React.FC<PostCardProps> = ({
 
               <div className="space-y-1.5">
                 {replies.length === 0 ? (
-                  <div className="p-2.5 text-center rounded-xl bg-white/50 dark:bg-zinc-800/30 border border-slate-200/40 dark:border-white/5 text-xs text-slate-400 dark:text-zinc-500 italic">
+                  <div className="p-2.5 text-center rounded-xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-200/80 dark:border-zinc-800 text-xs text-slate-400 dark:text-zinc-500 italic">
                     Belum ada komen. Jadilah yang pertama!
                   </div>
                 ) : (
@@ -892,12 +895,18 @@ export const PostCard: React.FC<PostCardProps> = ({
                     const replyPhotoUrl = replyAuthor?.photoUrl;
 
                     return (
-                      <div key={reply.id} className="p-2.5 rounded-xl bg-white/60 dark:bg-zinc-800/40 border border-slate-200/50 dark:border-white/5 space-y-1 w-full">
+                      <div key={reply.id} className="p-2.5 rounded-xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-200/80 dark:border-zinc-800 space-y-1 w-full">
                         <div className="flex items-center justify-between text-xs">
                           <div onClick={() => onSelectAuthor?.(reply.authorNrp)} className="flex items-center gap-1.5 cursor-pointer group/replyAuthor min-w-0">
                             <div className="w-5 h-5 rounded-full bg-slate-200 dark:bg-zinc-700 flex items-center justify-center shrink-0 overflow-hidden">
                               {replyPhotoUrl ? (
-                                <img src={getOptimizedImageUrl(replyPhotoUrl)} alt={replyName} className="w-full h-full object-cover" />
+                                <img 
+                                  src={getOptimizedImageUrl(replyPhotoUrl)} 
+                                  alt={replyName} 
+                                  loading="lazy"
+                                  decoding="async"
+                                  className="w-full h-full object-cover" 
+                                />
                               ) : (
                                 <span className="text-xs leading-none">{replyEmoji}</span>
                               )}
@@ -937,11 +946,11 @@ export const PostCard: React.FC<PostCardProps> = ({
                     value={replyContent}
                     onChange={handleCommentChange}
                     placeholder={`Tulis komen sebagai ${currentUser.nickname || currentUser.username}...`}
-                    className="w-full px-3 py-1.5 rounded-xl bg-white/70 dark:bg-zinc-800/80 text-xs border border-slate-200/80 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-800 text-xs border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
 
                   {commentMentionQuery !== null && commentMentionSuggestions.length > 0 && (
-                    <div className="absolute left-0 bottom-full mb-2 z-[60] w-64 bg-white/95 dark:bg-zinc-800/95 backdrop-blur-2xl border border-slate-200/80 dark:border-zinc-700 rounded-2xl p-1.5 shadow-2xl max-h-52 overflow-y-auto custom-scrollbar">
+                    <div className="absolute left-0 bottom-full mb-2 z-[60] w-64 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-2xl p-1.5 shadow-2xl max-h-52 overflow-y-auto custom-scrollbar">
                       <div className="text-[10px] font-bold text-slate-400 px-2 py-1 flex items-center gap-1">
                         <AtSign className="w-3 h-3 text-blue-500" />
                         <span>Pilih User</span>
@@ -954,7 +963,13 @@ export const PostCard: React.FC<PostCardProps> = ({
                         >
                           <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-zinc-700 flex items-center justify-center shrink-0 overflow-hidden">
                             {u.photoUrl ? (
-                              <img src={getOptimizedImageUrl(u.photoUrl)} alt={u.nickname} className="w-full h-full object-cover" />
+                              <img 
+                                src={getOptimizedImageUrl(u.photoUrl)} 
+                                alt={u.nickname} 
+                                loading="lazy"
+                                decoding="async"
+                                className="w-full h-full object-cover" 
+                              />
                             ) : (
                               <span className="text-sm leading-none">{u.emoji}</span>
                             )}
@@ -992,7 +1007,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[9999998] bg-black/75 backdrop-blur-md flex items-center justify-center p-3 sm:p-6"
+                className="fixed inset-0 z-[9999998] bg-black/80 flex items-center justify-center p-3 sm:p-6"
                 onMouseDown={(e) => {
                   if (e.target === e.currentTarget) {
                     setIsQuoteOpen(false);
@@ -1005,7 +1020,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                   animate={{ scale: 1, opacity: 1, y: 0 }}
                   exit={{ scale: 0.95, opacity: 0, y: 15 }}
                   transition={{ duration: 0.2 }}
-                  className="w-full max-w-lg bg-white/95 dark:bg-zinc-900/95 backdrop-blur-2xl border border-white/60 dark:border-white/10 rounded-3xl p-4 sm:p-5 shadow-2xl flex flex-col max-h-[88dvh] overflow-hidden"
+                  className="w-full max-w-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-3xl p-4 sm:p-5 shadow-2xl flex flex-col max-h-[88dvh] overflow-hidden"
                   onMouseDown={(e) => e.stopPropagation()}
                 >
                   <div className="flex items-center justify-between mb-3 shrink-0">
@@ -1035,16 +1050,18 @@ export const PostCard: React.FC<PostCardProps> = ({
                       onChange={(e) => setQuoteContent(e.target.value)}
                       placeholder="Apa pendapatmu tentang postingan ini?"
                       rows={3}
-                      className="w-full resize-none px-3.5 py-2.5 rounded-2xl bg-white/70 dark:bg-zinc-800/80 border border-slate-200/80 dark:border-zinc-700 text-xs sm:text-sm text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-blue-500 shrink-0"
+                      className="w-full resize-none px-3.5 py-2.5 rounded-2xl bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs sm:text-sm text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-blue-500 shrink-0"
                     />
 
-                    <div className="rounded-2xl border border-slate-200/60 dark:border-white/5 overflow-y-auto bg-white/40 dark:bg-zinc-950/40 flex-1 min-h-0 custom-scrollbar">
+                    <div className="rounded-2xl border border-slate-200 dark:border-zinc-800 overflow-y-auto bg-slate-50 dark:bg-zinc-950/60 flex-1 min-h-0 custom-scrollbar">
                       <div className="px-3 pt-3 pb-1 flex items-center gap-1.5 leading-none">
                         <div className="w-5 h-5 rounded-full bg-slate-200 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden">
                           {quoteTargetAuthorPhotoUrl ? (
                             <img
                               src={getOptimizedImageUrl(quoteTargetAuthorPhotoUrl)}
                               alt={quoteTargetAuthorName}
+                              loading="lazy"
+                              decoding="async"
                               className="w-full h-full object-cover"
                             />
                           ) : (
@@ -1087,7 +1104,9 @@ export const PostCard: React.FC<PostCardProps> = ({
                           <img
                             src={getOptimizedImageUrl(quoteTargetPost.imageUrls[0])}
                             alt="Preview post asli"
-                            className="w-full max-h-48 h-auto object-cover rounded-xl border border-slate-200/50 dark:border-white/5"
+                            loading="lazy"
+                            decoding="async"
+                            className="w-full max-h-48 h-auto object-cover rounded-xl border border-slate-200 dark:border-zinc-800"
                           />
                         </div>
                       )}
@@ -1126,12 +1145,12 @@ export const PostCard: React.FC<PostCardProps> = ({
         createPortal(
           <AnimatePresence>
             {selectedImage && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[9999999] w-screen h-[100dvh] bg-black/95 backdrop-blur-md flex items-center justify-center p-4 sm:p-6" onMouseDown={(e) => { if (e.target === e.currentTarget) setSelectedImage(null); }}>
-                <motion.button initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }} onClick={() => setSelectedImage(null)} className="fixed top-6 right-5 sm:top-6 sm:right-6 z-[10000002] w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full bg-zinc-800/80 hover:bg-zinc-700 border border-white/20 text-white shadow-2xl backdrop-blur-md transition-all cursor-pointer">
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[9999999] w-screen h-[100dvh] bg-black/95 flex items-center justify-center p-4 sm:p-6" onMouseDown={(e) => { if (e.target === e.currentTarget) setSelectedImage(null); }}>
+                <motion.button initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }} onClick={() => setSelectedImage(null)} className="fixed top-6 right-5 sm:top-6 sm:right-6 z-[10000002] w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-white shadow-2xl transition-all cursor-pointer">
                   <X className="w-5 h-5 sm:w-6 sm:h-6" />
                 </motion.button>
                 <motion.div initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1 }} className="relative z-[10000001] max-w-[95vw] max-h-[85dvh] flex items-center justify-center" onMouseDown={(e) => e.stopPropagation()}>
-                  <img src={selectedImage} alt="Pratinjau" className="max-w-[95vw] max-h-[85dvh] w-auto h-auto object-contain rounded-2xl shadow-2xl border border-white/10" />
+                  <img src={selectedImage} alt="Pratinjau" loading="lazy" decoding="async" className="max-w-[95vw] max-h-[85dvh] w-auto h-auto object-contain rounded-2xl shadow-2xl border border-zinc-800" />
                 </motion.div>
               </motion.div>
             )}

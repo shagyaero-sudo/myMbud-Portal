@@ -9,9 +9,6 @@ import { PostCard } from './mbudiary/PostCard';
 import { UserProfileView } from './mbudiary/UserProfileView';
 import { PostSkeleton } from './mbudiary/PostSkeleton';
 
-const ONBOARDING_PROFILE_KEY = 'mbud_onboarded_mbudiary_profile';
-const SWIPE_HINT_KEY = 'mbud_swipe_hint_seen';
-
 let cachedPosts: MbudiaryPost[] | null = null;
 
 interface MbudiaryViewProps {
@@ -37,10 +34,6 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) 
   const containerRef = useRef<HTMLDivElement>(null);
   const feedScrollPositionRef = useRef<number>(0);
 
-  const [showSwipeHint, setShowSwipeHint] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false;
-    return !localStorage.getItem(SWIPE_HINT_KEY);
-  });
   const [isEdgeSwiping, setIsEdgeSwiping] = useState(false);
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -61,11 +54,6 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) 
     setAllPosts(updated);
     setIsLoading(false);
   }, [refreshKey]);
-
-  const dismissSwipeHint = () => {
-    setShowSwipeHint(false);
-    localStorage.setItem(SWIPE_HINT_KEY, 'true');
-  };
 
   const handleExitToDashboard = () => {
     if (window.location.hash) {
@@ -135,7 +123,6 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) 
       const deltaX = currentX - startX;
       const deltaY = Math.abs(currentY - startY);
 
-      // Jika swipe mendatar lebih dominant dibanding vertical
       if (deltaX > 80 && deltaY < 50) {
         setIsEdgeSwiping(false);
         handleBackToFeed();
@@ -226,7 +213,7 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) 
   return (
     <div 
       ref={containerRef}
-      className="w-full h-full overflow-y-auto overscroll-contain text-slate-900 dark:text-zinc-100 font-sans transition-colors duration-300 antialiased relative custom-scrollbar px-2 sm:px-4 pb-16"
+      className="w-full h-full overflow-y-auto overscroll-contain text-slate-900 dark:text-zinc-100 font-sans transition-colors duration-300 antialiased relative custom-scrollbar px-2 sm:px-4 pb-16 transform-gpu"
       style={{ willChange: 'scroll-position' }}
     >
       <AnimatePresence>
@@ -237,7 +224,7 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) 
             exit={{ opacity: 0, x: -20 }}
             className="fixed left-3 top-1/2 -translate-y-1/2 z-[9999] pointer-events-none flex items-center gap-1.5"
           >
-            <div className="w-10 h-10 rounded-full bg-blue-600/90 text-white flex items-center justify-center shadow-xl backdrop-blur-md border border-white/20">
+            <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-xl border border-white/20">
               <ArrowLeft className="w-5 h-5 animate-pulse" />
             </div>
           </motion.div>
@@ -245,31 +232,6 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) 
       </AnimatePresence>
 
       <main className="w-full max-w-3xl mx-auto py-2 sm:py-4 relative z-10 space-y-3 sm:space-y-4">
-        <AnimatePresence>
-          {!isFeedActive && showSwipeHint && (
-            <motion.div
-              initial={{ opacity: 0, y: -8, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -8, scale: 0.98 }}
-              className="mx-1 sm:mx-0 p-3 rounded-2xl bg-blue-500/10 dark:bg-blue-500/15 border border-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-between gap-3 backdrop-blur-md shadow-xs"
-            >
-              <div className="flex items-center gap-2.5 text-xs font-semibold min-w-0">
-                <span className="text-base shrink-0">👉</span>
-                <span className="leading-snug">
-                  <span className="font-black">Tips:</span> swipe dari tepi layar kiri buat back to Feed
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={dismissSwipeHint}
-                className="px-3 py-1 text-[11px] font-bold bg-blue-600 hover:bg-blue-500 text-white rounded-xl shadow-xs active:scale-95 cursor-pointer shrink-0 transition-all"
-              >
-                Paham
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
         {selectedAuthorNrp && (
           <UserProfileView
             authorNrp={selectedAuthorNrp}
@@ -287,7 +249,7 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) 
           <div className="space-y-3 sm:space-y-4">
             <button
               onClick={handleBackToFeed}
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 sm:px-4 sm:py-2.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 text-xs font-bold text-slate-700 dark:text-zinc-200 hover:text-blue-600 dark:hover:text-blue-400 transition-all shadow-xs active:scale-95 group ml-1 sm:ml-0 cursor-pointer"
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 sm:px-4 sm:py-2.5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-xs font-bold text-slate-700 dark:text-zinc-200 hover:text-blue-600 dark:hover:text-blue-400 transition-all shadow-xs active:scale-95 group ml-1 sm:ml-0 cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors group-hover:-translate-x-0.5 transform" />
               <span>Kembali</span>
@@ -302,7 +264,7 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) 
                 isDetailPage
               />
             ) : (
-              <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-8 text-center text-xs font-medium text-slate-500 dark:text-zinc-400 shadow-xs">
+              <div className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-3xl p-8 text-center text-xs font-medium text-slate-500 dark:text-zinc-400 shadow-xs">
                 Postingan tidak ditemukan atau telah dihapus.
               </div>
             )}
@@ -335,13 +297,13 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4"
+            className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0, y: 10 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 10 }}
-              className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/60 dark:border-white/10 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-5"
+              className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-5"
             >
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
@@ -362,8 +324,8 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) 
                   <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-2">
                     Foto Profil
                   </label>
-                  <div className="flex items-center gap-4 p-3 rounded-2xl bg-white/60 dark:bg-zinc-800/60 border border-slate-200/50 dark:border-white/5">
-                    <div className="relative w-16 h-16 rounded-2xl overflow-hidden bg-slate-200 dark:bg-zinc-800 flex items-center justify-center shrink-0 border border-slate-200/80 dark:border-zinc-700">
+                  <div className="flex items-center gap-4 p-3 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-800">
+                    <div className="relative w-16 h-16 rounded-2xl overflow-hidden bg-slate-200 dark:bg-zinc-800 flex items-center justify-center shrink-0 border border-slate-200 dark:border-zinc-700">
                       {isUploadingAvatar ? (
                         <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
                       ) : editPhotoUrl ? (
@@ -417,7 +379,7 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) 
                       onChange={(e) => setEditUsername(e.target.value.replace(/\s+/g, '').toLowerCase())}
                       placeholder="usernameunik"
                       maxLength={30}
-                      className="w-full pl-7 pr-3.5 py-2.5 rounded-2xl bg-white/70 dark:bg-zinc-800/80 text-xs border border-slate-200/80 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full pl-7 pr-3.5 py-2.5 rounded-2xl bg-white dark:bg-zinc-800 text-xs border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                 </div>
@@ -436,7 +398,7 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) 
                     onChange={(e) => setEditBio(e.target.value.slice(0, 150))}
                     placeholder="Tulis deskripsi..."
                     rows={2}
-                    className="w-full px-3.5 py-2.5 rounded-2xl bg-white/70 dark:bg-zinc-800/80 text-xs border border-slate-200/80 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                    className="w-full px-3.5 py-2.5 rounded-2xl bg-white dark:bg-zinc-800 text-xs border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                   />
                 </div>
 
