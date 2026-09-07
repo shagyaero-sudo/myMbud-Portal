@@ -136,6 +136,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
   const currentUserName = localStorage.getItem('mymbud_user_name') || 'Aero';
 
   const [celebrationTask, setCelebrationTask] = useState<Task | null>(null);
+  const [pendingConfirmTask, setPendingConfirmTask] = useState<Task | null>(null);
   const audioCelebrationRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
@@ -168,8 +169,16 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
   const handleToggleComplete = async (e: React.MouseEvent, task: Task) => {
     e.stopPropagation();
     const isDone = completedTaskIds.includes(task.id);
-    const nextState = !isDone;
+    
+    if (!isDone) {
+      setPendingConfirmTask(task);
+      return;
+    }
 
+    executeToggleComplete(task, false);
+  };
+
+  const executeToggleComplete = async (task: Task, nextState: boolean) => {
     try {
       await toggleTaskCompletion(currentUserNrp, task.id, nextState);
 
@@ -306,31 +315,34 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
       return {
         label: 'Terlewat',
         bg: 'bg-rose-50/80 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border-rose-200/60 dark:border-rose-900/50',
-        gradient: 'from-rose-500/20 via-rose-500/5 to-transparent',
+        gradient: 'from-rose-600/40 via-rose-500/15 to-transparent',
       };
     }
 
+    // Hari Ini (H-0), H-1, H-2 -> MERAH
     if (diffDays <= 2) {
-      const dayText = diffDays <= 0 ? 'H-0' : `H-${diffDays}`;
+      const dayText = diffDays <= 0 ? 'Hari Ini' : `Mepet H-${diffDays}`;
       return {
-        label: `Mepet ${dayText}`,
-        bg: 'bg-amber-500/10 text-amber-500 border-amber-500/30',
-        gradient: 'from-amber-500/25 via-amber-500/5 to-transparent',
+        label: dayText,
+        bg: 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30',
+        gradient: 'from-rose-600/45 via-rose-500/15 to-transparent',
       };
     }
 
+    // H-3 s/d H-5 -> ORANYE
     if (diffDays <= 5) {
       return {
         label: `Mepet H-${diffDays}`,
-        bg: 'bg-amber-500/10 text-amber-500 border-amber-500/30',
-        gradient: 'from-amber-500/20 via-amber-500/5 to-transparent',
+        bg: 'bg-amber-500/15 text-amber-500 border-amber-500/30',
+        gradient: 'from-amber-500/40 via-amber-500/10 to-transparent',
       };
     }
 
+    // H-6 ke atas -> HIJAU
     return {
       label: `Masih H-${diffDays}`,
-      bg: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
-      gradient: 'from-emerald-500/20 via-emerald-500/5 to-transparent',
+      bg: 'bg-emerald-500/15 text-emerald-500 dark:text-emerald-400 border-emerald-500/30',
+      gradient: 'from-emerald-500/40 via-emerald-500/10 to-transparent',
     };
   };
 
@@ -855,9 +867,9 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                     onClick={() => setSelectedDetailTask(t)}
                     className="relative overflow-hidden p-4 rounded-2xl bg-white/70 dark:bg-zinc-900/60 hover:bg-white/90 dark:hover:bg-zinc-850 backdrop-blur-md border border-white/60 dark:border-white/10 transition-all cursor-pointer flex flex-col justify-between space-y-3.5 group shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none"
                   >
-                    {/* GRADASI WARNA STATUS DI POJOK KANAN ATAS */}
+                    {/* GRADASI WARNA STATUS DI POJOK KANAN ATAS (50% UKURAN KARTU) */}
                     {badge && (
-                      <div className={`absolute -right-8 -top-8 w-32 h-32 rounded-full bg-gradient-to-bl ${badge.gradient} blur-xl pointer-events-none transition-transform duration-500 group-hover:scale-125`} />
+                      <div className={`absolute -right-12 -top-12 w-48 h-48 rounded-full bg-gradient-to-bl ${badge.gradient} blur-2xl pointer-events-none transition-transform duration-500 group-hover:scale-125`} />
                     )}
 
                     {/* BARIS ATAS: Matkul & Badge Deadline */}
@@ -1466,6 +1478,59 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                         <span>myITS Classroom</span>
                       </a>
                     </div>
+                  </div>
+                </motion.div>
+              </div>
+            )}
+          </AnimatePresence>,
+          document.body
+        )}
+
+      {/* DIALOG KONFIRMASI ALA IOS (PORTAL) */}
+      {typeof document !== 'undefined' &&
+        createPortal(
+          <AnimatePresence>
+            {pendingConfirmTask && (
+              <div 
+                className="fixed inset-0 z-[99999] bg-slate-900/40 dark:bg-black/60 backdrop-blur-md flex items-center justify-center p-6 select-none"
+                onClick={() => setPendingConfirmTask(null)}
+              >
+                <motion.div
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.9, opacity: 0 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+                  className="w-full max-w-[280px] sm:max-w-[310px] rounded-2xl bg-white/80 dark:bg-zinc-800/80 backdrop-blur-xl border border-white/40 dark:border-white/10 text-slate-900 dark:text-zinc-100 shadow-2xl overflow-hidden flex flex-col text-center"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="p-5 space-y-1.5">
+                    <h3 className="text-base font-bold text-slate-900 dark:text-zinc-100 leading-tight">
+                      Tandai Sebagai Selesai?
+                    </h3>
+                    <p className="text-xs text-slate-600 dark:text-zinc-300 leading-relaxed">
+                      Apakah kamu yakin ingin menyelesaikan tugas <span className="font-semibold text-blue-600 dark:text-blue-400">"{pendingConfirmTask.title}"</span>?
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-2 border-t border-slate-200/60 dark:border-zinc-700/60 divide-x divide-slate-200/60 dark:divide-zinc-700/60">
+                    <button
+                      type="button"
+                      onClick={() => setPendingConfirmTask(null)}
+                      className="py-3 text-xs font-normal text-blue-600 dark:text-blue-400 active:bg-slate-200/50 dark:active:bg-zinc-700/50 transition-colors cursor-pointer"
+                    >
+                      Batal
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const taskToComplete = pendingConfirmTask;
+                        setPendingConfirmTask(null);
+                        executeToggleComplete(taskToComplete, true);
+                      }}
+                      className="py-3 text-xs font-bold text-blue-600 dark:text-blue-400 active:bg-slate-200/50 dark:active:bg-zinc-700/50 transition-colors cursor-pointer"
+                    >
+                      Selesai
+                    </button>
                   </div>
                 </motion.div>
               </div>
