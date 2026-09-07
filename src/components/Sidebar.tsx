@@ -38,6 +38,7 @@ interface SidebarProps {
   setActiveTab: (tab: TabType) => void;
   activeTaskCount: number;
   onOpenGpaModal: () => void;
+  onOpenMbudiary?: () => void;
 }
 
 type MenuItem =
@@ -70,7 +71,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   activeTab,
   setActiveTab,
   activeTaskCount,
-  onOpenGpaModal
+  onOpenGpaModal,
+  onOpenMbudiary
 }) => {
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -152,13 +154,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
     setIsBottomSheetOpen(false);
   };
 
-  // PEMICU NAVIGASI INSTAN SUPERSPEED
   const triggerInstantDiary = (e?: React.SyntheticEvent) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
-    setActiveTab('mbudiary');
+    if (onOpenMbudiary) {
+      onOpenMbudiary();
+    } else {
+      setActiveTab('mbudiary');
+    }
   };
 
   return (
@@ -171,7 +176,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
         transition={{ type: 'spring', stiffness: 380, damping: 32 }}
         className="hidden lg:flex flex-col bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-3.5 text-slate-700 dark:text-zinc-200 min-h-[calc(100vh-80px)] shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none shrink-0 my-2 transition-colors overflow-hidden select-none z-20"
       >
-        {/* Navigation Items */}
         <nav aria-label="Sidebar Navigation" className="flex-1 space-y-1.5 overflow-y-auto overflow-x-hidden pr-0.5 pt-1 pb-4 custom-scrollbar">
           {menuItems.map((item) => {
             const Icon = item.icon;
@@ -218,7 +222,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   />
                 </div>
 
-                {/* Expanding Label */}
                 <AnimatePresence>
                   {isExpanded && (
                     <motion.div
@@ -249,7 +252,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   )}
                 </AnimatePresence>
 
-                {/* Dot Badge saat Collapsed */}
                 {!isExpanded && item.count !== null && (
                   <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-rose-500 z-20" />
                 )}
@@ -257,7 +259,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
             );
           })}
 
-          {/* Desktop Sidebar: myITS Academics 2.0 */}
           <div className="pt-3 mt-3 border-t border-slate-200/50 dark:border-white/5 space-y-1">
             {isExpanded && (
               <motion.p
@@ -309,7 +310,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </a>
           </div>
 
-          {/* Desktop Sidebar: External Links */}
           <div className="pt-3 mt-2 border-t border-slate-200/50 dark:border-white/5 space-y-1">
             {isExpanded && (
               <motion.p
@@ -361,7 +361,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </a>
           </div>
 
-          {/* Desktop Sidebar: Minigame */}
           <div className="pt-3 mt-2 border-t border-slate-200/50 dark:border-white/5">
             <motion.button
               type="button"
@@ -407,7 +406,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
         </nav>
 
-        {/* Footer Brand */}
         <div className="mt-2 pt-3 border-t border-slate-200/50 dark:border-white/5 px-2 text-xs text-slate-400 dark:text-zinc-500 shrink-0 h-10 flex items-center overflow-hidden">
           {isExpanded ? (
             <motion.div
@@ -453,7 +451,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             count={activeTaskCount > 0 ? activeTaskCount : null}
           />
 
-          {/* TOMBOL MBUDIARY TENGAH FLOATING (TRIGGER ON TOUCH / DOWN INSTAN) */}
+          {/* TOMBOL MBUDIARY TENGAH FLOATING */}
           <div className="relative flex flex-col items-center justify-center -top-2.5 px-1 shrink-0">
             <div className="p-1 rounded-full bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-white/80 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/30">
               <button
@@ -528,7 +526,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </div>
 
               <div className="flex-1 overflow-y-auto p-5 space-y-6 pb-20 custom-scrollbar">
-                {/* 1. myITS Academics 2.0 */}
                 <div className="space-y-2">
                   <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 tracking-wider px-1">
                     <span className="lowercase">my</span>ITS ACADEMICS 2.0
@@ -576,7 +573,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   </div>
                 </div>
 
-                {/* 2. PORTAL myITS (LAMA) */}
                 <div className="space-y-2 pt-2 border-t border-slate-200/50 dark:border-white/5">
                   <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-1">
                     PORTAL myITS (LAMA)
@@ -615,7 +611,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   </div>
                 </div>
 
-                {/* 3. TOOLS LAINNYA */}
                 <div className="space-y-2 pt-2 border-t border-slate-200/50 dark:border-white/5">
                   <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-1">
                     TOOLS LAINNYA
@@ -675,7 +670,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   </div>
                 </div>
 
-                {/* 4. MINIGAME */}
                 <div className="space-y-2 pt-2 border-t border-slate-200/50 dark:border-white/5">
                   <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-1">
                     MINIGAME
@@ -710,7 +704,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   );
 };
 
-/* HELPER COMPONENT BOTTOM TAB */
 const BottomTabItem: React.FC<BottomTabItemProps> = ({
   id,
   label,

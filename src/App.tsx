@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useTransition } from 'react';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import { subscribeAnnouncements } from './services/announcements';
 import { supabase } from './services/supabase';
@@ -177,6 +177,9 @@ export default function App() {
   const currentUserNrp = localStorage.getItem('mymbud_user_nrp') || 'unknown';
   const currentUserName = localStorage.getItem('mymbud_user_name') || 'Mbuders';
 
+  // STATE UNTUK SWIPEABLE BOTTOM SHEET MBUDIARY
+  const [isMbudiarySheetOpen, setIsMbudiarySheetOpen] = useState<boolean>(false);
+
   useEffect(() => {
     const verifyAspirationStatus = async () => {
       if (isAuthenticated && currentUserNrp && currentUserNrp !== 'unknown') {
@@ -258,10 +261,14 @@ export default function App() {
   useEffect(() => {
     const handleOneSignalRedirect = (e: any) => {
       const targetTab = e?.detail?.tab || localStorage.getItem('mbud_target_tab') || 'mbudiary';
-      const cleanTab = VALID_TABS.includes(targetTab as any) ? (targetTab as any) : 'mbudiary';
-      startTransition(() => {
-        setActiveTab(cleanTab);
-      });
+      if (targetTab === 'mbudiary') {
+        setIsMbudiarySheetOpen(true);
+      } else {
+        const cleanTab = VALID_TABS.includes(targetTab as any) ? (targetTab as any) : 'dashboard';
+        startTransition(() => {
+          setActiveTab(cleanTab);
+        });
+      }
       window.dispatchEvent(new Event('mbud_notification_navigate'));
     };
 
@@ -269,10 +276,14 @@ export default function App() {
     window.addEventListener('mbud_notification_navigate', () => {
       const targetTab = localStorage.getItem('mbud_target_tab');
       if (targetTab) {
-        const cleanTab = VALID_TABS.includes(targetTab as any) ? (targetTab as any) : 'mbudiary';
-        startTransition(() => {
-          setActiveTab(cleanTab);
-        });
+        if (targetTab === 'mbudiary') {
+          setIsMbudiarySheetOpen(true);
+        } else {
+          const cleanTab = VALID_TABS.includes(targetTab as any) ? (targetTab as any) : 'dashboard';
+          startTransition(() => {
+            setActiveTab(cleanTab);
+          });
+        }
         localStorage.removeItem('mbud_target_tab');
       }
     });
@@ -344,6 +355,11 @@ export default function App() {
 
   const handleNavigateTab = useCallback(
     (tab: TabType | 'mbudtalk', courseFilterOrTargetNrp?: string) => {
+      if (tab === 'mbudiary') {
+        setIsMbudiarySheetOpen(true);
+        return;
+      }
+
       if (tab === 'contacts') {
         setSelectedContactCourse(courseFilterOrTargetNrp || 'ALL');
       } else if (tab === 'mbudtalk') {
@@ -815,12 +831,13 @@ export default function App() {
           </div>
 
           <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 flex flex-col lg:flex-row gap-6 pt-4 pb-28 lg:pb-8">
-            {activeTab !== 'mbudiary' && activeTab !== 'mbudtalk' && (
+            {activeTab !== 'mbudtalk' && (
               <Sidebar
                 activeTab={activeTab as TabType}
                 setActiveTab={(tab) => handleNavigateTab(tab)}
                 activeTaskCount={activeTaskCount}
                 onOpenGpaModal={() => setIsGpaModalOpen(true)}
+                onOpenMbudiary={() => setIsMbudiarySheetOpen(true)}
               />
             )}
 
@@ -902,15 +919,9 @@ export default function App() {
 
                   {activeTab === 'blockblast' && <BlockBlastView />}
 
-                  <div className={activeTab === 'mbudiary' ? 'block' : 'hidden'}>
-                    <MbudiaryView
-                      onNavigateToChat={(targetNrp) => handleNavigateTab('mbudtalk', targetNrp)}
-                    />
-                  </div>
-
                   <div className={activeTab === 'mbudtalk' ? 'block' : 'hidden'}>
                     <MbudTalkView
-                      onBack={() => handleNavigateTab('mbudiary')}
+                      onBack={() => setIsMbudiarySheetOpen(true)}
                       targetNrp={chatTargetNrp}
                     />
                   </div>
@@ -918,6 +929,50 @@ export default function App() {
               )}
             </main>
           </div>
+
+          {/* SWIPEABLE BOTTOM SHEET MBUDIARY (INSTAGRAM / TIKTOK STYLE) */}
+          <AnimatePresence>
+            {isMbudiarySheetOpen && (
+              <>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setIsMbudiarySheetOpen(false)}
+                  className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 transition-opacity"
+                />
+
+                <motion.div
+                  initial={{ y: '100%' }}
+                  animate={{ y: 0 }}
+                  exit={{ y: '100%' }}
+                  transition={{ type: 'spring', damping: 28, stiffness: 320 }}
+                  drag="y"
+                  dragConstraints={{ top: 0 }}
+                  dragElastic={0.15}
+                  onDragEnd={(_, info) => {
+                    if (info.offset.y > 120 || info.velocity.y > 400) {
+                      setIsMbudiarySheetOpen(false);
+                    }
+                  }}
+                  className="fixed bottom-0 left-0 right-0 z-50 h-[92vh] max-w-2xl mx-auto bg-white/95 dark:bg-zinc-950/95 backdrop-blur-2xl rounded-t-[36px] border-t border-white/60 dark:border-white/10 shadow-2xl flex flex-col overflow-hidden"
+                >
+                  <div className="w-full flex items-center justify-center pt-3.5 pb-2 shrink-0 cursor-grab active:cursor-grabbing touch-none">
+                    <div className="w-12 h-1.5 bg-slate-300 dark:bg-zinc-700 rounded-full" />
+                  </div>
+
+                  <div className="flex-1 overflow-y-auto px-2 sm:px-4 pb-12 custom-scrollbar">
+                    <MbudiaryView
+                      onNavigateToChat={(targetNrp) => {
+                        setIsMbudiarySheetOpen(false);
+                        handleNavigateTab('mbudtalk', targetNrp);
+                      }}
+                    />
+                  </div>
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
 
           <PdfViewerModal
             material={previewMaterial}
