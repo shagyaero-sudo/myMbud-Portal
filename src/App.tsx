@@ -176,16 +176,28 @@ export default function App() {
   const currentUserNrp = localStorage.getItem('mymbud_user_nrp') || 'unknown';
   const currentUserName = localStorage.getItem('mymbud_user_name') || 'Mbuders';
 
-  // STATE BOTTOM SHEET MBUDIARY & POINTER LOCK ANTI GHOST-CLICK
+  // STATE & HANDLERS BOTTOM SHEET MBUDIARY (BISA SWIPE BACK + ANTI GHOST CLICK)
   const [isMbudiarySheetOpen, setIsMbudiarySheetOpen] = useState<boolean>(false);
   const [isLockPointer, setIsLockPointer] = useState<boolean>(false);
 
   const handleOpenMbudiarySheet = useCallback(() => {
     setIsLockPointer(true);
     setIsMbudiarySheetOpen(true);
+    
+    if (window.location.hash !== '#mbudiary') {
+      window.history.pushState({ tab: 'mbudiary' }, '', '#mbudiary');
+    }
+
     setTimeout(() => {
       setIsLockPointer(false);
     }, 300);
+  }, []);
+
+  const handleCloseMbudiarySheet = useCallback(() => {
+    setIsMbudiarySheetOpen(false);
+    if (window.location.hash === '#mbudiary') {
+      window.history.pushState({ tab: 'dashboard' }, '', '#dashboard');
+    }
   }, []);
 
   useEffect(() => {
@@ -342,8 +354,14 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<TabType | 'mbudtalk'>(() => getTabFromLocation());
   const [chatTargetNrp, setChatTargetNrp] = useState<string | null>(null);
 
+  // HANDLE SWIPE BACK UNTUK MENUTUP MBUDIARY KE DASHBOARD
   useEffect(() => {
     const handlePopState = (event: PopStateEvent) => {
+      if (isMbudiarySheetOpen && window.location.hash !== '#mbudiary') {
+        setIsMbudiarySheetOpen(false);
+        return;
+      }
+
       const targetTab = (event.state && event.state.tab && VALID_TABS.includes(event.state.tab))
         ? (event.state.tab as any)
         : getTabFromLocation();
@@ -355,7 +373,7 @@ export default function App() {
 
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
+  }, [isMbudiarySheetOpen]);
 
   const [selectedContactCourse, setSelectedContactCourse] = useState<string>('ALL');
   const [isOfficer, setIsOfficer] = useState<boolean>(false);
@@ -936,12 +954,12 @@ export default function App() {
             </main>
           </div>
 
-          {/* BOTTOM SHEET MBUDIARY (COMPACT SINGLE TOPBAR & ANTI-GHOST CLICK) */}
+          {/* BOTTOM SHEET MBUDIARY (COMPACT SINGLE TOPBAR & SWIPE-BACKABLE) */}
           {isMbudiarySheetOpen && (
             <div className={`fixed inset-0 z-[100] flex flex-col justify-end ${isLockPointer ? 'pointer-events-none' : ''}`}>
               {/* Backdrop Dimmer */}
               <div
-                onClick={() => setIsMbudiarySheetOpen(false)}
+                onClick={handleCloseMbudiarySheet}
                 className="absolute inset-0 bg-black/75 transition-opacity duration-200 pointer-events-auto"
               />
 
@@ -951,10 +969,10 @@ export default function App() {
                 <div className="flex-1 min-h-0 relative overflow-hidden flex flex-col">
                   <MbudiaryView
                     onNavigateToChat={(targetNrp) => {
-                      setIsMbudiarySheetOpen(false);
+                      handleCloseMbudiarySheet();
                       handleNavigateTab('mbudtalk', targetNrp);
                     }}
-                    onCloseSheet={() => setIsMbudiarySheetOpen(false)}
+                    onCloseSheet={handleCloseMbudiarySheet}
                   />
                 </div>
               </div>

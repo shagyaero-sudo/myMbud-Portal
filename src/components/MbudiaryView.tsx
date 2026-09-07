@@ -13,9 +13,13 @@ let cachedPosts: MbudiaryPost[] | null = null;
 
 interface MbudiaryViewProps {
   onNavigateToChat?: (targetNrp?: string) => void;
+  onCloseSheet?: () => void;
 }
 
-export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) => {
+export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ 
+  onNavigateToChat,
+  onCloseSheet 
+}) => {
   const [currentUser, setCurrentUser] = useState<UserProfile>(getUserProfile());
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [selectedAuthorNrp, setSelectedAuthorNrp] = useState<string | null>(null);
@@ -285,6 +289,7 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) 
               onExitToDashboard={handleExitToDashboard}
               onOpenOwnProfile={() => handleSelectAuthor(currentUser.nrp)}
               onNavigateToChat={onNavigateToChat}
+              onCloseSheet={onCloseSheet}
             />
           )}
         </div>

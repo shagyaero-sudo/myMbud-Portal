@@ -138,7 +138,7 @@ export const PostList: React.FC<PostListProps> = ({
         {/* TOMBOL (X) CLOSE SHEET */}
         <button
           type="button"
-          onClick={onCloseSheet}
+          onClick={() => onCloseSheet?.()}
           className="w-8 h-8 rounded-full bg-slate-100 dark:bg-zinc-800/80 text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center justify-center font-bold text-xs shrink-0 cursor-pointer transition-colors"
           title="Tutup"
         >
