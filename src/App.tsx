@@ -80,7 +80,7 @@ const VALID_TABS: (TabType | 'mbudtalk')[] = [
 
 const getTabFromLocation = (): TabType | 'mbudtalk' => {
   if (typeof window === 'undefined') return 'dashboard';
-  const rawHash = window.location.hash.replace(/^#\/?/, '').split('?')[0].split('&')[0].trim();
+  const rawHash = window.location.hash.replace(/^#\/?/, '').split('?')[0].split('&')[0].split('/')[0].trim();
   return VALID_TABS.includes(rawHash as any) ? (rawHash as any) : 'dashboard';
 };
 
@@ -354,12 +354,20 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<TabType | 'mbudtalk'>(() => getTabFromLocation());
   const [chatTargetNrp, setChatTargetNrp] = useState<string | null>(null);
 
-  // HANDLE SWIPE BACK SMART NAVIGATION
+  // HANDLE POPSTATE UNTUK NAVIGASI UTAMA
   useEffect(() => {
     const handlePopState = (event: PopStateEvent) => {
-      if (isMbudiarySheetOpen && !window.location.hash.startsWith('#mbudiary')) {
-        setIsMbudiarySheetOpen(false);
+      const currentHash = window.location.hash;
+
+      // Jika masih berada di area mBudiary (termasuk sub-path), jaga sheet tetap terbuka dan tab tetap active
+      if (currentHash.startsWith('#mbudiary')) {
+        setIsMbudiarySheetOpen(true);
         return;
+      }
+
+      // Jika hash bukan lagi #mbudiary, tutup sheet
+      if (isMbudiarySheetOpen) {
+        setIsMbudiarySheetOpen(false);
       }
 
       const targetTab = (event.state && event.state.tab && VALID_TABS.includes(event.state.tab))
@@ -954,7 +962,7 @@ export default function App() {
             </main>
           </div>
 
-          {/* BOTTOM SHEET MBUDIARY (WITH NESTED SUBVIEW BACK) */}
+          {/* BOTTOM SHEET MBUDIARY */}
           {isMbudiarySheetOpen && (
             <div className={`fixed inset-0 z-[100] flex flex-col justify-end ${isLockPointer ? 'pointer-events-none' : ''}`}>
               {/* Backdrop Dimmer */}

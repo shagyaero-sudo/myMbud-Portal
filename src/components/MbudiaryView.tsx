@@ -78,13 +78,6 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({
     });
   }, []);
 
-  const handleBackToFeed = useCallback(() => {
-    restoreFeedScroll();
-    if (window.location.hash !== '#mbudiary') {
-      window.history.pushState({ tab: 'mbudiary' }, '', '#mbudiary');
-    }
-  }, [restoreFeedScroll]);
-
   // NAVIGASI DENGAN HISTORY STATE BERTINGKAT
   const handleSelectAuthor = useCallback((nrp: string | null) => {
     if (!selectedAuthorNrp && !selectedPostId && containerRef.current) {
@@ -118,14 +111,14 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({
   useEffect(() => {
     const handleSubPopState = () => {
       const hash = window.location.hash;
-      if (hash === '#mbudiary' && (!isFeedActive)) {
+      if (hash === '#mbudiary') {
         restoreFeedScroll();
       }
     };
 
     window.addEventListener('popstate', handleSubPopState);
     return () => window.removeEventListener('popstate', handleSubPopState);
-  }, [isFeedActive, restoreFeedScroll]);
+  }, [restoreFeedScroll]);
 
   // EDGE SWIPE GESTURE DETECTOR UNTUK SHEET
   useEffect(() => {
@@ -151,7 +144,7 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({
 
       if (deltaX > 80 && deltaY < 50) {
         setIsEdgeSwiping(false);
-        window.history.back(); // Panggil history back agar sinkron
+        window.history.back();
       }
     };
 
