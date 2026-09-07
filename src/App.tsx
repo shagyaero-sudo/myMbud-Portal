@@ -930,17 +930,17 @@ export default function App() {
             </main>
           </div>
 
-          {/* SWIPEABLE BOTTOM SHEET MBUDIARY (SUPER SMOOTH + NATIVE SCROLL) */}
-          <AnimatePresence>
+          {/* SWIPEABLE BOTTOM SHEET MBUDIARY (STABLE & ANTI-GLITCH) */}
+          <AnimatePresence mode="wait">
             {isMbudiarySheetOpen && (
-              <>
+              <React.Fragment key="mbudiary-sheet-container">
                 {/* Backdrop Dimmer */}
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   onClick={() => setIsMbudiarySheetOpen(false)}
-                  className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 transition-opacity"
+                  className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 transition-opacity"
                 />
 
                 {/* Drawer Body */}
@@ -948,26 +948,27 @@ export default function App() {
                   initial={{ y: '100%' }}
                   animate={{ y: 0 }}
                   exit={{ y: '100%' }}
-                  transition={{ type: 'spring', damping: 30, stiffness: 350 }}
-                  className="fixed bottom-0 left-0 right-0 z-50 h-[92vh] max-w-2xl mx-auto bg-white/95 dark:bg-zinc-950/95 backdrop-blur-2xl rounded-t-[36px] border-t border-white/60 dark:border-white/10 shadow-2xl flex flex-col overflow-hidden"
+                  transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+                  className="fixed bottom-0 left-0 right-0 z-50 h-[92vh] max-w-2xl mx-auto bg-white dark:bg-zinc-950 rounded-t-[36px] border-t border-slate-200 dark:border-zinc-800 shadow-2xl flex flex-col overflow-hidden transform-gpu"
                 >
-                  {/* Handle Bar Khusus Drag To Close (Mencegah Lag Pas Scroll Feed) */}
+                  {/* Handle Bar Drag to Close */}
                   <motion.div
                     drag="y"
                     dragConstraints={{ top: 0, bottom: 0 }}
-                    dragElastic={{ top: 0, bottom: 0.5 }}
+                    dragElastic={{ top: 0, bottom: 0.6 }}
+                    dragSnapToOrigin
                     onDragEnd={(_, info) => {
-                      if (info.offset.y > 100 || info.velocity.y > 300) {
+                      if (info.offset.y > 120 || info.velocity.y > 350) {
                         setIsMbudiarySheetOpen(false);
                       }
                     }}
-                    className="w-full flex items-center justify-center pt-3.5 pb-3 shrink-0 cursor-grab active:cursor-grabbing touch-none select-none border-b border-slate-100 dark:border-white/5"
+                    className="w-full flex items-center justify-center pt-3.5 pb-3 shrink-0 cursor-grab active:cursor-grabbing touch-none select-none border-b border-slate-100 dark:border-zinc-800/60"
                   >
                     <div className="w-12 h-1.5 bg-slate-300 dark:bg-zinc-700 rounded-full" />
                   </motion.div>
 
-                  {/* Isian Feed mBudiary */}
-                  <div className="flex-1 min-h-0 relative">
+                  {/* Content View */}
+                  <div className="flex-1 min-h-0 relative overflow-hidden">
                     <MbudiaryView
                       onNavigateToChat={(targetNrp) => {
                         setIsMbudiarySheetOpen(false);
@@ -976,7 +977,7 @@ export default function App() {
                     />
                   </div>
                 </motion.div>
-              </>
+              </React.Fragment>
             )}
           </AnimatePresence>
 

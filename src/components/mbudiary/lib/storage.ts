@@ -528,7 +528,20 @@ export function initializeMbudiary(): () => void {
   const fetchAllPosts = async () => {
     const { data } = await supabase.from('mbudiary_posts').select('*').order('created_at', { ascending: false });
     if (data) {
-      postsCache = data.map(normalizePost);
+      const incomingPosts = data.map(normalizePost);
+
+      // MERGE CERDAS: Mencegah Realtime Supabase Menimpa State Like Lokal
+      postsCache = incomingPosts.map((incoming) => {
+        const local = postsCache.find((p) => p.id === incoming.id);
+        if (!local) return incoming;
+
+        const mergedLikes = Array.from(new Set([...incoming.likes, ...local.likes]));
+        return {
+          ...incoming,
+          likes: mergedLikes,
+        };
+      });
+
       saveLocalCache(CACHED_POSTS_KEY, postsCache);
       emit('mbud_posts_change');
     }
@@ -640,9 +653,11 @@ export async function deletePost(postId: string) {
   await supabase.from('mbudiary_posts').delete().eq('id', postId);
 }
 
-// FIX UTAMA: SANITASI & PASTI ROLLBACK JIKA DATABASE GAGAL
+// TOGGLE LIKE ANTI-ROLLBACK DENGAN ASYNC BACKGROUND SYNC
 export async function toggleLikePost(postId: string, userNrp: string): Promise<MbudiaryPost | null> {
   const normalizedNrp = userNrp.trim().toLowerCase();
+  if (!normalizedNrp || normalizedNrp === 'unknown') return null;
+
   const current = postsCache.find((p) => p.id === postId);
   if (!current) return null;
 
@@ -660,27 +675,25 @@ export async function toggleLikePost(postId: string, userNrp: string): Promise<M
   }
 
   const updatedPost: MbudiaryPost = { ...current, likes: updatedLikes };
-  
-  // 1. Update cache lokal dulu
+
+  // 1. UPDATE CACHE LOKAL INSTAN
   postsCache = postsCache.map((p) => (p.id === postId ? updatedPost : p));
   saveLocalCache(CACHED_POSTS_KEY, postsCache);
-
-  // 2. Kirim update ke Supabase
-  const { error } = await supabase.from('mbudiary_posts').update({ likes: updatedLikes }).eq('id', postId);
-
-  if (error) {
-    console.error('[Supabase] Gagal menyimpan like:', error);
-    // Rollback jika database gagal
-    postsCache = postsCache.map((p) => (p.id === postId ? current : p));
-    saveLocalCache(CACHED_POSTS_KEY, postsCache);
-    emit('mbud_posts_change');
-    return current;
-  }
-
   emit('mbud_posts_change');
 
+  // 2. KIRIM BACKGROUND SYNC KE SUPABASE
+  void supabase
+    .from('mbudiary_posts')
+    .update({ likes: updatedLikes })
+    .eq('id', postId)
+    .then(({ error }) => {
+      if (error) {
+        console.error('[Supabase] Gagal menyimpan like ke cloud:', error);
+      }
+    });
+
   if (isNowLiked && current.authorNrp) {
-    createNotification({
+    void createNotification({
       recipientNrp: current.authorNrp,
       senderNrp: normalizedNrp,
       type: 'like',
