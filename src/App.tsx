@@ -177,7 +177,7 @@ export default function App() {
   const currentUserNrp = localStorage.getItem('mymbud_user_nrp') || 'unknown';
   const currentUserName = localStorage.getItem('mymbud_user_name') || 'Mbuders';
 
-  // STATE UNTUK SWIPEABLE BOTTOM SHEET MBUDIARY
+  // STATE SWIPEABLE BOTTOM SHEET MBUDIARY
   const [isMbudiarySheetOpen, setIsMbudiarySheetOpen] = useState<boolean>(false);
 
   useEffect(() => {
@@ -930,10 +930,11 @@ export default function App() {
             </main>
           </div>
 
-          {/* SWIPEABLE BOTTOM SHEET MBUDIARY (INSTAGRAM / TIKTOK STYLE) */}
+          {/* SWIPEABLE BOTTOM SHEET MBUDIARY (SUPER SMOOTH + NATIVE SCROLL) */}
           <AnimatePresence>
             {isMbudiarySheetOpen && (
               <>
+                {/* Backdrop Dimmer */}
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -942,26 +943,31 @@ export default function App() {
                   className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 transition-opacity"
                 />
 
+                {/* Drawer Body */}
                 <motion.div
                   initial={{ y: '100%' }}
                   animate={{ y: 0 }}
                   exit={{ y: '100%' }}
-                  transition={{ type: 'spring', damping: 28, stiffness: 320 }}
-                  drag="y"
-                  dragConstraints={{ top: 0 }}
-                  dragElastic={0.15}
-                  onDragEnd={(_, info) => {
-                    if (info.offset.y > 120 || info.velocity.y > 400) {
-                      setIsMbudiarySheetOpen(false);
-                    }
-                  }}
+                  transition={{ type: 'spring', damping: 30, stiffness: 350 }}
                   className="fixed bottom-0 left-0 right-0 z-50 h-[92vh] max-w-2xl mx-auto bg-white/95 dark:bg-zinc-950/95 backdrop-blur-2xl rounded-t-[36px] border-t border-white/60 dark:border-white/10 shadow-2xl flex flex-col overflow-hidden"
                 >
-                  <div className="w-full flex items-center justify-center pt-3.5 pb-2 shrink-0 cursor-grab active:cursor-grabbing touch-none">
+                  {/* Handle Bar Khusus Drag To Close (Mencegah Lag Pas Scroll Feed) */}
+                  <motion.div
+                    drag="y"
+                    dragConstraints={{ top: 0, bottom: 0 }}
+                    dragElastic={{ top: 0, bottom: 0.5 }}
+                    onDragEnd={(_, info) => {
+                      if (info.offset.y > 100 || info.velocity.y > 300) {
+                        setIsMbudiarySheetOpen(false);
+                      }
+                    }}
+                    className="w-full flex items-center justify-center pt-3.5 pb-3 shrink-0 cursor-grab active:cursor-grabbing touch-none select-none border-b border-slate-100 dark:border-white/5"
+                  >
                     <div className="w-12 h-1.5 bg-slate-300 dark:bg-zinc-700 rounded-full" />
-                  </div>
+                  </motion.div>
 
-                  <div className="flex-1 overflow-y-auto px-2 sm:px-4 pb-12 custom-scrollbar">
+                  {/* Isian Feed mBudiary */}
+                  <div className="flex-1 min-h-0 relative">
                     <MbudiaryView
                       onNavigateToChat={(targetNrp) => {
                         setIsMbudiarySheetOpen(false);

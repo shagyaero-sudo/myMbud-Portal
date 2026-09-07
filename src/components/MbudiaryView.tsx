@@ -12,7 +12,6 @@ import { PostSkeleton } from './mbudiary/PostSkeleton';
 const ONBOARDING_PROFILE_KEY = 'mbud_onboarded_mbudiary_profile';
 const SWIPE_HINT_KEY = 'mbud_swipe_hint_seen';
 
-// MEMORY CACHE BIAR INSTANT 0ms
 let cachedPosts: MbudiaryPost[] | null = null;
 
 interface MbudiaryViewProps {
@@ -25,10 +24,8 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) 
   const [selectedAuthorNrp, setSelectedAuthorNrp] = useState<string | null>(null);
   const [refreshKey, forceRefresh] = useState(0);
 
-  // STATE SKELETON LOADING
   const [isLoading, setIsLoading] = useState<boolean>(!cachedPosts);
 
-  // AMBIL DARI MEMORY CACHE BILA TERSEDIA
   const [allPosts, setAllPosts] = useState<MbudiaryPost[]>(() => {
     if (cachedPosts) return cachedPosts;
     const initial = getPosts();
@@ -36,6 +33,8 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) 
     return initial;
   });
 
+  // REF CONTAINER UNTUK MENJAGA LOKASI SCROLL
+  const containerRef = useRef<HTMLDivElement>(null);
   const feedScrollPositionRef = useRef<number>(0);
 
   const [showSwipeHint, setShowSwipeHint] = useState<boolean>(() => {
@@ -53,7 +52,6 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) 
 
   const isFeedActive = !selectedAuthorNrp && !selectedPostId;
 
-  // SYNC DATA MURNI SESUAI KECEPATAN FETCH / MEMORI (TANPA ARTIFICIAL DELAY)
   useEffect(() => {
     if (!cachedPosts) {
       setIsLoading(true);
@@ -61,8 +59,6 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) 
     const updated = getPosts();
     cachedPosts = updated;
     setAllPosts(updated);
-    
-    // Langsung matikan skeleton detik itu juga begitu data siap
     setIsLoading(false);
   }, [refreshKey]);
 
@@ -79,89 +75,70 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) 
     }
   };
 
-  const handleSelectAuthor = useCallback((nrp: string | null, pushToHistory = true) => {
-    if (!selectedAuthorNrp && !selectedPostId) {
-      feedScrollPositionRef.current = window.scrollY;
+  // TRACK SCROLL DI DALAM CONTAINER SHEET (BUKAN WINDOW)
+  const handleSelectAuthor = useCallback((nrp: string | null) => {
+    if (!selectedAuthorNrp && !selectedPostId && containerRef.current) {
+      feedScrollPositionRef.current = containerRef.current.scrollTop;
     }
     setSelectedAuthorNrp(nrp);
     setSelectedPostId(null);
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-
-    if (pushToHistory && nrp) {
-      window.history.pushState(
-        { tab: 'mbudiary', mbudView: 'profile', targetNrp: nrp },
-        '',
-        `#mbudiary?user=${nrp}`
-      );
+    if (containerRef.current) {
+      containerRef.current.scrollTop = 0;
     }
   }, [selectedAuthorNrp, selectedPostId]);
 
-  const handleSelectPost = useCallback((postId: string | null, pushToHistory = true) => {
-    if (!selectedAuthorNrp && !selectedPostId) {
-      feedScrollPositionRef.current = window.scrollY;
+  const handleSelectPost = useCallback((postId: string | null) => {
+    if (!selectedAuthorNrp && !selectedPostId && containerRef.current) {
+      feedScrollPositionRef.current = containerRef.current.scrollTop;
     }
     setSelectedPostId(postId);
     setSelectedAuthorNrp(null);
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-
-    if (pushToHistory && postId) {
-      window.history.pushState(
-        { tab: 'mbudiary', mbudView: 'post', targetPostId: postId },
-        '',
-        `#mbudiary?post=${postId}`
-      );
+    if (containerRef.current) {
+      containerRef.current.scrollTop = 0;
     }
   }, [selectedAuthorNrp, selectedPostId]);
 
+  // RESTORE SCROLL POSITION KE POSISI TERAKHIR NONGKRONG
   const restoreFeedScroll = useCallback(() => {
     setSelectedAuthorNrp(null);
     setSelectedPostId(null);
     requestAnimationFrame(() => {
-      window.scrollTo({ top: feedScrollPositionRef.current, behavior: 'instant' });
+      if (containerRef.current) {
+        containerRef.current.scrollTop = feedScrollPositionRef.current;
+      }
     });
   }, []);
 
   const handleBackToFeed = useCallback(() => {
-    if (window.history.state?.mbudView) {
-      window.history.back();
-    } else {
-      restoreFeedScroll();
-      window.history.replaceState({ tab: 'mbudiary' }, '', '#mbudiary');
-    }
+    restoreFeedScroll();
   }, [restoreFeedScroll]);
 
-  useEffect(() => {
-    const handlePopState = (event: PopStateEvent) => {
-      const state = event.state;
-      if (state && state.tab === 'mbudiary') {
-        if (state.mbudView === 'profile' && state.targetNrp) {
-          setSelectedAuthorNrp(state.targetNrp);
-          setSelectedPostId(null);
-          window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-        } else if (state.mbudView === 'post' && state.targetPostId) {
-          setSelectedPostId(state.targetPostId);
-          setSelectedAuthorNrp(null);
-          window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-        } else {
-          restoreFeedScroll();
-        }
-      } else {
-        restoreFeedScroll();
-      }
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, [restoreFeedScroll]);
-
+  // EDGE SWIPE GESTURE DETECTOR UNTUK SHEET
   useEffect(() => {
     if (!selectedAuthorNrp && !selectedPostId) return;
 
     let startX = 0;
+    let startY = 0;
+
     const handleTouchStart = (e: TouchEvent) => {
       startX = e.touches[0].clientX;
-      if (startX < 35) {
+      startY = e.touches[0].clientY;
+      if (startX < 45) {
         setIsEdgeSwiping(true);
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!isEdgeSwiping) return;
+      const currentX = e.touches[0].clientX;
+      const currentY = e.touches[0].clientY;
+      const deltaX = currentX - startX;
+      const deltaY = Math.abs(currentY - startY);
+
+      // Jika swipe mendatar lebih dominant dibanding vertical
+      if (deltaX > 80 && deltaY < 50) {
+        setIsEdgeSwiping(false);
+        handleBackToFeed();
       }
     };
 
@@ -169,30 +146,21 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) 
       setIsEdgeSwiping(false);
     };
 
-    window.addEventListener('touchstart', handleTouchStart, { passive: true });
-    window.addEventListener('touchend', handleTouchEnd, { passive: true });
-    window.addEventListener('touchcancel', handleTouchEnd, { passive: true });
+    const el = containerRef.current;
+    if (el) {
+      el.addEventListener('touchstart', handleTouchStart, { passive: true });
+      el.addEventListener('touchmove', handleTouchMove, { passive: true });
+      el.addEventListener('touchend', handleTouchEnd, { passive: true });
+    }
 
     return () => {
-      window.removeEventListener('touchstart', handleTouchStart);
-      window.removeEventListener('touchend', handleTouchEnd);
-      window.removeEventListener('touchcancel', handleTouchEnd);
+      if (el) {
+        el.removeEventListener('touchstart', handleTouchStart);
+        el.removeEventListener('touchmove', handleTouchMove);
+        el.removeEventListener('touchend', handleTouchEnd);
+      }
     };
-  }, [selectedAuthorNrp, selectedPostId]);
-
-  useEffect(() => {
-    const hasPrompted = localStorage.getItem(ONBOARDING_PROFILE_KEY);
-    const isDefaultUsername = !currentUser.username || currentUser.username.startsWith('mbuder_') || currentUser.username === 'mbuders';
-    const isNoCustomPhoto = !currentUser.photoUrl;
-
-    if (!hasPrompted && (isDefaultUsername || isNoCustomPhoto)) {
-      setEditUsername(currentUser.username || '');
-      setEditPhotoUrl(currentUser.photoUrl);
-      setEditBio(currentUser.bio || '');
-      setIsEditModalOpen(true);
-      localStorage.setItem(ONBOARDING_PROFILE_KEY, 'true');
-    }
-  }, [currentUser.username, currentUser.photoUrl, currentUser.bio]);
+  }, [selectedAuthorNrp, selectedPostId, isEdgeSwiping, handleBackToFeed]);
 
   useEffect(() => {
     const sync = () => {
@@ -201,35 +169,14 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) 
       forceRefresh((value) => value + 1);
     };
 
-    const handleNotificationNavigation = () => {
-      const targetPostId = localStorage.getItem('mbud_target_post_id');
-      const targetActorNrp = localStorage.getItem('mbud_target_actor_nrp');
-
-      if (targetPostId) {
-        handleSelectPost(targetPostId, true);
-        localStorage.removeItem('mbud_target_post_id');
-      } else if (targetActorNrp) {
-        handleSelectAuthor(targetActorNrp, true);
-        localStorage.removeItem('mbud_target_actor_nrp');
-      }
-    };
-
-    handleNotificationNavigation();
-
     window.addEventListener('mbud_user_change', sync);
-    window.addEventListener('mbud_users_change', sync);
     window.addEventListener('mbud_posts_change', sync);
-    window.addEventListener('mbud_follows_change', sync);
-    window.addEventListener('mbud_notification_navigate', handleNotificationNavigation);
 
     return () => {
       window.removeEventListener('mbud_user_change', sync);
-      window.removeEventListener('mbud_users_change', sync);
       window.removeEventListener('mbud_posts_change', sync);
-      window.removeEventListener('mbud_follows_change', sync);
-      window.removeEventListener('mbud_notification_navigate', handleNotificationNavigation);
     };
-  }, [handleSelectAuthor, handleSelectPost]);
+  }, []);
 
   const handleOpenEditModal = () => {
     setEditUsername(currentUser.username || '');
@@ -243,11 +190,6 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) 
     e.target.value = '';
     if (!file) return;
 
-    if (file.size > 10 * 1024 * 1024) {
-      alert('Ukuran foto profil maksimal 10 MB.');
-      return;
-    }
-
     setIsUploadingAvatar(true);
     try {
       const uploadedUrls = await uploadImagesToCloudinary([file]);
@@ -255,8 +197,7 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) 
         setEditPhotoUrl(uploadedUrls[0]);
       }
     } catch (error) {
-      console.error('[mbudiary] Gagal upload foto profil:', error);
-      alert('Gagal mengunggah foto profil. Silakan coba lagi.');
+      alert('Gagal mengunggah foto profil.');
     } finally {
       setIsUploadingAvatar(false);
     }
@@ -264,40 +205,37 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) 
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    const normalizedUsername = editUsername.trim().toLowerCase();
-
-    if (!normalizedUsername) {
-      alert('Username tidak boleh kosong.');
-      return;
-    }
+    if (!editUsername.trim()) return;
 
     try {
       await saveUserProfile({
         ...currentUser,
-        username: normalizedUsername,
+        username: editUsername.trim().toLowerCase(),
         emoji: '😊',
         photoUrl: editPhotoUrl,
         bio: editBio.trim(),
       });
-      localStorage.setItem(ONBOARDING_PROFILE_KEY, 'true');
       setIsEditModalOpen(false);
     } catch (error) {
-      console.error('[mbudiary] Gagal menyimpan profil:', error);
-      alert(error instanceof Error ? error.message : 'Gagal menyimpan profil.');
+      alert('Gagal menyimpan profil.');
     }
   };
 
   const selectedPost: MbudiaryPost | undefined = allPosts.find((post) => post.id === selectedPostId);
 
   return (
-    <div className="w-full text-slate-900 dark:text-zinc-100 font-sans transition-colors duration-300 antialiased relative">
+    <div 
+      ref={containerRef}
+      className="w-full h-full overflow-y-auto overscroll-contain text-slate-900 dark:text-zinc-100 font-sans transition-colors duration-300 antialiased relative custom-scrollbar px-2 sm:px-4 pb-16"
+      style={{ willChange: 'scroll-position' }}
+    >
       <AnimatePresence>
         {isEdgeSwiping && (
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            className="fixed left-2 top-1/2 -translate-y-1/2 z-[9999] pointer-events-none flex items-center gap-1.5"
+            className="fixed left-3 top-1/2 -translate-y-1/2 z-[9999] pointer-events-none flex items-center gap-1.5"
           >
             <div className="w-10 h-10 rounded-full bg-blue-600/90 text-white flex items-center justify-center shadow-xl backdrop-blur-md border border-white/20">
               <ArrowLeft className="w-5 h-5 animate-pulse" />
@@ -306,7 +244,7 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) 
         )}
       </AnimatePresence>
 
-      <main className="w-full max-w-3xl mx-auto px-0 sm:px-2 py-2 sm:py-4 pb-24 sm:pb-8 relative z-10 space-y-3 sm:space-y-4">
+      <main className="w-full max-w-3xl mx-auto py-2 sm:py-4 relative z-10 space-y-3 sm:space-y-4">
         <AnimatePresence>
           {!isFeedActive && showSwipeHint && (
             <motion.div
@@ -318,7 +256,7 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) 
               <div className="flex items-center gap-2.5 text-xs font-semibold min-w-0">
                 <span className="text-base shrink-0">👉</span>
                 <span className="leading-snug">
-                  <span className="font-black">Tips:</span> swipe dari tepi layar buat back to Feed
+                  <span className="font-black">Tips:</span> swipe dari tepi layar kiri buat back to Feed
                 </span>
               </div>
               <button
@@ -337,15 +275,11 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) 
             authorNrp={selectedAuthorNrp}
             currentUser={currentUser}
             onBack={handleBackToFeed}
-            onSelectPost={(postId) => handleSelectPost(postId, true)}
+            onSelectPost={(postId) => handleSelectPost(postId)}
             onPostUpdate={() => forceRefresh((value) => value + 1)}
-            onSelectAuthor={(authorNrp) => handleSelectAuthor(authorNrp, true)}
+            onSelectAuthor={(authorNrp) => handleSelectAuthor(authorNrp)}
             onOpenEditProfile={handleOpenEditModal}
-            onNavigateToChat={(authorNrp) => {
-              if (onNavigateToChat) {
-                onNavigateToChat(authorNrp);
-              }
-            }}
+            onNavigateToChat={onNavigateToChat}
           />
         )}
 
@@ -353,13 +287,10 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) 
           <div className="space-y-3 sm:space-y-4">
             <button
               onClick={handleBackToFeed}
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 sm:px-4 sm:py-2.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 text-xs font-bold text-slate-700 dark:text-zinc-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/90 dark:hover:bg-zinc-800/80 transition-all shadow-xs active:scale-95 group ml-1 sm:ml-0 cursor-pointer"
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 sm:px-4 sm:py-2.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 text-xs font-bold text-slate-700 dark:text-zinc-200 hover:text-blue-600 dark:hover:text-blue-400 transition-all shadow-xs active:scale-95 group ml-1 sm:ml-0 cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors group-hover:-translate-x-0.5 transform" />
               <span>Kembali</span>
-              <span className="hidden sm:inline text-[10px] text-slate-400 font-normal border-l border-slate-200 dark:border-zinc-700 pl-2 ml-1">
-                atau swipe kanan
-              </span>
             </button>
 
             {selectedPost ? (
@@ -367,7 +298,7 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) 
                 post={selectedPost}
                 currentUser={currentUser}
                 onPostUpdate={() => forceRefresh((value) => value + 1)}
-                onSelectAuthor={(authorNrp) => handleSelectAuthor(authorNrp, true)}
+                onSelectAuthor={(authorNrp) => handleSelectAuthor(authorNrp)}
                 isDetailPage
               />
             ) : (
@@ -378,21 +309,19 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) 
           </div>
         )}
 
-        {/* FEED UTAMA: RENDER SKELETON REALTME / RENDER ASLI */}
         <div className={isFeedActive ? 'space-y-3 sm:space-y-4 block' : 'hidden'}>
           {isLoading ? (
             <div className="space-y-3 sm:space-y-4">
-              <PostSkeleton />
               <PostSkeleton />
               <PostSkeleton />
             </div>
           ) : (
             <PostList
               currentUser={currentUser}
-              onSelectPost={(postId) => handleSelectPost(postId, true)}
-              onSelectAuthor={(authorNrp) => handleSelectAuthor(authorNrp, true)}
+              onSelectPost={(postId) => handleSelectPost(postId)}
+              onSelectAuthor={(authorNrp) => handleSelectAuthor(authorNrp)}
               onExitToDashboard={handleExitToDashboard}
-              onOpenOwnProfile={() => handleSelectAuthor(currentUser.nrp, true)}
+              onOpenOwnProfile={() => handleSelectAuthor(currentUser.nrp)}
               onNavigateToChat={onNavigateToChat}
             />
           )}
