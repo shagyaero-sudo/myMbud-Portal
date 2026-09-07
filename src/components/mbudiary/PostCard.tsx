@@ -335,35 +335,14 @@ export const PostCard: React.FC<PostCardProps> = ({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const refreshComponentData = () => {
-    const cleanUserNrp = (currentUser.nrp || '').trim().toLowerCase();
-    const cleanLikes = (post.likes || []).map((n) => String(n).trim().toLowerCase());
-    setIsLiked(cleanLikes.includes(cleanUserNrp));
-    setLikeCount(cleanLikes.length);
+  useEffect(() => {
     setReplies(getReplies(post.id) || []);
     setAuthorProfile(getCachedUserByNrp(post.authorNrp));
     setIsBookmarked(getBookmarkedPostIds().includes(post.id));
-  };
 
-  useEffect(() => {
-    refreshComponentData();
     if (isDetailPage) {
       setIsRepliesExpanded(true);
     }
-
-    window.addEventListener('mbud_users_change', refreshComponentData);
-    window.addEventListener('mbud_posts_change', refreshComponentData);
-    window.addEventListener('mbud_replies_change', refreshComponentData);
-    window.addEventListener('mbud_bookmarks_change', refreshComponentData);
-    window.addEventListener('mbud_follows_change', refreshComponentData);
-
-    return () => {
-      window.removeEventListener('mbud_users_change', refreshComponentData);
-      window.removeEventListener('mbud_posts_change', refreshComponentData);
-      window.removeEventListener('mbud_replies_change', refreshComponentData);
-      window.removeEventListener('mbud_bookmarks_change', refreshComponentData);
-      window.removeEventListener('mbud_follows_change', refreshComponentData);
-    };
   }, [post.id, isDetailPage]);
 
   const handleCommentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -425,47 +404,28 @@ export const PostCard: React.FC<PostCardProps> = ({
   const quoteTargetAuthorEmoji = post.isRepost && originalPost ? originalAuthorEmoji : authorEmoji;
   const quoteTargetAuthorPhotoUrl = post.isRepost && originalPost ? originalAuthorPhotoUrl : authorPhotoUrl;
 
-  // HANDLE LIKE TOGGLE UNTUK MENCEGAH FLICKER/KUMAT STATE
-  const handleLikeToggle = async () => {
+  // TOGGLE LIKE TERISOLASI
+  const handleLikeToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+
     const cleanUserNrp = (currentUser.nrp || '').trim().toLowerCase();
     if (!cleanUserNrp) return;
 
-    const wasLiked = isLiked;
-    const initialLikeCount = likeCount;
-
-    // 1. Langsung update UI duluan (Optimistic)
-    const nextLiked = !wasLiked;
-    const nextCount = nextLiked ? initialLikeCount + 1 : Math.max(0, initialLikeCount - 1);
+    const nextLiked = !isLiked;
 
     setIsLiked(nextLiked);
-    setLikeCount(nextCount);
+    setLikeCount((prev) => (nextLiked ? prev + 1 : Math.max(0, prev - 1)));
 
-    try {
-      // 2. Simpan perubahan ke storage
-      const updated = await toggleLikePost(post.id, cleanUserNrp);
+    void toggleLikePost(post.id, cleanUserNrp);
 
-      // 3. Verifikasi ketersediaan data terbaru
-      if (updated && Array.isArray(updated.likes)) {
-        const cleanLikes = updated.likes.map((n) => String(n).trim().toLowerCase());
-        const nowLiked = cleanLikes.includes(cleanUserNrp);
-
-        setIsLiked(nowLiked);
-        setLikeCount(cleanLikes.length);
-
-        if (!wasLiked && nowLiked) {
-          void notifyPostLiked({
-            postAuthorNrp: post.authorNrp,
-            actorNrp: currentUser.nrp,
-            actorName,
-            postId: post.id,
-          });
-        }
-      }
-    } catch (error) {
-      console.error('[mbudiary] Gagal toggle like:', error);
-      // Rollback jika terjadi exception
-      setIsLiked(wasLiked);
-      setLikeCount(initialLikeCount);
+    if (nextLiked) {
+      void notifyPostLiked({
+        postAuthorNrp: post.authorNrp,
+        actorNrp: currentUser.nrp,
+        actorName,
+        postId: post.id,
+      });
     }
   };
 
@@ -822,25 +782,25 @@ export const PostCard: React.FC<PostCardProps> = ({
             {/* ACTION BUTTONS */}
             <div className="flex items-center justify-between text-xs pt-0.5">
               <div className="flex items-center gap-3 sm:gap-4 -ml-1">
-                <motion.button
-                  whileTap={{ scale: 0.9 }}
+                <button
+                  type="button"
                   onClick={handleLikeToggle}
-                  className={`flex items-center gap-1.5 py-1 px-1.5 rounded-md transition-all text-xs font-medium cursor-pointer ${isLiked ? 'text-rose-500 font-bold' : 'text-slate-400 dark:text-zinc-500 hover:text-rose-500'}`}
+                  className={`flex items-center gap-1.5 py-1 px-1.5 rounded-md transition-colors text-xs font-medium cursor-pointer ${isLiked ? 'text-rose-500 font-bold' : 'text-slate-400 dark:text-zinc-500 hover:text-rose-500'}`}
                 >
-                  <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${isLiked ? 'fill-rose-500 text-rose-500' : ''}`} />
-                  <span className="text-[11px] sm:text-xs">{likeCount}</span>
-                </motion.button>
+                  <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform active:scale-125 ${isLiked ? 'fill-rose-500 text-rose-500' : ''}`} />
+                  <span className="text-[11px] sm:text-xs select-none">{likeCount}</span>
+                </button>
 
                 <button
+                  type="button"
                   onClick={handleCommentClick}
                   className={`flex items-center gap-1.5 py-1 px-1.5 rounded-md transition-all text-xs font-medium cursor-pointer ${isRepliesExpanded && isDetailPage ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-slate-400 dark:text-zinc-500 hover:text-blue-600 dark:hover:text-blue-400'}`}
                 >
                   <MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  <span className="text-[11px] sm:text-xs">{post.replyCount || replies.length}</span>
+                  <span className="text-[11px] sm:text-xs select-none">{post.replyCount || replies.length}</span>
                 </button>
 
-                <motion.button
-                  whileTap={{ scale: 0.9 }}
+                <button
                   type="button"
                   onClick={() => setIsQuoteOpen(true)}
                   disabled={isReposting}
@@ -849,18 +809,18 @@ export const PostCard: React.FC<PostCardProps> = ({
                 >
                   <Repeat2 className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isReposting ? 'animate-pulse' : ''}`} />
                   <span className="text-[11px] sm:text-xs hidden xs:inline">Repost</span>
-                </motion.button>
+                </button>
               </div>
 
               <div>
-                <motion.button
-                  whileTap={{ scale: 0.9 }}
+                <button
+                  type="button"
                   onClick={handleBookmarkToggle}
                   className={`flex items-center justify-center p-1 rounded-md transition-all cursor-pointer ${isBookmarked ? 'text-amber-500' : 'text-slate-400 dark:text-zinc-500 hover:text-amber-500'}`}
                   title={isBookmarked ? 'Hapus Bookmark' : 'Simpan Postingan'}
                 >
                   <Bookmark className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-all ${isBookmarked ? 'fill-amber-500 text-amber-500' : ''}`} />
-                </motion.button>
+                </button>
               </div>
             </div>
 

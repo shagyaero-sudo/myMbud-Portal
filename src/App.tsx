@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback, useMemo, useTransition } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
 
 import { subscribeAnnouncements } from './services/announcements';
 import { supabase } from './services/supabase';
@@ -177,7 +176,7 @@ export default function App() {
   const currentUserNrp = localStorage.getItem('mymbud_user_nrp') || 'unknown';
   const currentUserName = localStorage.getItem('mymbud_user_name') || 'Mbuders';
 
-  // STATE SWIPEABLE BOTTOM SHEET MBUDIARY
+  // STATE BOTTOM SHEET MBUDIARY
   const [isMbudiarySheetOpen, setIsMbudiarySheetOpen] = useState<boolean>(false);
 
   useEffect(() => {
@@ -778,14 +777,12 @@ export default function App() {
 
   return (
     <>
-      <AnimatePresence>
-        {showSplash && (
-          <SplashScreen 
-            key="splash" 
-            onComplete={() => setShowSplash(false)} 
-          />
-        )}
-      </AnimatePresence>
+      {showSplash && (
+        <SplashScreen 
+          key="splash" 
+          onComplete={() => setShowSplash(false)} 
+        />
+      )}
 
       {shouldShowAspirationModal && (
         <AspirationFormModal
@@ -930,56 +927,42 @@ export default function App() {
             </main>
           </div>
 
-          {/* SWIPEABLE BOTTOM SHEET MBUDIARY (STABLE & ANTI-GLITCH) */}
-          <AnimatePresence mode="wait">
-            {isMbudiarySheetOpen && (
-              <React.Fragment key="mbudiary-sheet-container">
-                {/* Backdrop Dimmer */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  onClick={() => setIsMbudiarySheetOpen(false)}
-                  className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 transition-opacity"
-                />
+          {/* BOTTOM SHEET MBUDIARY (LOCKED & ANTI-MENTAL) */}
+          {isMbudiarySheetOpen && (
+            <div className="fixed inset-0 z-50 flex flex-col justify-end">
+              {/* Backdrop Dimmer */}
+              <div
+                onClick={() => setIsMbudiarySheetOpen(false)}
+                className="absolute inset-0 bg-black/75 transition-opacity duration-200"
+              />
 
-                {/* Drawer Body */}
-                <motion.div
-                  initial={{ y: '100%' }}
-                  animate={{ y: 0 }}
-                  exit={{ y: '100%' }}
-                  transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-                  className="fixed bottom-0 left-0 right-0 z-50 h-[92vh] max-w-2xl mx-auto bg-white dark:bg-zinc-950 rounded-t-[36px] border-t border-slate-200 dark:border-zinc-800 shadow-2xl flex flex-col overflow-hidden transform-gpu"
-                >
-                  {/* Handle Bar Drag to Close */}
-                  <motion.div
-                    drag="y"
-                    dragConstraints={{ top: 0, bottom: 0 }}
-                    dragElastic={{ top: 0, bottom: 0.6 }}
-                    dragSnapToOrigin
-                    onDragEnd={(_, info) => {
-                      if (info.offset.y > 120 || info.velocity.y > 350) {
-                        setIsMbudiarySheetOpen(false);
-                      }
-                    }}
-                    className="w-full flex items-center justify-center pt-3.5 pb-3 shrink-0 cursor-grab active:cursor-grabbing touch-none select-none border-b border-slate-100 dark:border-zinc-800/60"
+              {/* Sheet Body */}
+              <div className="relative z-10 w-full h-[92vh] max-w-2xl mx-auto bg-white dark:bg-zinc-950 rounded-t-[36px] border-t border-slate-200 dark:border-zinc-800 shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-300">
+                {/* Header Bar */}
+                <div className="w-full flex items-center justify-between px-5 pt-3.5 pb-2 shrink-0 border-b border-slate-100 dark:border-zinc-800/60 bg-white dark:bg-zinc-950">
+                  <div className="w-8" />
+                  <div className="w-12 h-1.5 bg-slate-300 dark:bg-zinc-700 rounded-full" />
+                  <button
+                    type="button"
+                    onClick={() => setIsMbudiarySheetOpen(false)}
+                    className="w-8 h-8 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center justify-center font-bold text-xs cursor-pointer transition-colors"
                   >
-                    <div className="w-12 h-1.5 bg-slate-300 dark:bg-zinc-700 rounded-full" />
-                  </motion.div>
+                    ✕
+                  </button>
+                </div>
 
-                  {/* Content View */}
-                  <div className="flex-1 min-h-0 relative overflow-hidden">
-                    <MbudiaryView
-                      onNavigateToChat={(targetNrp) => {
-                        setIsMbudiarySheetOpen(false);
-                        handleNavigateTab('mbudtalk', targetNrp);
-                      }}
-                    />
-                  </div>
-                </motion.div>
-              </React.Fragment>
-            )}
-          </AnimatePresence>
+                {/* Content View */}
+                <div className="flex-1 min-h-0 relative overflow-hidden">
+                  <MbudiaryView
+                    onNavigateToChat={(targetNrp) => {
+                      setIsMbudiarySheetOpen(false);
+                      handleNavigateTab('mbudtalk', targetNrp);
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
 
           <PdfViewerModal
             material={previewMaterial}
