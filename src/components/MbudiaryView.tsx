@@ -7,11 +7,12 @@ import { uploadImagesToCloudinary } from './mbudiary/lib/cloudinary';
 import { PostList } from './mbudiary/PostList';
 import { PostCard } from './mbudiary/PostCard';
 import { UserProfileView } from './mbudiary/UserProfileView';
+import { PostSkeleton } from './mbudiary/PostSkeleton';
 
 const ONBOARDING_PROFILE_KEY = 'mbud_onboarded_mbudiary_profile';
 const SWIPE_HINT_KEY = 'mbud_swipe_hint_seen';
 
-// MEMORY CACHE BIAR 0.00001 DETIK
+// MEMORY CACHE BIAR INSTANT 0ms
 let cachedPosts: MbudiaryPost[] | null = null;
 
 interface MbudiaryViewProps {
@@ -24,7 +25,10 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) 
   const [selectedAuthorNrp, setSelectedAuthorNrp] = useState<string | null>(null);
   const [refreshKey, forceRefresh] = useState(0);
 
-  // LANGSUNG AMBIL DARI MEMORY CACHE KALO ADA (INSTANT 0ms)
+  // STATE SKELETON LOADING
+  const [isLoading, setIsLoading] = useState<boolean>(!cachedPosts);
+
+  // AMBIL DARI MEMORY CACHE BILA TERSEDIA
   const [allPosts, setAllPosts] = useState<MbudiaryPost[]>(() => {
     if (cachedPosts) return cachedPosts;
     const initial = getPosts();
@@ -49,11 +53,17 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) 
 
   const isFeedActive = !selectedAuthorNrp && !selectedPostId;
 
-  // SYNC DATA TANPA BIKIN UNNECESSARY DELAY
+  // SYNC DATA MURNI SESUAI KECEPATAN FETCH / MEMORI (TANPA ARTIFICIAL DELAY)
   useEffect(() => {
+    if (!cachedPosts) {
+      setIsLoading(true);
+    }
     const updated = getPosts();
     cachedPosts = updated;
     setAllPosts(updated);
+    
+    // Langsung matikan skeleton detik itu juga begitu data siap
+    setIsLoading(false);
   }, [refreshKey]);
 
   const dismissSwipeHint = () => {
@@ -368,18 +378,28 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({ onNavigateToChat }) 
           </div>
         )}
 
+        {/* FEED UTAMA: RENDER SKELETON REALTME / RENDER ASLI */}
         <div className={isFeedActive ? 'space-y-3 sm:space-y-4 block' : 'hidden'}>
-          <PostList
-            currentUser={currentUser}
-            onSelectPost={(postId) => handleSelectPost(postId, true)}
-            onSelectAuthor={(authorNrp) => handleSelectAuthor(authorNrp, true)}
-            onExitToDashboard={handleExitToDashboard}
-            onOpenOwnProfile={() => handleSelectAuthor(currentUser.nrp, true)}
-            onNavigateToChat={onNavigateToChat}
-          />
+          {isLoading ? (
+            <div className="space-y-3 sm:space-y-4">
+              <PostSkeleton />
+              <PostSkeleton />
+              <PostSkeleton />
+            </div>
+          ) : (
+            <PostList
+              currentUser={currentUser}
+              onSelectPost={(postId) => handleSelectPost(postId, true)}
+              onSelectAuthor={(authorNrp) => handleSelectAuthor(authorNrp, true)}
+              onExitToDashboard={handleExitToDashboard}
+              onOpenOwnProfile={() => handleSelectAuthor(currentUser.nrp, true)}
+              onNavigateToChat={onNavigateToChat}
+            />
+          )}
         </div>
       </main>
 
+      {/* MODAL EDIT PROFIL */}
       <AnimatePresence>
         {isEditModalOpen && (
           <motion.div

@@ -152,10 +152,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
     setIsBottomSheetOpen(false);
   };
 
-  // DIRECT HIGH-PRIORITY INSTANT CLICK
-  const handleDiaryClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
+  // PEMICU NAVIGASI INSTAN SUPERSPEED
+  const triggerInstantDiary = (e?: React.SyntheticEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     setActiveTab('mbudiary');
   };
 
@@ -451,15 +453,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
             count={activeTaskCount > 0 ? activeTaskCount : null}
           />
 
-          {/* TOMBOL MBUDIARY TENGAH FLOATING (INSTANT PRE-TOUCH TRIGGER) */}
+          {/* TOMBOL MBUDIARY TENGAH FLOATING (TRIGGER ON TOUCH / DOWN INSTAN) */}
           <div className="relative flex flex-col items-center justify-center -top-2.5 px-1 shrink-0">
             <div className="p-1 rounded-full bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-white/80 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/30">
               <button
                 type="button"
                 aria-label="Buka mBudiary"
-                onTouchStart={() => setActiveTab('mbudiary')}
-                onMouseEnter={() => setActiveTab('mbudiary')}
-                onClick={handleDiaryClick}
+                onTouchStart={triggerInstantDiary}
+                onMouseDown={triggerInstantDiary}
+                onClick={triggerInstantDiary}
                 className="w-10 h-10 bg-blue-600 dark:bg-blue-500 text-white rounded-full flex items-center justify-center shadow-md shadow-blue-500/30 active:scale-90 transition-transform cursor-pointer"
               >
                 <Plus className="w-5 h-5" />
