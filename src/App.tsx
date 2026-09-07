@@ -176,7 +176,7 @@ export default function App() {
   const currentUserNrp = localStorage.getItem('mymbud_user_nrp') || 'unknown';
   const currentUserName = localStorage.getItem('mymbud_user_name') || 'Mbuders';
 
-  // STATE & HANDLERS BOTTOM SHEET MBUDIARY (BISA SWIPE BACK + ANTI GHOST CLICK)
+  // STATE & HANDLERS BOTTOM SHEET MBUDIARY
   const [isMbudiarySheetOpen, setIsMbudiarySheetOpen] = useState<boolean>(false);
   const [isLockPointer, setIsLockPointer] = useState<boolean>(false);
 
@@ -184,7 +184,7 @@ export default function App() {
     setIsLockPointer(true);
     setIsMbudiarySheetOpen(true);
     
-    if (window.location.hash !== '#mbudiary') {
+    if (!window.location.hash.startsWith('#mbudiary')) {
       window.history.pushState({ tab: 'mbudiary' }, '', '#mbudiary');
     }
 
@@ -195,7 +195,7 @@ export default function App() {
 
   const handleCloseMbudiarySheet = useCallback(() => {
     setIsMbudiarySheetOpen(false);
-    if (window.location.hash === '#mbudiary') {
+    if (window.location.hash.startsWith('#mbudiary')) {
       window.history.pushState({ tab: 'dashboard' }, '', '#dashboard');
     }
   }, []);
@@ -354,10 +354,10 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<TabType | 'mbudtalk'>(() => getTabFromLocation());
   const [chatTargetNrp, setChatTargetNrp] = useState<string | null>(null);
 
-  // HANDLE SWIPE BACK UNTUK MENUTUP MBUDIARY KE DASHBOARD
+  // HANDLE SWIPE BACK SMART NAVIGATION
   useEffect(() => {
     const handlePopState = (event: PopStateEvent) => {
-      if (isMbudiarySheetOpen && window.location.hash !== '#mbudiary') {
+      if (isMbudiarySheetOpen && !window.location.hash.startsWith('#mbudiary')) {
         setIsMbudiarySheetOpen(false);
         return;
       }
@@ -954,7 +954,7 @@ export default function App() {
             </main>
           </div>
 
-          {/* BOTTOM SHEET MBUDIARY (COMPACT SINGLE TOPBAR & SWIPE-BACKABLE) */}
+          {/* BOTTOM SHEET MBUDIARY (WITH NESTED SUBVIEW BACK) */}
           {isMbudiarySheetOpen && (
             <div className={`fixed inset-0 z-[100] flex flex-col justify-end ${isLockPointer ? 'pointer-events-none' : ''}`}>
               {/* Backdrop Dimmer */}

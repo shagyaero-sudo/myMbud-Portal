@@ -67,29 +67,6 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({
     }
   };
 
-  // TRACK SCROLL DI DALAM CONTAINER SHEET (BUKAN WINDOW)
-  const handleSelectAuthor = useCallback((nrp: string | null) => {
-    if (!selectedAuthorNrp && !selectedPostId && containerRef.current) {
-      feedScrollPositionRef.current = containerRef.current.scrollTop;
-    }
-    setSelectedAuthorNrp(nrp);
-    setSelectedPostId(null);
-    if (containerRef.current) {
-      containerRef.current.scrollTop = 0;
-    }
-  }, [selectedAuthorNrp, selectedPostId]);
-
-  const handleSelectPost = useCallback((postId: string | null) => {
-    if (!selectedAuthorNrp && !selectedPostId && containerRef.current) {
-      feedScrollPositionRef.current = containerRef.current.scrollTop;
-    }
-    setSelectedPostId(postId);
-    setSelectedAuthorNrp(null);
-    if (containerRef.current) {
-      containerRef.current.scrollTop = 0;
-    }
-  }, [selectedAuthorNrp, selectedPostId]);
-
   // RESTORE SCROLL POSITION KE POSISI TERAKHIR NONGKRONG
   const restoreFeedScroll = useCallback(() => {
     setSelectedAuthorNrp(null);
@@ -103,7 +80,52 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({
 
   const handleBackToFeed = useCallback(() => {
     restoreFeedScroll();
+    if (window.location.hash !== '#mbudiary') {
+      window.history.pushState({ tab: 'mbudiary' }, '', '#mbudiary');
+    }
   }, [restoreFeedScroll]);
+
+  // NAVIGASI DENGAN HISTORY STATE BERTINGKAT
+  const handleSelectAuthor = useCallback((nrp: string | null) => {
+    if (!selectedAuthorNrp && !selectedPostId && containerRef.current) {
+      feedScrollPositionRef.current = containerRef.current.scrollTop;
+    }
+    setSelectedAuthorNrp(nrp);
+    setSelectedPostId(null);
+    if (nrp) {
+      window.history.pushState({ tab: 'mbudiary', subView: 'user' }, '', '#mbudiary/user');
+    }
+    if (containerRef.current) {
+      containerRef.current.scrollTop = 0;
+    }
+  }, [selectedAuthorNrp, selectedPostId]);
+
+  const handleSelectPost = useCallback((postId: string | null) => {
+    if (!selectedAuthorNrp && !selectedPostId && containerRef.current) {
+      feedScrollPositionRef.current = containerRef.current.scrollTop;
+    }
+    setSelectedPostId(postId);
+    setSelectedAuthorNrp(null);
+    if (postId) {
+      window.history.pushState({ tab: 'mbudiary', subView: 'post' }, '', '#mbudiary/post');
+    }
+    if (containerRef.current) {
+      containerRef.current.scrollTop = 0;
+    }
+  }, [selectedAuthorNrp, selectedPostId]);
+
+  // LISTEN POPSTATE KHUSUS UNTUK INTERNAL MBUDIARY (DETAIL/PROFILE -> FEED)
+  useEffect(() => {
+    const handleSubPopState = () => {
+      const hash = window.location.hash;
+      if (hash === '#mbudiary' && (!isFeedActive)) {
+        restoreFeedScroll();
+      }
+    };
+
+    window.addEventListener('popstate', handleSubPopState);
+    return () => window.removeEventListener('popstate', handleSubPopState);
+  }, [isFeedActive, restoreFeedScroll]);
 
   // EDGE SWIPE GESTURE DETECTOR UNTUK SHEET
   useEffect(() => {
@@ -129,7 +151,7 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({
 
       if (deltaX > 80 && deltaY < 50) {
         setIsEdgeSwiping(false);
-        handleBackToFeed();
+        window.history.back(); // Panggil history back agar sinkron
       }
     };
 
@@ -151,7 +173,7 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({
         el.removeEventListener('touchend', handleTouchEnd);
       }
     };
-  }, [selectedAuthorNrp, selectedPostId, isEdgeSwiping, handleBackToFeed]);
+  }, [selectedAuthorNrp, selectedPostId, isEdgeSwiping]);
 
   useEffect(() => {
     const sync = () => {
@@ -240,7 +262,7 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({
           <UserProfileView
             authorNrp={selectedAuthorNrp}
             currentUser={currentUser}
-            onBack={handleBackToFeed}
+            onBack={() => window.history.back()}
             onSelectPost={(postId) => handleSelectPost(postId)}
             onPostUpdate={() => forceRefresh((value) => value + 1)}
             onSelectAuthor={(authorNrp) => handleSelectAuthor(authorNrp)}
@@ -252,7 +274,7 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({
         {selectedPostId && (
           <div className="space-y-3 sm:space-y-4">
             <button
-              onClick={handleBackToFeed}
+              onClick={() => window.history.back()}
               className="inline-flex items-center gap-2 px-3.5 py-1.5 sm:px-4 sm:py-2.5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-xs font-bold text-slate-700 dark:text-zinc-200 hover:text-blue-600 dark:hover:text-blue-400 transition-all shadow-xs active:scale-95 group ml-1 sm:ml-0 cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors group-hover:-translate-x-0.5 transform" />
