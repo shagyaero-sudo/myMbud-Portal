@@ -4,7 +4,7 @@ import { getPosts, getCachedUserByNrp, searchUsersForMention, getFollows, getBoo
 import { PostCard, VerifiedBadge } from './PostCard';
 import { CreatePostForm } from './CreatePostForm';
 import { getOptimizedImageUrl } from './lib/utils';
-import { Search, MessageCircle, Users, ChevronRight, UserCheck, Bookmark } from 'lucide-react';
+import { Search, Users, ChevronRight, UserCheck, Bookmark, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface PostListProps {
@@ -14,6 +14,7 @@ interface PostListProps {
   onExitToDashboard?: () => void;
   onOpenOwnProfile?: () => void;
   onNavigateToChat?: (targetNrp?: string) => void;
+  onCloseSheet?: () => void;
 }
 
 type FeedTab = 'for_you' | 'following';
@@ -22,9 +23,8 @@ export const PostList: React.FC<PostListProps> = ({
   currentUser,
   onSelectPost,
   onSelectAuthor,
-  onExitToDashboard,
   onOpenOwnProfile,
-  onNavigateToChat,
+  onCloseSheet,
 }) => {
   const [posts, setPosts] = useState<MbudiaryPost[]>(() => getPosts());
   const [activeTab, setActiveTab] = useState<FeedTab>('for_you');
@@ -62,7 +62,7 @@ export const PostList: React.FC<PostListProps> = ({
     const followingNrps = getFollows();
     const myNrp = (currentUser?.nrp || '').toLowerCase();
 
-    // 1. Tab Untuk Anda (Global Feed): post followers-only milik orang lain disembunyikan
+    // 1. Tab Untuk Anda
     if (activeTab === 'for_you' && !showBookmarksOnly) {
       result = result.filter((p) => {
         const isMe = p.authorNrp.toLowerCase() === myNrp;
@@ -70,7 +70,7 @@ export const PostList: React.FC<PostListProps> = ({
       });
     }
 
-    // 2. Tab Mengikuti: semua postingan dari yang difollow muncul
+    // 2. Tab Mengikuti
     if (activeTab === 'following' && !showBookmarksOnly) {
       result = result.filter((p) => followingNrps.includes(p.authorNrp.toLowerCase()));
     }
@@ -81,7 +81,7 @@ export const PostList: React.FC<PostListProps> = ({
       result = result.filter((p) => bookmarkedIds.includes(p.id));
     }
 
-    // 4. Search Query Filter
+    // 4. Search Filter
     if (searchQuery.trim()) {
       const q = searchQuery.trim().toLowerCase();
       result = result.filter((post) => {
@@ -104,46 +104,45 @@ export const PostList: React.FC<PostListProps> = ({
   const hasNoResults = hasSearch && matchedUsers.length === 0 && filteredPosts.length === 0;
 
   return (
-    <div className="space-y-3 sm:space-y-4 w-full">
+    <div className="space-y-3 sm:space-y-4 w-full p-3 sm:p-4">
       
-      {/* 1-ROW TOPBAR DENGAN TEKS MBUDIARY & CHAT BUTTON */}
-      <div className="flex items-center justify-between gap-2 sm:gap-3 w-full px-1 py-1">
-        <div className="flex items-center gap-1.5 shrink-0">
-          <span className="font-black text-lg sm:text-xl text-slate-900 dark:text-zinc-100 tracking-tight">
-            mbudiary.
-          </span>
-        </div>
+      {/* INTEGRATED SINGLE TOPBAR */}
+      <div className="flex items-center justify-between gap-2.5 w-full">
+        {/* LOGO MBUDIARY */}
+        <span className="font-black text-xl sm:text-2xl text-slate-900 dark:text-zinc-100 tracking-tight shrink-0">
+          mbudiary.
+        </span>
 
-        {/* BAR PENCARIAN */}
+        {/* SEARCH BAR BERSATU DI ATAS */}
         <div className="relative flex-1 min-w-0 flex items-center">
-          <div className="absolute left-3.5 flex items-center pointer-events-none z-10">
-            <Search className="w-4 h-4 text-slate-400 dark:text-zinc-400" />
+          <div className="absolute left-3 flex items-center pointer-events-none z-10">
+            <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400 dark:text-zinc-500" />
           </div>
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Cari post/akun..."
-            className="w-full pl-10 pr-8 py-2 text-xs sm:text-[13px] rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-xs transition-all"
+            className="w-full pl-8 sm:pl-9 pr-7 py-1.5 sm:py-2 text-xs sm:text-[13px] rounded-full bg-slate-100 dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-200 text-xs font-bold cursor-pointer"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-200 text-xs font-bold cursor-pointer"
             >
               ✕
             </button>
           )}
         </div>
 
-        {/* TOMBOL MBUDTALK LINGKARAN DI SEBELAH KANAN SEARCH BAR */}
+        {/* TOMBOL (X) CLOSE SHEET */}
         <button
           type="button"
-          onClick={() => onNavigateToChat?.()}
-          className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-zinc-800 flex items-center justify-center shrink-0 shadow-xs transition-all active:scale-95 cursor-pointer"
-          title="Buka mbudTalk Obrolan"
+          onClick={onCloseSheet}
+          className="w-8 h-8 rounded-full bg-slate-100 dark:bg-zinc-800/80 text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center justify-center font-bold text-xs shrink-0 cursor-pointer transition-colors"
+          title="Tutup"
         >
-          <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 dark:text-blue-400" />
+          <X className="w-4 h-4" />
         </button>
       </div>
 
@@ -205,7 +204,6 @@ export const PostList: React.FC<PostListProps> = ({
         
         {/* HEADER TAB */}
         <div className="flex items-center border-b border-slate-100 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-950/40 pr-2">
-          
           <button
             type="button"
             onClick={() => { setShowBookmarksOnly(false); setActiveTab('for_you'); }}
@@ -277,7 +275,7 @@ export const PostList: React.FC<PostListProps> = ({
               ) : activeTab === 'following' ? (
                 <UserCheck className="w-5 h-5" />
               ) : (
-                <MessageCircle className="w-5 h-5" />
+                <Users className="w-5 h-5" />
               )}
             </div>
             <h3 className="font-bold text-sm text-slate-800 dark:text-zinc-200">

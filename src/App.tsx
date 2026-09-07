@@ -936,7 +936,7 @@ export default function App() {
             </main>
           </div>
 
-          {/* BOTTOM SHEET MBUDIARY (LOCKED & ANTI-GHOST CLICK) */}
+          {/* BOTTOM SHEET MBUDIARY (COMPACT SINGLE TOPBAR & ANTI-GHOST CLICK) */}
           {isMbudiarySheetOpen && (
             <div className={`fixed inset-0 z-[100] flex flex-col justify-end ${isLockPointer ? 'pointer-events-none' : ''}`}>
               {/* Backdrop Dimmer */}
@@ -947,27 +947,14 @@ export default function App() {
 
               {/* Sheet Body */}
               <div className="relative z-10 w-full h-[92vh] max-w-2xl mx-auto bg-white dark:bg-zinc-950 rounded-t-[32px] border-t border-slate-200 dark:border-zinc-800 shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-200 pointer-events-auto">
-                {/* Header Bar dengan Tombol X di Pojok Kanan */}
-                <div className="w-full flex items-center justify-between px-5 py-3 shrink-0 border-b border-slate-100 dark:border-zinc-800/60 bg-white dark:bg-zinc-950">
-                  <span className="text-xs font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">
-                    mBudiary
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setIsMbudiarySheetOpen(false)}
-                    className="w-8 h-8 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center justify-center font-bold text-xs cursor-pointer transition-colors"
-                  >
-                    ✕
-                  </button>
-                </div>
-
                 {/* Content View */}
-                <div className="flex-1 min-h-0 relative overflow-hidden">
+                <div className="flex-1 min-h-0 relative overflow-hidden flex flex-col">
                   <MbudiaryView
                     onNavigateToChat={(targetNrp) => {
                       setIsMbudiarySheetOpen(false);
                       handleNavigateTab('mbudtalk', targetNrp);
                     }}
+                    onCloseSheet={() => setIsMbudiarySheetOpen(false)}
                   />
                 </div>
               </div>
