@@ -451,7 +451,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             count={activeTaskCount > 0 ? activeTaskCount : null}
           />
 
-          {/* TOMBOL MBUDIARY TENGAH FLOATING */}
+          {/* TOMBOL MBUDIARY TENGAH FLOATING (TERISOLASI & ANTI GHOST-CLICK) */}
           <div className="relative flex flex-col items-center justify-center -top-2.5 px-1 shrink-0">
             <div className="p-1 rounded-full bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-white/80 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/30">
               <button

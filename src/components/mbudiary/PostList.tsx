@@ -4,7 +4,7 @@ import { getPosts, getCachedUserByNrp, searchUsersForMention, getFollows, getBoo
 import { PostCard, VerifiedBadge } from './PostCard';
 import { CreatePostForm } from './CreatePostForm';
 import { getOptimizedImageUrl } from './lib/utils';
-import { Search, MessageCircle, Users, ChevronRight, UserCheck, ArrowLeft, Bookmark } from 'lucide-react';
+import { Search, MessageCircle, Users, ChevronRight, UserCheck, Bookmark } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface PostListProps {
@@ -106,18 +106,9 @@ export const PostList: React.FC<PostListProps> = ({
   return (
     <div className="space-y-3 sm:space-y-4 w-full">
       
-      {/* 1-ROW TOPBAR DENGAN TOMBOL MBUDTALK DI POJOK KANAN */}
-      <div className="flex items-center gap-2 sm:gap-3 w-full px-1 py-1">
+      {/* 1-ROW TOPBAR DENGAN TEKS MBUDIARY & CHAT BUTTON */}
+      <div className="flex items-center justify-between gap-2 sm:gap-3 w-full px-1 py-1">
         <div className="flex items-center gap-1.5 shrink-0">
-          <button
-            type="button"
-            onClick={onExitToDashboard}
-            className="p-1.5 -ml-1 text-slate-600 dark:text-zinc-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
-            title="Kembali ke Dashboard Utama"
-          >
-            <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6" />
-          </button>
-
           <span className="font-black text-lg sm:text-xl text-slate-900 dark:text-zinc-100 tracking-tight">
             mbudiary.
           </span>

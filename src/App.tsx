@@ -927,9 +927,9 @@ export default function App() {
             </main>
           </div>
 
-          {/* BOTTOM SHEET MBUDIARY (LOCKED & ANTI-MENTAL) */}
+          {/* BOTTOM SHEET MBUDIARY (LOCKED & ANTI-GHOST CLICK) */}
           {isMbudiarySheetOpen && (
-            <div className="fixed inset-0 z-50 flex flex-col justify-end">
+            <div className="fixed inset-0 z-[100] flex flex-col justify-end">
               {/* Backdrop Dimmer */}
               <div
                 onClick={() => setIsMbudiarySheetOpen(false)}
@@ -937,11 +937,12 @@ export default function App() {
               />
 
               {/* Sheet Body */}
-              <div className="relative z-10 w-full h-[92vh] max-w-2xl mx-auto bg-white dark:bg-zinc-950 rounded-t-[36px] border-t border-slate-200 dark:border-zinc-800 shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-300">
-                {/* Header Bar */}
-                <div className="w-full flex items-center justify-between px-5 pt-3.5 pb-2 shrink-0 border-b border-slate-100 dark:border-zinc-800/60 bg-white dark:bg-zinc-950">
-                  <div className="w-8" />
-                  <div className="w-12 h-1.5 bg-slate-300 dark:bg-zinc-700 rounded-full" />
+              <div className="relative z-10 w-full h-[92vh] max-w-2xl mx-auto bg-white dark:bg-zinc-950 rounded-t-[32px] border-t border-slate-200 dark:border-zinc-800 shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-200">
+                {/* Header Bar dengan Tombol X di Pojok Kanan (Tanpa Strip Atas) */}
+                <div className="w-full flex items-center justify-between px-5 py-3 shrink-0 border-b border-slate-100 dark:border-zinc-800/60 bg-white dark:bg-zinc-950">
+                  <span className="text-xs font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">
+                    mBudiary
+                  </span>
                   <button
                     type="button"
                     onClick={() => setIsMbudiarySheetOpen(false)}
