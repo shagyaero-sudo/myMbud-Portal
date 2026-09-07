@@ -321,7 +321,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
 
     // Hari Ini (H-0), H-1, H-2 -> MERAH
     if (diffDays <= 2) {
-      const dayText = diffDays <= 0 ? 'Hari Ini' : `Mepet H-${diffDays}`;
+      const dayText = diffDays <= 0 ? 'Hari Ini' : `Segera H-${diffDays}`;
       return {
         label: dayText,
         bg: 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30',
@@ -652,7 +652,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                 Tugas Yang {currentUserName} Selesaikan
               </h2>
               <p className="text-[11px] sm:text-xs text-slate-500 dark:text-zinc-400">
-                Pantau & tuntaskan deadline tugasmu!
+                Pantau & tuntaskan deadline tugas
               </p>
             </div>
           </div>
@@ -1505,10 +1505,10 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                 >
                   <div className="p-5 space-y-1.5">
                     <h3 className="text-base font-bold text-slate-900 dark:text-zinc-100 leading-tight">
-                      Tandai Sebagai Selesai?
+                      Tandai Sebagai Selesai
                     </h3>
                     <p className="text-xs text-slate-600 dark:text-zinc-300 leading-relaxed">
-                      Apakah kamu yakin ingin menyelesaikan tugas <span className="font-semibold text-blue-600 dark:text-blue-400">"{pendingConfirmTask.title}"</span>?
+                      Apakah kamu sudah menyelesaikan tugas <span className="font-semibold text-blue-600 dark:text-blue-400">"{pendingConfirmTask.title}"</span>?
                     </p>
                   </div>
 
