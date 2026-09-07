@@ -154,11 +154,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
     setIsBottomSheetOpen(false);
   };
 
-  const triggerInstantDiary = (e?: React.SyntheticEvent) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
+  const triggerInstantDiary = (e: React.SyntheticEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     if (onOpenMbudiary) {
       onOpenMbudiary();
     } else {
@@ -451,14 +450,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
             count={activeTaskCount > 0 ? activeTaskCount : null}
           />
 
-          {/* TOMBOL MBUDIARY TENGAH FLOATING (TERISOLASI & ANTI GHOST-CLICK) */}
+          {/* TOMBOL MBUDIARY TENGAH FLOATING (LOCKED ANTI GHOST-CLICK) */}
           <div className="relative flex flex-col items-center justify-center -top-2.5 px-1 shrink-0">
             <div className="p-1 rounded-full bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-white/80 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/30">
               <button
                 type="button"
                 aria-label="Buka mBudiary"
-                onTouchStart={triggerInstantDiary}
-                onMouseDown={triggerInstantDiary}
                 onClick={triggerInstantDiary}
                 className="w-10 h-10 bg-blue-600 dark:bg-blue-500 text-white rounded-full flex items-center justify-center shadow-md shadow-blue-500/30 active:scale-90 transition-transform cursor-pointer"
               >

@@ -176,8 +176,17 @@ export default function App() {
   const currentUserNrp = localStorage.getItem('mymbud_user_nrp') || 'unknown';
   const currentUserName = localStorage.getItem('mymbud_user_name') || 'Mbuders';
 
-  // STATE BOTTOM SHEET MBUDIARY
+  // STATE BOTTOM SHEET MBUDIARY & POINTER LOCK ANTI GHOST-CLICK
   const [isMbudiarySheetOpen, setIsMbudiarySheetOpen] = useState<boolean>(false);
+  const [isLockPointer, setIsLockPointer] = useState<boolean>(false);
+
+  const handleOpenMbudiarySheet = useCallback(() => {
+    setIsLockPointer(true);
+    setIsMbudiarySheetOpen(true);
+    setTimeout(() => {
+      setIsLockPointer(false);
+    }, 300);
+  }, []);
 
   useEffect(() => {
     const verifyAspirationStatus = async () => {
@@ -261,7 +270,7 @@ export default function App() {
     const handleOneSignalRedirect = (e: any) => {
       const targetTab = e?.detail?.tab || localStorage.getItem('mbud_target_tab') || 'mbudiary';
       if (targetTab === 'mbudiary') {
-        setIsMbudiarySheetOpen(true);
+        handleOpenMbudiarySheet();
       } else {
         const cleanTab = VALID_TABS.includes(targetTab as any) ? (targetTab as any) : 'dashboard';
         startTransition(() => {
@@ -276,7 +285,7 @@ export default function App() {
       const targetTab = localStorage.getItem('mbud_target_tab');
       if (targetTab) {
         if (targetTab === 'mbudiary') {
-          setIsMbudiarySheetOpen(true);
+          handleOpenMbudiarySheet();
         } else {
           const cleanTab = VALID_TABS.includes(targetTab as any) ? (targetTab as any) : 'dashboard';
           startTransition(() => {
@@ -290,7 +299,7 @@ export default function App() {
     return () => {
       window.removeEventListener('mbud_onesignal_redirect', handleOneSignalRedirect);
     };
-  }, []);
+  }, [handleOpenMbudiarySheet]);
 
   const handleLogout = async () => {
     await logoutOneSignal();
@@ -355,7 +364,7 @@ export default function App() {
   const handleNavigateTab = useCallback(
     (tab: TabType | 'mbudtalk', courseFilterOrTargetNrp?: string) => {
       if (tab === 'mbudiary') {
-        setIsMbudiarySheetOpen(true);
+        handleOpenMbudiarySheet();
         return;
       }
 
@@ -373,7 +382,7 @@ export default function App() {
         window.history.pushState({ tab }, '', `#${tab}`);
       }
     },
-    []
+    [handleOpenMbudiarySheet]
   );
 
   const [appState, setAppState] = useState<AppState>(() => ({
@@ -834,7 +843,7 @@ export default function App() {
                 setActiveTab={(tab) => handleNavigateTab(tab)}
                 activeTaskCount={activeTaskCount}
                 onOpenGpaModal={() => setIsGpaModalOpen(true)}
-                onOpenMbudiary={() => setIsMbudiarySheetOpen(true)}
+                onOpenMbudiary={handleOpenMbudiarySheet}
               />
             )}
 
@@ -929,16 +938,16 @@ export default function App() {
 
           {/* BOTTOM SHEET MBUDIARY (LOCKED & ANTI-GHOST CLICK) */}
           {isMbudiarySheetOpen && (
-            <div className="fixed inset-0 z-[100] flex flex-col justify-end">
+            <div className={`fixed inset-0 z-[100] flex flex-col justify-end ${isLockPointer ? 'pointer-events-none' : ''}`}>
               {/* Backdrop Dimmer */}
               <div
                 onClick={() => setIsMbudiarySheetOpen(false)}
-                className="absolute inset-0 bg-black/75 transition-opacity duration-200"
+                className="absolute inset-0 bg-black/75 transition-opacity duration-200 pointer-events-auto"
               />
 
               {/* Sheet Body */}
-              <div className="relative z-10 w-full h-[92vh] max-w-2xl mx-auto bg-white dark:bg-zinc-950 rounded-t-[32px] border-t border-slate-200 dark:border-zinc-800 shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-200">
-                {/* Header Bar dengan Tombol X di Pojok Kanan (Tanpa Strip Atas) */}
+              <div className="relative z-10 w-full h-[92vh] max-w-2xl mx-auto bg-white dark:bg-zinc-950 rounded-t-[32px] border-t border-slate-200 dark:border-zinc-800 shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-200 pointer-events-auto">
+                {/* Header Bar dengan Tombol X di Pojok Kanan */}
                 <div className="w-full flex items-center justify-between px-5 py-3 shrink-0 border-b border-slate-100 dark:border-zinc-800/60 bg-white dark:bg-zinc-950">
                   <span className="text-xs font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">
                     mBudiary
