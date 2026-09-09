@@ -298,7 +298,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }
   };
 
-  // VERIFIKASI PIN OFFICER (SINKRON DENGAN PIN HEADER 1234/2025/2026)
   const handleVerifyPin = (e: React.FormEvent) => {
     e.preventDefault();
     if (pinInput === '1234' || pinInput === '2025' || pinInput === '2026') {
@@ -674,7 +673,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
 
-        {/* 4 BENTO BUTTONS MOBILE */}
+        {/* 4 BENTO BUTTONS MOBILE (CLEAN ICON TANPA PADDING) */}
         <div className="grid grid-cols-2 gap-2.5 pt-1">
           <a
             href="https://classroom.its.ac.id/auth/oidc"
@@ -682,9 +681,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             rel="noreferrer"
             className="p-3.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none flex items-center gap-3 hover:bg-white/90 dark:hover:bg-zinc-850 transition-all active:scale-95 cursor-pointer"
           >
-            <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900/40 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
-              <BookOpenCheck className="w-5 h-5" />
-            </div>
+            <BookOpenCheck className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0" />
             <div className="min-w-0">
               <span className="text-xs font-bold text-slate-800 dark:text-zinc-100 block truncate">
                 myITS Classroom
@@ -701,9 +698,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             rel="noreferrer"
             className="p-3.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none flex items-center gap-3 hover:bg-white/90 dark:hover:bg-zinc-850 transition-all active:scale-95 cursor-pointer"
           >
-            <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
-              <Handshake className="w-5 h-5" />
-            </div>
+            <Handshake className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
             <div className="min-w-0">
               <span className="text-xs font-bold text-slate-800 dark:text-zinc-100 block truncate">
                 myITS StudentConnect
@@ -720,9 +715,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             rel="noreferrer"
             className="p-3.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none flex items-center gap-3 hover:bg-white/90 dark:hover:bg-zinc-850 transition-all active:scale-95 cursor-pointer"
           >
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-900/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
-              <FileSpreadsheet className="w-5 h-5" />
-            </div>
+            <FileSpreadsheet className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
             <div className="min-w-0">
               <span className="text-xs font-bold text-slate-800 dark:text-zinc-100 block truncate">
                 myITS Academics
@@ -737,9 +730,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             onClick={() => setShowMoreMenuModal(true)}
             className="p-3.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none flex items-center gap-3 hover:bg-white/90 dark:hover:bg-zinc-850 transition-all active:scale-95 cursor-pointer text-left"
           >
-            <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-950/60 border border-amber-100 dark:border-amber-900/40 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
-              <LayoutGrid className="w-5 h-5" />
-            </div>
+            <LayoutGrid className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
             <div className="min-w-0">
               <span className="text-xs font-bold text-slate-800 dark:text-zinc-100 block truncate">
                 Menu Lainnya
@@ -755,10 +746,79 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       {/* PC & MOBILE MAIN GRID */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 items-start">
         
-        {/* KOLOM KIRI: BAR MBUDTALK + JADWAL PERKULIAHAN */}
+        {/* KOLOM KIRI: BENTO BUTTONS PC + BAR MBUDIARY + JADWAL PERKULIAHAN */}
         <div className="space-y-4 sm:space-y-5">
 
-          {/* BAR INPUT MBUDTALK / MBUDIARY DESKTOP */}
+          {/* 4 BENTO BUTTONS PC ONLY (CLEAN ICON TANPA PADDING) */}
+          <div className="hidden lg:grid grid-cols-2 gap-3">
+            <a
+              href="https://classroom.its.ac.id/auth/oidc"
+              target="_blank"
+              rel="noreferrer"
+              className="p-3.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none flex items-center gap-3 hover:bg-white/90 dark:hover:bg-zinc-850 transition-all active:scale-95 cursor-pointer"
+            >
+              <BookOpenCheck className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0" />
+              <div className="min-w-0">
+                <span className="text-xs font-bold text-slate-800 dark:text-zinc-100 block truncate">
+                  myITS Classroom
+                </span>
+                <span className="text-[10px] text-slate-400 dark:text-zinc-500 block truncate">
+                  Materi & Tugas
+                </span>
+              </div>
+            </a>
+
+            <a
+              href="https://kemahasiswaan.its.ac.id/beranda"
+              target="_blank"
+              rel="noreferrer"
+              className="p-3.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none flex items-center gap-3 hover:bg-white/90 dark:hover:bg-zinc-850 transition-all active:scale-95 cursor-pointer"
+            >
+              <Handshake className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+              <div className="min-w-0">
+                <span className="text-xs font-bold text-slate-800 dark:text-zinc-100 block truncate">
+                  myITS StudentConnect
+                </span>
+                <span className="text-[10px] text-slate-400 dark:text-zinc-500 block truncate">
+                  SKEM Portofolio
+                </span>
+              </div>
+            </a>
+
+            <a
+              href="https://mia.its.ac.id/"
+              target="_blank"
+              rel="noreferrer"
+              className="p-3.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none flex items-center gap-3 hover:bg-white/90 dark:hover:bg-zinc-850 transition-all active:scale-95 cursor-pointer"
+            >
+              <FileSpreadsheet className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <div className="min-w-0">
+                <span className="text-xs font-bold text-slate-800 dark:text-zinc-100 block truncate">
+                  myITS Academics
+                </span>
+                <span className="text-[10px] text-slate-400 dark:text-zinc-500 block truncate">
+                  Cek Nilai / Isi FRS
+                </span>
+              </div>
+            </a>
+
+            <button
+              onClick={() => setShowMoreMenuModal(true)}
+              className="p-3.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none flex items-center gap-3 hover:bg-white/90 dark:hover:bg-zinc-850 transition-all active:scale-95 cursor-pointer text-left"
+            >
+              <LayoutGrid className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
+              <div className="min-w-0">
+                <span className="text-xs font-bold text-slate-800 dark:text-zinc-100 block truncate">
+                  Menu Lainnya
+                </span>
+                <span className="text-[10px] text-slate-400 dark:text-zinc-500 block truncate">
+                  Tema, Fitur, dll..
+                </span>
+              </div>
+            </button>
+          </div>
+
+          {/* BAR INPUT MBUDIARY DESKTOP (MBUDTALK DISABLED/HIDDEN) */}
           <div className="hidden lg:flex items-center gap-2.5 sm:gap-3">
             <motion.div
               whileHover={{ scale: 1.004 }}
@@ -785,30 +845,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 </div>
               </div>
             </motion.div>
-
-            <motion.button
-              type="button"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => onNavigateTab('mbudtalk')}
-              title="Buka mbudTalk"
-              className="relative w-14 h-14 rounded-3xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none flex items-center justify-center text-slate-700 dark:text-zinc-200 hover:bg-white/90 dark:hover:bg-zinc-800/80 transition-all shrink-0 cursor-pointer"
-            >
-              <MessageSquare
-                className={`w-6 h-6 transition-all duration-300 ${
-                  hasUnreadChat
-                    ? 'text-blue-600 dark:text-blue-400 fill-blue-600 dark:fill-blue-400'
-                    : 'text-slate-500 dark:text-zinc-400 fill-none'
-                }`}
-              />
-              
-              {hasUnreadChat && (
-                <span className="absolute top-3 right-3 flex h-3 w-3">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-75"></span>
-                  <span className="relative inline-flex h-3 w-3 rounded-full bg-rose-500 ring-2 ring-white dark:ring-zinc-900"></span>
-                </span>
-              )}
-            </motion.button>
           </div>
 
           {/* JADWAL PERKULIAHAN */}
@@ -904,7 +940,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         <div className="absolute right-10 -top-8 w-20 h-20 rounded-full bg-indigo-500/10 dark:bg-indigo-400/10 blur-lg pointer-events-none" />
 
                         <div className="space-y-2 min-w-0 flex-1 relative z-10">
-                          {/* RUANGAN SAJA DI DALAM BADGE ROUNDED CIRCLE, JAM TANPA BADGE DENGAN WARNA PUTIH/TERANG */}
                           <div className="inline-flex items-center gap-2 text-[11px] font-bold">
                             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900/40 text-blue-600 dark:text-blue-400">
                               <Building2 className="w-3 h-3 stroke-[2.2]" />
@@ -927,7 +962,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                               <ChevronRight className="w-3 h-3 group-hover/btn:translate-x-0.5 transition-transform" />
                             </button>
 
-                            {/* AKSI EDIT PJ LANGSUNG PADA ITEM JADWAL */}
                             {isOfficer && (
                               <button
                                 onClick={() => onNavigateTab('contacts', item.course)}
