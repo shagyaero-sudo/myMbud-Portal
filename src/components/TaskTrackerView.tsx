@@ -204,7 +204,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
   const [deadlineDate, setDeadlineDate] = useState('');
   const [deadlineTime, setDeadlineTime] = useState('23:59');
   const [priority, setPriority] = useState<'High' | 'Medium' | 'Low'>('High');
-  const [classroomUrl, setClassroomUrl] = useState('');
+  const [classroomUrl, setClassroomUrl] = useState(DEFAULT_CLASSROOM_URL);
   const MAX_ATTACHMENTS = 5;
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -319,7 +319,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
       };
     }
 
-    // Hari Ini (H-0), H-1, H-2 -> MERAH
     if (diffDays <= 2) {
       const dayText = diffDays <= 0 ? 'Hari Ini' : `Segera H-${diffDays}`;
       return {
@@ -329,7 +328,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
       };
     }
 
-    // H-3 s/d H-5 -> ORANYE
     if (diffDays <= 5) {
       return {
         label: `Mepet H-${diffDays}`,
@@ -338,7 +336,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
       };
     }
 
-    // H-6 ke atas -> HIJAU
     return {
       label: `Masih H-${diffDays}`,
       bg: 'bg-emerald-500/15 text-emerald-500 dark:text-emerald-400 border-emerald-500/30',
@@ -415,7 +412,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
     setDeadlineDate('');
     setDeadlineTime('23:59');
     setPriority('High');
-    setClassroomUrl('');
+    setClassroomUrl(DEFAULT_CLASSROOM_URL);
     setSelectedFiles([]);
     setExistingAttachments([]);
     setUploadProgress(0);
@@ -445,7 +442,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
     }
 
     setPriority(t.priority || 'High');
-    setClassroomUrl(t.classroomUrl || '');
+    setClassroomUrl(DEFAULT_CLASSROOM_URL);
     setSelectedFiles([]);
     setExistingAttachments(getAttachmentsList(t));
     setUploadProgress(0);
@@ -563,7 +560,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
       }
 
       const fullIsoDeadline = new Date(`${deadlineDate}T${deadlineTime || '23:59'}:00`).toISOString();
-      const finalClassroomUrl = classroomUrl.trim() || DEFAULT_CLASSROOM_URL;
 
       const taskData: Omit<Task, 'id'> = {
         title: title.trim(),
@@ -574,7 +570,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
         deadline: fullIsoDeadline,
         status: 'todo',
         priority,
-        classroomUrl: finalClassroomUrl,
+        classroomUrl: DEFAULT_CLASSROOM_URL,
         attachment: finalAttachments[0],
         attachments: finalAttachments,
       };
@@ -610,17 +606,12 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
       <div className="pt-4 sm:pt-6 pb-2">
         <div className="p-5 sm:p-6 rounded-3xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none flex items-center justify-between gap-4">
           <div className="flex items-center gap-4 sm:gap-5">
-            {/* FLIP CALENDAR / FLIP NUMBER CARD */}
             <div className="relative group">
               <div className="w-14 h-16 sm:w-16 sm:h-20 bg-slate-900 dark:bg-zinc-950 text-white rounded-2xl border border-slate-700/80 dark:border-zinc-800 shadow-xl flex items-center justify-center relative overflow-hidden font-mono select-none">
-                {/* Garis Lipatan Tengah Flip Clock */}
                 <div className="absolute inset-x-0 top-1/2 h-[1px] bg-black/60 dark:bg-zinc-900/80 z-20" />
                 <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[2px] bg-slate-800/40 dark:bg-zinc-800/40 z-20" />
-
-                {/* Sisi Atas Glossy Highlight */}
                 <div className="absolute inset-x-0 top-0 h-1/2 bg-white/10 rounded-t-2xl pointer-events-none" />
 
-                {/* Angka Selesai Animasi Flip (Murni Tugas Yang Dicentang User) */}
                 {(() => {
                   const activeCompletedCount = tasks.filter((t) => completedTaskIds.includes(t.id)).length;
                   return (
@@ -641,7 +632,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
               </div>
             </div>
 
-            {/* Label Kanan Header */}
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <span className="text-[10px] sm:text-xs font-extrabold uppercase tracking-wider text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2.5 py-0.5 rounded-full border border-blue-100 dark:border-blue-900/40">
@@ -690,7 +680,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
 
       {/* FILTER CONTROLS */}
       <div className="flex items-center gap-2 sm:gap-3 w-full pt-1">
-        {/* DESKTOP SEARCH BAR */}
         <div className="relative flex-1 hidden md:block">
           <Search className="w-4 h-4 absolute left-4 top-3 text-slate-400 pointer-events-none" />
           <input
@@ -702,7 +691,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
           />
         </div>
 
-        {/* MOBILE EXPANDABLE SEARCH */}
         <div className={`block md:hidden transition-all duration-300 ease-in-out ${isMobileSearchExpanded ? 'flex-1' : 'w-10 shrink-0'}`}>
           {isMobileSearchExpanded ? (
             <div className="relative w-full flex items-center">
@@ -742,7 +730,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
           )}
         </div>
 
-        {/* DROPDOWN FILTER MATKUL */}
         {(!isMobileSearchExpanded || typeof window === 'undefined' || window.innerWidth >= 768) && (
           <div className="relative flex-1 min-w-0">
             <select
@@ -759,7 +746,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
           </div>
         )}
 
-        {/* PILL FILTER JENIS TUGAS */}
         {(!isMobileSearchExpanded || typeof window === 'undefined' || window.innerWidth >= 768) && (
           <div className="flex items-center bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 p-1 rounded-2xl gap-0.5 sm:gap-1 shrink-0 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none">
             {(['ALL', 'Individu', 'Kelompok'] as const).map((option) => (
@@ -839,7 +825,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
               : 'Belum ada riwayat tugas yang selesai'}
           </div>
         ) : activeTab === 'active' ? (
-          /* KARTU TUGAS AKTIF */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <AnimatePresence mode="popLayout" initial={false}>
               {filteredTasks.map((t) => {
@@ -867,12 +852,10 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                     onClick={() => setSelectedDetailTask(t)}
                     className="relative overflow-hidden p-4 rounded-2xl bg-white/70 dark:bg-zinc-900/60 hover:bg-white/90 dark:hover:bg-zinc-850 backdrop-blur-md border border-white/60 dark:border-white/10 transition-all cursor-pointer flex flex-col justify-between space-y-3.5 group shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none"
                   >
-                    {/* GRADASI WARNA STATUS DI POJOK KANAN ATAS (50% UKURAN KARTU) */}
                     {badge && (
                       <div className={`absolute -right-12 -top-12 w-48 h-48 rounded-full bg-gradient-to-bl ${badge.gradient} blur-2xl pointer-events-none transition-transform duration-500 group-hover:scale-125`} />
                     )}
 
-                    {/* BARIS ATAS: Matkul & Badge Deadline */}
                     <div className="relative z-10 flex items-center justify-between gap-2">
                       <span className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-50/80 dark:bg-blue-950/60 px-2.5 py-0.5 rounded-full border border-blue-100/50 dark:border-blue-900/40 truncate">
                         {t.course}
@@ -885,14 +868,12 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                       )}
                     </div>
 
-                    {/* BARIS TENGAH: Judul Tugas */}
                     <div className="relative z-10 pt-0.5">
                       <h3 className="text-sm font-bold text-slate-800 dark:text-zinc-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-snug break-words">
                         {t.title}
                       </h3>
                     </div>
 
-                    {/* BARIS BAWAH: Metadata, Detail Link & Action Complete */}
                     <div className="relative z-10 pt-2 border-t border-slate-200/40 dark:border-white/5 flex items-center justify-between gap-2">
                       <div className="space-y-1 text-[11px] text-slate-500 dark:text-zinc-400">
                         <span className="font-medium text-slate-700 dark:text-zinc-300 flex items-center gap-1">
@@ -908,7 +889,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                           <span>{formattedDate} WIB</span>
                         </div>
 
-                        {/* DETAIL TEKS BIRU DI BAWAH JAM DEADLINE */}
                         <div className="pt-0.5">
                           <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 group-hover:underline inline-flex items-center gap-0.5">
                             Detail Tugas <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
@@ -948,7 +928,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
             </AnimatePresence>
           </div>
         ) : (
-          /* KARTU RIWAYAT */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <AnimatePresence mode="popLayout" initial={false}>
               {filteredTasks.map((t) => {
@@ -1052,7 +1031,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
 
                   <form onSubmit={handleTaskFormSubmit} className="flex flex-col flex-1 overflow-hidden">
                     <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-4 custom-scrollbar">
-                      {/* Judul Tugas */}
                       <div>
                         <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
                           Judul Tugas
@@ -1067,7 +1045,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                         />
                       </div>
 
-                      {/* Mata Kuliah & Jenis */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
@@ -1111,7 +1088,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                         </div>
                       </div>
 
-                      {/* Deadline Tanggal & Jam */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
@@ -1140,7 +1116,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                         </div>
                       </div>
 
-                      {/* HIDDEN INPUTS */}
                       <div className="hidden">
                         <input
                           type="text"
@@ -1157,13 +1132,13 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                         </select>
                       </div>
 
-                      {/* Deskripsi & Instruksi */}
+                      {/* Deskripsi & Instruksi dilebarkan dengan rows={5} */}
                       <div>
                         <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
                           Instruksi & Keterangan
                         </label>
                         <textarea
-                          rows={3}
+                          rows={5}
                           value={description}
                           onChange={(e) => setDescription(e.target.value)}
                           placeholder="Tuliskan format pengerjaan, panduan, dsb..."
@@ -1171,21 +1146,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                         />
                       </div>
 
-                      {/* Link Pengumpulan Khusus */}
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
-                          Link Pengumpulan GDrive (Opsional)
-                        </label>
-                        <input
-                          type="url"
-                          value={classroomUrl}
-                          onChange={(e) => setClassroomUrl(e.target.value)}
-                          placeholder="Khusus G-Drive (abaikan jika di Classroom)"
-                          className="w-full px-4 py-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/80 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
-                        />
-                      </div>
-
-                      {/* Upload File Lampiran */}
+                      {/* Lampiran Soal / Panduan */}
                       <div>
                         <div className="flex items-center justify-between mb-1.5">
                           <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300">
@@ -1469,7 +1430,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
 
                     <div className="flex items-center gap-2">
                       <a
-                        href={selectedDetailTask.classroomUrl || DEFAULT_CLASSROOM_URL}
+                        href={DEFAULT_CLASSROOM_URL}
                         target="_blank"
                         rel="noreferrer"
                         className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-xs font-bold transition-colors flex items-center gap-1.5 shadow-sm shadow-blue-500/20 cursor-pointer"

@@ -46,7 +46,6 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
   const [selectedCourse, setSelectedCourse] = useState<string>('ALL');
   const [showOnlyBookmarked, setShowOnlyBookmarked] = useState<boolean>(false);
 
-  // Sync Bookmarks per User NRP dari Firestore
   const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
   const currentUserNrp = localStorage.getItem('mymbud_user_nrp') || 'unknown';
 
@@ -74,33 +73,37 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
     ])
   ).sort();
 
-  // Modal State
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [formCourseName, setFormCourseName] = useState(
     dynamicCoursesList[0] || 'Umum'
   );
-  const [formSession, setFormSession] = useState('');
+  const [formWeekNum, setFormWeekNum] = useState<string>('');
   const [formTitle, setFormTitle] = useState('');
-  const [formUploader, setFormUploader] = useState('Pengurus Kelas A');
 
-  // Upload State
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const filteredMaterials = materials.filter((m) => {
-    const matchSearch =
-      m.title.toLowerCase().includes(search.toLowerCase()) ||
-      m.courseName.toLowerCase().includes(search.toLowerCase()) ||
-      m.session.toLowerCase().includes(search.toLowerCase());
-    const matchCourse =
-      selectedCourse === 'ALL' || m.courseName === selectedCourse;
-    const matchBookmark = !showOnlyBookmarked || bookmarkedIds.includes(m.id);
+  const getWeekNumber = (sessionStr: string): number => {
+    const match = sessionStr.match(/\d+/);
+    return match ? parseInt(match[0], 10) : 0;
+  };
 
-    return matchSearch && matchCourse && matchBookmark;
-  });
+  const filteredMaterials = materials
+    .filter((m) => {
+      const matchSearch =
+        m.title.toLowerCase().includes(search.toLowerCase()) ||
+        m.courseName.toLowerCase().includes(search.toLowerCase()) ||
+        m.session.toLowerCase().includes(search.toLowerCase());
+      const matchCourse =
+        selectedCourse === 'ALL' || m.courseName === selectedCourse;
+      const matchBookmark = !showOnlyBookmarked || bookmarkedIds.includes(m.id);
+
+      return matchSearch && matchCourse && matchBookmark;
+    })
+    .sort((a, b) => getWeekNumber(b.session) - getWeekNumber(a.session));
 
   const fileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -175,7 +178,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
 
   const handleUploadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formCourseName.trim() || !formTitle.trim() || !formSession.trim()) return;
+    if (!formCourseName.trim() || !formTitle.trim() || !formWeekNum) return;
 
     setIsUploading(true);
     setUploadProgress(0);
@@ -190,19 +193,21 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
         fileSizeStr = `${(selectedFile.size / (1024 * 1024)).toFixed(1)} MB`;
       }
 
+      const formattedSession = `WEEK ${formWeekNum}`;
+
       onAddMaterial({
         courseId: formCourseName.slice(0, 6).toUpperCase().replace(/\s+/g, ''),
         courseName: formCourseName,
-        session: formSession,
+        session: formattedSession,
         title: formTitle.endsWith('.pdf') ? formTitle : `${formTitle}.pdf`,
         fileUrl: finalFileUrl,
         fileType: 'pdf',
         fileSize: fileSizeStr,
-        uploader: formUploader,
+        uploader: 'Pengurus Kelas',
       });
 
       setFormTitle('');
-      setFormSession('');
+      setFormWeekNum('');
       setSelectedFile(null);
       setShowUploadModal(false);
     } catch (error) {
@@ -231,7 +236,6 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
           </p>
         </div>
 
-        {/* DESKTOP/PC ONLY: Horizontal Landscape AI Card */}
         <div className="hidden md:flex items-center gap-3 p-2 pl-4 rounded-2xl bg-gradient-to-r from-purple-950/40 via-indigo-950/30 to-zinc-900/60 border border-purple-500/30 backdrop-blur-md shadow-xs">
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-purple-400 animate-pulse shrink-0" />
@@ -256,7 +260,6 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
         </div>
       </div>
 
-      {/* MOBILE/HP ONLY: Top Dedicated AI Card Banner */}
       <div className="block md:hidden p-4 rounded-3xl bg-gradient-to-br from-purple-950/50 via-indigo-950/30 to-zinc-900/70 border border-purple-500/30 backdrop-blur-md shadow-xs">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
@@ -284,7 +287,6 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
         </div>
       </div>
 
-      {/* DEDICATED UPLOAD BANNER (KHUSUS PENGURUS) */}
       {isOfficer && (
         <div className="p-4 sm:p-5 rounded-3xl bg-blue-50/80 dark:bg-blue-950/30 backdrop-blur-md border border-blue-100/80 dark:border-blue-900/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none">
           <div className="flex items-center gap-3">
@@ -313,9 +315,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
         </div>
       )}
 
-      {/* 2-Column Layout */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start pt-1">
-        {/* Left Column: Vertical Course Tabs (DESKTOP ONLY) */}
         <div className="hidden md:block md:col-span-4 lg:col-span-3 space-y-2">
           <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none space-y-1.5 transition-all">
             <div className="px-3 py-2 text-[11px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider flex items-center justify-between">
@@ -379,10 +379,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
           </div>
         </div>
 
-        {/* Right Column: Controls + List View */}
         <div className="md:col-span-8 lg:col-span-9 space-y-4">
-          
-          {/* DESKTOP CONTROLS: Full Searchbar + Bookmark Sejajar */}
           <div className="hidden md:flex items-center gap-3 w-full">
             <div className="relative flex-1">
               <Search className="w-4 h-4 absolute left-4 top-3 text-slate-400" />
@@ -423,9 +420,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
             </button>
           </div>
 
-          {/* MOBILE CONTROLS: ONE-LINE ROW (Search Expandable + Dropdown Matkul + Bookmark) */}
           <div className="flex md:hidden items-center gap-2 w-full">
-            {/* Search Button / Expandable Bar */}
             <div className={`transition-all duration-300 ease-in-out ${isMobileSearchExpanded ? 'flex-1' : 'w-10 shrink-0'}`}>
               {isMobileSearchExpanded ? (
                 <div className="relative w-full flex items-center">
@@ -465,7 +460,6 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
               )}
             </div>
 
-            {/* Mobile Dropdown Matkul */}
             {!isMobileSearchExpanded && (
               <div className="relative flex-1 min-w-0">
                 <select
@@ -490,7 +484,6 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
               </div>
             )}
 
-            {/* Mobile Bookmark Button */}
             {!isMobileSearchExpanded && (
               <button
                 type="button"
@@ -520,7 +513,6 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
             )}
           </div>
 
-          {/* Main Content: Adaptive List Container */}
           <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-3 sm:p-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none transition-all">
             {filteredMaterials.length === 0 ? (
               <div className="p-8 text-center text-slate-400 dark:text-zinc-500 text-xs bg-slate-50/50 dark:bg-zinc-800/30 rounded-2xl space-y-2 border border-slate-200/30 dark:border-white/5">
@@ -609,7 +601,6 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
         </div>
       </div>
 
-      {/* Upload Material Modal */}
       <AnimatePresence>
         {showUploadModal && (
           <motion.div
@@ -671,33 +662,19 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                     )}
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
-                        Pertemuan ke-
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={formSession}
-                        onChange={(e) => setFormSession(e.target.value)}
-                        placeholder="Misal: WEEK 14"
-                        className="w-full px-4 py-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/80 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
-                        Pengunggah
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={formUploader}
-                        onChange={(e) => setFormUploader(e.target.value)}
-                        className="w-full px-4 py-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/80 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
+                      Pertemuan ke-
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      min={1}
+                      value={formWeekNum}
+                      onChange={(e) => setFormWeekNum(e.target.value)}
+                      placeholder="Masukkan angka (misal: 8)"
+                      className="w-full px-4 py-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/80 text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
                   </div>
 
                   <div>
