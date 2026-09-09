@@ -687,7 +687,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
             <div className="min-w-0">
               <span className="text-xs font-bold text-slate-800 dark:text-zinc-100 block truncate">
-                Classroom
+                myITS Classroom
               </span>
               <span className="text-[10px] text-slate-400 dark:text-zinc-500 block truncate">
                 Materi & Tugas
@@ -706,7 +706,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
             <div className="min-w-0">
               <span className="text-xs font-bold text-slate-800 dark:text-zinc-100 block truncate">
-                StudentConnect
+                myITS StudentConnect
               </span>
               <span className="text-[10px] text-slate-400 dark:text-zinc-500 block truncate">
                 SKEM Portofolio
@@ -725,10 +725,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
             <div className="min-w-0">
               <span className="text-xs font-bold text-slate-800 dark:text-zinc-100 block truncate">
-                MIAcademics
+                myITS Academics
               </span>
               <span className="text-[10px] text-slate-400 dark:text-zinc-500 block truncate">
-                Cek Nilai / FRS-an
+                Cek Nilai / Isi FRS
               </span>
             </div>
           </a>
@@ -742,10 +742,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
             <div className="min-w-0">
               <span className="text-xs font-bold text-slate-800 dark:text-zinc-100 block truncate">
-                Menu Lainnya &gt;
+                Menu Lainnya
               </span>
               <span className="text-[10px] text-slate-400 dark:text-zinc-500 block truncate">
-                Eksplor Fitur
+                Tema, Fitur, dll..
               </span>
             </div>
           </button>
@@ -1560,7 +1560,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     {/* myITS ACADEMICS 2.0 */}
                     <div className="space-y-2">
                       <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 tracking-wider px-1">
-                        <span className="lowercase">my</span>ITS Portal
+                        <span className="lowercase">my</span>ITS PORTAL
                       </p>
 
                       <div className="grid grid-cols-1 gap-2">
@@ -1572,7 +1572,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         >
                           <span className="flex items-center gap-2.5 truncate">
                             <ClipboardList className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
-                            <span className="truncate">SIAKAD 1.0</span>
+                            <span className="truncate">SIAKAD v1.0</span>
                           </span>
                           <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
                         </a>
