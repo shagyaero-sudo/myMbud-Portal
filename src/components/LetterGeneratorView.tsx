@@ -22,6 +22,7 @@ import {
   ArrowRight,
   Download,
   ChevronDown,
+  FileCheck2,
 } from 'lucide-react';
 import { Contact } from '../types';
 import { CLASS_A_MEMBERS, ClassMember } from '../data/classMembers';
@@ -111,12 +112,12 @@ export const LetterGeneratorView: React.FC<LetterGeneratorViewProps> = ({ contac
   const handleGenerate = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const tanggalHari Ini = new Date();
+    const tanggalHariIni = new Date();
     const formatTanggal = new Intl.DateTimeFormat('id-ID', {
       day: 'numeric',
       month: 'long',
       year: 'numeric',
-    }).format(tanggalHari Ini);
+    }).format(tanggalHariIni);
 
     const payload = {
       pimpinan_instansi: pimpinanInstansi,
@@ -380,7 +381,7 @@ export const LetterGeneratorView: React.FC<LetterGeneratorViewProps> = ({ contac
                                   e.preventDefault();
                                   handleSelectClassMember(index, sug);
                                 }}
-                                className="w-full text-left px-3.5 py-2 hover:bg-blue-50 dark:hover:bg-zinc-800 transition-colors border-b border-slate-100 dark:border-zinc-800/60 last:border-0"
+                                className="w-full text-left px-3.5 py-2 hover:bg-blue-50 dark:hover:bg-zinc-800 transition-colors border-b border-slate-100 dark:border-zinc-800/60 last:border-0 cursor-pointer"
                               >
                                 <p className="text-xs font-bold text-slate-800 dark:text-zinc-100">
                                   {sug.name}
