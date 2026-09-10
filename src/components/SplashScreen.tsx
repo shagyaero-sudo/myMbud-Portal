@@ -46,12 +46,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
         />
       </div>
 
-      {/* LOGO CONTAINER WITH COLOR FILL REVEAL ANIMATION */}
+      {/* LOGO CONTAINER WITH SOFT GRADIENT MASK REVEAL (NO BOX CUTOFF) */}
       <motion.div
         initial={{ opacity: 0, scale: 0.92 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
-        className="relative z-10 w-44 h-44 sm:w-60 sm:h-60 md:w-72 md:h-72 flex items-center justify-center"
+        className="relative z-10 w-44 h-44 sm:w-60 sm:h-60 md:w-72 md:h-72 flex items-center justify-center filter drop-shadow-[0_0_35px_rgba(59,130,246,0.65)]"
       >
         {/* 1. LOGO BASE (GREYSCALE / ABU-ABU) */}
         <img
@@ -60,13 +60,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
           className="w-full h-full object-contain filter grayscale opacity-25 select-none"
         />
 
-        {/* 2. LOGO COVER (WARNA ASLI MYMBUD DENGAN ANIMASI FILL DARI BAWAH) */}
+        {/* 2. LOGO COVER (WARNA ASLI DENGAN OPACITY FADE SMOOTH REVEAL) */}
         <motion.div
-          initial={{ clipPath: 'inset(100% 0% 0% 0%)' }}
-          animate={{ clipPath: 'inset(0% 0% 0% 0%)' }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{
-            duration: 1.1,
-            ease: [0.65, 0, 0.35, 1],
+            duration: 0.9,
+            ease: [0.4, 0, 0.2, 1],
             delay: 0.15,
           }}
           className="absolute inset-0 flex items-center justify-center"
@@ -74,7 +74,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
           <img
             src="/logombud.png"
             alt="myMbud Logo Color"
-            className="w-full h-full object-contain drop-shadow-[0_0_35px_rgba(59,130,246,0.6)] select-none"
+            className="w-full h-full object-contain select-none"
           />
         </motion.div>
       </motion.div>
