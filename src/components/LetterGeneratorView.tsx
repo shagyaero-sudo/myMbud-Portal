@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PizZip from "pizzip";
 import Docxtemplater from "docxtemplater";
@@ -20,9 +20,11 @@ import {
   AlertCircle,
   ExternalLink,
   ArrowRight,
-  FileCheck2,
   Download,
+  ChevronDown,
 } from 'lucide-react';
+import { Contact } from '../types';
+import { CLASS_A_MEMBERS, ClassMember } from '../data/classMembers';
 
 export interface GroupMember {
   no: number;
@@ -31,7 +33,11 @@ export interface GroupMember {
   no_hp: string;
 }
 
-export const LetterGeneratorView: React.FC = () => {
+interface LetterGeneratorViewProps {
+  contacts?: Contact[];
+}
+
+export const LetterGeneratorView: React.FC<LetterGeneratorViewProps> = ({ contacts = [] }) => {
   const [pimpinanInstansi, setPimpinanInstansi] = useState('');
   const [alamatInstansi, setAlamatInstansi] = useState('');
   const [mataKuliah, setMataKuliah] = useState('');
@@ -42,7 +48,23 @@ export const LetterGeneratorView: React.FC = () => {
     { no: 1, nrp: '', nama: '', no_hp: '' },
   ]);
 
+  // State untuk melacak input pengetikan autocomplete anggota
+  const [activeSuggestionIndex, setActiveSuggestionIndex] = useState<number | null>(null);
+  const [searchQueryMap, setSearchQueryMap] = useState<Record<number, string>>({});
+
   const [generatedData, setGeneratedData] = useState<any | null>(null);
+
+  // Single Source of Truth untuk Dropdown Mata Kuliah dari ContactsView
+  const courseOptions = useMemo(() => {
+    if (!contacts || contacts.length === 0) return [];
+    return Array.from(
+      new Set(
+        contacts
+          .map((c) => c.course)
+          .filter((name): name is string => Boolean(name && typeof name === 'string' && name.trim() !== ''))
+      )
+    ).sort();
+  }, [contacts]);
 
   const handleAddMember = () => {
     if (members.length < 10) {
@@ -55,6 +77,10 @@ export const LetterGeneratorView: React.FC = () => {
       const updated = members.filter((_, i) => i !== index);
       const renumbered = updated.map((m, i) => ({ ...m, no: i + 1 }));
       setMembers(renumbered);
+      
+      const newQueryMap = { ...searchQueryMap };
+      delete newQueryMap[index];
+      setSearchQueryMap(newQueryMap);
     }
   };
 
@@ -68,15 +94,29 @@ export const LetterGeneratorView: React.FC = () => {
     setMembers(updated);
   };
 
+  // Autocomplete Selection Handler
+  const handleSelectClassMember = (index: number, selected: ClassMember) => {
+    const updated = [...members];
+    updated[index] = {
+      ...updated[index],
+      nrp: selected.nrp,
+      nama: selected.name,
+      no_hp: selected.phone,
+    };
+    setMembers(updated);
+    setSearchQueryMap({ ...searchQueryMap, [index]: selected.name });
+    setActiveSuggestionIndex(null);
+  };
+
   const handleGenerate = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const tanggalHariIni = new Date();
+    const tanggalHari Ini = new Date();
     const formatTanggal = new Intl.DateTimeFormat('id-ID', {
       day: 'numeric',
       month: 'long',
       year: 'numeric',
-    }).format(tanggalHariIni);
+    }).format(tanggalHari Ini);
 
     const payload = {
       pimpinan_instansi: pimpinanInstansi,
@@ -193,20 +233,42 @@ export const LetterGeneratorView: React.FC = () => {
               </div>
             </div>
 
+            {/* MATA KULIAH DROPDOWN (SINGLE SOURCE OF TRUTH FROM CONTACTSVIEW) */}
             <div className="space-y-1.5">
               <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300">
                 Mata Kuliah <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <BookOpen className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
-                <input
-                  type="text"
-                  required
-                  value={mataKuliah}
-                  onChange={(e) => setMataKuliah(e.target.value)}
-                  placeholder="Misal: Sosiologi Pembangunan"
-                  className="w-full pl-10 pr-4 py-2.5 text-xs rounded-2xl bg-white/70 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                />
+                <BookOpen className="w-4 h-4 absolute left-3.5 top-3 text-slate-400 z-10 pointer-events-none" />
+                {courseOptions.length > 0 ? (
+                  <div className="relative">
+                    <select
+                      required
+                      value={mataKuliah}
+                      onChange={(e) => setMataKuliah(e.target.value)}
+                      className="w-full pl-10 pr-8 py-2.5 text-xs rounded-2xl bg-white/70 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all appearance-none cursor-pointer"
+                    >
+                      <option value="" disabled>
+                        -- Pilih Mata Kuliah --
+                      </option>
+                      {courseOptions.map((course) => (
+                        <option key={course} value={course} className="bg-white dark:bg-zinc-900">
+                          {course}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="w-4 h-4 absolute right-3.5 top-3 text-slate-400 pointer-events-none" />
+                  </div>
+                ) : (
+                  <input
+                    type="text"
+                    required
+                    value={mataKuliah}
+                    onChange={(e) => setMataKuliah(e.target.value)}
+                    placeholder="Misal: Sosiologi Pembangunan"
+                    className="w-full pl-10 pr-4 py-2.5 text-xs rounded-2xl bg-white/70 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                  />
+                )}
               </div>
             </div>
 
@@ -261,89 +323,130 @@ export const LetterGeneratorView: React.FC = () => {
 
           <div className="space-y-3">
             <AnimatePresence>
-              {members.map((member, index) => (
-                <motion.div
-                  layout
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  key={index}
-                  className="p-4 rounded-2xl bg-white/60 dark:bg-zinc-800/40 border border-slate-200/50 dark:border-white/5 space-y-3 sm:space-y-0 sm:flex sm:items-center sm:gap-3 transition-all"
-                >
-                  <div className="flex items-center justify-between sm:justify-start gap-2 shrink-0">
-                    <span className="w-6 h-6 rounded-full bg-blue-100/80 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 text-xs font-bold flex items-center justify-center">
-                      {index + 1}
-                    </span>
-                    <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400 sm:hidden">
-                      {index === 0 ? 'Ketua / Anggota 1' : `Anggota ${index + 1}`}
-                    </span>
-                  </div>
+              {members.map((member, index) => {
+                const currentQuery = searchQueryMap[index] ?? member.nama;
+                const filteredSuggestions = CLASS_A_MEMBERS.filter(
+                  (m) =>
+                    currentQuery.trim() !== '' &&
+                    (m.name.toLowerCase().includes(currentQuery.toLowerCase()) ||
+                      m.nrp.includes(currentQuery))
+                );
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 flex-1">
-                    <div className="relative">
-                      <CreditCard className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400" />
-                      <input
-                        type="text"
-                        required
-                        value={member.nrp}
-                        onChange={(e) =>
-                          handleMemberChange(index, 'nrp', e.target.value)
-                        }
-                        placeholder="NRP (Misal: 5033251067)"
-                        className="w-full pl-9 pr-3 py-2 text-xs rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                      />
+                return (
+                  <motion.div
+                    layout
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    key={index}
+                    className="p-4 rounded-2xl bg-white/60 dark:bg-zinc-800/40 border border-slate-200/50 dark:border-white/5 space-y-3 sm:space-y-0 sm:flex sm:items-center sm:gap-3 transition-all relative"
+                  >
+                    <div className="flex items-center justify-between sm:justify-start gap-2 shrink-0">
+                      <span className="w-6 h-6 rounded-full bg-blue-100/80 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 text-xs font-bold flex items-center justify-center">
+                        {index + 1}
+                      </span>
+                      <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400 sm:hidden">
+                        {index === 0 ? 'Ketua / Anggota 1' : `Anggota ${index + 1}`}
+                      </span>
                     </div>
 
-                    <div className="relative">
-                      <User className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400" />
-                      <input
-                        type="text"
-                        required
-                        value={member.nama}
-                        onChange={(e) =>
-                          handleMemberChange(index, 'nama', e.target.value)
-                        }
-                        placeholder="Nama (Misal: Bintang Rafi)"
-                        className="w-full pl-9 pr-3 py-2 text-xs rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                      />
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 flex-1">
+                      {/* INPUT NAMA WITH AUTOCOMPLETE */}
+                      <div className="relative sm:col-span-1">
+                        <User className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400" />
+                        <input
+                          type="text"
+                          required
+                          value={member.nama}
+                          onFocus={() => setActiveSuggestionIndex(index)}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            handleMemberChange(index, 'nama', val);
+                            setSearchQueryMap({ ...searchQueryMap, [index]: val });
+                            setActiveSuggestionIndex(index);
+                          }}
+                          placeholder="Ketik Nama Anggota..."
+                          className="w-full pl-9 pr-3 py-2 text-xs rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        />
+
+                        {/* AUTOCOMPLETE DROPDOWN */}
+                        {activeSuggestionIndex === index && filteredSuggestions.length > 0 && (
+                          <div className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-2xl shadow-xl max-h-48 overflow-y-auto">
+                            {filteredSuggestions.map((sug) => (
+                              <button
+                                key={sug.nrp}
+                                type="button"
+                                onMouseDown={(e) => {
+                                  e.preventDefault();
+                                  handleSelectClassMember(index, sug);
+                                }}
+                                className="w-full text-left px-3.5 py-2 hover:bg-blue-50 dark:hover:bg-zinc-800 transition-colors border-b border-slate-100 dark:border-zinc-800/60 last:border-0"
+                              >
+                                <p className="text-xs font-bold text-slate-800 dark:text-zinc-100">
+                                  {sug.name}
+                                </p>
+                                <p className="text-[10px] text-slate-400 dark:text-zinc-500">
+                                  NRP: {sug.nrp} • HP: {sug.phone}
+                                </p>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* INPUT NRP */}
+                      <div className="relative">
+                        <CreditCard className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400" />
+                        <input
+                          type="text"
+                          required
+                          value={member.nrp}
+                          onChange={(e) =>
+                            handleMemberChange(index, 'nrp', e.target.value)
+                          }
+                          placeholder="NRP"
+                          className="w-full pl-9 pr-3 py-2 text-xs rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        />
+                      </div>
+
+                      {/* INPUT NO HP */}
+                      <div className="relative">
+                        <Phone className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400" />
+                        <input
+                          type="text"
+                          required
+                          value={member.no_hp}
+                          onChange={(e) =>
+                            handleMemberChange(index, 'no_hp', e.target.value)
+                          }
+                          placeholder="No. HP"
+                          className="w-full pl-9 pr-3 py-2 text-xs rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        />
+                      </div>
                     </div>
 
-                    <div className="relative">
-                      <Phone className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400" />
-                      <input
-                        type="text"
-                        required
-                        value={member.no_hp}
-                        onChange={(e) =>
-                          handleMemberChange(index, 'no_hp', e.target.value)
+                    <div className="flex justify-end sm:justify-start shrink-0">
+                      <button
+                        type="button"
+                        disabled={index === 0 && members.length === 1}
+                        onClick={() => handleRemoveMember(index)}
+                        title={
+                          index === 0 && members.length === 1
+                            ? 'Minimal harus ada 1 anggota'
+                            : 'Hapus Anggota'
                         }
-                        placeholder="No. HP (Misal: 0851822...)"
-                        className="w-full pl-9 pr-3 py-2 text-xs rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                      />
+                        className={`p-2 rounded-xl transition-all ${
+                          index === 0 && members.length === 1
+                            ? 'text-slate-300 dark:text-zinc-700 cursor-not-allowed'
+                            : 'text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer'
+                        }`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
-                  </div>
-
-                  <div className="flex justify-end sm:justify-start shrink-0">
-                    <button
-                      type="button"
-                      disabled={index === 0 && members.length === 1}
-                      onClick={() => handleRemoveMember(index)}
-                      title={
-                        index === 0 && members.length === 1
-                          ? 'Minimal harus ada 1 anggota'
-                          : 'Hapus Anggota'
-                      }
-                      className={`p-2 rounded-xl transition-all ${
-                        index === 0 && members.length === 1
-                          ? 'text-slate-300 dark:text-zinc-700 cursor-not-allowed'
-                          : 'text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer'
-                      }`}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                );
+              })}
             </AnimatePresence>
           </div>
 

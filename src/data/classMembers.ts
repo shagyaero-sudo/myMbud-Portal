@@ -1,0 +1,53 @@
+export interface ClassMember {
+  nrp: string;
+  name: string;
+  phone: string;
+}
+
+export const CLASS_A_MEMBERS: ClassMember[] = [
+  { nrp: "5033251001", name: "Chyndana Vilza Humaidyah", phone: "081235452353" },
+  { nrp: "5033251004", name: "Tsabita Nailufarkh", phone: "085791417798" },
+  { nrp: "5033251007", name: "Sashi Oktavania Ramadhani", phone: "08999053468" },
+  { nrp: "5033251010", name: "Anya Aurellia Putri", phone: "082141058891" },
+  { nrp: "5033251013", name: "Lhengga Anugrah Syampurna", phone: "081217367184" },
+  { nrp: "5033251016", name: "Salwa Novia Rahma", phone: "089665596102" },
+  { nrp: "5033251019", name: "Alda Artika Raya", phone: "082231119636" },
+  { nrp: "5033251022", name: "Cindy Nur Amelia", phone: "085701786105" },
+  { nrp: "5033251025", name: "Nadiah Rahmawati", phone: "081615626324" },
+  { nrp: "5033251028", name: "Devira Vania Sukmadewi", phone: "085808383552" },
+  { nrp: "5033251031", name: "Zahra Aulia Ramadhani", phone: "081293752855" },
+  { nrp: "5033251034", name: "Arsadya Agripina Humaira", phone: "081259309294" },
+  { nrp: "5033251037", name: "Desvinta Nadhea Kirani", phone: "085806044620" },
+  { nrp: "5033251040", name: "Naufal Hardy Maulana", phone: "082335335345" },
+  { nrp: "5033251043", name: "Adihan Azhari Fanani", phone: "081233478545" },
+  { nrp: "5033251046", name: "Shagy Aero Biyanto Ramadhan", phone: "085182284769" },
+  { nrp: "5033251049", name: "Raffa Ramadhan", phone: "085791136277" },
+  { nrp: "5033251052", name: "Aisyah Qonitah Shafa", phone: "082143245708" },
+  { nrp: "5033251055", name: "Ferosyana Faza Pradyta", phone: "081995584959" },
+  { nrp: "5033251058", name: "Nadya Noemens Setiawan", phone: "088230247801" },
+  { nrp: "5033251061", name: "Gresi Viola Citania Santoso", phone: "085859367652" },
+  { nrp: "5033251064", name: "Jihan Khansa Kamilah", phone: "085817764512" },
+  { nrp: "5033251067", name: "Bintang Muhammad Rafi", phone: "081252324326" },
+  { nrp: "5033251070", name: "Hardian Prasojo", phone: "081391713817" },
+  { nrp: "5033251073", name: "Abdul Rasyid Sujana", phone: "089531601459" },
+  { nrp: "5033251076", name: "Johan Anggoro", phone: "082245208799" },
+  { nrp: "5033251079", name: "Naila Zalfa Hamidah", phone: "081943336752" },
+  { nrp: "5033251082", name: "Renata Pradya Agisty", phone: "085808437800" },
+  { nrp: "5033251085", name: "Moch. Rama Andika Putra", phone: "087884792797" },
+  { nrp: "5033251088", name: "Siti Aisyah", phone: "0895333997939" },
+  { nrp: "5033251091", name: "Riftianti Safitri", phone: "085648439245" },
+  { nrp: "5033251094", name: "Afwa Revalina Arsianti", phone: "085736907737" },
+  { nrp: "5033251097", name: "Qory Aina Azzahra", phone: "085335264900" },
+  { nrp: "5033251100", name: "Yemima Yuana Artanty", phone: "0895367349472" },
+  { nrp: "5033251103", name: "Nazwa Nur Sabrina", phone: "082330490546" },
+  { nrp: "5033251106", name: "Alghina Fildzah Novandi", phone: "08113332276" },
+  { nrp: "5033251109", name: "Satria Sifa'a Hidayat", phone: "081259532298" },
+  { nrp: "5033251112", name: "Ahmad Safaraz Fauzi Prasetio", phone: "0818852007" },
+  { nrp: "5033251115", name: "Rachel Ruri Christina", phone: "083165089573" },
+  { nrp: "5033251118", name: "Madinatul Ilmi", phone: "081336044039" },
+  { nrp: "5033251121", name: "Safira Soegianto", phone: "085888774605" },
+  { nrp: "5033251124", name: "Muhammad Rasyad Gunawan", phone: "088218908097" },
+  { nrp: "5033251127", name: "Maulana Rahmadanto Prakoso", phone: "089531362632" },
+  { nrp: "5033251130", name: "Ababil Fawwaz Trisananda", phone: "089613900706" },
+  { nrp: "5033251133", name: "Aqilah Khairunnisa", phone: "082335919609" }
+];
