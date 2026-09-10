@@ -896,7 +896,7 @@ export default function App() {
                     <GradeCalculatorView courseGrades={appState.courseGrades} />
                   )}
 
-                  {activeTab === 'letter' && <LetterGeneratorView />}
+                  {activeTab === 'letter' && <LetterGeneratorView contacts={appState.contacts} />}
 
                   {activeTab === 'blockblast' && <BlockBlastView />}
 
