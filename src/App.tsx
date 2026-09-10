@@ -28,7 +28,6 @@ import { LoginScreen } from './components/LoginScreen';
 import { OnboardingScreen } from './components/OnboardingScreen';
 import { SplashScreen } from './components/SplashScreen';
 import { NotebookLmView } from './components/NotebookLmView';
-import { AspirationFormModal } from './components/AspirationFormModal';
 
 import {
   AppState,
@@ -51,7 +50,6 @@ import {
   deleteTaskApi,
   saveGroupResultApi,
   subscribeUserTaskCompletions,
-  checkAspirationStatus,
 } from './services/api';
 
 import {
@@ -168,13 +166,8 @@ export default function App() {
     return localStorage.getItem('mymbud_onboarded') === 'true';
   });
 
-  const [hasSubmittedAspiration, setHasSubmittedAspiration] = useState<boolean>(true);
-  const [isCheckingAspiration, setIsCheckingAspiration] = useState<boolean>(true);
-  const [isDismissedForSession, setIsDismissedForSession] = useState<boolean>(false);
-
   const [completedTaskIds, setCompletedTaskIds] = useState<string[]>([]);
   const currentUserNrp = localStorage.getItem('mymbud_user_nrp') || 'unknown';
-  const currentUserName = localStorage.getItem('mymbud_user_name') || 'Mbuders';
 
   // STATE & HANDLERS BOTTOM SHEET MBUDIARY
   const [isMbudiarySheetOpen, setIsMbudiarySheetOpen] = useState<boolean>(false);
@@ -199,30 +192,6 @@ export default function App() {
       window.history.pushState({ tab: 'dashboard' }, '', '#dashboard');
     }
   }, []);
-
-  useEffect(() => {
-    const verifyAspirationStatus = async () => {
-      if (isAuthenticated && currentUserNrp && currentUserNrp !== 'unknown') {
-        const cleanNrp = currentUserNrp.trim().toLowerCase();
-        const localCheck = localStorage.getItem(`mymbud_aspiration_submitted_${cleanNrp}`);
-
-        if (localCheck === 'true') {
-          setHasSubmittedAspiration(true);
-        } else {
-          const isDoneInSupabase = await checkAspirationStatus(currentUserNrp);
-          if (isDoneInSupabase) {
-            localStorage.setItem(`mymbud_aspiration_submitted_${cleanNrp}`, 'true');
-          }
-          setHasSubmittedAspiration(isDoneInSupabase);
-        }
-      } else {
-        setHasSubmittedAspiration(true);
-      }
-      setIsCheckingAspiration(false);
-    };
-
-    verifyAspirationStatus();
-  }, [isAuthenticated, currentUserNrp]);
 
   useEffect(() => {
     const checkSessionStatus = async () => {
@@ -577,7 +546,7 @@ export default function App() {
       }
     } catch (error) {
       console.error('Gagal sinkronisasi manual:', error);
-    } finally {
+    } fontally {
       setIsSyncing(false);
     }
   }, []);
@@ -805,11 +774,6 @@ export default function App() {
     );
   }
 
-  const shouldShowAspirationModal =
-    !isCheckingAspiration &&
-    !hasSubmittedAspiration &&
-    !isDismissedForSession;
-
   return (
     <>
       {showSplash && (
@@ -819,22 +783,7 @@ export default function App() {
         />
       )}
 
-      {shouldShowAspirationModal && (
-        <AspirationFormModal
-          userNrp={currentUserNrp}
-          userName={currentUserName}
-          onSubmitted={() => {
-            const cleanNrp = currentUserNrp.trim().toLowerCase();
-            localStorage.setItem(`mymbud_aspiration_submitted_${cleanNrp}`, 'true');
-            setHasSubmittedAspiration(true);
-          }}
-          onClose={() => {
-            setIsDismissedForSession(true);
-          }}
-        />
-      )}
-
-      <div className={`relative min-h-screen bg-slate-100 dark:bg-[#0e0f12] text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-300 ${shouldShowAspirationModal ? 'pointer-events-none blur-sm select-none' : ''}`}>
+      <div className="relative min-h-screen bg-slate-100 dark:bg-[#0e0f12] text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-300">
         
         <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
           <div 
