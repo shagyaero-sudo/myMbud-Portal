@@ -22,6 +22,7 @@ import {
   ArrowRight,
   Download,
   ChevronDown,
+  ChevronUp,
   FileCheck2,
 } from 'lucide-react';
 import { Contact } from '../types';
@@ -83,6 +84,35 @@ export const LetterGeneratorView: React.FC<LetterGeneratorViewProps> = ({ contac
       delete newQueryMap[index];
       setSearchQueryMap(newQueryMap);
     }
+  };
+
+  const handleMoveMember = (index: number, direction: 'UP' | 'DOWN') => {
+    if (
+      (direction === 'UP' && index === 0) ||
+      (direction === 'DOWN' && index === members.length - 1)
+    ) {
+      return;
+    }
+
+    const targetIndex = direction === 'UP' ? index - 1 : index + 1;
+    const updated = [...members];
+    const [movedItem] = updated.splice(index, 1);
+    updated.splice(targetIndex, 0, movedItem);
+
+    const renumbered = updated.map((m, i) => ({ ...m, no: i + 1 }));
+    setMembers(renumbered);
+
+    const newQueryMap = { ...searchQueryMap };
+    const currentQuery = newQueryMap[index];
+    const targetQuery = newQueryMap[targetIndex];
+
+    if (currentQuery !== undefined) newQueryMap[targetIndex] = currentQuery;
+    else delete newQueryMap[targetIndex];
+
+    if (targetQuery !== undefined) newQueryMap[index] = targetQuery;
+    else delete newQueryMap[index];
+
+    setSearchQueryMap(newQueryMap);
   };
 
   const handleMemberChange = (
@@ -426,7 +456,36 @@ export const LetterGeneratorView: React.FC<LetterGeneratorViewProps> = ({ contac
                       </div>
                     </div>
 
-                    <div className="flex justify-end sm:justify-start shrink-0">
+                    {/* ACTION BUTTONS: UP, DOWN, DELETE */}
+                    <div className="flex items-center justify-end sm:justify-start gap-1 shrink-0">
+                      <button
+                        type="button"
+                        disabled={index === 0}
+                        onClick={() => handleMoveMember(index, 'UP')}
+                        title="Pindahkan ke atas"
+                        className={`p-1.5 rounded-xl transition-all ${
+                          index === 0
+                            ? 'text-slate-300 dark:text-zinc-700 cursor-not-allowed'
+                            : 'text-slate-500 hover:text-slate-800 dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-slate-100 dark:hover:bg-zinc-800 cursor-pointer'
+                        }`}
+                      >
+                        <ChevronUp className="w-4 h-4" />
+                      </button>
+
+                      <button
+                        type="button"
+                        disabled={index === members.length - 1}
+                        onClick={() => handleMoveMember(index, 'DOWN')}
+                        title="Pindahkan ke bawah"
+                        className={`p-1.5 rounded-xl transition-all ${
+                          index === members.length - 1
+                            ? 'text-slate-300 dark:text-zinc-700 cursor-not-allowed'
+                            : 'text-slate-500 hover:text-slate-800 dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-slate-100 dark:hover:bg-zinc-800 cursor-pointer'
+                        }`}
+                      >
+                        <ChevronDown className="w-4 h-4" />
+                      </button>
+
                       <button
                         type="button"
                         disabled={index === 0 && members.length === 1}
@@ -436,7 +495,7 @@ export const LetterGeneratorView: React.FC<LetterGeneratorViewProps> = ({ contac
                             ? 'Minimal harus ada 1 anggota'
                             : 'Hapus Anggota'
                         }
-                        className={`p-2 rounded-xl transition-all ${
+                        className={`p-1.5 rounded-xl transition-all ${
                           index === 0 && members.length === 1
                             ? 'text-slate-300 dark:text-zinc-700 cursor-not-allowed'
                             : 'text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer'
