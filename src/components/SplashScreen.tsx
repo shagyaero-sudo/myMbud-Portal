@@ -46,7 +46,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
         />
       </div>
 
-      {/* BIG LOGO + PERFECT CENTERED CIRCULAR OUTLINE */}
+      {/* BIG LOGO + LEBIH GEDE & CENTERED CIRCULAR OUTLINE */}
       <motion.div
         initial={{ opacity: 0, scale: 0.94 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -56,10 +56,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
         }}
         className="relative z-10 w-44 h-44 sm:w-60 sm:h-60 md:w-72 md:h-72 flex items-center justify-center"
       >
-        {/* SVG CIRCLE ORBIT ANIMATION (PRECISE SYMMETRIC FIT) */}
+        {/* SVG CIRCLE ORBIT ANIMATION (BIGGER ORBIT HOVERING OUTSIDE) */}
         <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
           <svg
-            className="w-[115%] h-[115%] -rotate-90 transform-gpu"
+            className="w-[145%] h-[145%] -rotate-90 transform-gpu"
             viewBox="0 0 100 100"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
@@ -80,17 +80,17 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
             <circle
               cx="50"
               cy="50"
-              r="44"
+              r="46"
               stroke="#1e293b"
               strokeWidth="0.8"
-              strokeOpacity="0.3"
+              strokeOpacity="0.35"
             />
 
             {/* ANIMATED TRACE CIRCLE */}
             <motion.circle
               cx="50"
               cy="50"
-              r="44"
+              r="46"
               stroke="url(#splashCircleGradient)"
               strokeWidth="1.5"
               strokeLinecap="round"
