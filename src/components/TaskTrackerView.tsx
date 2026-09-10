@@ -896,10 +896,11 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                         </div>
                       </div>
 
-                      <div className="flex flex-col items-end gap-0.5 shrink-0 self-end">
+                      {/* AREA TOMBOL & TEKS DIBIKIN CENTER ALIGNED */}
+                      <div className="flex flex-col items-center justify-center gap-1 shrink-0 self-end">
                         <button
                           onClick={(e) => handleToggleComplete(e, t)}
-                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
+                          className={`flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer w-full ${
                             isDone
                               ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50'
                               : 'bg-white/80 dark:bg-zinc-800/80 hover:bg-white dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 border border-slate-200/60 dark:border-white/10'
@@ -917,7 +918,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                             </>
                           )}
                         </button>
-                        <span className="text-[9px] font-medium text-slate-400 dark:text-zinc-500 select-none">
+                        <span className="text-[9px] font-medium text-slate-400 dark:text-zinc-500 select-none text-center block w-full">
                           {completedCount}/45 Telah Selesai
                         </span>
                       </div>
@@ -1132,7 +1133,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                         </select>
                       </div>
 
-                      {/* Deskripsi & Instruksi dilebarkan dengan rows={5} */}
                       <div>
                         <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
                           Instruksi & Keterangan
@@ -1146,7 +1146,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                         />
                       </div>
 
-                      {/* Lampiran Soal / Panduan */}
                       <div>
                         <div className="flex items-center justify-between mb-1.5">
                           <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300">
@@ -1234,7 +1233,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                               Pilih atau Tarik File ke Sini
                             </p>
                             <p className="text-[10px] text-slate-400 mt-0.5">
-                              Bisa lebih dari 1 file, maks {MAX_ATTACHMENTS} file &middot; @10 MB
+                              Bisa lebih dari 1 file, maks {MAX_ATTACHMENTS} file · @10 MB
                             </p>
                           </div>
                         ) : (

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useTime, useTransform } from 'framer-motion';
 
 interface SplashScreenProps {
   onComplete?: () => void;
@@ -46,26 +46,32 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
         />
       </div>
 
-      {/* LOGO CONTAINER WITH SOFT GRADIENT MASK REVEAL (NO BOX CUTOFF) */}
+      {/* LOGO CONTAINER WITH SOFT LIQUID FILL REVEAL */}
       <motion.div
         initial={{ opacity: 0, scale: 0.92 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
         className="relative z-10 w-44 h-44 sm:w-60 sm:h-60 md:w-72 md:h-72 flex items-center justify-center filter drop-shadow-[0_0_35px_rgba(59,130,246,0.65)]"
       >
-        {/* 1. LOGO BASE (GREYSCALE / ABU-ABU) */}
+        {/* 1. LOGO BASE (GREYSCALE / ABU-ABU CLEARLY VISIBLE) */}
         <img
           src="/logombud.png"
           alt="myMbud Logo Base"
-          className="w-full h-full object-contain filter grayscale opacity-25 select-none"
+          className="w-full h-full object-contain filter grayscale opacity-40 select-none"
         />
 
-        {/* 2. LOGO COVER (WARNA ASLI DENGAN OPACITY FADE SMOOTH REVEAL) */}
+        {/* 2. LOGO COVER (ANIMASI TERISI WARNA DARI BAWAH KE ATAS DENGAN MASKING HALUS) */}
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          initial={{
+            WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 0%)',
+            maskImage: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 0%)',
+          }}
+          animate={{
+            WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,1) 120%, rgba(0,0,0,0) 140%)',
+            maskImage: 'linear-gradient(to top, rgba(0,0,0,1) 120%, rgba(0,0,0,0) 140%)',
+          }}
           transition={{
-            duration: 0.9,
+            duration: 1.1,
             ease: [0.4, 0, 0.2, 1],
             delay: 0.15,
           }}
