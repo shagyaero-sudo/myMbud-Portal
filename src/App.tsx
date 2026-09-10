@@ -546,7 +546,7 @@ export default function App() {
       }
     } catch (error) {
       console.error('Gagal sinkronisasi manual:', error);
-    } fontally {
+    } finally {
       setIsSyncing(false);
     }
   }, []);
