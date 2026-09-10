@@ -9,7 +9,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       onComplete?.();
-    }, 1400);
+    }, 1500);
 
     return () => clearTimeout(timer);
   }, [onComplete]);
@@ -36,82 +36,47 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
       {/* AMBIENT BLUE GLOW */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <motion.div
-          initial={{ opacity: 0, scale: 0.85 }}
-          animate={{ opacity: 0.4, scale: 1.1 }}
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 0.35, scale: 1.1 }}
           transition={{
-            duration: 0.75,
+            duration: 1,
             ease: [0.4, 0, 0.2, 1],
           }}
-          className="w-[340px] sm:w-[480px] h-[340px] sm:h-[480px] rounded-full bg-blue-600/25 blur-[120px]"
+          className="w-[340px] sm:w-[480px] h-[340px] sm:h-[480px] rounded-full bg-blue-600/20 blur-[130px]"
         />
       </div>
 
-      {/* BIG LOGO + LEBIH GEDE & CENTERED CIRCULAR OUTLINE */}
+      {/* LOGO CONTAINER WITH COLOR FILL REVEAL ANIMATION */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.94 }}
+        initial={{ opacity: 0, scale: 0.92 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{
-          duration: 0.65,
-          ease: [0.25, 0.1, 0.25, 1],
-        }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
         className="relative z-10 w-44 h-44 sm:w-60 sm:h-60 md:w-72 md:h-72 flex items-center justify-center"
       >
-        {/* SVG CIRCLE ORBIT ANIMATION (BIGGER ORBIT HOVERING OUTSIDE) */}
-        <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-          <svg
-            className="w-[145%] h-[145%] -rotate-90 transform-gpu"
-            viewBox="0 0 100 100"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <defs>
-              <linearGradient id="splashCircleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#3b82f6" />
-                <stop offset="50%" stopColor="#38bdf8" />
-                <stop offset="100%" stopColor="#60a5fa" />
-              </linearGradient>
-              <filter id="glowCircle" x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur stdDeviation="1.5" result="blur" />
-                <feComposite in="SourceGraphic" in2="blur" operator="over" />
-              </filter>
-            </defs>
-
-            {/* TRACK BASE SUBTLE OUTLINE */}
-            <circle
-              cx="50"
-              cy="50"
-              r="46"
-              stroke="#1e293b"
-              strokeWidth="0.8"
-              strokeOpacity="0.35"
-            />
-
-            {/* ANIMATED TRACE CIRCLE */}
-            <motion.circle
-              cx="50"
-              cy="50"
-              r="46"
-              stroke="url(#splashCircleGradient)"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              filter="url(#glowCircle)"
-              initial={{ pathLength: 0 }}
-              animate={{ pathLength: 1 }}
-              transition={{
-                duration: 1.1,
-                ease: [0.4, 0, 0.2, 1],
-                delay: 0.1,
-              }}
-            />
-          </svg>
-        </div>
-
-        {/* LOGO MBUD */}
+        {/* 1. LOGO BASE (GREYSCALE / ABU-ABU) */}
         <img
           src="/logombud.png"
-          alt="myMbud Logo"
-          className="w-full h-full object-contain drop-shadow-[0_0_40px_rgba(59,130,246,0.55)] select-none relative z-10"
+          alt="myMbud Logo Base"
+          className="w-full h-full object-contain filter grayscale opacity-25 select-none"
         />
+
+        {/* 2. LOGO COVER (WARNA ASLI MYMBUD DENGAN ANIMASI FILL DARI BAWAH) */}
+        <motion.div
+          initial={{ clipPath: 'inset(100% 0% 0% 0%)' }}
+          animate={{ clipPath: 'inset(0% 0% 0% 0%)' }}
+          transition={{
+            duration: 1.1,
+            ease: [0.65, 0, 0.35, 1],
+            delay: 0.15,
+          }}
+          className="absolute inset-0 flex items-center justify-center"
+        >
+          <img
+            src="/logombud.png"
+            alt="myMbud Logo Color"
+            className="w-full h-full object-contain drop-shadow-[0_0_35px_rgba(59,130,246,0.6)] select-none"
+          />
+        </motion.div>
       </motion.div>
 
       {/* FOOTER: myITS INTEGRATED */}
@@ -120,7 +85,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
         animate={{ opacity: 0.8 }}
         transition={{
           duration: 0.55,
-          delay: 0.2,
+          delay: 0.3,
           ease: 'easeInOut',
         }}
         className="relative z-10 flex flex-col items-center gap-1 mb-6 sm:mb-8 select-none"
