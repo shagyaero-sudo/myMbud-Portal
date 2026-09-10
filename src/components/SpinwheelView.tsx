@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Dices, RefreshCw, Users, Sparkles, X, RotateCcw, Trophy, UserCheck } from 'lucide-react';
+import { Dices, RefreshCw, Users, Sparkles, X, RotateCcw, Trophy, UserCheck, Scale } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { defaultStudentsList } from '../data/mockData';
 import { GroupResult } from '../types';
@@ -11,16 +11,23 @@ interface SpinwheelViewProps {
   isOfficer?: boolean;
 }
 
+interface ParsedStudent {
+  raw: string;
+  name: string;
+  gender: 'L' | 'P' | 'UNKNOWN';
+}
+
 export const SpinwheelView: React.FC<SpinwheelViewProps> = ({ onSaveGroupResult, savedResults, isOfficer = false }) => {
   const [studentsText, setStudentsText] = useState(defaultStudentsList.join('\n'));
   const [groupMode, setGroupMode] = useState<'COUNT' | 'SIZE'>('COUNT');
   const [groupValue, setGroupValue] = useState<number>(4);
+  const [isGenderBalanced, setIsGenderBalanced] = useState<boolean>(true);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalStage, setModalStage] = useState<'ANIMATION' | 'RESULT'>('ANIMATION');
   const [spinMode, setSpinMode] = useState<'GROUPS' | 'INDIVIDUAL'>('GROUPS');
   const [selectedIndividual, setSelectedIndividual] = useState<string | null>(null);
-  const [groupResults, setGroupResults] = useState<{ name: string; members: string[] }[]>([]);
+  const [groupResults, setGroupResults] = useState<{ name: string; members: string[]; maleCount: number; femaleCount: number }[]>([]);
   const [rollingName, setRollingName] = useState<string>('');
   const [shuffleProgress, setShuffleProgress] = useState<number>(0);
 
@@ -28,6 +35,16 @@ export const SpinwheelView: React.FC<SpinwheelViewProps> = ({ onSaveGroupResult,
     .split('\n')
     .map((s) => s.trim())
     .filter((s) => s.length > 0);
+
+  const parseStudent = (rawString: string): ParsedStudent => {
+    const isFemale = /\((P|ce|perempuan)\)$/i.test(rawString.trim());
+    const isMale = /\((L|co|laki-laki)\)$/i.test(rawString.trim());
+    return {
+      raw: rawString,
+      name: rawString,
+      gender: isFemale ? 'P' : isMale ? 'L' : 'UNKNOWN',
+    };
+  };
 
   React.useEffect(() => {
     if (isModalOpen && modalStage === 'ANIMATION') {
@@ -47,28 +64,64 @@ export const SpinwheelView: React.FC<SpinwheelViewProps> = ({ onSaveGroupResult,
   const generateGroupsInternal = () => {
     if (studentList.length === 0) return [];
 
-    const shuffled = [...studentList];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-
     let numGroups = 4;
     if (groupMode === 'COUNT') {
       numGroups = Math.max(1, groupValue);
     } else {
       const perGroup = Math.max(1, groupValue);
-      numGroups = Math.ceil(shuffled.length / perGroup);
+      numGroups = Math.ceil(studentList.length / perGroup);
     }
 
-    const groupsArray: { name: string; members: string[] }[] = Array.from({ length: numGroups }, (_, i) => ({
+    const groupsArray = Array.from({ length: numGroups }, (_, i) => ({
       name: `Kelompok ${i + 1}`,
-      members: [],
+      members: [] as string[],
+      maleCount: 0,
+      femaleCount: 0,
     }));
 
-    shuffled.forEach((student, index) => {
-      groupsArray[index % numGroups].members.push(student);
-    });
+    const shuffleArray = <T,>(array: T[]): T[] => {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    };
+
+    if (isGenderBalanced) {
+      const parsedStudents = studentList.map(parseStudent);
+      const males = shuffleArray(parsedStudents.filter((s) => s.gender === 'L'));
+      const females = shuffleArray(parsedStudents.filter((s) => s.gender === 'P'));
+      const unknowns = shuffleArray(parsedStudents.filter((s) => s.gender === 'UNKNOWN'));
+
+      let groupPointer = 0;
+
+      males.forEach((student) => {
+        groupsArray[groupPointer % numGroups].members.push(student.raw);
+        groupsArray[groupPointer % numGroups].maleCount++;
+        groupPointer++;
+      });
+
+      females.forEach((student) => {
+        groupsArray[groupPointer % numGroups].members.push(student.raw);
+        groupsArray[groupPointer % numGroups].femaleCount++;
+        groupPointer++;
+      });
+
+      unknowns.forEach((student) => {
+        groupsArray[groupPointer % numGroups].members.push(student.raw);
+        groupPointer++;
+      });
+    } else {
+      const shuffled = shuffleArray(studentList);
+      shuffled.forEach((student, index) => {
+        const parsed = parseStudent(student);
+        const targetGroup = groupsArray[index % numGroups];
+        targetGroup.members.push(student);
+        if (parsed.gender === 'L') targetGroup.maleCount++;
+        if (parsed.gender === 'P') targetGroup.femaleCount++;
+      });
+    }
 
     return groupsArray;
   };
@@ -199,7 +252,7 @@ export const SpinwheelView: React.FC<SpinwheelViewProps> = ({ onSaveGroupResult,
                 readOnly={!isOfficer}
                 value={studentsText}
                 onChange={(e) => setStudentsText(e.target.value)}
-                placeholder="Ahmad Fauzi&#10;Budi Santoso&#10;Citra Dewi..."
+                placeholder="Ahmad Fauzi (L)&#10;Budi Santoso (L)&#10;Citra Dewi (P)..."
                 className={`w-full flex-1 p-4 rounded-2xl text-xs font-mono focus:outline-none transition-all resize-none ${
                   isOfficer
                     ? 'bg-white/60 dark:bg-zinc-800/70 text-slate-800 dark:text-zinc-100 border border-slate-200 dark:border-zinc-700 focus:ring-2 focus:ring-blue-500 shadow-xs'
@@ -264,6 +317,31 @@ export const SpinwheelView: React.FC<SpinwheelViewProps> = ({ onSaveGroupResult,
                 <span className="text-xs text-slate-600 dark:text-zinc-400">
                   {groupMode === 'COUNT' ? 'Kelompok' : 'Orang'}
                 </span>
+              </div>
+
+              {/* TOGGLE SEIMBANGKAN GENDER */}
+              <div className="pt-3 border-t border-slate-200/40 dark:border-white/5 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Scale className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  <div>
+                    <span className="text-xs font-bold text-slate-800 dark:text-zinc-200 block">
+                      Seimbangkan Gender (Co / Ce)
+                    </span>
+                    <span className="text-[10px] text-slate-500 dark:text-zinc-400 block">
+                      Rata pembagian Co & Ce per kelompok berdasarkan tag (L)/(P)
+                    </span>
+                  </div>
+                </div>
+
+                <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                  <input
+                    type="checkbox"
+                    checked={isGenderBalanced}
+                    onChange={(e) => setIsGenderBalanced(e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:after:border-zinc-600 peer-checked:bg-blue-600"></div>
+                </label>
               </div>
             </div>
 
@@ -367,7 +445,7 @@ export const SpinwheelView: React.FC<SpinwheelViewProps> = ({ onSaveGroupResult,
                       <p className="text-xs text-slate-500 dark:text-zinc-400">
                         {spinMode === 'INDIVIDUAL'
                           ? 'Terpilih secara acak dan adil dari sistem'
-                          : `Total ${studentList.length} mahasiswa terbagi secara adil`}
+                          : `Total ${studentList.length} mahasiswa terbagi ${isGenderBalanced ? 'secara seimbang (Co & Ce)' : 'secara acak'}`}
                       </p>
                     </div>
                     <button
@@ -401,15 +479,23 @@ export const SpinwheelView: React.FC<SpinwheelViewProps> = ({ onSaveGroupResult,
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: idx * 0.05 }}
                             key={idx} 
-                            className="p-3 rounded-2xl bg-white/60 dark:bg-zinc-800/50 space-y-1.5 border border-slate-200/50 dark:border-white/5"
+                            className="p-3 rounded-2xl bg-white/60 dark:bg-zinc-800/50 space-y-2 border border-slate-200/50 dark:border-white/5"
                           >
-                            <div className="flex items-center justify-between">
+                            <div className="flex items-center justify-between gap-1 flex-wrap">
                               <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
                                 {group.name}
                               </span>
-                              <span className="text-[10px] font-semibold text-slate-600 dark:text-zinc-300 bg-white/80 dark:bg-zinc-800 px-2 py-0.5 rounded-full shadow-xs border border-slate-100 dark:border-zinc-700">
-                                {group.members.length}
-                              </span>
+
+                              <div className="flex items-center gap-1">
+                                {isGenderBalanced && (
+                                  <span className="text-[9px] font-extrabold text-blue-600 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/80 px-1.5 py-0.5 rounded-md border border-blue-100 dark:border-blue-900">
+                                    {group.maleCount} Co · {group.femaleCount} Ce
+                                  </span>
+                                )}
+                                <span className="text-[10px] font-semibold text-slate-600 dark:text-zinc-300 bg-white/80 dark:bg-zinc-800 px-1.5 py-0.5 rounded-full shadow-xs border border-slate-100 dark:border-zinc-700">
+                                  {group.members.length}
+                                </span>
+                              </div>
                             </div>
 
                             <ol className="text-xs text-slate-700 dark:text-zinc-300 space-y-0.5 list-decimal list-inside font-medium pt-0.5">
