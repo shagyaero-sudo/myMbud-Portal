@@ -333,7 +333,7 @@ export const SpinwheelView: React.FC<SpinwheelViewProps> = ({ onSaveGroupResult,
                       Seimbangkan Gender 
                     </span>
                     <span className="text-[10px] text-slate-500 dark:text-zinc-400 block">
-                      Pembagian gender rata per-kelompok 
+                      Pembagian L/P rata per-kelompok 
                     </span>
                   </div>
                 </div>
@@ -450,7 +450,7 @@ export const SpinwheelView: React.FC<SpinwheelViewProps> = ({ onSaveGroupResult,
                       <p className="text-xs text-slate-500 dark:text-zinc-400">
                         {spinMode === 'INDIVIDUAL'
                           ? 'Terpilih secara acak dan adil dari sistem'
-                          : `Total ${studentList.length} mahasiswa terbagi ${isGenderBalanced ? 'secara seimbang (Co & Ce)' : 'secara acak'}`}
+                          : `Total ${studentList.length} mahasiswa terbagi ${isGenderBalanced ? 'secara seimbang' : 'secara acak'}`}
                       </p>
                     </div>
                     <button
@@ -494,7 +494,7 @@ export const SpinwheelView: React.FC<SpinwheelViewProps> = ({ onSaveGroupResult,
                               <div className="flex items-center gap-1">
                                 {isGenderBalanced && (
                                   <span className="text-[9px] font-extrabold text-blue-600 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/80 px-1.5 py-0.5 rounded-md border border-blue-100 dark:border-blue-900">
-                                    {group.maleCount} Co · {group.femaleCount} Ce
+                                    {group.maleCount} L · {group.femaleCount} P
                                   </span>
                                 )}
                                 <span className="text-[10px] font-semibold text-slate-600 dark:text-zinc-300 bg-white/80 dark:bg-zinc-800 px-1.5 py-0.5 rounded-full shadow-xs border border-slate-100 dark:border-zinc-700">
