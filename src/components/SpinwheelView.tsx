@@ -13,9 +13,14 @@ interface SpinwheelViewProps {
 
 interface ParsedStudent {
   raw: string;
-  name: string;
+  cleanName: string;
   gender: 'L' | 'P' | 'UNKNOWN';
 }
+
+// Helper untuk menghapus tag (L) / (P) dari tampilan UI
+const stripGenderTag = (name: string): string => {
+  return name.replace(/\s*-\s*\((L|P|co|ce)\)$/i, '').replace(/\s*\((L|P|co|ce)\)$/i, '').trim();
+};
 
 export const SpinwheelView: React.FC<SpinwheelViewProps> = ({ onSaveGroupResult, savedResults, isOfficer = false }) => {
   const [studentsText, setStudentsText] = useState(defaultStudentsList.join('\n'));
@@ -41,7 +46,7 @@ export const SpinwheelView: React.FC<SpinwheelViewProps> = ({ onSaveGroupResult,
     const isMale = /\((L|co|laki-laki)\)$/i.test(rawString.trim());
     return {
       raw: rawString,
-      name: rawString,
+      cleanName: stripGenderTag(rawString),
       gender: isFemale ? 'P' : isMale ? 'L' : 'UNKNOWN',
     };
   };
@@ -52,7 +57,7 @@ export const SpinwheelView: React.FC<SpinwheelViewProps> = ({ onSaveGroupResult,
       const interval = setInterval(() => {
         if (studentList.length > 0) {
           const randomIndex = Math.floor(Math.random() * studentList.length);
-          setRollingName(studentList[randomIndex]);
+          setRollingName(stripGenderTag(studentList[randomIndex]));
         }
         setShuffleProgress((prev) => Math.min(100, prev + 2.5));
       }, 70);
@@ -97,19 +102,19 @@ export const SpinwheelView: React.FC<SpinwheelViewProps> = ({ onSaveGroupResult,
       let groupPointer = 0;
 
       males.forEach((student) => {
-        groupsArray[groupPointer % numGroups].members.push(student.raw);
+        groupsArray[groupPointer % numGroups].members.push(student.cleanName);
         groupsArray[groupPointer % numGroups].maleCount++;
         groupPointer++;
       });
 
       females.forEach((student) => {
-        groupsArray[groupPointer % numGroups].members.push(student.raw);
+        groupsArray[groupPointer % numGroups].members.push(student.cleanName);
         groupsArray[groupPointer % numGroups].femaleCount++;
         groupPointer++;
       });
 
       unknowns.forEach((student) => {
-        groupsArray[groupPointer % numGroups].members.push(student.raw);
+        groupsArray[groupPointer % numGroups].members.push(student.cleanName);
         groupPointer++;
       });
     } else {
@@ -117,7 +122,7 @@ export const SpinwheelView: React.FC<SpinwheelViewProps> = ({ onSaveGroupResult,
       shuffled.forEach((student, index) => {
         const parsed = parseStudent(student);
         const targetGroup = groupsArray[index % numGroups];
-        targetGroup.members.push(student);
+        targetGroup.members.push(parsed.cleanName);
         if (parsed.gender === 'L') targetGroup.maleCount++;
         if (parsed.gender === 'P') targetGroup.femaleCount++;
       });
@@ -154,7 +159,7 @@ export const SpinwheelView: React.FC<SpinwheelViewProps> = ({ onSaveGroupResult,
     setModalStage('ANIMATION');
 
     const winner = studentList[Math.floor(Math.random() * studentList.length)];
-    setSelectedIndividual(winner);
+    setSelectedIndividual(stripGenderTag(winner));
 
     setTimeout(() => {
       setModalStage('RESULT');
@@ -171,7 +176,7 @@ export const SpinwheelView: React.FC<SpinwheelViewProps> = ({ onSaveGroupResult,
 
     if (spinMode === 'INDIVIDUAL') {
       const winner = studentList[Math.floor(Math.random() * studentList.length)];
-      setSelectedIndividual(winner);
+      setSelectedIndividual(stripGenderTag(winner));
       setTimeout(() => {
         setModalStage('RESULT');
         confetti({
@@ -325,10 +330,10 @@ export const SpinwheelView: React.FC<SpinwheelViewProps> = ({ onSaveGroupResult,
                   <Scale className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                   <div>
                     <span className="text-xs font-bold text-slate-800 dark:text-zinc-200 block">
-                      Seimbangkan Gender (Co / Ce)
+                      Seimbangkan Gender 
                     </span>
                     <span className="text-[10px] text-slate-500 dark:text-zinc-400 block">
-                      Rata pembagian Co & Ce per kelompok berdasarkan tag (L)/(P)
+                      Pembagian gender rata per-kelompok 
                     </span>
                   </div>
                 </div>
