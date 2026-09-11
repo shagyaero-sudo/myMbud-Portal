@@ -232,7 +232,7 @@ export const PjControlCenterView: React.FC<PjControlCenterViewProps> = ({
       }
     } catch (err) {
       console.error('Gagal menghapus item:', err);
-    } fontally {
+    } finally {
       setDeleteTarget(null);
     }
   };
