@@ -28,6 +28,7 @@ import { LoginScreen } from './components/LoginScreen';
 import { OnboardingScreen } from './components/OnboardingScreen';
 import { SplashScreen } from './components/SplashScreen';
 import { NotebookLmView } from './components/NotebookLmView';
+import { PjControlCenterView } from './components/PjControlCenterView';
 
 import {
   AppState,
@@ -62,7 +63,7 @@ import { initializeMbudiary } from './components/mbudiary/lib/storage';
 
 const IS_MAINTENANCE = false;
 
-const VALID_TABS: (TabType | 'mbudtalk')[] = [
+const VALID_TABS: (TabType | 'mbudtalk' | 'pj-control-center')[] = [
   'dashboard',
   'contacts',
   'materials',
@@ -74,9 +75,10 @@ const VALID_TABS: (TabType | 'mbudtalk')[] = [
   'mbudiary',
   'mbudtalk',
   'notebooklm' as TabType,
+  'pj-control-center' as any,
 ];
 
-const getTabFromLocation = (): TabType | 'mbudtalk' => {
+const getTabFromLocation = (): TabType | 'mbudtalk' | 'pj-control-center' => {
   if (typeof window === 'undefined') return 'dashboard';
   const rawHash = window.location.hash.replace(/^#\/?/, '').split('?')[0].split('&')[0].split('/')[0].trim();
   return VALID_TABS.includes(rawHash as any) ? (rawHash as any) : 'dashboard';
@@ -169,7 +171,6 @@ export default function App() {
   const [completedTaskIds, setCompletedTaskIds] = useState<string[]>([]);
   const currentUserNrp = localStorage.getItem('mymbud_user_nrp') || 'unknown';
 
-  // STATE & HANDLERS BOTTOM SHEET MBUDIARY
   const [isMbudiarySheetOpen, setIsMbudiarySheetOpen] = useState<boolean>(false);
   const [isLockPointer, setIsLockPointer] = useState<boolean>(false);
 
@@ -320,21 +321,18 @@ export default function App() {
   const requiresLogin =
     !isAuthenticated && (!isMobileOrTabletOS || isStandalone);
 
-  const [activeTab, setActiveTab] = useState<TabType | 'mbudtalk'>(() => getTabFromLocation());
+  const [activeTab, setActiveTab] = useState<TabType | 'mbudtalk' | 'pj-control-center'>(() => getTabFromLocation());
   const [chatTargetNrp, setChatTargetNrp] = useState<string | null>(null);
 
-  // HANDLE POPSTATE UNTUK NAVIGASI UTAMA
   useEffect(() => {
     const handlePopState = (event: PopStateEvent) => {
       const currentHash = window.location.hash;
 
-      // Jika masih berada di area mBudiary (termasuk sub-path), jaga sheet tetap terbuka dan tab tetap active
       if (currentHash.startsWith('#mbudiary')) {
         setIsMbudiarySheetOpen(true);
         return;
       }
 
-      // Jika hash bukan lagi #mbudiary, tutup sheet
       if (isMbudiarySheetOpen) {
         setIsMbudiarySheetOpen(false);
       }
@@ -357,7 +355,7 @@ export default function App() {
   const [isGpaModalOpen, setIsGpaModalOpen] = useState<boolean>(false);
 
   const handleNavigateTab = useCallback(
-    (tab: TabType | 'mbudtalk', courseFilterOrTargetNrp?: string) => {
+    (tab: TabType | 'mbudtalk' | 'pj-control-center', courseFilterOrTargetNrp?: string) => {
       if (tab === 'mbudiary') {
         handleOpenMbudiarySheet();
         return;
@@ -840,6 +838,18 @@ export default function App() {
                     />
                   )}
 
+                  {activeTab === ('pj-control-center' as any) && (
+                    <PjControlCenterView
+                      tasks={accessibleTasks}
+                      schedules={appState.schedules}
+                      isOfficer={isOfficer}
+                      setIsOfficer={setIsOfficer}
+                      onAddTask={handleAddTask}
+                      onDeleteTask={handleDeleteTask}
+                      onNavigateTab={handleNavigateTab}
+                    />
+                  )}
+
                   {activeTab === 'contacts' && (
                     <ContactsView
                       key={`contacts-${selectedContactCourse}`}
@@ -914,15 +924,12 @@ export default function App() {
           {/* BOTTOM SHEET MBUDIARY */}
           {isMbudiarySheetOpen && (
             <div className={`fixed inset-0 z-[100] flex flex-col justify-end ${isLockPointer ? 'pointer-events-none' : ''}`}>
-              {/* Backdrop Dimmer */}
               <div
                 onClick={handleCloseMbudiarySheet}
                 className="absolute inset-0 bg-black/75 transition-opacity duration-200 pointer-events-auto"
               />
 
-              {/* Sheet Body */}
               <div className="relative z-10 w-full h-[92vh] max-w-2xl mx-auto bg-white dark:bg-zinc-950 rounded-t-[32px] border-t border-slate-200 dark:border-zinc-800 shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-200 pointer-events-auto">
-                {/* Content View */}
                 <div className="flex-1 min-h-0 relative overflow-hidden flex flex-col">
                   <MbudiaryView
                     onNavigateToChat={(targetNrp) => {

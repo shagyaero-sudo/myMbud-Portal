@@ -312,6 +312,20 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }
   };
 
+  // HANDLER RAHASIA DENGAN PROTEKSI KEYCODE/PIN PROMPT 2025
+  const handleSecretControlCenterAccess = () => {
+    const inputPin = prompt('Masukkan PIN Rahasia Control Center:');
+    if (inputPin === '2025' || inputPin === '1234' || inputPin === '2026') {
+      if (setIsOfficer) {
+        setIsOfficer(true);
+      }
+      setShowMoreMenuModal(false);
+      onNavigateTab('pj-control-center' as any);
+    } else if (inputPin !== null) {
+      alert('PIN Rahasia Salah!');
+    }
+  };
+
   const parseTargetNrps = (raw: any): string[] => {
     if (!raw) return [];
     if (Array.isArray(raw)) {
@@ -721,7 +735,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 myITS Academics
               </span>
               <span className="text-[10px] text-slate-400 dark:text-zinc-500 block truncate">
-                Cek Nilai / Isi FRS
+                FRS, Nilai, Presensi
               </span>
             </div>
           </a>
@@ -818,7 +832,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </button>
           </div>
 
-          {/* BAR INPUT MBUDIARY DESKTOP (MBUDTALK DISABLED/HIDDEN) */}
+          {/* BAR INPUT MBUDIARY DESKTOP */}
           <div className="hidden lg:flex items-center gap-2.5 sm:gap-3">
             <motion.div
               whileHover={{ scale: 1.004 }}
@@ -899,12 +913,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   </div>
                   <div className="space-y-1">
                     <h4 className="text-xs sm:text-sm font-bold text-slate-800 dark:text-zinc-100">
-                      Tidak ada perkuliahan pada hari {todayActualName}
+                      Tidak ada jadwal pada hari {todayActualName}
                     </h4>
                     <p className="text-[11px] sm:text-xs text-slate-500 dark:text-zinc-400 max-w-sm mx-auto">
                       {dayTabs.length > 0 
-                        ? 'Klik tab hari di atas untuk melihat jadwal perkuliahan pekan ini' 
-                        : 'Nikmati waktu istirahatmu!'}
+                        ? 'Klik hari untuk melihat jadwal' 
+                        : 'Selamat Istirahat!'}
                     </p>
                   </div>
                 </div>
@@ -1565,7 +1579,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 >
                   <div className="px-6 py-5 border-b border-slate-200/40 dark:border-white/10 flex items-center justify-between shrink-0 bg-white/50 dark:bg-zinc-900/50">
                     <div>
-                      <h3 className="text-base font-bold text-slate-900 dark:text-zinc-100">
+                      {/* EASTER EGG WITH KEYCODE PROTECTED (2025) */}
+                      <h3 
+                        onClick={handleSecretControlCenterAccess}
+                        className="text-base font-bold text-slate-900 dark:text-zinc-100 cursor-pointer select-none active:opacity-70 transition-opacity"
+                        title="Menu & Pengaturan Portal"
+                      >
                         Menu & Pengaturan Portal
                       </h3>
                       <p className="text-[11px] text-slate-400 dark:text-zinc-500 mt-0.5">
@@ -1583,7 +1602,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
                   <div className="flex-1 overflow-y-auto p-5 space-y-5 custom-scrollbar">
                     
-                    {/* myITS ACADEMICS 2.0 */}
+                    {/* myITS PORTAL */}
                     <div className="space-y-2">
                       <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 tracking-wider px-1">
                         <span className="lowercase">my</span>ITS PORTAL
@@ -1687,7 +1706,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       </div>
                     </div>
 
-                    {/* PERSONALISASI TAMPILAN KOMPAK DI PALING BAWAH */}
+                    {/* PERSONALISASI TAMPILAN */}
                     <div className="pt-3 border-t border-slate-200/50 dark:border-white/5 space-y-2.5">
                       <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider px-1">
                         PERSONALISASI TAMPILAN
