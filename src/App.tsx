@@ -842,11 +842,18 @@ export default function App() {
                     <PjControlCenterView
                       tasks={accessibleTasks}
                       schedules={appState.schedules}
+                      contacts={appState.contacts}
+                      materials={accessibleMaterials}
                       isOfficer={isOfficer}
                       setIsOfficer={setIsOfficer}
-                      onAddTask={handleAddTask}
-                      onDeleteTask={handleDeleteTask}
                       onNavigateTab={handleNavigateTab}
+                      onAddTask={handleAddTask}
+                      onUpdateTask={handleUpdateTask}
+                      onDeleteTask={handleDeleteTask}
+                      onAddContact={handleAddContact}
+                      onUpdateContact={handleUpdateContact}
+                      onAddMaterial={handleAddMaterial}
+                      onDeleteMaterial={handleDeleteMaterial}
                     />
                   )}
 
