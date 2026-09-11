@@ -232,7 +232,7 @@ export const PjControlCenterView: React.FC<PjControlCenterViewProps> = ({
       }
     } catch (err) {
       console.error('Gagal menghapus item:', err);
-    } finally {
+    } fontally {
       setDeleteTarget(null);
     }
   };
@@ -494,7 +494,7 @@ export const PjControlCenterView: React.FC<PjControlCenterViewProps> = ({
   const ongoingTasks = sortedTasks.filter((t) => new Date(t.deadline).getTime() >= nowTime);
   const finishedTasks = sortedTasks.filter((t) => new Date(t.deadline).getTime() < nowTime);
 
-  // LOCK SCREEN PIN
+  // LOCK SCREEN PIN (TAMPILAN UTAMA JIKA BELUM TERVERIFIKASI)
   if (!isOfficer) {
     return (
       <div className="min-h-[65vh] flex items-center justify-center p-4">
@@ -628,7 +628,7 @@ export const PjControlCenterView: React.FC<PjControlCenterViewProps> = ({
         </button>
       </div>
 
-      {/* TAB 1: KELOLA TUGAS (SORTED ASCENDING + SEPARATION LINE) */}
+      {/* TAB 1: KELOLA TUGAS */}
       {activeTab === 'tasks' && (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
@@ -749,7 +749,7 @@ export const PjControlCenterView: React.FC<PjControlCenterViewProps> = ({
         </div>
       )}
 
-      {/* TAB 2: KELOLA JADWAL (DENGAN TOMBOL DELETE EKSISTING) */}
+      {/* TAB 2: KELOLA JADWAL */}
       {activeTab === 'schedules' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -813,7 +813,7 @@ export const PjControlCenterView: React.FC<PjControlCenterViewProps> = ({
         </div>
       )}
 
-      {/* TAB 3: KELOLA MATERI (DENGAN TOMBOL PENSIL EDIT) */}
+      {/* TAB 3: KELOLA MATERI */}
       {activeTab === 'materials' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -873,7 +873,7 @@ export const PjControlCenterView: React.FC<PjControlCenterViewProps> = ({
         </div>
       )}
 
-      {/* TAB 4: BROADCAST PENGUMUMAN DIRECT */}
+      {/* TAB 4: BROADCAST PENGUMUMAN */}
       {activeTab === 'announcements' && (
         <div className="p-6 rounded-3xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-xl space-y-4 max-w-xl mx-auto">
           <div className="flex items-center gap-3 border-b border-slate-200/40 dark:border-zinc-800 pb-4">
@@ -945,9 +945,7 @@ export const PjControlCenterView: React.FC<PjControlCenterViewProps> = ({
         </div>
       )}
 
-      {/* ========================================================================= */}
       {/* MODAL CONFIRMATION DELETE (POPUP ALA IOS) */}
-      {/* ========================================================================= */}
       <AnimatePresence>
         {deleteTarget && (
           <div 
@@ -996,9 +994,7 @@ export const PjControlCenterView: React.FC<PjControlCenterViewProps> = ({
         )}
       </AnimatePresence>
 
-      {/* ========================================================================= */}
       {/* MODAL 1: FORM EDIT / TAMBAH TUGAS */}
-      {/* ========================================================================= */}
       <AnimatePresence>
         {isTaskModalOpen && (
           <div className="fixed inset-0 z-[99999] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
@@ -1194,9 +1190,7 @@ export const PjControlCenterView: React.FC<PjControlCenterViewProps> = ({
         )}
       </AnimatePresence>
 
-      {/* ========================================================================= */}
       {/* MODAL 2: FORM EDIT / TAMBAH JADWAL MATKUL */}
-      {/* ========================================================================= */}
       <AnimatePresence>
         {isScheduleModalOpen && (
           <div className="fixed inset-0 z-[99999] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
@@ -1301,9 +1295,7 @@ export const PjControlCenterView: React.FC<PjControlCenterViewProps> = ({
         )}
       </AnimatePresence>
 
-      {/* ========================================================================= */}
-      {/* MODAL 3: FORM TAMBAH / EDIT MATERI (KNOWLEDGE BASE) */}
-      {/* ========================================================================= */}
+      {/* MODAL 3: FORM TAMBAH / EDIT MATERI */}
       <AnimatePresence>
         {isMaterialModalOpen && (
           <div className="fixed inset-0 z-[99999] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
