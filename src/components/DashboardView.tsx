@@ -890,14 +890,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               })}
             </div>
 
-            {/* KETERANGAN BANTUAN PRESENSI PANDUAN SISWA */}
-            <div className="px-3.5 py-2 rounded-2xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-100/80 dark:border-blue-900/50 flex items-center gap-2 text-[11px] text-blue-700 dark:text-blue-300 font-medium">
-              <Info className="w-3.5 h-3.5 shrink-0 text-blue-600 dark:text-blue-400" />
-              <span>
-                <strong>Kini, Tombol presensi punya tampilan baru! 👇</strong>
-              </span>
-            </div>
-
             {/* KONTEN JADWAL MODEREN */}
             <div className="space-y-3 pt-1">
               {selectedDay === null ? (
