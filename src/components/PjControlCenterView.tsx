@@ -18,7 +18,9 @@ import {
   UploadCloud,
   Loader2,
   FileIcon,
-  AlertTriangle
+  AlertTriangle,
+  Clock,
+  CheckCircle2
 } from 'lucide-react';
 import { Task, ScheduleItem, Contact, MaterialFile } from '../types';
 import { sendOfficerNotification } from '../services/oneSignalNotification';
@@ -49,6 +51,7 @@ interface PjControlCenterViewProps {
   onUpdateContact: (id: string, contact: Partial<Contact>) => Promise<void> | void;
   onDeleteContact?: (id: string) => Promise<void> | void;
   onAddMaterial: (material: Omit<MaterialFile, 'id' | 'uploadDate'>) => Promise<void> | void;
+  onUpdateMaterial?: (id: string, material: Partial<MaterialFile>) => Promise<void> | void;
   onDeleteMaterial: (id: string) => Promise<void> | void;
 }
 
@@ -96,6 +99,7 @@ export const PjControlCenterView: React.FC<PjControlCenterViewProps> = ({
   onUpdateContact,
   onDeleteContact,
   onAddMaterial,
+  onUpdateMaterial,
   onDeleteMaterial,
 }) => {
   const [activeTab, setActiveTab] = useState<'tasks' | 'schedules' | 'materials' | 'announcements'>('tasks');
@@ -147,6 +151,8 @@ export const PjControlCenterView: React.FC<PjControlCenterViewProps> = ({
 
   // --- STATE MODAL MATERI / KNOWLEDGE BASE ---
   const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false);
+  const [editingMaterialId, setEditingMaterialId] = useState<string | null>(null);
+  const [existingMaterialUrl, setExistingMaterialUrl] = useState<string>('');
   const [materialForm, setMaterialForm] = useState({
     courseName: '',
     weekNum: '',
@@ -394,13 +400,26 @@ export const PjControlCenterView: React.FC<PjControlCenterViewProps> = ({
     setIsScheduleModalOpen(false);
   };
 
-  // HANDLER MODAL MATERI / KNOWLEDGE BASE
-  const handleOpenMaterialModal = () => {
-    setMaterialForm({
-      courseName: schedules[0]?.course || contacts[0]?.course || 'Umum',
-      weekNum: '',
-      title: '',
-    });
+  // HANDLER MODAL MATERI / KNOWLEDGE BASE (TAMBAH & EDIT)
+  const handleOpenMaterialModal = (mat?: MaterialFile) => {
+    if (mat) {
+      setEditingMaterialId(mat.id);
+      const weekMatch = mat.session ? mat.session.match(/\d+/) : null;
+      setMaterialForm({
+        courseName: mat.courseName,
+        weekNum: weekMatch ? weekMatch[0] : '1',
+        title: mat.title.replace(/\.pdf$/i, ''),
+      });
+      setExistingMaterialUrl(mat.fileUrl);
+    } else {
+      setEditingMaterialId(null);
+      setMaterialForm({
+        courseName: schedules[0]?.course || contacts[0]?.course || 'Umum',
+        weekNum: '',
+        title: '',
+      });
+      setExistingMaterialUrl('');
+    }
     setSelectedMaterialFile(null);
     setUploadProgressMaterial(0);
     setIsMaterialModalOpen(true);
@@ -414,7 +433,7 @@ export const PjControlCenterView: React.FC<PjControlCenterViewProps> = ({
     setUploadProgressMaterial(0);
 
     try {
-      let finalFileUrl = 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf';
+      let finalFileUrl = existingMaterialUrl || 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf';
       let fileSizeStr = '3.2 MB';
 
       if (selectedMaterialFile) {
@@ -422,19 +441,26 @@ export const PjControlCenterView: React.FC<PjControlCenterViewProps> = ({
         fileSizeStr = `${(selectedMaterialFile.size / (1024 * 1024)).toFixed(1)} MB`;
       }
 
-      await onAddMaterial({
+      const formattedTitle = materialForm.title.endsWith('.pdf') ? materialForm.title : `${materialForm.title}.pdf`;
+      const payload = {
         courseId: materialForm.courseName.slice(0, 6).toUpperCase().replace(/\s+/g, ''),
         courseName: materialForm.courseName,
         session: `WEEK ${materialForm.weekNum}`,
-        title: materialForm.title.endsWith('.pdf') ? materialForm.title : `${materialForm.title}.pdf`,
+        title: formattedTitle,
         fileUrl: finalFileUrl,
         fileType: 'pdf',
         fileSize: fileSizeStr,
         uploader: 'Pengurus Kelas',
-      });
+      };
+
+      if (editingMaterialId && onUpdateMaterial) {
+        await onUpdateMaterial(editingMaterialId, payload);
+      } else {
+        await onAddMaterial(payload);
+      }
       setIsMaterialModalOpen(false);
     } catch (err) {
-      alert('Gagal mengunggah berkas PDF materi.');
+      alert('Gagal menyimpan berkas PDF materi.');
     } finally {
       setIsUploadingMaterial(false);
     }
@@ -462,6 +488,12 @@ export const PjControlCenterView: React.FC<PjControlCenterViewProps> = ({
     }
   };
 
+  // PREPARASI SORTING & SPLITTING TUGAS BERDASARKAN DEADLINE
+  const nowTime = new Date().getTime();
+  const sortedTasks = [...tasks].sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime());
+  const ongoingTasks = sortedTasks.filter((t) => new Date(t.deadline).getTime() >= nowTime);
+  const finishedTasks = sortedTasks.filter((t) => new Date(t.deadline).getTime() < nowTime);
+
   // LOCK SCREEN PIN
   if (!isOfficer) {
     return (
@@ -476,7 +508,7 @@ export const PjControlCenterView: React.FC<PjControlCenterViewProps> = ({
           </div>
 
           <div>
-            <h2 className="text-xl font-extrabold text-slate-900 dark:text-zinc-100">Pusat Kendali PJ</h2>
+            <h2 className="text-xl font-extrabold text-slate-900 dark:text-zinc-100">PJ Control Center</h2>
             <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1">
               Masukkan PIN Penanggung Jawab untuk mengelola data portal.
             </p>
@@ -528,7 +560,7 @@ export const PjControlCenterView: React.FC<PjControlCenterViewProps> = ({
               </span>
             </div>
             <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
-              Pusat terpadu untuk mengelola tugas, jadwal, materi, dan pengumuman.
+              Kontrol terpadu untuk pengelolaan
             </p>
           </div>
         </div>
@@ -596,9 +628,9 @@ export const PjControlCenterView: React.FC<PjControlCenterViewProps> = ({
         </button>
       </div>
 
-      {/* TAB 1: KELOLA TUGAS */}
+      {/* TAB 1: KELOLA TUGAS (SORTED ASCENDING + SEPARATION LINE) */}
       {activeTab === 'tasks' && (
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold text-slate-800 dark:text-zinc-200">
               Daftar Tugas Keseluruhan ({tasks.length})
@@ -612,45 +644,112 @@ export const PjControlCenterView: React.FC<PjControlCenterViewProps> = ({
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {tasks.map((task) => (
-              <div 
-                key={task.id}
-                className="p-4 rounded-2xl bg-white/70 dark:bg-zinc-800/50 border border-slate-200/60 dark:border-white/10 flex items-center justify-between gap-3 shadow-xs"
-              >
-                <div className="min-w-0 space-y-1">
-                  <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded-md border border-blue-100 dark:border-blue-900/40">
-                    {task.course}
-                  </span>
-                  <h4 className="text-xs font-bold text-slate-900 dark:text-zinc-100 truncate">{task.title}</h4>
-                  <p className="text-[10px] text-slate-500 dark:text-zinc-400 truncate">
-                    Deadline: {new Date(task.deadline).toLocaleDateString('id-ID', { day: 'numeric', month: 'numeric', year: 'numeric' })}
-                  </p>
-                </div>
+          {/* SECTION TUGAS ONGOING */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 text-xs font-bold text-blue-600 dark:text-blue-400">
+              <Clock className="w-3.5 h-3.5" />
+              <span>Tugas Aktif ({ongoingTasks.length})</span>
+            </div>
 
-                <div className="flex items-center gap-1 shrink-0">
-                  <button 
-                    onClick={() => handleOpenTaskModal(task)}
-                    className="p-2 rounded-xl text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/50 transition-colors cursor-pointer"
-                    title="Edit Tugas"
+            {ongoingTasks.length === 0 ? (
+              <p className="text-xs text-slate-400 dark:text-zinc-500 italic py-2">Tidak ada tugas aktif.</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {ongoingTasks.map((task) => (
+                  <div 
+                    key={task.id}
+                    className="p-4 rounded-2xl bg-white/70 dark:bg-zinc-800/50 border border-slate-200/60 dark:border-white/10 flex items-center justify-between gap-3 shadow-xs"
                   >
-                    <Pencil className="w-4 h-4" />
-                  </button>
-                  <button 
-                    onClick={() => setDeleteTarget({ type: 'task', id: task.id, title: task.title })}
-                    className="p-2 rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors cursor-pointer"
-                    title="Hapus Tugas"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
+                    <div className="min-w-0 space-y-1">
+                      <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded-md border border-blue-100 dark:border-blue-900/40">
+                        {task.course}
+                      </span>
+                      <h4 className="text-xs font-bold text-slate-900 dark:text-zinc-100 truncate">{task.title}</h4>
+                      <p className="text-[10px] text-slate-500 dark:text-zinc-400 truncate">
+                        Deadline: {new Date(task.deadline).toLocaleDateString('id-ID', { day: 'numeric', month: 'numeric', year: 'numeric' })}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button 
+                        onClick={() => handleOpenTaskModal(task)}
+                        className="p-2 rounded-xl text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/50 transition-colors cursor-pointer"
+                        title="Edit Tugas"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button 
+                        onClick={() => setDeleteTarget({ type: 'task', id: task.id, title: task.title })}
+                        className="p-2 rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors cursor-pointer"
+                        title="Hapus Tugas"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
           </div>
+
+          {/* SEPARATION LINE UNTUK TUGAS LEWAT PERIODE */}
+          {finishedTasks.length > 0 && (
+            <div className="space-y-4 pt-2">
+              <div className="relative flex py-2 items-center">
+                <div className="flex-grow border-t border-slate-300 dark:border-zinc-800"></div>
+                <span className="flex-shrink mx-4 text-[10px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-zinc-500 bg-slate-100 dark:bg-zinc-900/80 px-3 py-1 rounded-full border border-slate-200 dark:border-zinc-800">
+                  Riwayat / Periode Selesai
+                </span>
+                <div className="flex-grow border-t border-slate-300 dark:border-zinc-800"></div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {finishedTasks.map((task) => (
+                  <div 
+                    key={task.id}
+                    className="p-4 rounded-2xl bg-slate-100/50 dark:bg-zinc-900/40 border border-slate-200/40 dark:border-zinc-800/80 flex items-center justify-between gap-3 opacity-70 hover:opacity-100 transition-opacity"
+                  >
+                    <div className="min-w-0 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 bg-slate-200/60 dark:bg-zinc-800 px-2 py-0.5 rounded-md">
+                          {task.course}
+                        </span>
+                        <span className="text-[9px] font-bold text-rose-600 dark:text-rose-400 bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 rounded-full flex items-center gap-1">
+                          <CheckCircle2 className="w-2.5 h-2.5" />
+                          <span>Periode Selesai</span>
+                        </span>
+                      </div>
+                      <h4 className="text-xs font-bold text-slate-700 dark:text-zinc-300 truncate line-through decoration-slate-400">{task.title}</h4>
+                      <p className="text-[10px] text-slate-400 dark:text-zinc-500 truncate">
+                        Deadline: {new Date(task.deadline).toLocaleDateString('id-ID', { day: 'numeric', month: 'numeric', year: 'numeric' })}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button 
+                        onClick={() => handleOpenTaskModal(task)}
+                        className="p-2 rounded-xl text-slate-500 dark:text-zinc-400 hover:bg-slate-200/60 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                        title="Edit Tugas"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button 
+                        onClick={() => setDeleteTarget({ type: 'task', id: task.id, title: task.title })}
+                        className="p-2 rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors cursor-pointer"
+                        title="Hapus Tugas"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
-      {/* TAB 2: KELOLA JADWAL */}
+      {/* TAB 2: KELOLA JADWAL (DENGAN TOMBOL DELETE EKSISTING) */}
       {activeTab === 'schedules' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -699,15 +798,13 @@ export const PjControlCenterView: React.FC<PjControlCenterViewProps> = ({
                     >
                       <Pencil className="w-4 h-4" />
                     </button>
-                    {onDeleteContact && (
-                      <button 
-                        onClick={() => setDeleteTarget({ type: 'schedule', id: targetId, title: schedule.course })}
-                        className="p-2 rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors cursor-pointer"
-                        title="Hapus Matkul"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    )}
+                    <button 
+                      onClick={() => setDeleteTarget({ type: 'schedule', id: targetId, title: schedule.course })}
+                      className="p-2 rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors cursor-pointer"
+                      title="Hapus Matkul"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
               );
@@ -716,7 +813,7 @@ export const PjControlCenterView: React.FC<PjControlCenterViewProps> = ({
         </div>
       )}
 
-      {/* TAB 3: KELOLA MATERI / KNOWLEDGE BASE */}
+      {/* TAB 3: KELOLA MATERI (DENGAN TOMBOL PENSIL EDIT) */}
       {activeTab === 'materials' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -754,13 +851,22 @@ export const PjControlCenterView: React.FC<PjControlCenterViewProps> = ({
                   </a>
                 </div>
 
-                <button 
-                  onClick={() => setDeleteTarget({ type: 'material', id: mat.id, title: mat.title })}
-                  className="p-2 rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors cursor-pointer shrink-0"
-                  title="Hapus Berkas Materi"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                <div className="flex items-center gap-1 shrink-0">
+                  <button 
+                    onClick={() => handleOpenMaterialModal(mat)}
+                    className="p-2 rounded-xl text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/50 transition-colors cursor-pointer"
+                    title="Edit Materi"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                  <button 
+                    onClick={() => setDeleteTarget({ type: 'material', id: mat.id, title: mat.title })}
+                    className="p-2 rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors cursor-pointer"
+                    title="Hapus Berkas Materi"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -776,7 +882,7 @@ export const PjControlCenterView: React.FC<PjControlCenterViewProps> = ({
             </div>
             <div>
               <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100">Kirim Broadcast Push Notification</h3>
-              <p className="text-xs text-slate-500 dark:text-zinc-400">Pesan akan terkirim langsung ke HP / Browser teman-teman.</p>
+              <p className="text-xs text-slate-500 dark:text-zinc-400">Pesan akan terkirim langsung ke HP teman-teman.</p>
             </div>
           </div>
 
@@ -1196,7 +1302,7 @@ export const PjControlCenterView: React.FC<PjControlCenterViewProps> = ({
       </AnimatePresence>
 
       {/* ========================================================================= */}
-      {/* MODAL 3: FORM TAMBAH MATERI / KNOWLEDGE BASE */}
+      {/* MODAL 3: FORM TAMBAH / EDIT MATERI (KNOWLEDGE BASE) */}
       {/* ========================================================================= */}
       <AnimatePresence>
         {isMaterialModalOpen && (
@@ -1209,7 +1315,9 @@ export const PjControlCenterView: React.FC<PjControlCenterViewProps> = ({
               className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/60 dark:border-white/10 text-slate-800 dark:text-zinc-100 rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"
             >
               <div className="px-6 sm:px-8 py-5 border-b border-slate-200/40 dark:border-white/10 flex items-center justify-between shrink-0 bg-white/50 dark:bg-zinc-900/50">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-100">Unggah Materi / Slide PDF</h3>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-100">
+                  {editingMaterialId ? 'Edit Berkas Materi' : 'Unggah Materi / Slide PDF'}
+                </h3>
                 <button type="button" onClick={() => setIsMaterialModalOpen(false)} className="p-2 rounded-2xl text-slate-400 hover:text-slate-800 dark:hover:text-zinc-200"><X className="w-5 h-5" /></button>
               </div>
 
@@ -1235,7 +1343,9 @@ export const PjControlCenterView: React.FC<PjControlCenterViewProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">Berkas File PDF</label>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
+                      {editingMaterialId ? 'Ganti File PDF (Kosongkan jika tidak diubah)' : 'Berkas File PDF'}
+                    </label>
                     <div
                       onDragOver={(e) => { e.preventDefault(); setIsMaterialDragOver(true); }}
                       onDragLeave={(e) => { e.preventDefault(); setIsMaterialDragOver(false); }}
@@ -1258,7 +1368,9 @@ export const PjControlCenterView: React.FC<PjControlCenterViewProps> = ({
                       ) : (
                         <div className="flex flex-col items-center gap-2">
                           <UploadCloud className="w-6 h-6 text-slate-600 dark:text-zinc-400" />
-                          <p className="text-xs font-bold text-slate-700 dark:text-zinc-200">Klik atau seret file PDF di sini</p>
+                          <p className="text-xs font-bold text-slate-700 dark:text-zinc-200">
+                            {editingMaterialId ? 'Klik/seret file baru jika ingin mengganti berkas PDF' : 'Klik atau seret file PDF di sini'}
+                          </p>
                           <p className="text-[10px] text-slate-400">Format PDF ONLY dan maks 10 MB</p>
                         </div>
                       )}
@@ -1281,7 +1393,7 @@ export const PjControlCenterView: React.FC<PjControlCenterViewProps> = ({
                 <div className="px-6 sm:px-8 py-4 border-t border-slate-200/40 dark:border-white/10 flex items-center justify-end gap-3 shrink-0 bg-white/50 dark:bg-zinc-900/50">
                   <button type="button" disabled={isUploadingMaterial} onClick={() => setIsMaterialModalOpen(false)} className="px-5 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 text-xs font-semibold">Batal</button>
                   <button type="submit" disabled={isUploadingMaterial} className="px-5 py-2.5 rounded-2xl bg-blue-600 text-white text-xs font-semibold shadow-md flex items-center gap-2">
-                    {isUploadingMaterial ? <><Loader2 className="w-4 h-4 animate-spin" /><span>Mengunggah...</span></> : 'Unggah Berkas'}
+                    {isUploadingMaterial ? <><Loader2 className="w-4 h-4 animate-spin" /><span>Mengunggah...</span></> : editingMaterialId ? 'Simpan Perubahan' : 'Unggah Berkas'}
                   </button>
                 </div>
               </form>
