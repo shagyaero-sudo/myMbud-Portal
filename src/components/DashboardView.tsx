@@ -10,7 +10,6 @@ import {
   Zap,
   Building2,
   Coffee,
-  MessageSquare,
   BookOpenCheck,
   Handshake,
   FileSpreadsheet,
@@ -170,7 +169,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   // STREAK & CHAT STATE
   const [streakData, setStreakData] = useState<UserStreak>(getLocalStreak);
   const [isStreakModalOpen, setIsStreakModalOpen] = useState(false);
-  const [hasUnreadChat, setHasUnreadChat] = useState<boolean>(false);
 
   // THEME STATE
   const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
@@ -312,18 +310,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }
   };
 
-  // HANDLER RAHASIA DENGAN PROTEKSI KEYCODE/PIN PROMPT 2025
+  // HANDLER NAVIGASI LANGSUNG KE TAB PJ CONTROL CENTER (TANPA PROMPT BROWSER)
   const handleSecretControlCenterAccess = () => {
-    const inputPin = prompt('Masukkan PIN Rahasia Control Center:');
-    if (inputPin === '2025' || inputPin === '1234' || inputPin === '2026') {
-      if (setIsOfficer) {
-        setIsOfficer(true);
-      }
-      setShowMoreMenuModal(false);
-      onNavigateTab('pj-control-center' as any);
-    } else if (inputPin !== null) {
-      alert('PIN Rahasia Salah!');
-    }
+    setShowMoreMenuModal(false);
+    onNavigateTab('pj-control-center' as any);
   };
 
   const parseTargetNrps = (raw: any): string[] => {
@@ -406,9 +396,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   useEffect(() => {
     if (!currentUserNrp || currentUserNrp === 'unknown') return;
 
-    const unsubscribe = subscribeToGlobalUnread(currentUserNrp, (unread) => {
-      setHasUnreadChat(unread);
-    });
+    const unsubscribe = subscribeToGlobalUnread(currentUserNrp, () => {});
 
     return () => unsubscribe();
   }, [currentUserNrp]);
@@ -687,7 +675,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
 
-        {/* 4 BENTO BUTTONS MOBILE (CLEAN ICON TANPA PADDING) */}
+        {/* 4 BENTO BUTTONS MOBILE */}
         <div className="grid grid-cols-2 gap-2.5 pt-1">
           <a
             href="https://classroom.its.ac.id/auth/oidc"
@@ -763,7 +751,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         {/* KOLOM KIRI: BENTO BUTTONS PC + BAR MBUDIARY + JADWAL PERKULIAHAN */}
         <div className="space-y-4 sm:space-y-5">
 
-          {/* 4 BENTO BUTTONS PC ONLY (CLEAN ICON TANPA PADDING) */}
+          {/* 4 BENTO BUTTONS PC ONLY */}
           <div className="hidden lg:grid grid-cols-2 gap-3">
             <a
               href="https://classroom.its.ac.id/auth/oidc"
@@ -1193,7 +1181,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         onStreakUpdate={(updated) => setStreakData(updated)}
       />
 
-      {/* MODAL INPUT PIN OFFICER (MODE EDIT PJ) */}
+      {/* MODAL INPUT PIN OFFICER */}
       {isOfficerModalOpen && (
         <div className="fixed inset-0 z-[999999] bg-black/75 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-white dark:bg-[#16171b] border border-slate-200 dark:border-zinc-800 rounded-3xl w-full max-w-sm p-6 space-y-5 shadow-2xl relative animate-in fade-in zoom-in duration-200">
@@ -1579,7 +1567,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 >
                   <div className="px-6 py-5 border-b border-slate-200/40 dark:border-white/10 flex items-center justify-between shrink-0 bg-white/50 dark:bg-zinc-900/50">
                     <div>
-                      {/* EASTER EGG WITH KEYCODE PROTECTED (2025) */}
+                      {/* EASTER EGG TANPA PROMPT */}
                       <h3 
                         onClick={handleSecretControlCenterAccess}
                         className="text-base font-bold text-slate-900 dark:text-zinc-100 cursor-pointer select-none active:opacity-70 transition-opacity"
