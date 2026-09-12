@@ -98,7 +98,17 @@ function normalizePost(data: Record<string, any>): MbudiaryPost {
     quoteContent: data.quote_content || undefined,
     isFollowersOnly: Boolean(data.is_followers_only),
     createdAt: data.created_at || new Date().toISOString(),
-  };
+
+    // FIELD METADATA MUSIK SUPABASE & CAMELCASE (MENCEGAH HILANG)
+    music_title: data.music_title || data.musicTitle || undefined,
+    music_artist: data.music_artist || data.musicArtist || undefined,
+    music_cover: data.music_cover || data.musicCover || undefined,
+    music_preview_url: data.music_preview_url || data.musicPreviewUrl || undefined,
+    musicTitle: data.music_title || data.musicTitle || undefined,
+    musicArtist: data.music_artist || data.musicArtist || undefined,
+    musicCover: data.music_cover || data.musicCover || undefined,
+    musicPreviewUrl: data.music_preview_url || data.musicPreviewUrl || undefined,
+  } as any;
 }
 
 function normalizeReply(data: Record<string, any>): MbudiaryReply {
@@ -530,7 +540,7 @@ export function initializeMbudiary(): () => void {
     if (data) {
       const incomingPosts = data.map(normalizePost);
 
-      // MERGE CERDAS: Mencegah Realtime Supabase Menimpa State Like Lokal
+      // MERGE CERDAS: Mencegah Realtime Supabase Menimpa State Like Lokal & Menjaga Data Musik
       postsCache = incomingPosts.map((incoming) => {
         const local = postsCache.find((p) => p.id === incoming.id);
         if (!local) return incoming;
@@ -600,6 +610,12 @@ export async function savePost(post: Omit<MbudiaryPost, 'id' | 'likes' | 'replyC
   const createdAt = new Date().toISOString();
   const id = crypto.randomUUID();
 
+  // EKSTRAKSI METADATA MUSIK DENGAN DUKUNGAN KEDUA FORMAT
+  const music_title = (post as any).music_title || post.musicTitle || undefined;
+  const music_artist = (post as any).music_artist || post.musicArtist || undefined;
+  const music_cover = (post as any).music_cover || post.musicCover || undefined;
+  const music_preview_url = (post as any).music_preview_url || post.musicPreviewUrl || undefined;
+
   const newPostItem: MbudiaryPost = {
     ...post,
     id,
@@ -613,12 +629,23 @@ export async function savePost(post: Omit<MbudiaryPost, 'id' | 'likes' | 'replyC
     quoteContent: post.quoteContent || undefined,
     isFollowersOnly: post.isFollowersOnly || false,
     createdAt,
-  };
+
+    // MENYIMPAN DATA MUSIK LOKAL CACHE
+    music_title,
+    music_artist,
+    music_cover,
+    music_preview_url,
+    musicTitle: music_title,
+    musicArtist: music_artist,
+    musicCover: music_cover,
+    musicPreviewUrl: music_preview_url,
+  } as any;
 
   postsCache = [newPostItem, ...postsCache];
   saveLocalCache(CACHED_POSTS_KEY, postsCache);
   emit('mbud_posts_change');
 
+  // KIRIM DATA KE SUPABASE TERMASUK 4 KOLOM MUSIK
   const { error } = await supabase.from('mbudiary_posts').insert({
     id,
     author_nrp: authorNrp,
@@ -632,6 +659,12 @@ export async function savePost(post: Omit<MbudiaryPost, 'id' | 'likes' | 'replyC
     quote_content: newPostItem.quoteContent || null,
     is_followers_only: newPostItem.isFollowersOnly || false,
     created_at: createdAt,
+
+    // SIMPAN KE SUPABASE DB
+    music_title: music_title || null,
+    music_artist: music_artist || null,
+    music_cover: music_cover || null,
+    music_preview_url: music_preview_url || null,
   });
 
   if (error) {
