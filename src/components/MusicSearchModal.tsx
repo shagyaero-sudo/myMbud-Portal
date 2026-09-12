@@ -92,7 +92,7 @@ export const MusicSearchModal: React.FC<MusicSearchModalProps> = ({
           <div className="p-4 border-b border-slate-200/60 dark:border-zinc-800 flex items-center justify-between">
             <div className="flex items-center gap-2 text-slate-900 dark:text-zinc-100 font-bold text-sm">
               <Music className="w-4 h-4 text-purple-500" />
-              <span>Pilih Musik iTunes</span>
+              <span>Pilih Musik</span>
             </div>
             <button
               onClick={handleClose}
