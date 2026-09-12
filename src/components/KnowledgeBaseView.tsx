@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FileText,
@@ -66,12 +66,14 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
     }
   };
 
-  const dynamicCoursesList = Array.from(
-    new Set([
-      ...availableCourses.filter((c) => c && c.trim() !== ''),
-      ...materials.map((m) => m.courseName).filter((c) => c && c.trim() !== ''),
-    ])
-  ).sort();
+  const dynamicCoursesList = useMemo(() => {
+    return Array.from(
+      new Set([
+        ...availableCourses.filter((c) => c && c.trim() !== ''),
+        ...materials.map((m) => m.courseName).filter((c) => c && c.trim() !== ''),
+      ])
+    ).sort();
+  }, [availableCourses, materials]);
 
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [formCourseName, setFormCourseName] = useState(
@@ -91,19 +93,48 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
     return match ? parseInt(match[0], 10) : 0;
   };
 
-  const filteredMaterials = materials
-    .filter((m) => {
-      const matchSearch =
-        m.title.toLowerCase().includes(search.toLowerCase()) ||
-        m.courseName.toLowerCase().includes(search.toLowerCase()) ||
-        m.session.toLowerCase().includes(search.toLowerCase());
-      const matchCourse =
-        selectedCourse === 'ALL' || m.courseName === selectedCourse;
-      const matchBookmark = !showOnlyBookmarked || bookmarkedIds.includes(m.id);
+  // Helper untuk membersihkan ekstensi .pdf di judul utama
+  const cleanTitle = (title: string) => title.replace(/\.pdf$/i, '');
 
-      return matchSearch && matchCourse && matchBookmark;
-    })
-    .sort((a, b) => getWeekNumber(b.session) - getWeekNumber(a.session));
+  const filteredMaterials = useMemo(() => {
+    return materials
+      .filter((m) => {
+        const matchSearch =
+          m.title.toLowerCase().includes(search.toLowerCase()) ||
+          m.courseName.toLowerCase().includes(search.toLowerCase()) ||
+          m.session.toLowerCase().includes(search.toLowerCase());
+        const matchCourse =
+          selectedCourse === 'ALL' || m.courseName === selectedCourse;
+        const matchBookmark = !showOnlyBookmarked || bookmarkedIds.includes(m.id);
+
+        return matchSearch && matchCourse && matchBookmark;
+      })
+      .sort((a, b) => getWeekNumber(b.session) - getWeekNumber(a.session));
+  }, [materials, search, selectedCourse, showOnlyBookmarked, bookmarkedIds]);
+
+  // Pengelompokan materi berdasarkan Pekan Perkuliahan (Week)
+  const groupedByWeek = useMemo(() => {
+    const groups: Record<string, MaterialFile[]> = {};
+
+    filteredMaterials.forEach((m) => {
+      const weekKey = m.session ? m.session.toUpperCase().trim() : 'MODUL UMUM';
+      if (!groups[weekKey]) {
+        groups[weekKey] = [];
+      }
+      groups[weekKey].push(m);
+    });
+
+    const sortedKeys = Object.keys(groups).sort((a, b) => {
+      if (a === 'MODUL UMUM') return 1;
+      if (b === 'MODUL UMUM') return -1;
+      return getWeekNumber(b) - getWeekNumber(a);
+    });
+
+    return sortedKeys.map((key) => ({
+      weekTitle: key,
+      items: groups[key],
+    }));
+  }, [filteredMaterials]);
 
   const fileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -513,9 +544,10 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
             )}
           </div>
 
-          <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-3 sm:p-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none transition-all">
-            {filteredMaterials.length === 0 ? (
-              <div className="p-8 text-center text-slate-400 dark:text-zinc-500 text-xs bg-slate-50/50 dark:bg-zinc-800/30 rounded-2xl space-y-2 border border-slate-200/30 dark:border-white/5">
+          {/* KONTEN UTAMA: DAFTAR PEKAN (TIMELINE GROUPED VIEW) */}
+          <div className="space-y-6">
+            {groupedByWeek.length === 0 ? (
+              <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-8 text-center text-slate-400 dark:text-zinc-500 text-xs space-y-2 border-slate-200/30 dark:border-white/5 shadow-xs">
                 <BookOpen className="w-8 h-8 mx-auto text-slate-300 dark:text-zinc-600 mb-1" />
                 <p className="font-semibold text-slate-600 dark:text-zinc-300">
                   {showOnlyBookmarked
@@ -529,73 +561,85 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                 </p>
               </div>
             ) : (
-              <div className="space-y-2">
-                {filteredMaterials.map((mat) => {
-                  const isBookmarked = bookmarkedIds.includes(mat.id);
+              groupedByWeek.map((group) => (
+                <div key={group.weekTitle} className="space-y-2.5">
+                  {/* HEADER PEKAN (SECTION DIVIDER) */}
+                  <div className="flex items-center gap-2.5 pt-1 px-1">
+                    <span className="px-3 py-1 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-black tracking-wider border border-blue-500/20 uppercase">
+                      {group.weekTitle}
+                    </span>
+                    <div className="flex-1 h-px bg-slate-200 dark:bg-zinc-800" />
+                    <span className="text-[10px] font-bold text-slate-400 dark:text-zinc-500">
+                      {group.items.length} Berkas
+                    </span>
+                  </div>
 
-                  return (
-                    <motion.div
-                      key={mat.id}
-                      whileHover={{ x: 3 }}
-                      onClick={() => onPreviewPdf(mat)}
-                      className="group relative overflow-hidden p-3 sm:p-3.5 rounded-2xl bg-white/60 dark:bg-zinc-800/40 hover:bg-white/90 dark:hover:bg-zinc-800/70 backdrop-blur-sm cursor-pointer transition-all flex items-center justify-between gap-3 border border-slate-200/60 dark:border-white/5 hover:border-blue-500/40 dark:hover:border-blue-500/40 shadow-xs"
-                    >
-                      <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-blue-600 group-hover:w-2 transition-all rounded-l-2xl" />
+                  {/* DAFTAR FILE DALAM PEKAN TERSEBUT */}
+                  <div className="bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 rounded-3xl p-3 sm:p-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none space-y-2 transition-all">
+                    {group.items.map((mat) => {
+                      const isBookmarked = bookmarkedIds.includes(mat.id);
 
-                      <div className="flex items-center gap-3 min-w-0 flex-1 pl-1.5">
-                        <div className="p-2 rounded-xl bg-blue-50/80 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 shrink-0">
-                          <FileText className="w-4 h-4" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <h4 className="text-xs font-bold text-slate-800 dark:text-zinc-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
-                            {mat.title}
-                          </h4>
-                          <p className="text-[11px] font-medium text-slate-500 dark:text-zinc-400 truncate">
-                            {mat.courseName}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2 shrink-0">
-                        <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg border bg-slate-100/70 dark:bg-zinc-800/60 text-slate-600 dark:text-zinc-300 border-slate-200/60 dark:border-white/5">
-                          {mat.session || 'MODUL'}
-                        </span>
-
-                        <button
-                          type="button"
-                          onClick={(e) => handleToggleBookmark(e, mat.id)}
-                          className={`p-1.5 rounded-xl border transition-all cursor-pointer ${
-                            isBookmarked
-                              ? 'bg-blue-50/90 dark:bg-blue-950/60 border-blue-200 dark:border-blue-900/60 text-blue-600 dark:text-blue-400 shadow-xs'
-                              : 'bg-white/80 dark:bg-zinc-800/80 border-slate-200/70 dark:border-white/10 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white dark:hover:bg-zinc-700'
-                          }`}
-                          title={isBookmarked ? 'Hapus dari Bookmark' : 'Simpan Materi'}
+                      return (
+                        <motion.div
+                          key={mat.id}
+                          whileHover={{ x: 3 }}
+                          onClick={() => onPreviewPdf(mat)}
+                          className="group relative overflow-hidden p-3 sm:p-3.5 rounded-2xl bg-white/60 dark:bg-zinc-800/40 hover:bg-white/90 dark:hover:bg-zinc-800/70 backdrop-blur-sm cursor-pointer transition-all flex items-center justify-between gap-3 border border-slate-200/60 dark:border-white/5 hover:border-blue-500/40 dark:hover:border-blue-500/40 shadow-xs"
                         >
-                          <Bookmark
-                            className={`w-3.5 h-3.5 ${
-                              isBookmarked ? 'fill-blue-600 dark:fill-blue-400 text-blue-600 dark:text-blue-400' : ''
-                            }`}
-                          />
-                        </button>
+                          <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-blue-600 group-hover:w-2 transition-all rounded-l-2xl" />
 
-                        {isOfficer && (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onDeleteMaterial(mat.id);
-                            }}
-                            className="p-1.5 rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
-                            title="Hapus Berkas"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        )}
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
+                          <div className="flex items-center gap-3 min-w-0 flex-1 pl-1.5">
+                            <div className="p-2.5 rounded-xl bg-blue-50/80 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 shrink-0">
+                              <FileText className="w-4 h-4" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <h4 className="text-xs font-bold text-slate-800 dark:text-zinc-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
+                                {cleanTitle(mat.title)}
+                              </h4>
+                              <p className="text-[11px] font-medium text-slate-500 dark:text-zinc-400 truncate">
+                                {mat.courseName}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0">
+                            <button
+                              type="button"
+                              onClick={(e) => handleToggleBookmark(e, mat.id)}
+                              className={`p-1.5 rounded-xl border transition-all cursor-pointer ${
+                                isBookmarked
+                                  ? 'bg-blue-50/90 dark:bg-blue-950/60 border-blue-200 dark:border-blue-900/60 text-blue-600 dark:text-blue-400 shadow-xs'
+                                  : 'bg-white/80 dark:bg-zinc-800/80 border-slate-200/70 dark:border-white/10 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white dark:hover:bg-zinc-700'
+                              }`}
+                              title={isBookmarked ? 'Hapus dari Bookmark' : 'Simpan Materi'}
+                            >
+                              <Bookmark
+                                className={`w-3.5 h-3.5 ${
+                                  isBookmarked ? 'fill-blue-600 dark:fill-blue-400 text-blue-600 dark:text-blue-400' : ''
+                                }`}
+                              />
+                            </button>
+
+                            {isOfficer && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onDeleteMaterial(mat.id);
+                                }}
+                                className="p-1.5 rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                                title="Hapus Berkas"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))
             )}
           </div>
         </div>
