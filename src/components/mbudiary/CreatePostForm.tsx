@@ -185,11 +185,15 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
         imageUrls,
         isRepost: false,
         isFollowersOnly,
-        // DUA BARIS TAMBAHAN UNTUK SIMPAN METADATA MUSIK
-        musicTitle: selectedTrack?.trackName,
-        musicArtist: selectedTrack?.artistName,
-        musicCover: selectedTrack?.artworkUrl,
-        musicPreviewUrl: selectedTrack?.previewUrl,
+        // COMPATIBLE METADATA MUSIK (SNAKE_CASE & CAMELCASE)
+        musicTitle: selectedTrack?.trackName || null,
+        musicArtist: selectedTrack?.artistName || null,
+        musicCover: selectedTrack?.artworkUrl || null,
+        musicPreviewUrl: selectedTrack?.previewUrl || null,
+        music_title: selectedTrack?.trackName || null,
+        music_artist: selectedTrack?.artistName || null,
+        music_cover: selectedTrack?.artworkUrl || null,
+        music_preview_url: selectedTrack?.previewUrl || null,
       } as any);
 
       await processMentionsInContent({
@@ -547,7 +551,7 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
         document.body
       )}
 
-      {/* MODAL SEARCH MUSIK ITUNES */}
+      {/* MODAL SEARCH MUSIK ITUNES (DI LUAR PORTAL POSTINGAN) */}
       <MusicSearchModal
         isOpen={isMusicModalOpen}
         onClose={() => setIsMusicModalOpen(false)}

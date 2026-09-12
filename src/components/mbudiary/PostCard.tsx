@@ -537,11 +537,32 @@ export const PostCard: React.FC<PostCardProps> = ({
   const canDelete = isAuthor || currentUser.isOfficer;
   const displayAuthorIsVerified = isPlainRepost && originalPost ? (originalAuthorProfile as any)?.isVerified : (authorProfile as any)?.isVerified;
 
-  // Ekstrak metadata musik jika ada
-  const musicPreviewUrl = (post as any).musicPreviewUrl || (originalPost as any)?.musicPreviewUrl;
-  const musicTitle = (post as any).musicTitle || (originalPost as any)?.musicTitle || 'Lagu';
-  const musicArtist = (post as any).musicArtist || (originalPost as any)?.musicArtist || 'Penyanyi';
-  const musicCover = (post as any).musicCover || (originalPost as any)?.musicCover;
+  // Ekstrak metadata musik (Pengecekan Ganda: snake_case & camelCase)
+  const musicPreviewUrl = 
+    (post as any).music_preview_url || 
+    (post as any).musicPreviewUrl || 
+    (originalPost as any)?.music_preview_url || 
+    (originalPost as any)?.musicPreviewUrl;
+
+  const musicTitle = 
+    (post as any).music_title || 
+    (post as any).musicTitle || 
+    (originalPost as any)?.music_title || 
+    (originalPost as any)?.musicTitle || 
+    'Lagu';
+
+  const musicArtist = 
+    (post as any).music_artist || 
+    (post as any).musicArtist || 
+    (originalPost as any)?.music_artist || 
+    (originalPost as any)?.musicArtist || 
+    'Penyanyi';
+
+  const musicCover = 
+    (post as any).music_cover || 
+    (post as any).musicCover || 
+    (originalPost as any)?.music_cover || 
+    (originalPost as any)?.musicCover;
 
   return (
     <>
@@ -663,7 +684,7 @@ export const PostCard: React.FC<PostCardProps> = ({
               </div>
             )}
 
-            {/* RENDER MUSIC PLAYER BADGE: DISISIPKAN TEPAT DI ANTARA CAPTION DAN GAMBAR/QUOTE */}
+            {/* RENDER MUSIC PLAYER BADGE (DISISIPKAN DI ANTARA CAPTION DAN GAMBAR/QUOTE) */}
             {musicPreviewUrl && (
               <div className="mb-2.5">
                 <MusicPlayerBadge
