@@ -188,6 +188,9 @@ export default function App() {
   }, []);
 
   const handleCloseMbudiarySheet = useCallback(() => {
+    // MEMATIKAN SEMUA AUDIO MUSIK SAAT MBUDIARY DITUTUP
+    window.dispatchEvent(new Event('mbud_stop_all_audio_global'));
+
     setIsMbudiarySheetOpen(false);
     if (window.location.hash.startsWith('#mbudiary')) {
       window.history.pushState({ tab: 'dashboard' }, '', '#dashboard');
