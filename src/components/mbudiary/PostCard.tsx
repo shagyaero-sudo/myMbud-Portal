@@ -42,6 +42,9 @@ import {
   notifyPostCommented,
 } from '../../services/oneSignalNotification';
 
+// IMPORT KOMPONEN MUSIK BADGE
+import { MusicPlayerBadge } from '../../components/MusicPlayerBadge';
+
 export type BadgeTier = 'gold' | 'blue' | 'gray' | null;
 
 export const getBadgeTier = (
@@ -534,6 +537,12 @@ export const PostCard: React.FC<PostCardProps> = ({
   const canDelete = isAuthor || currentUser.isOfficer;
   const displayAuthorIsVerified = isPlainRepost && originalPost ? (originalAuthorProfile as any)?.isVerified : (authorProfile as any)?.isVerified;
 
+  // Ekstrak metadata musik jika ada
+  const musicPreviewUrl = (post as any).musicPreviewUrl || (originalPost as any)?.musicPreviewUrl;
+  const musicTitle = (post as any).musicTitle || (originalPost as any)?.musicTitle || 'Lagu';
+  const musicArtist = (post as any).musicArtist || (originalPost as any)?.musicArtist || 'Penyanyi';
+  const musicCover = (post as any).musicCover || (originalPost as any)?.musicCover;
+
   return (
     <>
       <article className={`px-3.5 py-3 sm:px-4 sm:py-3.5 transition-colors duration-200 hover:bg-slate-50/50 dark:hover:bg-zinc-800/40 w-full transform-gpu ${
@@ -641,18 +650,32 @@ export const PostCard: React.FC<PostCardProps> = ({
               </div>
             </div>
 
+            {/* TEKS CAPTION POSTINGAN */}
             {isQuoteRepost && (
-              <div className="text-[13px] sm:text-sm text-slate-800 dark:text-zinc-200 leading-snug whitespace-pre-line mb-1.5 font-normal">
+              <div className="text-[13px] sm:text-sm text-slate-800 dark:text-zinc-200 leading-snug whitespace-pre-line mb-2 font-normal">
                 <FormattedPostContent content={post.quoteContent || ''} onSelectAuthor={onSelectAuthor} />
               </div>
             )}
 
             {!isQuoteRepost && displayContent && (
-              <div className="text-[13px] sm:text-sm text-slate-800 dark:text-zinc-200 leading-snug whitespace-pre-line mb-1.5 font-normal">
+              <div className="text-[13px] sm:text-sm text-slate-800 dark:text-zinc-200 leading-snug whitespace-pre-line mb-2 font-normal">
                 <FormattedPostContent content={displayContent} onSelectAuthor={onSelectAuthor} />
               </div>
             )}
 
+            {/* RENDER MUSIC PLAYER BADGE: DISISIPKAN TEPAT DI ANTARA CAPTION DAN GAMBAR/QUOTE */}
+            {musicPreviewUrl && (
+              <div className="mb-2.5">
+                <MusicPlayerBadge
+                  title={musicTitle}
+                  artist={musicArtist}
+                  coverUrl={musicCover}
+                  previewUrl={musicPreviewUrl}
+                />
+              </div>
+            )}
+
+            {/* QUOTE REPOST CONTAINER */}
             {isQuoteRepost && (
               <div
                 onClick={(e) => {
@@ -732,6 +755,7 @@ export const PostCard: React.FC<PostCardProps> = ({
               </div>
             )}
 
+            {/* GAMBAR POSTINGAN */}
             {!isQuoteRepost && Array.isArray(displayImages) && displayImages.length > 0 && (
               <div className="mb-2 w-full">
                 {displayImages.length === 1 && (

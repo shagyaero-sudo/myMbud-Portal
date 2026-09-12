@@ -16,8 +16,14 @@ import {
   Users,
   ChevronDown,
   Check,
+  Music,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+
+// IMPORT KOMPONEN DAN HELPER MUSIK
+import { MusicSearchModal } from '../../components/MusicSearchModal';
+import { MusicPlayerBadge } from '../../components/MusicPlayerBadge';
+import { TrackResult } from '../../services/musicService';
 
 interface CreatePostFormProps {
   userProfile: UserProfile;
@@ -51,6 +57,10 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   
+  // State Musik
+  const [isMusicModalOpen, setIsMusicModalOpen] = useState(false);
+  const [selectedTrack, setSelectedTrack] = useState<TrackResult | null>(null);
+
   // State Audience: Default Public
   const [isFollowersOnly, setIsFollowersOnly] = useState(false);
   const [isAudienceDropdownOpen, setIsAudienceDropdownOpen] = useState(false);
@@ -175,7 +185,12 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
         imageUrls,
         isRepost: false,
         isFollowersOnly,
-      });
+        // DUA BARIS TAMBAHAN UNTUK SIMPAN METADATA MUSIK
+        musicTitle: selectedTrack?.trackName,
+        musicArtist: selectedTrack?.artistName,
+        musicCover: selectedTrack?.artworkUrl,
+        musicPreviewUrl: selectedTrack?.previewUrl,
+      } as any);
 
       await processMentionsInContent({
         content: content.trim(),
@@ -186,6 +201,7 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
 
       setContent('');
       clearSelectedImages();
+      setSelectedTrack(null);
       setIsFollowersOnly(false);
       setIsModalOpen(false);
       setShowSuccessToast(true);
@@ -339,6 +355,26 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
                         className="w-full text-xs sm:text-[13px] bg-transparent text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none resize-none leading-relaxed min-h-[70px] max-h-[300px] overflow-y-auto"
                       />
 
+                      {/* LAGU TERPILIH BADGE PREVIEW */}
+                      {selectedTrack && (
+                        <div className="mt-2 flex items-center gap-2">
+                          <MusicPlayerBadge
+                            title={selectedTrack.trackName}
+                            artist={selectedTrack.artistName}
+                            coverUrl={selectedTrack.artworkUrl}
+                            previewUrl={selectedTrack.previewUrl}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setSelectedTrack(null)}
+                            className="p-1 rounded-full text-rose-500 hover:bg-rose-50 dark:hover:bg-zinc-800 transition-colors"
+                            title="Hapus Musik"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      )}
+
                       {/* DROPDOWN MENTION */}
                       {mentionQuery !== null && mentionSuggestions.length > 0 && (
                         <div className="absolute left-0 top-12 z-[99999999] w-72 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-2xl border border-slate-200/80 dark:border-zinc-700 rounded-2xl p-1.5 shadow-[0_12px_40px_rgb(0,0,0,0.25)] max-h-56 overflow-y-auto custom-scrollbar">
@@ -398,8 +434,8 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
                 {/* MODAL FOOTER */}
                 <div className="px-4 py-2.5 sm:px-5 border-t border-slate-200/40 dark:border-white/10 bg-white/50 dark:bg-zinc-900/50 flex items-center justify-between shrink-0 relative z-20 rounded-b-3xl">
                   
-                  {/* SISI KIRI: DIRECT UPLOAD GAMBAR */}
-                  <div>
+                  {/* SISI KIRI: UPLOAD GAMBAR & TAMBAH MUSIK */}
+                  <div className="flex items-center gap-1.5">
                     <button
                       type="button"
                       onClick={() => {
@@ -407,19 +443,29 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
                         galleryInputRef.current?.click();
                       }}
                       disabled={isPosting || selectedImages.length >= MAX_IMAGES}
-                      className="px-3 py-1.5 rounded-2xl hover:bg-white/80 dark:hover:bg-zinc-800 disabled:opacity-50 text-blue-600 dark:text-blue-400 text-xs font-semibold transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
+                      className="px-2.5 py-1.5 rounded-2xl hover:bg-white/80 dark:hover:bg-zinc-800 disabled:opacity-50 text-blue-600 dark:text-blue-400 text-xs font-semibold transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
                     >
                       <ImagePlus className="w-4 h-4" />
-                      <span>Upload Gambar</span>
+                      <span className="hidden xs:inline">Gambar</span>
                       {selectedImages.length > 0 && (
                         <span className="font-bold bg-blue-100 dark:bg-blue-900/50 px-1.5 rounded-md text-[10px]">
                           {selectedImages.length}/{MAX_IMAGES}
                         </span>
                       )}
                     </button>
+
+                    {/* TOMBOL PENCARI MUSIK ITUNES */}
+                    <button
+                      type="button"
+                      onClick={() => setIsMusicModalOpen(true)}
+                      className="px-2.5 py-1.5 rounded-2xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 dark:text-purple-400 border border-purple-500/20 text-xs font-semibold transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
+                    >
+                      <Music className="w-4 h-4" />
+                      <span>{selectedTrack ? 'Ganti Musik' : 'Tambah Musik'}</span>
+                    </button>
                   </div>
 
-                  {/* SISI KANAN: AUDIENCE DROPDOWN (ABU-ABU MINIMALIS) */}
+                  {/* SISI KANAN: AUDIENCE DROPDOWN */}
                   <div className="relative">
                     <button
                       type="button"
@@ -500,6 +546,13 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({
         </AnimatePresence>,
         document.body
       )}
+
+      {/* MODAL SEARCH MUSIK ITUNES */}
+      <MusicSearchModal
+        isOpen={isMusicModalOpen}
+        onClose={() => setIsMusicModalOpen(false)}
+        onSelectTrack={(track) => setSelectedTrack(track)}
+      />
 
       <input ref={galleryInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple className="hidden" onChange={handleImageSelection} />
     </>
