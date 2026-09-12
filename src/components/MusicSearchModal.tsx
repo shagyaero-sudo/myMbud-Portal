@@ -1,8 +1,9 @@
 // src/components/MusicSearchModal.tsx
 
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Music, Play, Pause, Check, X, Loader2 } from 'lucide-react';
+import { Search, Music, Play, Pause, X, Loader2 } from 'lucide-react';
 import { searchTracks, TrackResult } from '../services/musicService';
 
 interface MusicSearchModalProps {
@@ -72,109 +73,125 @@ export const MusicSearchModal: React.FC<MusicSearchModalProps> = ({
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-md">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 15 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 15 }}
-        className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-3xl max-w-md w-full overflow-hidden shadow-2xl flex flex-col max-h-[85vh]"
+  const modalContent = (
+    <AnimatePresence>
+      <div
+        className="fixed inset-0 z-[99999999] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md"
+        onMouseDown={(e) => {
+          if (e.target === e.currentTarget) handleClose();
+        }}
       >
-        {/* HEADER */}
-        <div className="p-4 border-b border-slate-200/60 dark:border-zinc-800 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-slate-900 dark:text-zinc-100 font-bold text-sm">
-            <Music className="w-4 h-4 text-blue-500" />
-            <span>Pilih Musik untuk Postingan</span>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 15 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 15 }}
+          className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-3xl max-w-md w-full overflow-hidden shadow-2xl flex flex-col max-h-[85vh]"
+          onMouseDown={(e) => e.stopPropagation()}
+        >
+          {/* HEADER */}
+          <div className="p-4 border-b border-slate-200/60 dark:border-zinc-800 flex items-center justify-between">
+            <div className="flex items-center gap-2 text-slate-900 dark:text-zinc-100 font-bold text-sm">
+              <Music className="w-4 h-4 text-purple-500" />
+              <span>Pilih Musik iTunes</span>
+            </div>
+            <button
+              onClick={handleClose}
+              className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 transition-colors cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
-          <button
-            onClick={handleClose}
-            className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 transition-colors"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
 
-        {/* INPUT PENCARIAN */}
-        <div className="p-4 border-b border-slate-200/40 dark:border-zinc-800/60">
-          <div className="relative">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Cari lagu, penyanyi (misal: Bernadya, Hindia)..."
-              className="w-full pl-10 pr-4 py-2.5 bg-slate-100 dark:bg-zinc-800 rounded-2xl text-xs text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-slate-400"
-              autoFocus
-            />
-            {isLoading && (
-              <Loader2 className="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 text-blue-500 animate-spin" />
+          {/* INPUT PENCARIAN */}
+          <div className="p-4 border-b border-slate-200/40 dark:border-zinc-800/60">
+            <div className="relative">
+              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Cari lagu, penyanyi (misal: Nadhif, Hindia)..."
+                className="w-full pl-10 pr-8 py-2.5 bg-slate-100 dark:bg-zinc-800 rounded-2xl text-xs text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-slate-400"
+                autoFocus
+              />
+              {isLoading && (
+                <Loader2 className="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 text-purple-500 animate-spin" />
+              )}
+            </div>
+          </div>
+
+          {/* LIST HASIL PENCARIAN */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar min-h-[250px]">
+            {!query.trim() ? (
+              <div className="py-12 text-center text-slate-400 dark:text-zinc-500 text-xs space-y-2">
+                <Music className="w-8 h-8 mx-auto opacity-40" />
+                <p>Ketik nama penyanyi atau judul lagu favoritmu!</p>
+              </div>
+            ) : results.length === 0 && !isLoading ? (
+              <div className="py-12 text-center text-slate-400 dark:text-zinc-500 text-xs">
+                Lagu tidak ditemukan. Coba kata kunci lain.
+              </div>
+            ) : (
+              results.map((track) => {
+                const isPlaying = playingTrackId === track.trackId;
+
+                return (
+                  <div
+                    key={track.trackId}
+                    onClick={() => {
+                      if (audioRef.current) audioRef.current.pause();
+                      onSelectTrack(track);
+                      handleClose();
+                    }}
+                    className="p-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/50 hover:bg-purple-50 dark:hover:bg-purple-950/30 border border-slate-200/50 dark:border-zinc-700/50 transition-all flex items-center justify-between gap-3 cursor-pointer group"
+                  >
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className="relative w-10 h-10 rounded-xl overflow-hidden bg-slate-200 shrink-0">
+                        <img
+                          src={track.artworkUrl}
+                          alt={track.trackName}
+                          className="w-full h-full object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={(e) => handleTogglePlayPreview(e, track)}
+                          className="absolute inset-0 bg-black/40 flex items-center justify-center text-white opacity-90 group-hover:opacity-100 transition-opacity"
+                        >
+                          {isPlaying ? (
+                            <Pause className="w-4 h-4 fill-white" />
+                          ) : (
+                            <Play className="w-4 h-4 fill-white ml-0.5" />
+                          )}
+                        </button>
+                      </div>
+
+                      <div className="min-w-0">
+                        <h4 className="text-xs font-bold text-slate-900 dark:text-zinc-100 truncate group-hover:text-purple-500 transition-colors">
+                          {track.trackName}
+                        </h4>
+                        <p className="text-[11px] text-slate-500 dark:text-zinc-400 truncate">
+                          {track.artistName}
+                        </p>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="px-3 py-1.5 rounded-xl bg-purple-600 text-white text-[11px] font-bold shadow-xs hover:bg-purple-500 transition-colors shrink-0 cursor-pointer"
+                    >
+                      Pilih
+                    </button>
+                  </div>
+                );
+              })
             )}
           </div>
-        </div>
-
-        {/* LIST HASIL PENCARIAN */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar min-h-[250px]">
-          {!query.trim() ? (
-            <div className="py-12 text-center text-slate-400 dark:text-zinc-500 text-xs space-y-2">
-              <Music className="w-8 h-8 mx-auto opacity-40" />
-              <p>Ketik nama penyanyi atau judul lagu favoritmu!</p>
-            </div>
-          ) : results.length === 0 && !isLoading ? (
-            <div className="py-12 text-center text-slate-400 dark:text-zinc-500 text-xs">
-              Lagu tidak ditemukan. Coba kata kunci lain.
-            </div>
-          ) : (
-            results.map((track) => {
-              const isPlaying = playingTrackId === track.trackId;
-
-              return (
-                <div
-                  key={track.trackId}
-                  onClick={() => {
-                    if (audioRef.current) audioRef.current.pause();
-                    onSelectTrack(track);
-                    handleClose();
-                  }}
-                  className="p-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/50 hover:bg-blue-50 dark:hover:bg-blue-950/30 border border-slate-200/50 dark:border-zinc-700/50 transition-all flex items-center justify-between gap-3 cursor-pointer group"
-                >
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className="relative w-10 h-10 rounded-xl overflow-hidden bg-slate-200 shrink-0">
-                      <img
-                        src={track.artworkUrl}
-                        alt={track.trackName}
-                        className="w-full h-full object-cover"
-                      />
-                      <button
-                        type="button"
-                        onClick={(e) => handleTogglePlayPreview(e, track)}
-                        className="absolute inset-0 bg-black/40 flex items-center justify-center text-white opacity-90 group-hover:opacity-100 transition-opacity"
-                      >
-                        {isPlaying ? <Pause className="w-4 h-4 fill-white" /> : <Play className="w-4 h-4 fill-white ml-0.5" />}
-                      </button>
-                    </div>
-
-                    <div className="min-w-0">
-                      <h4 className="text-xs font-bold text-slate-900 dark:text-zinc-100 truncate group-hover:text-blue-500 transition-colors">
-                        {track.trackName}
-                      </h4>
-                      <p className="text-[11px] text-slate-500 dark:text-zinc-400 truncate">
-                        {track.artistName}
-                      </p>
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    className="px-3 py-1.5 rounded-xl bg-blue-600 text-white text-[11px] font-bold shadow-xs hover:bg-blue-500 transition-colors shrink-0"
-                  >
-                    Pilih
-                  </button>
-                </div>
-              );
-            })
-          )}
-        </div>
-      </motion.div>
-    </div>
+        </motion.div>
+      </div>
+    </AnimatePresence>
   );
+
+  return typeof document !== 'undefined'
+    ? createPortal(modalContent, document.body)
+    : null;
 };
