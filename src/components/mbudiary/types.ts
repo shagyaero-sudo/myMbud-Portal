@@ -72,3 +72,17 @@ export type FeedFilter =
 export type FeedSort =
   | 'newest'
   | 'popular';
+
+  export interface MbudiaryStory {
+  id: string;
+  authorNrp: string;
+  mediaUrl: string;
+  mediaType: 'image' | 'video';
+  caption?: string;
+  musicTitle?: string;
+  musicArtist?: string;
+  musicCover?: string;
+  musicPreviewUrl?: string;
+  createdAt: string;
+  expiresAt: string;
+}

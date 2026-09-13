@@ -1,13 +1,20 @@
+// src/components/MbudiaryView.tsx
+
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { ArrowLeft, User, X, Camera, Trash2, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { UserProfile, MbudiaryPost } from './mbudiary/types';
+import { UserProfile, MbudiaryPost, MbudiaryStory } from './mbudiary/types';
 import { getUserProfile, getPosts, saveUserProfile } from './mbudiary/lib/storage';
 import { uploadImagesToCloudinary } from './mbudiary/lib/cloudinary';
 import { PostList } from './mbudiary/PostList';
 import { PostCard } from './mbudiary/PostCard';
 import { UserProfileView } from './mbudiary/UserProfileView';
 import { PostSkeleton } from './mbudiary/PostSkeleton';
+
+// IMPORT KOMPONEN STORY
+import { StoryTray } from './mbudiary/StoryTray';
+import { CreateStoryModal } from './mbudiary/CreateStoryModal';
+import { StoryViewerModal } from './mbudiary/StoryViewerModal';
 
 let cachedPosts: MbudiaryPost[] | null = null;
 
@@ -33,6 +40,10 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({
     cachedPosts = initial;
     return initial;
   });
+
+  // STATE UNTUK STORY MBUDIARY
+  const [isCreateStoryOpen, setIsCreateStoryOpen] = useState(false);
+  const [selectedStoryGroup, setSelectedStoryGroup] = useState<MbudiaryStory[] | null>(null);
 
   // REF CONTAINER UNTUK MENJAGA LOKASI SCROLL
   const containerRef = useRef<HTMLDivElement>(null);
@@ -291,6 +302,13 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({
         )}
 
         <div className={isFeedActive ? 'space-y-3 sm:space-y-4 block' : 'hidden'}>
+          {/* STORY TRAY (DI ATAS FEED POSTINGAN) */}
+          <StoryTray
+            currentUser={currentUser}
+            onOpenCreateStory={() => setIsCreateStoryOpen(true)}
+            onSelectStoryGroup={(group) => setSelectedStoryGroup(group)}
+          />
+
           {isLoading ? (
             <div className="space-y-3 sm:space-y-4">
               <PostSkeleton />
@@ -309,6 +327,21 @@ export const MbudiaryView: React.FC<MbudiaryViewProps> = ({
           )}
         </div>
       </main>
+
+      {/* MODAL MBUDSTORY (CREATE & VIEWER) */}
+      <CreateStoryModal
+        isOpen={isCreateStoryOpen}
+        onClose={() => setIsCreateStoryOpen(false)}
+        onStoryCreated={() => {
+          window.dispatchEvent(new Event('mbud_stories_change'));
+        }}
+      />
+
+      <StoryViewerModal
+        stories={selectedStoryGroup || []}
+        isOpen={Boolean(selectedStoryGroup)}
+        onClose={() => setSelectedStoryGroup(null)}
+      />
 
       {/* MODAL EDIT PROFIL */}
       <AnimatePresence>

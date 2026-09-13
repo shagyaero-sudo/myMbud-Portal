@@ -897,3 +897,104 @@ export function toggleBookmarkPost(postId: string): boolean {
   
   return isBookmarked;
 }
+
+import { MbudiaryStory } from '../types';
+
+const CACHED_STORIES_KEY = 'mymbud_cache_stories';
+let storiesCache: MbudiaryStory[] = loadLocalCache<MbudiaryStory[]>(CACHED_STORIES_KEY, []);
+
+function normalizeStory(data: Record<string, any>): MbudiaryStory {
+  return {
+    id: data.id,
+    authorNrp: String(data.author_nrp || '').trim().toLowerCase(),
+    mediaUrl: data.media_url || '',
+    mediaType: data.media_type === 'video' ? 'video' : 'image',
+    caption: data.caption || undefined,
+    musicTitle: data.music_title || undefined,
+    musicArtist: data.music_artist || undefined,
+    musicCover: data.music_cover || undefined,
+    musicPreviewUrl: data.music_preview_url || undefined,
+    createdAt: data.created_at || new Date().toISOString(),
+    expiresAt: data.expires_at || new Date().toISOString(),
+  };
+}
+
+export function getActiveStories(): MbudiaryStory[] {
+  const now = new Date().toISOString();
+  return storiesCache.filter((s) => s.expiresAt > now);
+}
+
+export async function fetchStoriesFromSupabase(): Promise<MbudiaryStory[]> {
+  const now = new Date().toISOString();
+  const { data, error } = await supabase
+    .from('mbudiary_stories')
+    .select('*')
+    .gt('expires_at', now)
+    .order('created_at', { ascending: true });
+
+  if (error || !data) return getActiveStories();
+
+  storiesCache = data.map(normalizeStory);
+  saveLocalCache(CACHED_STORIES_KEY, storiesCache);
+  emit('mbud_stories_change');
+  return storiesCache;
+}
+
+export async function saveStory(storyData: {
+  mediaUrl: string;
+  mediaType: 'image' | 'video';
+  caption?: string;
+  musicTitle?: string;
+  musicArtist?: string;
+  musicCover?: string;
+  musicPreviewUrl?: string;
+}): Promise<MbudiaryStory> {
+  const currentUser = getUserProfile();
+  const authorNrp = currentUser.nrp.trim().toLowerCase();
+  if (!authorNrp || authorNrp === 'unknown') throw new Error('NRP tidak valid.');
+
+  const createdAt = new Date().toISOString();
+  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+  const id = crypto.randomUUID();
+
+  const newStory: MbudiaryStory = {
+    id,
+    authorNrp,
+    mediaUrl: storyData.mediaUrl,
+    mediaType: storyData.mediaType,
+    caption: storyData.caption,
+    musicTitle: storyData.musicTitle,
+    musicArtist: storyData.musicArtist,
+    musicCover: storyData.musicCover,
+    musicPreviewUrl: storyData.musicPreviewUrl,
+    createdAt,
+    expiresAt,
+  };
+
+  storiesCache = [...storiesCache, newStory];
+  saveLocalCache(CACHED_STORIES_KEY, storiesCache);
+  emit('mbud_stories_change');
+
+  const { error } = await supabase.from('mbudiary_stories').insert({
+    id,
+    author_nrp: authorNrp,
+    media_url: storyData.mediaUrl,
+    media_type: storyData.mediaType,
+    caption: storyData.caption || null,
+    music_title: storyData.musicTitle || null,
+    music_artist: storyData.musicArtist || null,
+    music_cover: storyData.musicCover || null,
+    music_preview_url: storyData.musicPreviewUrl || null,
+    created_at: createdAt,
+    expires_at: expiresAt,
+  });
+
+  if (error) {
+    storiesCache = storiesCache.filter((s) => s.id !== id);
+    saveLocalCache(CACHED_STORIES_KEY, storiesCache);
+    emit('mbud_stories_change');
+    throw error;
+  }
+
+  return newStory;
+}
