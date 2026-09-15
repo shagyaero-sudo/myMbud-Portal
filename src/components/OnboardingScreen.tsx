@@ -184,7 +184,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
                     Selamat datang di myMbud.
                   </h1>
                   <p className="text-xs sm:text-sm font-normal text-slate-500 dark:text-zinc-400 leading-relaxed max-w-xs mx-auto">
-                    Ruang digital khusus untuk menemani perjalanan akademikmu di Kelas A.
+                    Ruang digital untuk menemani perjalanan akademikmu di Kelas A
                   </p>
                 </div>
               </motion.div>
