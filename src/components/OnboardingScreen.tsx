@@ -101,7 +101,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
       await requestOneSignalPermission();
     } catch (err) {
       console.warn('[Onboarding] Push error:', err);
-    } fontally {
+    } finally {
       setIsEnablingPush(false);
       nextStep();
     }
