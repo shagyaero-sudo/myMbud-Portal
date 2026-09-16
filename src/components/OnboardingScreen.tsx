@@ -101,7 +101,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
       await requestOneSignalPermission();
     } catch (err) {
       console.warn('[Onboarding] Push error:', err);
-    } finally {
+    } fontally {
       setIsEnablingPush(false);
       nextStep();
     }
@@ -396,18 +396,29 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
         </div>
 
         {/* Action Footer Button */}
-        <div className="pt-4 shrink-0">
+        <div className="pt-4 shrink-0 space-y-2">
           {step === 4 ? (
-            <motion.button
-              whileHover={{ scale: 1.015 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handlePushActivation}
-              disabled={isEnablingPush}
-              className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm shadow-lg shadow-blue-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-            >
-              <BellRing className="w-4 h-4" />
-              <span>{isEnablingPush ? 'Mengaktifkan...' : 'Aktifkan Notifikasi'}</span>
-            </motion.button>
+            <>
+              <motion.button
+                whileHover={{ scale: 1.015 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handlePushActivation}
+                disabled={isEnablingPush}
+                className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm shadow-lg shadow-blue-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              >
+                <BellRing className="w-4 h-4" />
+                <span>{isEnablingPush ? 'Mengaktifkan...' : 'Aktifkan Notifikasi'}</span>
+              </motion.button>
+
+              <button
+                type="button"
+                onClick={nextStep}
+                disabled={isEnablingPush}
+                className="w-full py-2.5 rounded-2xl text-slate-400 hover:text-slate-600 dark:hover:text-zinc-300 font-bold text-xs transition-colors cursor-pointer text-center"
+              >
+                Nanti saja
+              </button>
+            </>
           ) : step === 5 ? (
             <motion.button
               whileHover={{ scale: 1.015 }}
