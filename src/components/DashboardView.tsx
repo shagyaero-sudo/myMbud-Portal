@@ -269,7 +269,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     } catch (error) {
       console.error('[Officer Notif Error]:', error);
       alert('Gagal mengirim notifikasi.');
-    } fontally {
+    } finally {
       setIsSendingOfficerNotif(false);
     }
   };
