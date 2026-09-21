@@ -23,9 +23,9 @@ export const ARCADE_GAMES: ArcadeGame[] = [
   },
   {
     id: 'match3',
-    title: 'Match3',
+    title: 'Emoji Crush',
     emoji: '🌈',
-    description: 'Cocokin 3 permata warna-warni, ada 3 mode main.',
+    description: 'Cocokin 3 permata warna-warni, mirip candy crush.',
     src: '/games/match3/index.html',
     aspect: 'square',
   },
@@ -70,10 +70,10 @@ export const ArcadeView: React.FC = () => {
     <div className="space-y-6">
       <div className="bg-white dark:bg-zinc-900/60 rounded-3xl p-6 border border-slate-200 dark:border-zinc-800">
         <h1 className="text-2xl font-bold text-slate-800 dark:text-zinc-100">
-          🎮 mbud Arcade
+          🎮 mbudArcade
         </h1>
         <p className="text-sm text-slate-500 dark:text-zinc-400 mt-1">
-          Kill time bentar? Pilih salah satu game di bawah ini.
+          Mau kill time bentar? Main game-game ini!
         </p>
       </div>
 

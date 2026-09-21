@@ -750,14 +750,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <div className="min-w-0 text-left">
                 <div className="flex items-center gap-1.5">
                   <span className="text-xs font-black tracking-tight block truncate">
-                    Mbud Arcade
+                    mbudArcade
                   </span>
                   <span className="px-1.5 py-0.2 rounded-full bg-amber-400/20 text-amber-300 text-[9px] font-extrabold border border-amber-400/30">
                     NEW
                   </span>
                 </div>
                 <span className="text-[10px] text-white/80 block truncate">
-                  Game mini 2048, Dino, Brickbreaker & Spacehunter
+                  Mainin game klasik!
                 </span>
               </div>
             </div>

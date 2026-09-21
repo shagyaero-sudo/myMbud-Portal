@@ -35,6 +35,8 @@ export const GameModal: React.FC<GameModalProps> = ({ game, onClose }) => {
     }
   }, [game]);
 
+  const is2048 = game?.id === '2048' || game?.title.toLowerCase().includes('2048');
+
   return (
     <AnimatePresence>
       {game && (
@@ -42,7 +44,7 @@ export const GameModal: React.FC<GameModalProps> = ({ game, onClose }) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-sm"
           onClick={onClose}
         >
           <motion.div
@@ -51,11 +53,11 @@ export const GameModal: React.FC<GameModalProps> = ({ game, onClose }) => {
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ duration: 0.18 }}
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200 dark:border-zinc-800 shadow-2xl overflow-hidden flex flex-col"
-            style={{ maxWidth: game.aspect === 'wide' ? 720 : game.aspect === 'portrait' ? 420 : 520 }}
+            className="relative w-full bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200 dark:border-zinc-800 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+            style={{ maxWidth: game.aspect === 'wide' ? 720 : game.aspect === 'portrait' ? 440 : 520 }}
           >
-            {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-zinc-800">
+            {/* Header Modal */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-zinc-800 shrink-0">
               <div className="flex items-center gap-2">
                 <span className="text-xl">{game.emoji}</span>
                 <span className="font-semibold text-slate-800 dark:text-zinc-100">
@@ -71,8 +73,14 @@ export const GameModal: React.FC<GameModalProps> = ({ game, onClose }) => {
               </button>
             </div>
 
-            {/* Game surface */}
-            <div className={`relative w-full ${aspectClass[game.aspect || 'square']}`}>
+            {/* Game surface - Khusus 2048 / layar HP diberi tinggi h-[70vh] sm:h-auto biar gak terpotong */}
+            <div 
+              className={`relative w-full ${
+                is2048 
+                  ? 'h-[72vh] sm:h-auto sm:aspect-square max-w-[520px]' 
+                  : aspectClass[game.aspect || 'square']
+              }`}
+            >
               {!isLoaded && (
                 <div className="absolute inset-0 flex items-center justify-center bg-slate-100 dark:bg-zinc-800/60 animate-pulse">
                   <span className="text-sm text-slate-500 dark:text-zinc-400">
@@ -81,13 +89,6 @@ export const GameModal: React.FC<GameModalProps> = ({ game, onClose }) => {
                 </div>
               )}
 
-              {/*
-                Lazy mount: the <iframe> only exists in the DOM while the
-                modal is open (this component only renders when `game` is
-                set, and React unmounts it entirely on close). So closing
-                a game fully frees its memory/CPU instead of running in
-                the background.
-              */}
               <iframe
                 key={game.id}
                 src={game.src}
