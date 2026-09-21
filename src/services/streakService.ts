@@ -65,7 +65,9 @@ export const syncUserStreak = async (
   const normalizedNrp = userNrp.trim().toLowerCase();
 
   let baseStreak = getLocalStreak();
+  let supabaseDataLoaded = false;
 
+  // 1. Dapatkan data terbaru dari Supabase
   if (normalizedNrp && normalizedNrp !== 'unknown') {
     try {
       const { data } = await supabase
@@ -75,6 +77,7 @@ export const syncUserStreak = async (
         .maybeSingle();
 
       if (data) {
+        supabaseDataLoaded = true;
         baseStreak = {
           currentStreak: data.current_streak || 1,
           longestStreak: data.longest_streak || data.current_streak || 1,
@@ -89,19 +92,43 @@ export const syncUserStreak = async (
     }
   }
 
+  // Cek apakah di device INI hari ini sudah pernah muncul popup
   const lastSeenPopupDate = localStorage.getItem(POPUP_SEEN_KEY);
-  const isFirstVisitToday = lastSeenPopupDate !== today;
+  const isFirstVisitOnThisDevice = lastSeenPopupDate !== today;
 
+  // 2. KUNCI PERBAIKAN: Jika lastActiveDate (dari Supabase / Local) SUDAH TANGGAL HARI INI
+  // Berarti user SUDAH klaim streak hari ini di device manapun. JANGAN TAMBAH +1 LAGI!
   if (baseStreak.lastActiveDate === today) {
-    if (isFirstVisitToday) {
+    if (isFirstVisitOnThisDevice) {
       localStorage.setItem(POPUP_SEEN_KEY, today);
     }
     const resultStreak = { ...baseStreak, daysMissedToday: 0 };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(resultStreak));
     emitStreakChange();
-    return { streak: resultStreak, isFirstVisitToday };
+
+    // Pastikan data profil nama/timestamp di Supabase tetep sinkron tanpa nambah streak
+    if (normalizedNrp && normalizedNrp !== 'unknown' && supabaseDataLoaded) {
+      supabase.from('user_streaks').upsert({
+        nrp: normalizedNrp,
+        name: userName,
+        current_streak: resultStreak.currentStreak,
+        longest_streak: resultStreak.longestStreak,
+        last_active_date: today,
+        active_dates: resultStreak.activeDates,
+        last_checked_in_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }).then(({ error }) => {
+        if (error) console.warn('[Streak] Gagal update last_checked_in:', error);
+      });
+    }
+
+    return { 
+      streak: resultStreak, 
+      isFirstVisitToday: isFirstVisitOnThisDevice 
+    };
   }
 
+  // 3. Jika lastActiveDate BUKAN hari ini (Baru pertama kali login di hari yang baru)
   let currentVal = baseStreak.currentStreak || 1;
   let daysMissed = 0;
 
