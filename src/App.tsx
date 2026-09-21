@@ -61,7 +61,7 @@ import {
 
 import { initializeMbudiary } from './components/mbudiary/lib/storage';
 
-const IS_MAINTENANCE = false;
+const IS_MAINTENANCE = true;
 
 const VALID_TABS: (TabType | 'mbudtalk' | 'pj-control-center')[] = [
   'dashboard',
@@ -111,7 +111,7 @@ export default function App() {
             Mohon Maaf...
           </h1>
           <p className="text-sm text-slate-400 leading-relaxed">
-            myMbud Portal sedang dalam perbaikan dan pemeliharaan. Web sementara tidak dapat diakses, mohon kembali lagi nanti ya!
+            myMbud Portal sedang dalam perbaikan dan pemeliharaan. Web sementara tidak dapat diakses.
           </p>
           <div className="pt-2">
             <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
