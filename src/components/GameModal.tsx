@@ -14,17 +14,12 @@ const aspectClass: Record<NonNullable<ArcadeGame['aspect']>, string> = {
 };
 
 export const GameModal: React.FC<GameModalProps> = ({ game, onClose }) => {
-  // isLoaded tracks the iframe's own onLoad so we can show a spinner
-  // without blocking the rest of the app from staying light/idle.
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Reset loading state whenever a different game is opened.
   useEffect(() => {
     setIsLoaded(false);
   }, [game?.id]);
 
-  // Lock background scroll while a game is open, same pattern as your
-  // other modals (Pdf/Gpa) likely already do.
   useEffect(() => {
     if (game) {
       const original = document.body.style.overflow;
@@ -35,7 +30,9 @@ export const GameModal: React.FC<GameModalProps> = ({ game, onClose }) => {
     }
   }, [game]);
 
+  // DETEKSI GAME KHUSUS YANG BUTUH PENYESUAIAN TINGGI IFRAME
   const is2048 = game?.id === '2048' || game?.title.toLowerCase().includes('2048');
+  const isEmojiCrush = game?.id === 'match3' || game?.id === 'emojicrush' || game?.title.toLowerCase().includes('emoji');
 
   return (
     <AnimatePresence>
@@ -53,10 +50,10 @@ export const GameModal: React.FC<GameModalProps> = ({ game, onClose }) => {
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ duration: 0.18 }}
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200 dark:border-zinc-800 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+            className="relative w-full bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200 dark:border-zinc-800 shadow-2xl overflow-hidden flex flex-col max-h-[92vh]"
             style={{ maxWidth: game.aspect === 'wide' ? 720 : game.aspect === 'portrait' ? 440 : 520 }}
           >
-            {/* Header Modal */}
+            {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-zinc-800 shrink-0">
               <div className="flex items-center gap-2">
                 <span className="text-xl">{game.emoji}</span>
@@ -73,11 +70,13 @@ export const GameModal: React.FC<GameModalProps> = ({ game, onClose }) => {
               </button>
             </div>
 
-            {/* Game surface - Khusus 2048 / layar HP diberi tinggi h-[70vh] sm:h-auto biar gak terpotong */}
+            {/* Game surface */}
             <div 
               className={`relative w-full ${
                 is2048 
                   ? 'h-[72vh] sm:h-auto sm:aspect-square max-w-[520px]' 
+                  : isEmojiCrush
+                  ? 'aspect-[3/4.2] max-w-[480px]' // Ruang ekstra vertikal khusus Emoji Crush biar tombol gak nutupin grid
                   : aspectClass[game.aspect || 'square']
               }`}
             >
