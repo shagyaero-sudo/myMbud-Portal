@@ -29,6 +29,7 @@ import { OnboardingScreen } from './components/OnboardingScreen';
 import { SplashScreen } from './components/SplashScreen';
 import { NotebookLmView } from './components/NotebookLmView';
 import { PjControlCenterView } from './components/PjControlCenterView';
+import { ArcadeView } from './components/ArcadeView';
 
 import {
   AppState,
@@ -63,7 +64,7 @@ import { initializeMbudiary } from './components/mbudiary/lib/storage';
 
 const IS_MAINTENANCE = true;
 
-const VALID_TABS: (TabType | 'mbudtalk' | 'pj-control-center')[] = [
+const VALID_TABS: (TabType | 'mbudtalk' | 'pj-control-center' | 'mbudarcade')[] = [
   'dashboard',
   'contacts',
   'materials',
@@ -76,9 +77,10 @@ const VALID_TABS: (TabType | 'mbudtalk' | 'pj-control-center')[] = [
   'mbudtalk',
   'notebooklm' as TabType,
   'pj-control-center' as any,
+  'mbudarcade' as TabType,
 ];
 
-const getTabFromLocation = (): TabType | 'mbudtalk' | 'pj-control-center' => {
+const getTabFromLocation = (): TabType | 'mbudtalk' | 'pj-control-center' | 'mbudarcade' => {
   if (typeof window === 'undefined') return 'dashboard';
   const rawHash = window.location.hash.replace(/^#\/?/, '').split('?')[0].split('&')[0].split('/')[0].trim();
   return VALID_TABS.includes(rawHash as any) ? (rawHash as any) : 'dashboard';
@@ -188,7 +190,6 @@ export default function App() {
   }, []);
 
   const handleCloseMbudiarySheet = useCallback(() => {
-    // MEMATIKAN SEMUA AUDIO MUSIK SAAT MBUDIARY DITUTUP
     window.dispatchEvent(new Event('mbud_stop_all_audio_global'));
 
     setIsMbudiarySheetOpen(false);
@@ -324,7 +325,7 @@ export default function App() {
   const requiresLogin =
     !isAuthenticated && (!isMobileOrTabletOS || isStandalone);
 
-  const [activeTab, setActiveTab] = useState<TabType | 'mbudtalk' | 'pj-control-center'>(() => getTabFromLocation());
+  const [activeTab, setActiveTab] = useState<TabType | 'mbudtalk' | 'pj-control-center' | 'mbudarcade'>(() => getTabFromLocation());
   const [chatTargetNrp, setChatTargetNrp] = useState<string | null>(null);
 
   useEffect(() => {
@@ -358,7 +359,7 @@ export default function App() {
   const [isGpaModalOpen, setIsGpaModalOpen] = useState<boolean>(false);
 
   const handleNavigateTab = useCallback(
-    (tab: TabType | 'mbudtalk' | 'pj-control-center', courseFilterOrTargetNrp?: string) => {
+    (tab: TabType | 'mbudtalk' | 'pj-control-center' | 'mbudarcade', courseFilterOrTargetNrp?: string) => {
       if (tab === 'mbudiary') {
         handleOpenMbudiarySheet();
         return;
@@ -891,13 +892,17 @@ export default function App() {
                     />
                   )}
 
+                  {activeTab === ('mbudarcade' as TabType) && (
+                    <ArcadeView />
+                  )}
+
                   {activeTab === 'tasks' && (
                     <TaskTrackerView
                       tasks={accessibleTasks}
                       contacts={accessibleContacts}
                       isOfficer={isOfficer}
                       completedTaskIds={completedTaskIds}
-                      onAddTask={handleAddTask}
+                      onAddTask={handleAddAddTask if needed}
                       onUpdateTask={handleUpdateTask}
                       onUpdateTaskStatus={handleUpdateTaskStatus}
                       onDeleteTask={handleDeleteTask}

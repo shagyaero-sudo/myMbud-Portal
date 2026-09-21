@@ -36,7 +36,8 @@ import {
   Plus,
   Megaphone,
   Send,
-  Users
+  Users,
+  Gamepad2
 } from 'lucide-react';
 import { supabase } from '../services/supabase';
 import { AppState, DayOfWeek, ScheduleItem } from '../types';
@@ -64,7 +65,7 @@ interface DashboardViewProps {
   onAddAnnouncement?: (announcement: any) => void;
   onDeleteAnnouncement?: (id: string) => void;
   onNavigateTab: (
-    tab: 'tasks' | 'contacts' | 'materials' | 'spinwheel' | 'calculator' | 'letter' | 'mbudiary' | 'mbudtalk' | 'blockblast' | any,
+    tab: 'tasks' | 'contacts' | 'materials' | 'spinwheel' | 'calculator' | 'letter' | 'mbudiary' | 'mbudtalk' | 'blockblast' | 'mbudarcade' | any,
     courseFilterOrTaskId?: string
   ) => void;
   onOpenGpaModal?: () => void;
@@ -150,27 +151,22 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [showMoreMenuModal, setShowMoreMenuModal] = useState(false);
   const [selectedCourseDetail, setSelectedCourseDetail] = useState<ScheduleItem | null>(null);
 
-  // STATE MODAL OFFICER PIN (MODE EDIT PJ)
   const [isOfficerModalOpen, setIsOfficerModalOpen] = useState(false);
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState('');
 
-  // NOTIFICATION STATE
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
 
-  // OFFICER BROADCAST NOTIFICATION STATE
   const [isOfficerFormOpen, setIsOfficerFormOpen] = useState(false);
   const [officerTargetNrp, setOfficerTargetNrp] = useState('');
   const [officerTitle, setOfficerTitle] = useState('');
   const [officerMessage, setOfficerMessage] = useState('');
   const [isSendingOfficerNotif, setIsSendingOfficerNotif] = useState(false);
 
-  // STREAK & CHAT STATE
   const [streakData, setStreakData] = useState<UserStreak>(getLocalStreak);
   const [isStreakModalOpen, setIsStreakModalOpen] = useState(false);
 
-  // THEME STATE
   const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
     if (typeof window !== 'undefined') {
       return (localStorage.getItem('mymbud_theme_mode') as ThemeMode) || 'dark';
@@ -310,7 +306,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }
   };
 
-  // HANDLER NAVIGASI LANGSUNG KE TAB PJ CONTROL CENTER (TANPA PROMPT BROWSER)
   const handleSecretControlCenterAccess = () => {
     setShowMoreMenuModal(false);
     onNavigateTab('pj-control-center' as any);
@@ -562,6 +557,37 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </motion.div>
       )}
+
+      {/* BANNER MBUD ARCADE (PEMANCING DEPAN) */}
+      <motion.div
+        whileHover={{ scale: 1.005 }}
+        whileTap={{ scale: 0.995 }}
+        onClick={() => onNavigateTab('mbudarcade' as any)}
+        className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 p-5 sm:p-6 text-white shadow-xl shadow-indigo-500/15 cursor-pointer border border-white/20 group"
+      >
+        <div className="absolute -right-8 -bottom-8 w-40 h-40 rounded-full bg-white/10 blur-2xl pointer-events-none group-hover:scale-125 transition-transform duration-500" />
+        
+        <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="space-y-1.5">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 border border-white/30 text-white text-[10px] sm:text-xs font-black uppercase tracking-wider backdrop-blur-md">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <Gamepad2 className="w-3.5 h-3.5 text-amber-300" />
+              <span>Mbud Arcade (New Feature) 🎮</span>
+            </div>
+            <h3 className="text-lg sm:text-xl font-extrabold text-white tracking-tight">
+              Bosen Nungguin Dosen? Cobain Game Klasik!
+            </h3>
+            <p className="text-xs text-white/80 max-w-md leading-relaxed">
+              Mainin 2048, Dino, Brickbreaker, Doodle Jump, Match-3 & Spacehunter langsung di portal.
+            </p>
+          </div>
+
+          <button className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-white text-gray-900 font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg hover:bg-slate-100 transition-all shrink-0 active:scale-95">
+            <span>Main Sekarang</span>
+            <span>→</span>
+          </button>
+        </div>
+      </motion.div>
 
       {/* BANNER WAR FRS DIRECT BYPASS */}
       {IS_FRS_WAR_ACTIVE && (
@@ -1567,7 +1593,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 >
                   <div className="px-6 py-5 border-b border-slate-200/40 dark:border-white/10 flex items-center justify-between shrink-0 bg-white/50 dark:bg-zinc-900/50">
                     <div>
-                      {/* EASTER EGG TANPA PROMPT */}
                       <h3 
                         onClick={handleSecretControlCenterAccess}
                         className="text-base font-bold text-slate-900 dark:text-zinc-100 cursor-pointer select-none active:opacity-70 transition-opacity"
