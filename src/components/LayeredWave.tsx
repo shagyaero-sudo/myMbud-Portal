@@ -20,7 +20,7 @@ export default function LayeredWave({
   const uid = useId().replace(/:/g, "");
   const id = (n: string) => `${uid}-${n}`;
 
-  // Base background gelap pekat + glow halus
+  // Mengambil CSS variable tema myMbud
   const vBg = "var(--color-slate-950, #0e0f12)";
   const vSecondary = "var(--glow-1, #0284c7)";
   const vAccent = "var(--glow-2, #3b82f6)";
@@ -29,7 +29,10 @@ export default function LayeredWave({
     <linearGradient
       id={id(name)}
       gradientUnits="userSpaceOnUse"
-      x1="0" y1="0" x2="0" y2="1080"
+      x1="0"
+      y1="0"
+      x2="0"
+      y2="1080"
     >
       {stops.map(([offset, color]) => (
         <stop key={offset} offset={offset} style={{ stopColor: color }} />
@@ -38,13 +41,16 @@ export default function LayeredWave({
   );
 
   return (
-    <div className={`relative isolate overflow-hidden bg-[#0e0f12] ${className}`}>
-      {/* SVG Background dengan Blur & Opacity Rendah (Ambient Glow) */}
-      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden opacity-35 dark:opacity-45 blur-[80px]">
+    <div className={`relative isolate overflow-hidden bg-slate-100 dark:bg-[#0e0f12] ${className}`}>
+      {/* Background Glow Ambient (Statis, Hardware-Accelerated, Bebas Efek Pernafasan) */}
+      <div 
+        className="pointer-events-none absolute inset-0 -z-10 overflow-hidden opacity-30 dark:opacity-40 blur-[90px] transform-gpuWillChange-transform"
+        style={{ transform: "translateZ(0)" }}
+      >
         <svg
           aria-hidden="true"
           focusable="false"
-          className="block h-full w-full scale-110"
+          className="block h-full w-full scale-105"
           viewBox="0 0 1920 1080"
           preserveAspectRatio={preserveAspectRatio}
           xmlns="http://www.w3.org/2000/svg"
