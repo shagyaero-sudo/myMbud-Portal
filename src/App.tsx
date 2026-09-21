@@ -902,7 +902,7 @@ export default function App() {
                       contacts={accessibleContacts}
                       isOfficer={isOfficer}
                       completedTaskIds={completedTaskIds}
-                      onAddTask={handleAddAddTask if needed}
+                      onAddTask={handleAddAddTask}
                       onUpdateTask={handleUpdateTask}
                       onUpdateTaskStatus={handleUpdateTaskStatus}
                       onDeleteTask={handleDeleteTask}
