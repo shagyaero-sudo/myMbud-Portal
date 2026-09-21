@@ -30,6 +30,7 @@ import { SplashScreen } from './components/SplashScreen';
 import { NotebookLmView } from './components/NotebookLmView';
 import { PjControlCenterView } from './components/PjControlCenterView';
 import { ArcadeView } from './components/ArcadeView';
+import LayeredWave from './components/LayeredWave';
 
 import {
   AppState,
@@ -62,7 +63,7 @@ import {
 
 import { initializeMbudiary } from './components/mbudiary/lib/storage';
 
-const IS_MAINTENANCE = true;
+const IS_MAINTENANCE = false;
 
 const VALID_TABS: (TabType | 'mbudtalk' | 'pj-control-center' | 'mbudarcade')[] = [
   'dashboard',
@@ -785,19 +786,7 @@ export default function App() {
         />
       )}
 
-      <div className="relative min-h-screen bg-slate-100 dark:bg-[#0e0f12] text-slate-800 dark:text-zinc-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white transition-colors duration-300">
-        
-        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-          <div 
-            className="gpu-glow absolute bottom-[-100px] left-[-100px] w-[500px] h-[500px] rounded-full opacity-10 dark:opacity-15" 
-            style={{ backgroundColor: 'var(--glow-1)', filter: 'blur(100px)' }}
-          />
-          <div 
-            className="gpu-glow hidden lg:block absolute bottom-[-50px] right-[-50px] w-[500px] h-[500px] rounded-full opacity-10 dark:opacity-15" 
-            style={{ backgroundColor: 'var(--glow-2)', filter: 'blur(100px)' }}
-          />
-        </div>
-
+      <LayeredWave preserveAspectRatio="xMidYMid slice" className="min-h-screen text-slate-800 dark:text-zinc-100 font-sans selection:bg-blue-500 selection:text-white transition-colors duration-300">
         <div className="relative z-10 flex flex-col min-h-screen bg-transparent pt-[env(safe-area-inset-top,12px)] sm:pt-4">
           <div className="hidden lg:block">
             <Header
@@ -902,7 +891,7 @@ export default function App() {
                       contacts={accessibleContacts}
                       isOfficer={isOfficer}
                       completedTaskIds={completedTaskIds}
-                      onAddTask={handleAddAddTask}
+                      onAddTask={handleAddTask}
                       onUpdateTask={handleUpdateTask}
                       onUpdateTaskStatus={handleUpdateTaskStatus}
                       onDeleteTask={handleDeleteTask}
@@ -970,7 +959,7 @@ export default function App() {
             onClose={() => setIsGpaModalOpen(false)}
           />
         </div>
-      </div>
+      </LayeredWave>
     </>
   );
 }
