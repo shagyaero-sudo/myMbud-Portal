@@ -269,7 +269,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     } catch (error) {
       console.error('[Officer Notif Error]:', error);
       alert('Gagal mengirim notifikasi.');
-    } finally {
+    } fontally {
       setIsSendingOfficerNotif(false);
     }
   };
@@ -558,37 +558,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </motion.div>
       )}
 
-      {/* BANNER MBUD ARCADE (PEMANCING DEPAN) */}
-      <motion.div
-        whileHover={{ scale: 1.005 }}
-        whileTap={{ scale: 0.995 }}
-        onClick={() => onNavigateTab('mbudarcade' as any)}
-        className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 p-5 sm:p-6 text-white shadow-xl shadow-indigo-500/15 cursor-pointer border border-white/20 group"
-      >
-        <div className="absolute -right-8 -bottom-8 w-40 h-40 rounded-full bg-white/10 blur-2xl pointer-events-none group-hover:scale-125 transition-transform duration-500" />
-        
-        <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="space-y-1.5">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 border border-white/30 text-white text-[10px] sm:text-xs font-black uppercase tracking-wider backdrop-blur-md">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <Gamepad2 className="w-3.5 h-3.5 text-amber-300" />
-              <span>Mbud Arcade (New Feature) 🎮</span>
-            </div>
-            <h3 className="text-lg sm:text-xl font-extrabold text-white tracking-tight">
-              Bosen Nungguin Dosen? Cobain Game Klasik!
-            </h3>
-            <p className="text-xs text-white/80 max-w-md leading-relaxed">
-              Mainin 2048, Dino, Brickbreaker, Doodle Jump, Match-3 & Spacehunter langsung di portal.
-            </p>
-          </div>
-
-          <button className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-white text-gray-900 font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg hover:bg-slate-100 transition-all shrink-0 active:scale-95">
-            <span>Main Sekarang</span>
-            <span>→</span>
-          </button>
-        </div>
-      </motion.div>
-
       {/* BANNER WAR FRS DIRECT BYPASS */}
       {IS_FRS_WAR_ACTIVE && (
         <motion.div
@@ -701,7 +670,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
 
-        {/* 4 BENTO BUTTONS MOBILE */}
+        {/* 5 BENTO BUTTONS MOBILE */}
         <div className="grid grid-cols-2 gap-2.5 pt-1">
           <a
             href="https://classroom.its.ac.id/auth/oidc"
@@ -768,6 +737,36 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </span>
             </div>
           </button>
+
+          {/* BENTO MBUD ARCADE (2 COL SPAN) */}
+          <button
+            onClick={() => onNavigateTab('mbudarcade' as any)}
+            className="col-span-2 p-3.5 rounded-2xl bg-gradient-to-r from-purple-600/90 via-indigo-600/90 to-blue-600/90 text-white backdrop-blur-md border border-white/20 shadow-md shadow-indigo-500/10 flex items-center justify-between hover:opacity-95 transition-all active:scale-[0.98] cursor-pointer"
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                <Gamepad2 className="w-4 h-4 text-amber-300" />
+              </div>
+              <div className="min-w-0 text-left">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-black tracking-tight block truncate">
+                    Mbud Arcade
+                  </span>
+                  <span className="px-1.5 py-0.2 rounded-full bg-amber-400/20 text-amber-300 text-[9px] font-extrabold border border-amber-400/30">
+                    NEW
+                  </span>
+                </div>
+                <span className="text-[10px] text-white/80 block truncate">
+                  Game mini 2048, Dino, Brickbreaker & Spacehunter
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1 text-xs font-extrabold bg-white/20 px-3 py-1.5 rounded-xl border border-white/30 shrink-0 ml-2">
+              <span>Mainkan</span>
+              <span>→</span>
+            </div>
+          </button>
         </div>
       </div>
 
@@ -777,7 +776,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         {/* KOLOM KIRI: BENTO BUTTONS PC + BAR MBUDIARY + JADWAL PERKULIAHAN */}
         <div className="space-y-4 sm:space-y-5">
 
-          {/* 4 BENTO BUTTONS PC ONLY */}
+          {/* 5 BENTO BUTTONS PC ONLY */}
           <div className="hidden lg:grid grid-cols-2 gap-3">
             <a
               href="https://classroom.its.ac.id/auth/oidc"
@@ -842,6 +841,36 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <span className="text-[10px] text-slate-400 dark:text-zinc-500 block truncate">
                   Tema, Fitur, dll..
                 </span>
+              </div>
+            </button>
+
+            {/* BENTO MBUD ARCADE (2 COL SPAN) */}
+            <button
+              onClick={() => onNavigateTab('mbudarcade' as any)}
+              className="col-span-2 p-3.5 rounded-2xl bg-gradient-to-r from-purple-600/90 via-indigo-600/90 to-blue-600/90 text-white backdrop-blur-md border border-white/20 shadow-md shadow-indigo-500/10 flex items-center justify-between hover:opacity-95 transition-all active:scale-[0.98] cursor-pointer"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                  <Gamepad2 className="w-4 h-4 text-amber-300" />
+                </div>
+                <div className="min-w-0 text-left">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs font-black tracking-tight block truncate">
+                      Mbud Arcade
+                    </span>
+                    <span className="px-1.5 py-0.2 rounded-full bg-amber-400/20 text-amber-300 text-[9px] font-extrabold border border-amber-400/30">
+                      NEW
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-white/80 block truncate">
+                    Game mini 2048, Dino, Brickbreaker & Spacehunter
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1 text-xs font-extrabold bg-white/20 px-3 py-1.5 rounded-xl border border-white/30 shrink-0 ml-2">
+                <span>Mainkan</span>
+                <span>→</span>
               </div>
             </button>
           </div>
