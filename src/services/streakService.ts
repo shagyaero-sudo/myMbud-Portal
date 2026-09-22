@@ -65,7 +65,6 @@ export const syncUserStreak = async (
   const normalizedNrp = userNrp.trim().toLowerCase();
 
   let baseStreak = getLocalStreak();
-  let supabaseDataLoaded = false;
 
   // 1. Dapatkan data terbaru dari Supabase
   if (normalizedNrp && normalizedNrp !== 'unknown') {
@@ -77,7 +76,6 @@ export const syncUserStreak = async (
         .maybeSingle();
 
       if (data) {
-        supabaseDataLoaded = true;
         baseStreak = {
           currentStreak: data.current_streak || 1,
           longestStreak: data.longest_streak || data.current_streak || 1,
@@ -96,8 +94,8 @@ export const syncUserStreak = async (
   const lastSeenPopupDate = localStorage.getItem(POPUP_SEEN_KEY);
   const isFirstVisitOnThisDevice = lastSeenPopupDate !== today;
 
-  // 2. KUNCI PERBAIKAN: Jika lastActiveDate (dari Supabase / Local) SUDAH TANGGAL HARI INI
-  // Berarti user SUDAH klaim streak hari ini di device manapun. JANGAN TAMBAH +1 LAGI!
+  // 2. KUNCI: Jika lastActiveDate (dari Supabase / Local) SUDAH TANGGAL HARI INI
+  // User SUDAH klaim streak hari ini. Langsung return tanpa update timestamp jam lagi!
   if (baseStreak.lastActiveDate === today) {
     if (isFirstVisitOnThisDevice) {
       localStorage.setItem(POPUP_SEEN_KEY, today);
@@ -106,29 +104,13 @@ export const syncUserStreak = async (
     localStorage.setItem(STORAGE_KEY, JSON.stringify(resultStreak));
     emitStreakChange();
 
-    // Pastikan data profil nama/timestamp di Supabase tetep sinkron tanpa nambah streak
-    if (normalizedNrp && normalizedNrp !== 'unknown' && supabaseDataLoaded) {
-      supabase.from('user_streaks').upsert({
-        nrp: normalizedNrp,
-        name: userName,
-        current_streak: resultStreak.currentStreak,
-        longest_streak: resultStreak.longestStreak,
-        last_active_date: today,
-        active_dates: resultStreak.activeDates,
-        last_checked_in_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }).then(({ error }) => {
-        if (error) console.warn('[Streak] Gagal update last_checked_in:', error);
-      });
-    }
-
     return { 
       streak: resultStreak, 
       isFirstVisitToday: isFirstVisitOnThisDevice 
     };
   }
 
-  // 3. Jika lastActiveDate BUKAN hari ini (Baru pertama kali login di hari yang baru)
+  // 3. Jika lastActiveDate BUKAN hari ini (Baru pertama kali login/check-in di hari yang baru)
   let currentVal = baseStreak.currentStreak || 1;
   let daysMissed = 0;
 
