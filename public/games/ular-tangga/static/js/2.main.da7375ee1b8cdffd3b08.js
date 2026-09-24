@@ -1,0 +1,1 @@
+(window.webpackJsonp=window.webpackJsonp||[]).push([[2],{12:function(c,s,a){"use strict";a.r(s),s.default=a.p+"static/assets/d24fc6351b6ca4796d4ecdc3572ac88f.svg"}}]);

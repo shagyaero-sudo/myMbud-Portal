@@ -61,6 +61,46 @@ export const ARCADE_GAMES: ArcadeGame[] = [
     src: '/games/brickbreaker/index.html',
     aspect: 'square',
   },
+  {
+    id: 'uno',
+    title: 'UNO',
+    emoji: '🃏',
+    description: 'Lawan bot, 2-6 pemain, lengkap sama kartu wild & skip.',
+    src: '/games/uno/index.html',
+    aspect: 'wide',
+  },
+  {
+    id: 'pacman',
+    title: 'PacMan',
+    emoji: '👻',
+    description: 'Makan semua titik, hindari hantu. Geser layar buat gerak.',
+    src: '/games/pacman/index.html',
+    aspect: 'square',
+  },
+  {
+    id: 'snake',
+    title: 'Ular-ularan',
+    emoji: '🐍',
+    description: 'Klasik, makan terus makin panjang, jangan nabrak diri sendiri.',
+    src: '/games/snake/index.html',
+    aspect: 'square',
+  },
+  {
+    id: 'ulartangga',
+    title: 'Ular Tangga',
+    emoji: '🎲',
+    description: 'Main sendiri lawan bot atau rame-rame, lempar dadu sampai finish.',
+    src: '/games/ular-tangga/index.html',
+    aspect: 'portrait',
+  },
+  {
+    id: 'burgerbuilder',
+    title: 'Burger Kitchen',
+    emoji: '🍔',
+    description: 'Susun burger sesuai pesanan, 9 level makin lama makin ribet.',
+    src: '/games/burger-builder/index.html',
+    aspect: 'portrait',
+  },
 ];
 
 export const ArcadeView: React.FC = () => {
@@ -70,10 +110,10 @@ export const ArcadeView: React.FC = () => {
     <div className="space-y-6">
       <div className="bg-white dark:bg-zinc-900/60 rounded-3xl p-6 border border-slate-200 dark:border-zinc-800">
         <h1 className="text-2xl font-bold text-slate-800 dark:text-zinc-100">
-          🎮 mbudArcade
+          🎮 mbud Arcade
         </h1>
         <p className="text-sm text-slate-500 dark:text-zinc-400 mt-1">
-          Mau kill time bentar? Main game-game ini!
+          Kill time bentar? Pilih salah satu game di bawah ini.
         </p>
       </div>
 
