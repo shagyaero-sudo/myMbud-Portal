@@ -25,7 +25,7 @@ export const ARCADE_GAMES: ArcadeGame[] = [
     id: 'match3',
     title: 'Emoji Crush',
     emoji: '🌈',
-    description: 'Cocokin 3 permata warna-warni, mirip candy crush.',
+    description: 'Cocokin 3 permata warna-warni, ada 3 mode main.',
     src: '/games/match3/index.html',
     aspect: 'square',
   },
@@ -95,7 +95,7 @@ export const ARCADE_GAMES: ArcadeGame[] = [
   },
   {
     id: 'burgerbuilder',
-    title: 'Burger Kitchen',
+    title: 'Burger Builder',
     emoji: '🍔',
     description: 'Susun burger sesuai pesanan, 9 level makin lama makin ribet.',
     src: '/games/burger-builder/index.html',
@@ -113,7 +113,7 @@ export const ArcadeView: React.FC = () => {
           🎮 mbud Arcade
         </h1>
         <p className="text-sm text-slate-500 dark:text-zinc-400 mt-1">
-          Kill time bentar? Pilih salah satu game di bawah ini.
+          Kill time bentar? Pilih game di bawah ini.
         </p>
       </div>
 

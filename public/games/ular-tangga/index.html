@@ -1,9 +1,472 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="description" content="A Snakes and Ladders game."/><link rel="icon" type="image/png" sizes="196x196" href="icons/favicon-196.png"/><link rel="apple-touch-icon" href="icons/apple-icon-180.png"/><meta name="apple-mobile-web-app-capable" content="yes"/><link rel="apple-touch-startup-image" href="icons/apple-splash-2048-2732.jpg" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="icons/apple-splash-2732-2048.jpg" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="icons/apple-splash-1668-2388.jpg" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="icons/apple-splash-2388-1668.jpg" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="icons/apple-splash-1536-2048.jpg" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="icons/apple-splash-2048-1536.jpg" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="icons/apple-splash-1668-2224.jpg" media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="icons/apple-splash-2224-1668.jpg" media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="icons/apple-splash-1620-2160.jpg" media="(device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="icons/apple-splash-2160-1620.jpg" media="(device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="icons/apple-splash-1284-2778.jpg" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="icons/apple-splash-2778-1284.jpg" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="icons/apple-splash-1170-2532.jpg" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="icons/apple-splash-2532-1170.jpg" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="icons/apple-splash-1125-2436.jpg" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="icons/apple-splash-2436-1125.jpg" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="icons/apple-splash-1242-2688.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="icons/apple-splash-2688-1242.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="icons/apple-splash-828-1792.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="icons/apple-splash-1792-828.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="icons/apple-splash-1242-2208.jpg" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="icons/apple-splash-2208-1242.jpg" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="icons/apple-splash-750-1334.jpg" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="icons/apple-splash-1334-750.jpg" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="icons/apple-splash-640-1136.jpg" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="icons/apple-splash-1136-640.jpg" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"/><meta property="og:url" content="https://snakes-and-ladders-game.pages.dev/"/><meta property="og:type" content="website"/><meta property="og:title" content="Snakes and Ladders"/><meta property="og:description" content="A Snakes and Ladders game."/><meta property="og:image" content="https://raw.githubusercontent.com/priyanshurav/snakes-and-ladders-game/main/images/screenshot.jpeg"/><meta name="twitter:card" content="summary_large_image"/><meta property="twitter:domain" content="snakes-and-ladders-game.pages.dev"/><meta property="twitter:url" content="https://snakes-and-ladders-game.pages.dev/"/><meta name="twitter:title" content="Snakes and Ladders"/><meta name="twitter:description" content="A Snakes and Ladders game."/><meta name="twitter:image" content="https://raw.githubusercontent.com/priyanshurav/snakes-and-ladders-game/main/images/screenshot.jpeg"/><link rel="manifest" href="./manifest.json"/><meta name="theme-color" content="#8b4513"/><meta name="google-site-verification" content="mhKW5RWeV5C9130FsplTx-Qc-UEGcSLtVIIT4zdj_FI"/><meta http-equiv="X-UA-Compatible" content="ie=edge"/><title>Snakes and Ladders</title><link href="./static/css/main.da7375ee1b8cdffd3b08.css" rel="stylesheet"></head><body><noscript><style>body {
-          background-color: #fff;
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
+<title>Ular Tangga</title>
+<style>
+  :root {
+    --cell: 34px;
+    --board: calc(var(--cell) * 10);
+    --cream: #f6e8c8;
+    --cream2: #eeddb0;
+    --wood: #8a5a2b;
+    --wood-dark: #6b431e;
+    --ladder: #d99a2b;
+    --snake1: #2f9e44;
+    --snake2: #4fce5d;
+    --p1: #e8590c;
+    --p2: #1971c2;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+  html, body {
+    margin: 0; height: 100%; overflow: hidden;
+    font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+    background: radial-gradient(ellipse at 50% 20%, #ffb46b 0%, #e8873d 45%, #c96a26 100%);
+    color: #3a2410;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 8px;
+  }
+
+  h1 { font-size: 16px; margin: 4px 0 8px; letter-spacing: 0.5px; color: #fff; text-shadow: 0 2px 3px rgba(0,0,0,0.3); }
+
+  #boardWrap {
+    position: relative;
+    width: var(--board);
+    height: var(--board);
+    background: linear-gradient(160deg, var(--wood), var(--wood-dark));
+    padding: 10px;
+    border-radius: 14px;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.35), inset 0 0 0 3px rgba(255,255,255,0.15);
+    flex-shrink: 0;
+  }
+  #board {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    grid-template-rows: repeat(10, 1fr);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .cell {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+    padding: 2px 3px 0 0;
+    font-size: 8px;
+    font-weight: 700;
+    color: rgba(58,36,16,0.55);
+    background: var(--cream);
+  }
+  .cell.alt { background: var(--cream2); }
+  .cell.finish { background: linear-gradient(135deg, #ffd43b, #fab005); color: #5c3d00; }
+
+  svg#overlay {
+    position: absolute; inset: 10px;
+    width: var(--board); height: var(--board);
+    pointer-events: none;
+  }
+
+  .token {
+    position: absolute;
+    width: calc(var(--cell) * 0.5);
+    height: calc(var(--cell) * 0.5);
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+    transition: left 0.28s ease, top 0.28s ease;
+    z-index: 5;
+  }
+  .token.p1 { background: radial-gradient(circle at 35% 30%, #ff9248, var(--p1)); }
+  .token.p2 { background: radial-gradient(circle at 35% 30%, #6cb2ff, var(--p2)); }
+
+  /* ---- HUD ---- */
+  #hud {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+  .player-card {
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 12px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.18);
+    font-size: 12px; font-weight: 700; color: #fff;
+    transition: box-shadow 0.2s, background 0.2s;
+  }
+  .player-card .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .player-card.p1 .dot { background: var(--p1); }
+  .player-card.p2 .dot { background: var(--p2); }
+  .player-card.active { background: rgba(255,255,255,0.4); box-shadow: 0 0 0 2px #fff; }
+
+  #diceArea { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 10px; }
+  #dice {
+    width: 52px; height: 52px;
+    background: #fff;
+    border-radius: 10px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    padding: 7px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    transition: transform 0.15s;
+    cursor: pointer;
+  }
+  #dice.rolling { animation: shake 0.08s infinite; }
+  @keyframes shake {
+    0% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } 100% { transform: rotate(-6deg); }
+  }
+  .pip { width: 8px; height: 8px; border-radius: 50%; background: #2a2a2a; margin: auto; opacity: 0; }
+  .pip.on { opacity: 1; }
+
+  #rollBtn {
+    padding: 9px 26px;
+    border-radius: 999px;
+    border: none;
+    background: linear-gradient(160deg, #ffd43b, #f59f00);
+    color: #4a2e00;
+    font-weight: 900;
+    font-size: 13px;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.25);
+    cursor: pointer;
+  }
+  #rollBtn:disabled { opacity: 0.5; cursor: default; }
+  #rollBtn:active:not(:disabled) { transform: translateY(2px); box-shadow: none; }
+
+  #message {
+    min-height: 18px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+    margin-top: 4px;
+    text-align: center;
+  }
+
+  #winOverlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.75);
+    display: none;
+    align-items: center; justify-content: center;
+    flex-direction: column; gap: 14px;
+    z-index: 30;
+  }
+  #winOverlay.show { display: flex; }
+  #winOverlay h2 { color: #fff; font-size: 24px; margin: 0; }
+  #winOverlay button {
+    padding: 10px 26px; border-radius: 999px; border: none;
+    background: linear-gradient(160deg, #40c057, #2f9e44);
+    color: #fff; font-weight: 800; font-size: 14px; cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<h1>🎲 Ular Tangga</h1>
+
+<div id="boardWrap">
+  <div id="board"></div>
+  <svg id="overlay" viewBox="0 0 340 340"></svg>
+  <div class="token p1" id="tokenP1"></div>
+  <div class="token p2" id="tokenP2"></div>
+</div>
+
+<div id="hud">
+  <div class="player-card p1 active" id="cardP1"><span class="dot"></span>Kamu</div>
+  <div class="player-card p2" id="cardP2"><span class="dot"></span>Komputer</div>
+</div>
+
+<div id="diceArea">
+  <div id="dice">
+    <span class="pip" data-i="0"></span><span class="pip" data-i="1"></span><span class="pip" data-i="2"></span>
+    <span class="pip" data-i="3"></span><span class="pip" data-i="4"></span><span class="pip" data-i="5"></span>
+    <span class="pip" data-i="6"></span><span class="pip" data-i="7"></span><span class="pip" data-i="8"></span>
+  </div>
+  <button id="rollBtn">Lempar Dadu</button>
+  <div id="message">Giliran kamu!</div>
+</div>
+
+<div id="winOverlay">
+  <h2 id="winText">🎉</h2>
+  <button id="restartBtn">Main Lagi</button>
+</div>
+
+<script>
+(() => {
+  const CELL = 34;
+  const BOARD_PX = CELL * 10;
+
+  // Ladders: bottom -> top. Snakes: head -> tail.
+  const LADDERS = { 4: 25, 13: 46, 33: 49, 42: 63, 50: 69, 62: 81, 74: 92 };
+  const SNAKES = { 27: 5, 40: 3, 43: 18, 54: 31, 66: 45, 76: 58, 89: 53, 99: 41 };
+
+  const DICE_FACES = {
+    1: [4],
+    2: [0, 8],
+    3: [0, 4, 8],
+    4: [0, 2, 6, 8],
+    5: [0, 2, 4, 6, 8],
+    6: [0, 2, 3, 5, 6, 8],
+  };
+
+  let positions = { p1: 1, p2: 1 };
+  let turn = 'p1';
+  let busy = false;
+  let gameOver = false;
+
+  function squareCenter(num) {
+    const idx = num - 1;
+    const rowFromBottom = Math.floor(idx / 10);
+    let colInRow = idx % 10;
+    if (rowFromBottom % 2 === 1) colInRow = 9 - colInRow;
+    const row = 9 - rowFromBottom;
+    const x = colInRow * CELL + CELL / 2;
+    const y = row * CELL + CELL / 2;
+    return { x, y };
+  }
+
+  function buildBoard() {
+    const board = document.getElementById('board');
+    board.innerHTML = '';
+    for (let rowFromBottom = 9; rowFromBottom >= 0; rowFromBottom--) {
+      const rowNums = [];
+      for (let c = 0; c < 10; c++) {
+        let num;
+        if (rowFromBottom % 2 === 0) num = rowFromBottom * 10 + c + 1;
+        else num = rowFromBottom * 10 + (9 - c) + 1;
+        rowNums.push(num);
+      }
+      rowNums.forEach(num => {
+        const cell = document.createElement('div');
+        cell.className = 'cell' + ((Math.floor((num - 1) / 10) + (num - 1)) % 2 === 0 ? '' : ' alt') + (num === 100 ? ' finish' : '');
+        cell.textContent = num;
+        board.appendChild(cell);
+      });
+    }
+  }
+
+  function buildOverlay() {
+    const svg = document.getElementById('overlay');
+    svg.innerHTML = '';
+    svg.setAttribute('viewBox', `0 0 ${BOARD_PX} ${BOARD_PX}`);
+
+    // Ladders: two rails + rungs
+    Object.entries(LADDERS).forEach(([from, to]) => {
+      const a = squareCenter(Number(from));
+      const b = squareCenter(Number(to));
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const len = Math.hypot(dx, dy);
+      const nx = -dy / len, ny = dx / len; // normal for rail offset
+      const railOffset = 5;
+      const rail1a = { x: a.x + nx * railOffset, y: a.y + ny * railOffset };
+      const rail1b = { x: b.x + nx * railOffset, y: b.y + ny * railOffset };
+      const rail2a = { x: a.x - nx * railOffset, y: a.y - ny * railOffset };
+      const rail2b = { x: b.x - nx * railOffset, y: b.y - ny * railOffset };
+
+      const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      [[rail1a, rail1b], [rail2a, rail2b]].forEach(([p1, p2]) => {
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', p1.x); line.setAttribute('y1', p1.y);
+        line.setAttribute('x2', p2.x); line.setAttribute('y2', p2.y);
+        line.setAttribute('stroke', 'var(--ladder)');
+        line.setAttribute('stroke-width', '3');
+        line.setAttribute('stroke-linecap', 'round');
+        g.appendChild(line);
+      });
+      const rungCount = Math.max(3, Math.floor(len / 12));
+      for (let i = 1; i < rungCount; i++) {
+        const t = i / rungCount;
+        const rx1 = rail1a.x + (rail1b.x - rail1a.x) * t;
+        const ry1 = rail1a.y + (rail1b.y - rail1a.y) * t;
+        const rx2 = rail2a.x + (rail2b.x - rail2a.x) * t;
+        const ry2 = rail2a.y + (rail2b.y - rail2a.y) * t;
+        const rung = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        rung.setAttribute('x1', rx1); rung.setAttribute('y1', ry1);
+        rung.setAttribute('x2', rx2); rung.setAttribute('y2', ry2);
+        rung.setAttribute('stroke', 'var(--ladder)');
+        rung.setAttribute('stroke-width', '2.5');
+        g.appendChild(rung);
+      }
+      svg.appendChild(g);
+    });
+
+    // Snakes: curvy path with head
+    Object.entries(SNAKES).forEach(([from, to]) => {
+      const a = squareCenter(Number(from)); // head
+      const b = squareCenter(Number(to));   // tail
+      const midX = (a.x + b.x) / 2;
+      const midY = (a.y + b.y) / 2;
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const len = Math.hypot(dx, dy) || 1;
+      const nx = -dy / len, ny = dx / len;
+      const bulge = 22;
+      const c1x = a.x + dx * 0.25 + nx * bulge;
+      const c1y = a.y + dy * 0.25 + ny * bulge;
+      const c2x = a.x + dx * 0.75 - nx * bulge;
+      const c2y = a.y + dy * 0.75 - ny * bulge;
+
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', `M ${a.x} ${a.y} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${b.x} ${b.y}`);
+      path.setAttribute('stroke', 'var(--snake1)');
+      path.setAttribute('stroke-width', '6');
+      path.setAttribute('fill', 'none');
+      path.setAttribute('stroke-linecap', 'round');
+      svg.appendChild(path);
+
+      const path2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path2.setAttribute('d', `M ${a.x} ${a.y} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${b.x} ${b.y}`);
+      path2.setAttribute('stroke', 'var(--snake2)');
+      path2.setAttribute('stroke-width', '2.5');
+      path2.setAttribute('fill', 'none');
+      path2.setAttribute('stroke-dasharray', '1 7');
+      path2.setAttribute('stroke-linecap', 'round');
+      svg.appendChild(path2);
+
+      // head triangle + eyes
+      const headAngle = Math.atan2(a.y - c1y, a.x - c1x);
+      const head = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      head.setAttribute('cx', a.x); head.setAttribute('cy', a.y); head.setAttribute('r', 6.5);
+      head.setAttribute('fill', 'var(--snake1)');
+      svg.appendChild(head);
+      [[-2.5, -2], [2.5, -2]].forEach(([ox, oy]) => {
+        const eye = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        eye.setAttribute('cx', a.x + ox); eye.setAttribute('cy', a.y + oy); eye.setAttribute('r', 1);
+        eye.setAttribute('fill', '#fff');
+        svg.appendChild(eye);
+      });
+    });
+  }
+
+  function updateTokens(animate = true) {
+    const posP1 = squareCenter(positions.p1);
+    const posP2 = squareCenter(positions.p2);
+    const t1 = document.getElementById('tokenP1');
+    const t2 = document.getElementById('tokenP2');
+    if (!animate) { t1.style.transition = 'none'; t2.style.transition = 'none'; }
+    t1.style.left = (posP1.x - CELL * 0.25 - CELL * 0.15) + 'px';
+    t1.style.top = (posP1.y - CELL * 0.25) + 'px';
+    t2.style.left = (posP2.x - CELL * 0.25 + CELL * 0.15) + 'px';
+    t2.style.top = (posP2.y - CELL * 0.25) + 'px';
+    if (!animate) requestAnimationFrame(() => { t1.style.transition = ''; t2.style.transition = ''; });
+  }
+
+  function setDiceFace(n) {
+    document.querySelectorAll('.pip').forEach(p => p.classList.remove('on'));
+    (DICE_FACES[n] || []).forEach(i => {
+      document.querySelector(`.pip[data-i="${i}"]`).classList.add('on');
+    });
+  }
+
+  function setMessage(text) { document.getElementById('message').textContent = text; }
+
+  function movePlayer(player, steps, cb) {
+    let remaining = steps;
+    function step() {
+      if (remaining <= 0) return afterMove();
+      remaining--;
+      positions[player] = Math.min(100, positions[player] + 1);
+      updateTokens();
+      setTimeout(step, 150);
+    }
+    function afterMove() {
+      const pos = positions[player];
+      setTimeout(() => {
+        if (LADDERS[pos]) {
+          setMessage((player === 'p1' ? 'Kamu' : 'Komputer') + ' naik tangga! 🪜');
+          positions[player] = LADDERS[pos];
+          updateTokens();
+          setTimeout(finish, 400);
+        } else if (SNAKES[pos]) {
+          setMessage((player === 'p1' ? 'Kamu' : 'Komputer') + ' digigit ular! 🐍');
+          positions[player] = SNAKES[pos];
+          updateTokens();
+          setTimeout(finish, 400);
+        } else {
+          finish();
         }
-        * {
-          font-family: 'Times New Roman', Times, serif;
-        }
-        body :not(noscript):not(.no-js-warning) {
-          display: none;
-        }</style><div class="no-js-warning">You need JavaScript to run this app.</div></noscript><section class="ask-player-count-screen hide"><section class="player-count-container"></section><section class="players-legend"><span class="human legend-color"></span> <span class="human legend-text">Human</span> <span class="computer legend-color"></span> <span class="computer legend-text">Computer</span></section><section class="player-inputs-group-container" id="player-inputs-group-container"></section><section class="start-btn-container"><button class="start-btn" aria-label="start game">Start</button></section></section><section class="game"><div class="game-board"><div class="board-blocks" id="board-blocks"></div><div class="snakes-or-ladders" id="snakes-or-ladders"></div><div id="tokens" class="tokens"></div><h1 class="game-start-text hide" id="game-start-text">GAME START!</h1></div><div class="status"><div class="current-player-name" id="current-player-name"></div><div class="current-player-color" id="current-player-color"></div><div class="dice" id="dice" aria-label="dice" role="button"></div></div><div class="button-group" id="button-group"><button class="restart-btn" id="restart-btn" aria-label="restart button"></button></div></section><div class="winning-screen-back-drop hide" id="winning-screen-back-drop"></div><section class="winning-screen hide" id="winning-screen"><h1 class="game-finished-text">GAME FINISHED!</h1><div class="winners-and-losers" id="winners-and-losers"></div><button class="winning-screen-restart-btn" id="winning-screen-restart-btn">Restart</button></section><div class="buttons"><button class="credit-btn" id="credit-btn">Credits</button> <a class="github-button" href="https://github.com/priyanshurav" aria-label="Follow @priyanshurav on GitHub">Follow @priyanshurav</a> <a class="github-button" href="https://github.com/priyanshurav/snakes-and-ladders-game" data-icon="octicon-star" data-show-count="true" aria-label="Star priyanshurav/snakes-and-ladders-game on GitHub">Star</a></div><section class="credit-screen-container hide" id="credit-screen-container"><div class="credit-screen" id="credit-screen"><button class="credit-screen-close-btn" id="credit-screen-close-btn"></button><h1>Credits</h1><div class="credit-links"><div>Snake image in logo and on game board is provided by <a rel="noopener noreferrer" href="https://www.vectorstock.com/royalty-free-vector/snake-and-rope-ladder-set-vector-8153908" target="_blank">VectorStock / vable</a></div><div>Robot icon by <a rel="noopener noreferrer" href="https://www.flaticon.com/authors/kiranshastry" title="Kiranshastry" target="_blank">Kiranshastry</a> from <a rel="noopener noreferrer" href="https://www.flaticon.com/" title="Flaticon" target="_blank">www.flaticon.com</a></div></div></div></section><template id="player-input-template"><img class="player-input-token-img" alt="Player token"/> <input placeholder="Enter player name" class="player-name-input" aria-label="Enter player name"/> <input type="checkbox" aria-hidden="true"/> <label class="is-computer-btn" role="button" aria-label="Set as computer" title="Set as computer"></label></template><template id="winner-and-loser-template"><span class="player-position-number" id="player-position-number"></span> <img alt="Player token" class="winning-screen-token" id="winning-screen-token"/> <span class="player-status-text" id="player-status-text"></span> <span class="player-name" id="player-name"></span></template><script src="./static/js/main.da7375ee1b8cdffd3b08.js"></script></body></html>
+      }, 150);
+    }
+    function finish() {
+      if (positions[player] >= 100) {
+        positions[player] = 100;
+        updateTokens();
+        endGame(player);
+        return;
+      }
+      cb();
+    }
+    step();
+  }
+
+  function endGame(winner) {
+    gameOver = true;
+    document.getElementById('winText').textContent = winner === 'p1' ? '🎉 Kamu Menang!' : '🤖 Komputer Menang!';
+    document.getElementById('winOverlay').classList.add('show');
+  }
+
+  function updateActiveCard() {
+    document.getElementById('cardP1').classList.toggle('active', turn === 'p1');
+    document.getElementById('cardP2').classList.toggle('active', turn === 'p2');
+  }
+
+  function rollDice() {
+    if (busy || gameOver) return;
+    busy = true;
+    document.getElementById('rollBtn').disabled = true;
+    const dice = document.getElementById('dice');
+    dice.classList.add('rolling');
+    setMessage((turn === 'p1' ? 'Kamu' : 'Komputer') + ' lagi lempar dadu...');
+
+    let ticks = 0;
+    const maxTicks = 10;
+    const tickInterval = setInterval(() => {
+      setDiceFace(1 + Math.floor(Math.random() * 6));
+      ticks++;
+      if (ticks >= maxTicks) {
+        clearInterval(tickInterval);
+        dice.classList.remove('rolling');
+        const result = 1 + Math.floor(Math.random() * 6);
+        setDiceFace(result);
+        setMessage((turn === 'p1' ? 'Kamu' : 'Komputer') + ' dapat angka ' + result);
+        movePlayer(turn, result, () => {
+          turn = turn === 'p1' ? 'p2' : 'p1';
+          updateActiveCard();
+          busy = false;
+          if (turn === 'p1') {
+            document.getElementById('rollBtn').disabled = false;
+            setMessage('Giliran kamu!');
+          } else {
+            setMessage('Giliran komputer...');
+            setTimeout(rollDice, 700);
+          }
+        });
+      }
+    }, 70);
+  }
+
+  document.getElementById('rollBtn').addEventListener('click', rollDice);
+  document.getElementById('dice').addEventListener('click', rollDice);
+  document.getElementById('restartBtn').addEventListener('click', () => {
+    positions = { p1: 1, p2: 1 };
+    turn = 'p1';
+    gameOver = false;
+    busy = false;
+    updateTokens(false);
+    updateActiveCard();
+    document.getElementById('rollBtn').disabled = false;
+    document.getElementById('winOverlay').classList.remove('show');
+    setMessage('Giliran kamu!');
+    setDiceFace(1);
+  });
+
+  buildBoard();
+  buildOverlay();
+  updateTokens(false);
+  setDiceFace(1);
+})();
+</script>
+</body>
+</html>
