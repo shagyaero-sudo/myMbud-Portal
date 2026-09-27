@@ -38,14 +38,6 @@ export const ARCADE_GAMES: ArcadeGame[] = [
     aspect: 'wide',
   },
   {
-    id: 'doodlejump',
-    title: 'Doodle Jump',
-    emoji: '🐸',
-    description: 'Lompat platform setinggi-tingginya, jangan sampai jatuh.',
-    src: '/games/doodlejump/index.html',
-    aspect: 'portrait',
-  },
-  {
     id: 'dino',
     title: 'Dino Runner',
     emoji: '🦖',
@@ -68,14 +60,6 @@ export const ARCADE_GAMES: ArcadeGame[] = [
     description: 'Lawan bot, 2-6 pemain, lengkap sama kartu wild & skip.',
     src: '/games/uno/index.html',
     aspect: 'wide',
-  },
-  {
-    id: 'pacman',
-    title: 'PacMan',
-    emoji: '👻',
-    description: 'Makan semua titik, hindari hantu. Geser layar buat gerak.',
-    src: '/games/pacman/index.html',
-    aspect: 'square',
   },
   {
     id: 'ulartangga',
