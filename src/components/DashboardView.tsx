@@ -726,17 +726,20 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </span>
             </button>
 
-            {/* 5. Lainnya */}
+            {/* 5. Lainnya dengan Chevron */}
             <button
               onClick={() => setShowMoreMenuModal(true)}
               className="flex flex-col items-center justify-center py-2 px-0.5 rounded-2xl hover:bg-white/10 dark:hover:bg-zinc-800/50 transition-all cursor-pointer active:scale-95 group text-center min-w-0"
             >
               <LayoutGrid className="w-5 h-5 sm:w-6 sm:h-6 text-amber-500 dark:text-amber-400 mb-1.5 group-hover:scale-110 transition-transform shrink-0" />
               <span className="text-[10px] font-bold text-slate-800 dark:text-zinc-200 leading-tight flex items-center justify-center gap-0.5 w-full">
-                <span>Menu Lain</span>
+                <span>Lainnya</span>
                 <ChevronRight className="w-2.5 h-2.5 text-slate-400 dark:text-zinc-500 shrink-0 opacity-80" />
               </span>
             </button>
+          </div>
+        </div>
+      </div>
 
       {/* PC & MOBILE MAIN GRID */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 items-start">
