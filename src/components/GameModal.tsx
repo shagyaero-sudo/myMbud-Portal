@@ -30,10 +30,12 @@ export const GameModal: React.FC<GameModalProps> = ({ game, onClose }) => {
     }
   }, [game]);
 
-  // PERBAIKAN MOBILE: Deteksi game yang butuh penyesuaian tinggi khusus
+  // DETEKSI GAME KHUSUS UNTUK UKURAN MOBILE
   const is2048 = game?.id === '2048' || game?.title.toLowerCase().includes('2048');
   const isEmojiCrush = game?.id === 'match3' || game?.id === 'emojicrush' || game?.title.toLowerCase().includes('match');
   const isSpaceHunter = game?.id === 'spacehunter' || game?.title.toLowerCase().includes('space');
+  const isUno = game?.id === 'uno' || game?.title.toLowerCase().includes('uno');
+  const isPacman = game?.id === 'pacman' || game?.title.toLowerCase().includes('pacman');
 
   return (
     <AnimatePresence>
@@ -52,15 +54,29 @@ export const GameModal: React.FC<GameModalProps> = ({ game, onClose }) => {
             transition={{ duration: 0.18 }}
             onClick={(e) => e.stopPropagation()}
             className="relative w-full bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200 dark:border-zinc-800 shadow-2xl overflow-hidden flex flex-col max-h-[92vh]"
-            style={{ maxWidth: game.aspect === 'wide' && !isSpaceHunter ? 720 : game.aspect === 'portrait' ? 420 : 520 }}
+            style={{
+              maxWidth:
+                game.aspect === 'wide' && !isSpaceHunter && !isUno
+                  ? 720
+                  : game.aspect === 'portrait'
+                  ? 420
+                  : 520,
+            }}
           >
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-zinc-800 shrink-0">
               <div className="flex items-center gap-2">
                 <span className="text-xl">{game.emoji}</span>
-                <span className="font-semibold text-slate-800 dark:text-zinc-100">
-                  {game.title}
-                </span>
+                <div>
+                  <span className="font-semibold text-slate-800 dark:text-zinc-100 block text-sm">
+                    {game.title}
+                  </span>
+                  {isPacman && (
+                    <span className="text-[10px] text-amber-500 font-medium block">
+                      📱 Usap layar (Swipe) untuk bergerak
+                    </span>
+                  )}
+                </div>
               </div>
               <button
                 onClick={onClose}
@@ -72,14 +88,18 @@ export const GameModal: React.FC<GameModalProps> = ({ game, onClose }) => {
             </div>
 
             {/* Game surface */}
-            <div 
+            <div
               className={`relative w-full ${
-                is2048 
-                  ? 'h-[72vh] sm:h-auto sm:aspect-square max-w-[520px]' 
+                is2048
+                  ? 'h-[72vh] sm:h-auto sm:aspect-square max-w-[520px]'
                   : isEmojiCrush
                   ? 'aspect-[3/4.2] max-w-[480px]'
                   : isSpaceHunter
                   ? 'h-[75vh] sm:h-auto sm:aspect-[3/4] max-w-[460px]'
+                  : isUno
+                  ? 'h-[72vh] sm:h-auto sm:aspect-[16/10] max-w-[640px]' // Fix UNO agar kartu di bawah tidak kepotong
+                  : isPacman
+                  ? 'h-[68vh] sm:h-auto sm:aspect-square max-w-[480px] touch-none' // Fix PacMan viewport & sentuhan swipe
                   : aspectClass[game.aspect || 'square']
               }`}
             >

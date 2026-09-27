@@ -78,14 +78,6 @@ export const ARCADE_GAMES: ArcadeGame[] = [
     aspect: 'square',
   },
   {
-    id: 'snake',
-    title: 'Ular-ularan',
-    emoji: '🐍',
-    description: 'Klasik, makan terus makin panjang, jangan nabrak diri sendiri.',
-    src: '/games/snake/index.html',
-    aspect: 'square',
-  },
-  {
     id: 'ulartangga',
     title: 'Ular Tangga',
     emoji: '🎲',
