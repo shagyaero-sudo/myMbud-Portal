@@ -670,78 +670,73 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
 
-        {/* 5 BENTO BUTTONS MOBILE */}
-        <div className="grid grid-cols-2 gap-2.5 pt-1">
-          <a
-            href="https://classroom.its.ac.id/auth/oidc"
-            target="_blank"
-            rel="noreferrer"
-            className="p-3.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none flex items-center gap-3 hover:bg-white/90 dark:hover:bg-zinc-850 transition-all active:scale-95 cursor-pointer"
-          >
-            <BookOpenCheck className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0" />
-            <div className="min-w-0">
-              <span className="text-xs font-bold text-slate-800 dark:text-zinc-100 block truncate">
-                myITS Classroom
+        {/* BENTO BUTTONS MOBILE (SQUARISH 4 KOLOM) */}
+        <div className="space-y-2.5 pt-1">
+          {/* 4 MENU UTAMA SQUARISH */}
+          <div className="grid grid-cols-4 gap-2.5">
+            {/* 1. Classroom */}
+            <a
+              href="https://classroom.its.ac.id/auth/oidc"
+              target="_blank"
+              rel="noreferrer"
+              className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none aspect-square hover:border-blue-500/50 transition-all cursor-pointer active:scale-95"
+            >
+              <div className="p-2 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 mb-1.5 shrink-0">
+                <BookOpenCheck className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] sm:text-[11px] font-bold text-slate-700 dark:text-zinc-200 text-center leading-tight">
+                Classroom
               </span>
-              <span className="text-[10px] text-slate-400 dark:text-zinc-500 block truncate">
-                Materi & Tugas
-              </span>
-            </div>
-          </a>
+            </a>
 
-          <a
-            href="https://kemahasiswaan.its.ac.id/beranda"
-            target="_blank"
-            rel="noreferrer"
-            className="p-3.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none flex items-center gap-3 hover:bg-white/90 dark:hover:bg-zinc-850 transition-all active:scale-95 cursor-pointer"
-          >
-            <Handshake className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-            <div className="min-w-0">
-              <span className="text-xs font-bold text-slate-800 dark:text-zinc-100 block truncate">
-                myITS StudentConnect
+            {/* 2. SKEM */}
+            <a
+              href="https://kemahasiswaan.its.ac.id/beranda"
+              target="_blank"
+              rel="noreferrer"
+              className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none aspect-square hover:border-indigo-500/50 transition-all cursor-pointer active:scale-95"
+            >
+              <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 mb-1.5 shrink-0">
+                <Handshake className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] sm:text-[11px] font-bold text-slate-700 dark:text-zinc-200 text-center leading-tight">
+                SKEM
               </span>
-              <span className="text-[10px] text-slate-400 dark:text-zinc-500 block truncate">
-                SKEM Portofolio
-              </span>
-            </div>
-          </a>
+            </a>
 
-          <a
-            href="https://mia.its.ac.id/"
-            target="_blank"
-            rel="noreferrer"
-            className="p-3.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none flex items-center gap-3 hover:bg-white/90 dark:hover:bg-zinc-850 transition-all active:scale-95 cursor-pointer"
-          >
-            <FileSpreadsheet className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-            <div className="min-w-0">
-              <span className="text-xs font-bold text-slate-800 dark:text-zinc-100 block truncate">
-                myITS Academics
+            {/* 3. Akademik */}
+            <a
+              href="https://mia.its.ac.id/"
+              target="_blank"
+              rel="noreferrer"
+              className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none aspect-square hover:border-emerald-500/50 transition-all cursor-pointer active:scale-95"
+            >
+              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 mb-1.5 shrink-0">
+                <FileSpreadsheet className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] sm:text-[11px] font-bold text-slate-700 dark:text-zinc-200 text-center leading-tight">
+                Akademik
               </span>
-              <span className="text-[10px] text-slate-400 dark:text-zinc-500 block truncate">
-                FRS, Nilai, Presensi
-              </span>
-            </div>
-          </a>
+            </a>
 
-          <button
-            onClick={() => setShowMoreMenuModal(true)}
-            className="p-3.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none flex items-center gap-3 hover:bg-white/90 dark:hover:bg-zinc-850 transition-all active:scale-95 cursor-pointer text-left"
-          >
-            <LayoutGrid className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
-            <div className="min-w-0">
-              <span className="text-xs font-bold text-slate-800 dark:text-zinc-100 block truncate">
-                Menu Lainnya
+            {/* 4. Lainnya */}
+            <button
+              onClick={() => setShowMoreMenuModal(true)}
+              className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none aspect-square hover:border-amber-500/50 transition-all cursor-pointer active:scale-95"
+            >
+              <div className="p-2 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 mb-1.5 shrink-0">
+                <LayoutGrid className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] sm:text-[11px] font-bold text-slate-700 dark:text-zinc-200 text-center leading-tight">
+                Lainnya
               </span>
-              <span className="text-[10px] text-slate-400 dark:text-zinc-500 block truncate">
-                Tema, Fitur, dll..
-              </span>
-            </div>
-          </button>
+            </button>
+          </div>
 
-          {/* BENTO MBUD ARCADE (2 COL SPAN) */}
+          {/* BANNER MBUD ARCADE (1 BARIS PENUH) */}
           <button
             onClick={() => onNavigateTab('mbudarcade' as any)}
-            className="col-span-2 p-3.5 rounded-2xl bg-gradient-to-r from-purple-600/90 via-indigo-600/90 to-blue-600/90 text-white backdrop-blur-md border border-white/20 shadow-md shadow-indigo-500/10 flex items-center justify-between hover:opacity-95 transition-all active:scale-[0.98] cursor-pointer"
+            className="w-full p-3.5 rounded-2xl bg-gradient-to-r from-purple-600/90 via-indigo-600/90 to-blue-600/90 text-white backdrop-blur-md border border-white/20 shadow-md shadow-indigo-500/10 flex items-center justify-between hover:opacity-95 transition-all active:scale-[0.98] cursor-pointer"
           >
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
