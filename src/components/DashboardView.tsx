@@ -670,19 +670,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
 
-{/* BENTO BUTTONS MOBILE (CLEAN ICON LAUNCHER) */}
-        <div className="space-y-3 pt-1">
-          {/* 4 MENU UTAMA MINIMALIS */}
-          <div className="grid grid-cols-4 gap-2 px-1">
+        {/* BENTO BUTTONS MOBILE (ULTRA COMPACT 5-COLUMN LAUNCHER) */}
+        <div className="pt-1 pb-1">
+          <div className="grid grid-cols-5 gap-1 px-0.5">
             {/* 1. Classroom */}
             <a
               href="https://classroom.its.ac.id/auth/oidc"
               target="_blank"
               rel="noreferrer"
-              className="flex flex-col items-center justify-center py-2 px-1 rounded-2xl hover:bg-white/10 dark:hover:bg-zinc-800/50 transition-all cursor-pointer active:scale-95 group text-center"
+              className="flex flex-col items-center justify-center py-2 px-0.5 rounded-2xl hover:bg-white/10 dark:hover:bg-zinc-800/50 transition-all cursor-pointer active:scale-95 group text-center min-w-0"
             >
-              <BookOpenCheck className="w-6 h-6 text-blue-500 dark:text-blue-400 mb-1.5 group-hover:scale-110 transition-transform shrink-0" />
-              <span className="text-[11px] font-bold text-slate-800 dark:text-zinc-200 leading-tight">
+              <BookOpenCheck className="w-5 h-5 sm:w-6 sm:h-6 text-blue-500 dark:text-blue-400 mb-1.5 group-hover:scale-110 transition-transform shrink-0" />
+              <span className="text-[10px] font-bold text-slate-800 dark:text-zinc-200 leading-tight truncate w-full">
                 Classroom
               </span>
             </a>
@@ -692,10 +691,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               href="https://kemahasiswaan.its.ac.id/beranda"
               target="_blank"
               rel="noreferrer"
-              className="flex flex-col items-center justify-center py-2 px-1 rounded-2xl hover:bg-white/10 dark:hover:bg-zinc-800/50 transition-all cursor-pointer active:scale-95 group text-center"
+              className="flex flex-col items-center justify-center py-2 px-0.5 rounded-2xl hover:bg-white/10 dark:hover:bg-zinc-800/50 transition-all cursor-pointer active:scale-95 group text-center min-w-0"
             >
-              <Handshake className="w-6 h-6 text-indigo-500 dark:text-indigo-400 mb-1.5 group-hover:scale-110 transition-transform shrink-0" />
-              <span className="text-[11px] font-bold text-slate-800 dark:text-zinc-200 leading-tight">
+              <Handshake className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-500 dark:text-indigo-400 mb-1.5 group-hover:scale-110 transition-transform shrink-0" />
+              <span className="text-[10px] font-bold text-slate-800 dark:text-zinc-200 leading-tight truncate w-full">
                 SKEM
               </span>
             </a>
@@ -705,57 +704,39 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               href="https://mia.its.ac.id/"
               target="_blank"
               rel="noreferrer"
-              className="flex flex-col items-center justify-center py-2 px-1 rounded-2xl hover:bg-white/10 dark:hover:bg-zinc-800/50 transition-all cursor-pointer active:scale-95 group text-center"
+              className="flex flex-col items-center justify-center py-2 px-0.5 rounded-2xl hover:bg-white/10 dark:hover:bg-zinc-800/50 transition-all cursor-pointer active:scale-95 group text-center min-w-0"
             >
-              <FileSpreadsheet className="w-6 h-6 text-emerald-500 dark:text-emerald-400 mb-1.5 group-hover:scale-110 transition-transform shrink-0" />
-              <span className="text-[11px] font-bold text-slate-800 dark:text-zinc-200 leading-tight">
+              <FileSpreadsheet className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-500 dark:text-emerald-400 mb-1.5 group-hover:scale-110 transition-transform shrink-0" />
+              <span className="text-[10px] font-bold text-slate-800 dark:text-zinc-200 leading-tight truncate w-full">
                 Akademik
               </span>
             </a>
 
-            {/* 4. Lainnya */}
+            {/* 4. Games (mbudArcade) */}
             <button
-              onClick={() => setShowMoreMenuModal(true)}
-              className="flex flex-col items-center justify-center py-2 px-1 rounded-2xl hover:bg-white/10 dark:hover:bg-zinc-800/50 transition-all cursor-pointer active:scale-95 group text-center"
+              onClick={() => onNavigateTab('mbudarcade' as any)}
+              className="flex flex-col items-center justify-center py-2 px-0.5 rounded-2xl hover:bg-white/10 dark:hover:bg-zinc-800/50 transition-all cursor-pointer active:scale-95 group text-center min-w-0"
             >
-              <LayoutGrid className="w-6 h-6 text-amber-500 dark:text-amber-400 mb-1.5 group-hover:scale-110 transition-transform shrink-0" />
-              <span className="text-[11px] font-bold text-slate-800 dark:text-zinc-200 leading-tight">
-                Lainnya
+              <div className="relative">
+                <Gamepad2 className="w-5 h-5 sm:w-6 sm:h-6 text-purple-500 dark:text-purple-400 mb-1.5 group-hover:scale-110 transition-transform shrink-0" />
+                <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-400 ring-2 ring-slate-900 animate-pulse" />
+              </div>
+              <span className="text-[10px] font-bold text-slate-800 dark:text-zinc-200 leading-tight truncate w-full">
+                Games
               </span>
             </button>
-          </div>
 
-          {/* BANNER MBUD ARCADE (1 BARIS PENUH) */}
-          <button
-            onClick={() => onNavigateTab('mbudarcade' as any)}
-            className="w-full p-3.5 rounded-2xl bg-gradient-to-r from-purple-600/90 via-indigo-600/90 to-blue-600/90 text-white backdrop-blur-md border border-white/20 shadow-md shadow-indigo-500/10 flex items-center justify-between hover:opacity-95 transition-all active:scale-[0.98] cursor-pointer"
-          >
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-                <Gamepad2 className="w-4 h-4 text-amber-300" />
-              </div>
-              <div className="min-w-0 text-left">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs font-black tracking-tight block truncate">
-                    mbudArcade
-                  </span>
-                  <span className="px-1.5 py-0.2 rounded-full bg-amber-400/20 text-amber-300 text-[9px] font-extrabold border border-amber-400/30">
-                    NEW
-                  </span>
-                </div>
-                <span className="text-[10px] text-white/80 block truncate">
-                  Mainin game klasik!
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-1 text-xs font-extrabold bg-white/20 px-3 py-1.5 rounded-xl border border-white/30 shrink-0 ml-2">
-              <span>Mainkan</span>
-              <span>→</span>
-            </div>
-          </button>
-        </div>
-      </div>
+            {/* 5. Lainnya */}
+            <button
+              onClick={() => setShowMoreMenuModal(true)}
+              className="flex flex-col items-center justify-center py-2 px-0.5 rounded-2xl hover:bg-white/10 dark:hover:bg-zinc-800/50 transition-all cursor-pointer active:scale-95 group text-center min-w-0"
+            >
+              <LayoutGrid className="w-5 h-5 sm:w-6 sm:h-6 text-amber-500 dark:text-amber-400 mb-1.5 group-hover:scale-110 transition-transform shrink-0" />
+              <span className="text-[10px] font-bold text-slate-800 dark:text-zinc-200 leading-tight flex items-center justify-center gap-0.5 w-full">
+                <span>Menu Lain</span>
+                <ChevronRight className="w-2.5 h-2.5 text-slate-400 dark:text-zinc-500 shrink-0 opacity-80" />
+              </span>
+            </button>
 
       {/* PC & MOBILE MAIN GRID */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 items-start">
