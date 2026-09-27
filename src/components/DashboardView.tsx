@@ -717,10 +717,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               onClick={() => onNavigateTab('mbudarcade' as any)}
               className="flex flex-col items-center justify-center py-2 px-0.5 rounded-2xl hover:bg-white/10 dark:hover:bg-zinc-800/50 transition-all cursor-pointer active:scale-95 group text-center min-w-0"
             >
-              <div className="relative">
-                <Gamepad2 className="w-5 h-5 sm:w-6 sm:h-6 text-purple-500 dark:text-purple-400 mb-1.5 group-hover:scale-110 transition-transform shrink-0" />
-                <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-400 ring-2 ring-slate-900 animate-pulse" />
-              </div>
+              <Gamepad2 className="w-5 h-5 sm:w-6 sm:h-6 text-purple-500 dark:text-purple-400 mb-1.5 group-hover:scale-110 transition-transform shrink-0" />
               <span className="text-[10px] font-bold text-slate-800 dark:text-zinc-200 leading-tight truncate w-full">
                 Games
               </span>
