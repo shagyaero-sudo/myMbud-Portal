@@ -670,21 +670,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
 
-        {/* BENTO BUTTONS MOBILE (SQUARISH 4 KOLOM) */}
-        <div className="space-y-2.5 pt-1">
-          {/* 4 MENU UTAMA SQUARISH */}
-          <div className="grid grid-cols-4 gap-2.5">
+{/* BENTO BUTTONS MOBILE (CLEAN ICON LAUNCHER) */}
+        <div className="space-y-3 pt-1">
+          {/* 4 MENU UTAMA MINIMALIS */}
+          <div className="grid grid-cols-4 gap-2 px-1">
             {/* 1. Classroom */}
             <a
               href="https://classroom.its.ac.id/auth/oidc"
               target="_blank"
               rel="noreferrer"
-              className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none aspect-square hover:border-blue-500/50 transition-all cursor-pointer active:scale-95"
+              className="flex flex-col items-center justify-center py-2 px-1 rounded-2xl hover:bg-white/10 dark:hover:bg-zinc-800/50 transition-all cursor-pointer active:scale-95 group text-center"
             >
-              <div className="p-2 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 mb-1.5 shrink-0">
-                <BookOpenCheck className="w-5 h-5" />
-              </div>
-              <span className="text-[10px] sm:text-[11px] font-bold text-slate-700 dark:text-zinc-200 text-center leading-tight">
+              <BookOpenCheck className="w-6 h-6 text-blue-500 dark:text-blue-400 mb-1.5 group-hover:scale-110 transition-transform shrink-0" />
+              <span className="text-[11px] font-bold text-slate-800 dark:text-zinc-200 leading-tight">
                 Classroom
               </span>
             </a>
@@ -694,12 +692,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               href="https://kemahasiswaan.its.ac.id/beranda"
               target="_blank"
               rel="noreferrer"
-              className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none aspect-square hover:border-indigo-500/50 transition-all cursor-pointer active:scale-95"
+              className="flex flex-col items-center justify-center py-2 px-1 rounded-2xl hover:bg-white/10 dark:hover:bg-zinc-800/50 transition-all cursor-pointer active:scale-95 group text-center"
             >
-              <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 mb-1.5 shrink-0">
-                <Handshake className="w-5 h-5" />
-              </div>
-              <span className="text-[10px] sm:text-[11px] font-bold text-slate-700 dark:text-zinc-200 text-center leading-tight">
+              <Handshake className="w-6 h-6 text-indigo-500 dark:text-indigo-400 mb-1.5 group-hover:scale-110 transition-transform shrink-0" />
+              <span className="text-[11px] font-bold text-slate-800 dark:text-zinc-200 leading-tight">
                 SKEM
               </span>
             </a>
@@ -709,12 +705,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               href="https://mia.its.ac.id/"
               target="_blank"
               rel="noreferrer"
-              className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none aspect-square hover:border-emerald-500/50 transition-all cursor-pointer active:scale-95"
+              className="flex flex-col items-center justify-center py-2 px-1 rounded-2xl hover:bg-white/10 dark:hover:bg-zinc-800/50 transition-all cursor-pointer active:scale-95 group text-center"
             >
-              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 mb-1.5 shrink-0">
-                <FileSpreadsheet className="w-5 h-5" />
-              </div>
-              <span className="text-[10px] sm:text-[11px] font-bold text-slate-700 dark:text-zinc-200 text-center leading-tight">
+              <FileSpreadsheet className="w-6 h-6 text-emerald-500 dark:text-emerald-400 mb-1.5 group-hover:scale-110 transition-transform shrink-0" />
+              <span className="text-[11px] font-bold text-slate-800 dark:text-zinc-200 leading-tight">
                 Akademik
               </span>
             </a>
@@ -722,12 +716,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             {/* 4. Lainnya */}
             <button
               onClick={() => setShowMoreMenuModal(true)}
-              className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none aspect-square hover:border-amber-500/50 transition-all cursor-pointer active:scale-95"
+              className="flex flex-col items-center justify-center py-2 px-1 rounded-2xl hover:bg-white/10 dark:hover:bg-zinc-800/50 transition-all cursor-pointer active:scale-95 group text-center"
             >
-              <div className="p-2 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 mb-1.5 shrink-0">
-                <LayoutGrid className="w-5 h-5" />
-              </div>
-              <span className="text-[10px] sm:text-[11px] font-bold text-slate-700 dark:text-zinc-200 text-center leading-tight">
+              <LayoutGrid className="w-6 h-6 text-amber-500 dark:text-amber-400 mb-1.5 group-hover:scale-110 transition-transform shrink-0" />
+              <span className="text-[11px] font-bold text-slate-800 dark:text-zinc-200 leading-tight">
                 Lainnya
               </span>
             </button>
