@@ -256,67 +256,6 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
       transition={{ duration: 0.3 }}
       className="space-y-4 sm:space-y-5 pb-12"
     >
-      {/* HEADER BANNER */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 px-1 pt-4 sm:pt-6 pb-1">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
-            Bank PDF Matkul
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
-            Perpustakaan Materi Perkuliahan
-          </p>
-        </div>
-
-        <div className="hidden md:flex items-center gap-3 p-2 pl-4 rounded-2xl bg-gradient-to-r from-purple-950/40 via-indigo-950/30 to-zinc-900/60 border border-purple-500/30 backdrop-blur-md shadow-xs">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-purple-400 animate-pulse shrink-0" />
-            <div className="text-left leading-tight">
-              <span className="text-xs font-bold text-zinc-100 block">
-                Mau Belajar pakai AI?
-              </span>
-              <span className="text-[10px] text-zinc-400">
-                Pakai Gemini NotebookLM
-              </span>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={onOpenNotebookLm}
-            className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow-md shadow-purple-900/30 flex items-center gap-1.5 transition-all cursor-pointer shrink-0 active:scale-95"
-          >
-            <span>Buka</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      </div>
-
-      <div className="block md:hidden p-4 rounded-3xl bg-gradient-to-br from-purple-950/50 via-indigo-950/30 to-zinc-900/70 border border-purple-500/30 backdrop-blur-md shadow-xs">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="p-2.5 rounded-2xl bg-purple-600/30 text-purple-300 border border-purple-500/40 shrink-0">
-              <Sparkles className="w-5 h-5 animate-pulse" />
-            </div>
-            <div className="min-w-0">
-              <h3 className="text-xs font-bold text-zinc-100 truncate">
-                Mau Belajar pakai AI?
-              </h3>
-              <p className="text-[10px] text-zinc-400 line-clamp-1 mt-0.5">
-                by Gemini NotebookLM
-              </p>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={onOpenNotebookLm}
-            className="px-3 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-bold shrink-0 shadow-md shadow-purple-950/40 active:scale-95 flex items-center gap-1"
-          >
-            <span>Buka</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      </div>
 
       {isOfficer && (
         <div className="p-4 sm:p-5 rounded-3xl bg-blue-50/80 dark:bg-blue-950/30 backdrop-blur-md border border-blue-100/80 dark:border-blue-900/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none">
@@ -501,7 +440,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({
                   }}
                   className="w-full pl-3 pr-7 py-2 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 text-slate-800 dark:text-zinc-100 text-xs font-semibold focus:outline-none truncate appearance-none shadow-xs"
                 >
-                  <option value="ALL">Semua Matkul ({materials.length})</option>
+                  <option value="ALL">Semua Matkul</option>
                   {dynamicCoursesList.map((course) => {
                     const count = materials.filter((m) => m.courseName === course).length;
                     return (

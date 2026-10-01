@@ -1431,7 +1431,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                     <div className="flex items-start gap-2 max-w-[280px]">
                       <Info className="w-4 h-4 text-slate-400 shrink-0 mt-0.5"/>
                       <p className="text-[10px] leading-tight text-slate-500 dark:text-zinc-400">
-                        Tugas ini diunggah secara manual oleh PJ. Informasi aktual, perubahan deadline, dan pengumpulan tugas tetap berpegang teguh pada portal myITS Classroom.
+                        Tugas ini diunggah manual oleh PJ, Info tetap mengacu myITS Classroom.
                       </p>
                     </div>
 
