@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Space Hunter</title>
+    <link rel="stylesheet" href="./css/style.css?v=19">
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    
+    <div id="hud">
+        <div class="hud-item">
+            <span>HEALTH:</span>
+            <div class="health-bar-container">
+                <div id="healthBar" class="health-bar"></div>
+            </div>
+        </div>
+        <div class="hud-item">SCORE: <span id="score">0</span></div>
+        <div class="hud-item">LEVEL: <span id="level">1</span></div>
+    </div>
+
+    <div class="top-right-controls">
+        <button id="fullscreenBtn" class="fullscreen-btn" aria-label="Toggle Fullscreen">⛶</button>
+        <button id="muteBtn" class="mute-btn" aria-label="Toggle sound">🔊</button>
+    </div>
+
+    <div id="menuScreen" class="menu-screen">
+        <div class="menu-modal">
+            <h1>SPACE HUNTER</h1>
+            <div class="difficulty-container">
+                <label for="difficultySlider">DIFFICULTY: <span id="difficultyLabel">NORMAL</span></label>
+                <input type="range" id="difficultySlider" min="0" max="3" value="1" class="slider">
+                <p id="difficultyDesc" class="difficulty-desc">Standard Space Hunter experience.</p>
+            </div>
+            <button id="startBtn" class="start-btn">START MISSION</button>
+        </div>
+    </div>
+    
+    <div id="mobileControls" class="mobile-controls hidden">
+        <div id="joystick" class="joystick">
+            <div id="joystickKnob" class="joystick-knob"></div>
+        </div>
+        <button id="fireBtn" class="fire-btn">FIRE</button>
+    </div>
+    
+    <div id="gameOverScreen" class="game-over-screen hidden">
+        <div class="game-over-modal">
+            <h1>GAME OVER</h1>
+            <p class="final-score">Score: <span id="finalScore">0</span></p>
+            
+            <div id="initialsContainer" class="initials-container hidden">
+                <p class="new-high-score">NEW HIGH SCORE!</p>
+                <input type="text" id="playerInitials" maxlength="3" placeholder="ACE" class="initials-input">
+                <button id="saveScoreBtn" class="save-btn">SAVE</button>
+            </div>
+
+            <div id="highScores" class="high-scores"></div>
+            <button id="restartBtn" class="restart-btn">RESTART</button>
+        </div>
+    </div>
+
+    <div id="pauseScreen" class="pause-screen hidden">
+        <div class="pause-modal">
+            <h1>PAUSED</h1>
+            <div class="pause-buttons">
+                <button id="resumeBtn" class="pause-btn">RESUME</button>
+                <button id="quitBtn" class="pause-btn danger">QUIT MISSION</button>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module" src="./js/main.js?v=19"></script>
+</body>
+</html>
