@@ -141,203 +141,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
   const [pendingConfirmTask, setPendingConfirmTask] = useState<Task | null>(null);
   const audioCelebrationRef = useRef<HTMLAudioElement | null>(null);
 
-  useEffect(() => {
-    const unsubscribe = subscribeAllTaskCompletions((counts) => {
-      setAllCompletionCounts(counts);
-    });
-    return () => {
-      unsubscribe();
-    };
-  }, []);
-
-  const playCelebrationSound = () => {
-    if (completionSoundUrl) {
-      try {
-        const audio = new Audio(completionSoundUrl);
-        audioCelebrationRef.current = audio;
-        audio.volume = 0.85;
-        const playPromise = audio.play();
-        if (playPromise !== undefined) {
-          playPromise.catch((err) => {
-            console.warn('[TaskComplete] SFX autoplay dicegah browser:', err);
-          });
-        }
-      } catch (e) {
-        console.warn('[TaskComplete] Gagal memuat audio SFX:', e);
-      }
-    }
-  };
-
-  const fireConfetti = () => {
-    const duration = 3000;
-    const animationEnd = Date.now() + duration;
-    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 100000 };
-
-    const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
-
-    const interval: any = setInterval(function() {
-      const timeLeft = animationEnd - Date.now();
-
-      if (timeLeft <= 0) {
-        return clearInterval(interval);
-      }
-
-      const particleCount = 50 * (timeLeft / duration);
-      
-      confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(Siap! Ketiga revisi tersebut udah aku eksekusi semua di komponen **`TaskTrackerView.tsx`**:
-
-1. **Deklarasi Teks di Detail Tugas:** Di bagian bawah modal detail tugas (sebelah tombol myITS Classroom), aku tambahin teks penjelasan kecil warna *slate-500* yang menyatakan kalau tugas ini dikelola manual oleh PJ, jadi acuan resminya tetep di Classroom.
-2. **Modal Konfirmasi iOS 26 Style:** Modal "Tandai Sebagai Selesai" sekarang udah pake *rounded borders* tebal (radius `3xl`) dengan tombol "Selesai" dan "Batal" ala iOS (kapsul rounded penuh) yang lebih *clean* dan presisi.
-3. **Efek Confetti (3 Detik):** Aku nambahin fungsi confetti yang nyala selama 3 detik pas tugas ditandai selesai (menggunakan pustaka `canvas-confetti` yang ringan dan *festive*).
-
-Ini keseluruhan kode file **`TaskTrackerView.tsx`** yang udah beres. Tinggal *copy-paste* (timpa semuanya) aja ya:
-
-```tsx
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-// PERUBAHAN: Import canvas-confetti untuk efek festive
-import confetti from 'canvas-confetti';
-import {
-  Plus,
-  Search,
-  Clock,
-  Trash2,
-  Edit2,
-  ExternalLink,
-  X,
-  ChevronRight,
-  ChevronDown,
-  Paperclip,
-  UploadCloud,
-  File as FileIcon,
-  Loader2,
-  Download,
-  ZoomIn,
-  ZoomOut,
-  RotateCcw,
-  CheckCircle2,
-  Circle,
-  User,
-  Users,
-  AlertCircle,
-  Info, // Icon tambahan untuk deklarasi teks
-} from 'lucide-react';
-import { Task, Contact } from '../types';
-import { toggleTaskCompletion, subscribeAllTaskCompletions, TaskCompletionCounts } from '../services/api';
-
-interface TaskTrackerViewProps {
-  tasks: Task[];
-  contacts?: Contact[];
-  isOfficer: boolean;
-  completedTaskIds?: string[];
-  onAddTask: (task: Omit<Task, 'id'>) => void;
-  onUpdateTask?: (id: string, updatedTask: Partial<Task>) => void;
-  onUpdateTaskStatus: (
-    id: string,
-    newStatus: 'todo' | 'in_progress' | 'done'
-  ) => void;
-  onDeleteTask: (id: string) => void;
-  completionSoundUrl?: string;
-}
-
-interface AttachmentData {
-  fileName: string;
-  fileUrl: string;
-}
-
-const DEFAULT_CLASSROOM_URL = '[https://classroom.its.ac.id/auth/oidc](https://classroom.its.ac.id/auth/oidc)';
-
-const getMimeType = (file: File): string => {
-  if (file.type && file.type.trim() !== '') {
-    return file.type;
-  }
-  const ext = file.name.split('.').pop()?.toLowerCase();
-  switch (ext) {
-    case 'png': return 'image/png';
-    case 'jpg':
-    case 'jpeg': return 'image/jpeg';
-    case 'gif': return 'image/gif';
-    case 'webp': return 'image/webp';
-    case 'svg': return 'image/svg+xml';
-    case 'pdf': return 'application/pdf';
-    case 'doc': return 'application/msword';
-    case 'docx': return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-    case 'ppt': return 'application/vnd.ms-powerpoint';
-    case 'pptx': return 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
-    case 'xls': return 'application/vnd.ms-excel';
-    case 'xlsx': return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-    default: return 'application/octet-stream';
-  }
-};
-
-const getGoogleDriveImageUrl = (url: string) => {
-  if (!url) return url;
-  const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
-  if (match && match[1]) {
-    return `[https://lh3.googleusercontent.com/d/$](https://lh3.googleusercontent.com/d/$){match[1]}`;
-  }
-  return url;
-};
-
-const renderTextWithLinks = (text: string) => {
-  if (!text) return 'Tidak ada instruksi.';
-
-  const urlRegex = /(https?:\/\/[^\s]+)/g;
-  const parts = text.split(urlRegex);
-
-  return parts.map((part, index) => {
-    if (part.match(urlRegex)) {
-      return (
-        <a
-          key={index}
-          href={part}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={(e) => e.stopPropagation()}
-          className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 underline underline-offset-2 break-all hover:opacity-80 transition-opacity font-medium cursor-pointer"
-        >
-          {part}
-        </a>
-      );
-    }
-    return part;
-  });
-};
-
-const getSafeTime = (dateStr?: string) => {
-  if (!dateStr) return 0;
-  const t = new Date(dateStr).getTime();
-  return isNaN(t) ? 0 : t;
-};
-
-export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
-  tasks,
-  contacts = [],
-  isOfficer,
-  completedTaskIds = [],
-  onAddTask,
-  onUpdateTask,
-  onDeleteTask,
-  completionSoundUrl = '/task-complete.mp3',
-}) => {
-  const [search, setSearch] = useState('');
-  const [isMobileSearchExpanded, setIsMobileSearchExpanded] = useState(false);
-  const [filterCourse, setFilterCourse] = useState('ALL');
-  const [filterType, setFilterType] = useState<'ALL' | 'Individu' | 'Kelompok'>('ALL');
-  const [activeTab, setActiveTab] = useState<'active' | 'history'>('active');
-  const [selectedDetailTask, setSelectedDetailTask] = useState<Task null |>(null);
-
-  const [allCompletionCounts, setAllCompletionCounts] = useState<TaskCompletionCounts>({});
-
-  const currentUserNrp = localStorage.getItem('mymbud_user_nrp') || 'unknown';
-  const currentUserName = localStorage.getItem('mymbud_user_name') || 'Aero';
-
-  const [celebrationTask, setCelebrationTask] = useState<Task null |>(null);
-  const [pendingConfirmTask, setPendingConfirmTask] = useState<Task null |>(null);
-  const audioCelebrationRef = useRef<HTMLAudioElement null |>(null);
-
-  // PERUBAHAN: Fungsi trigger confetti 3 detik
   const triggerConfetti = () => {
     const duration = 3000;
     const animationEnd = Date.now() + duration;
@@ -412,14 +215,14 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
       if (nextState) {
         setCelebrationTask(task);
         playCelebrationSound();
-        triggerConfetti(); // PERUBAHAN: Panggil fungsi confetti
+        triggerConfetti();
       }
     } catch (err) {
       console.error('Gagal memperbarui status tugas:', err);
     }
   };
 
-  const [previewAttachment, setPreviewAttachment] = useState<AttachmentData null |>(null);
+  const [previewAttachment, setPreviewAttachment] = useState<AttachmentData | null>(null);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
@@ -455,7 +258,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
       return;
     }
 
-    const downloadUrl = `[https://drive.google.com/uc?export=download&id=$](https://drive.google.com/uc?export=download&id=$){fileId}`;
+    const downloadUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
 
     try {
       const response = await fetch(downloadUrl);
@@ -720,7 +523,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
   };
 
   const uploadTaskAttachmentToDrive = async (file: File): Promise<string> => {
-    const GAS_URL = '[https://script.google.com/macros/s/AKfycbyce8cTZ2F25PwyfISpmVJJDMiIunl8G8lCyzkPKQaiuUl-nxKNM5i9b72MMo4M_xis/exec](https://script.google.com/macros/s/AKfycbyce8cTZ2F25PwyfISpmVJJDMiIunl8G8lCyzkPKQaiuUl-nxKNM5i9b72MMo4M_xis/exec)';
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbyce8cTZ2F25PwyfISpmVJJDMiIunl8G8lCyzkPKQaiuUl-nxKNM5i9b72MMo4M_xis/exec';
 
     setUploadProgress(8);
     const base64Data = await fileToBase64(file);
@@ -1054,7 +857,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
           </div>
         ) : activeTab === 'active' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <AnimatePresence initial="{false}" mode="popLayout">
+            <AnimatePresence initial={false} mode="popLayout">
               {filteredTasks.map((t) => {
                 const badge = getDeadlineBadge(t.deadline);
                 const isDone = completedTaskIds.includes(t.id);
@@ -1124,7 +927,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                         </div>
                       </div>
 
-                      {/* AREA TOMBOL & TEKS DIBIKIN CENTER ALIGNED */}
                       <div className="flex flex-col items-center justify-center gap-1 shrink-0 self-end">
                         <button
                           onClick={(e) => handleToggleComplete(e, t)}
@@ -1158,7 +960,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <AnimatePresence initial="{false}" mode="popLayout">
+            <AnimatePresence initial={false} mode="popLayout">
               {filteredTasks.map((t) => {
                 const isExplicitDone = completedTaskIds.includes(t.id);
                 const formattedDate = new Date(t.deadline).toLocaleString('id-ID', {
@@ -1625,7 +1427,6 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
                     })()}
                   </div>
 
-                  {/* PERUBAHAN: Tambahan area footer dengan deklarasi text */}
                   <div className="px-6 py-4 border-t border-slate-200/40 dark:border-white/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white/50 dark:bg-zinc-900/50">
                     <div className="flex items-start gap-2 max-w-[280px]">
                       <Info className="w-4 h-4 text-slate-400 shrink-0 mt-0.5"/>
@@ -1680,7 +1481,7 @@ export const TaskTrackerView: React.FC<TaskTrackerViewProps> = ({
           document.body
         )}
 
-      {/* PERUBAHAN: DIALOG KONFIRMASI ALA IOS 26 (PORTAL) */}
+      {/* DIALOG KONFIRMASI ALA IOS 26 (PORTAL) */}
       {typeof document !== 'undefined' &&
         createPortal(
           <AnimatePresence>
