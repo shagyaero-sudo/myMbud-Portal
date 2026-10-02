@@ -708,7 +708,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             >
               <FileSpreadsheet className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-500 dark:text-emerald-400 mb-1.5 group-hover:scale-110 transition-transform shrink-0" />
               <span className="text-[10px] font-bold text-slate-800 dark:text-zinc-200 leading-tight truncate w-full">
-                Akademik
+                IP & FRS
               </span>
             </a>
 
@@ -782,7 +782,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               >
                 <FileSpreadsheet className="w-6 h-6 text-emerald-500 dark:text-emerald-400 mb-1.5 group-hover:scale-110 transition-transform shrink-0" />
                 <span className="text-xs font-bold text-slate-800 dark:text-zinc-200 leading-tight truncate w-full">
-                  Akademik
+                  IP & FRS
                 </span>
               </a>
 
