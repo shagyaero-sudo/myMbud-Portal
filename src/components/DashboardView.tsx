@@ -744,103 +744,71 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         {/* KOLOM KIRI: BENTO BUTTONS PC + BAR MBUDIARY + JADWAL PERKULIAHAN */}
         <div className="space-y-4 sm:space-y-5">
 
-          {/* 5 BENTO BUTTONS PC ONLY */}
-          <div className="hidden lg:grid grid-cols-2 gap-3">
-            <a
-              href="https://classroom.its.ac.id/auth/oidc"
-              target="_blank"
-              rel="noreferrer"
-              className="p-3.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none flex items-center gap-3 hover:bg-white/90 dark:hover:bg-zinc-850 transition-all active:scale-95 cursor-pointer"
-            >
-              <BookOpenCheck className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0" />
-              <div className="min-w-0">
-                <span className="text-xs font-bold text-slate-800 dark:text-zinc-100 block truncate">
-                  myITS Classroom
+          {/* BENTO BUTTONS DESKTOP (SETARA SAMA DENGAN DITAMPILAN HP) */}
+          <div className="hidden lg:block pt-1 pb-1">
+            <div className="grid grid-cols-5 gap-2 px-0.5">
+              {/* 1. Classroom */}
+              <a
+                href="https://classroom.its.ac.id/auth/oidc"
+                target="_blank"
+                rel="noreferrer"
+                className="flex flex-col items-center justify-center py-3 px-1 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 hover:bg-white/90 dark:hover:bg-zinc-800 transition-all cursor-pointer active:scale-95 group text-center min-w-0 shadow-xs"
+              >
+                <BookOpenCheck className="w-6 h-6 text-blue-500 dark:text-blue-400 mb-1.5 group-hover:scale-110 transition-transform shrink-0" />
+                <span className="text-xs font-bold text-slate-800 dark:text-zinc-200 leading-tight truncate w-full">
+                  Classroom
                 </span>
-                <span className="text-[10px] text-slate-400 dark:text-zinc-500 block truncate">
-                  Materi & Tugas
-                </span>
-              </div>
-            </a>
+              </a>
 
-            <a
-              href="https://kemahasiswaan.its.ac.id/beranda"
-              target="_blank"
-              rel="noreferrer"
-              className="p-3.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none flex items-center gap-3 hover:bg-white/90 dark:hover:bg-zinc-850 transition-all active:scale-95 cursor-pointer"
-            >
-              <Handshake className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-              <div className="min-w-0">
-                <span className="text-xs font-bold text-slate-800 dark:text-zinc-100 block truncate">
-                  myITS StudentConnect
+              {/* 2. SKEM */}
+              <a
+                href="https://kemahasiswaan.its.ac.id/beranda"
+                target="_blank"
+                rel="noreferrer"
+                className="flex flex-col items-center justify-center py-3 px-1 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 hover:bg-white/90 dark:hover:bg-zinc-800 transition-all cursor-pointer active:scale-95 group text-center min-w-0 shadow-xs"
+              >
+                <Handshake className="w-6 h-6 text-indigo-500 dark:text-indigo-400 mb-1.5 group-hover:scale-110 transition-transform shrink-0" />
+                <span className="text-xs font-bold text-slate-800 dark:text-zinc-200 leading-tight truncate w-full">
+                  SKEM
                 </span>
-                <span className="text-[10px] text-slate-400 dark:text-zinc-500 block truncate">
-                  SKEM Portofolio
-                </span>
-              </div>
-            </a>
+              </a>
 
-            <a
-              href="https://mia.its.ac.id/"
-              target="_blank"
-              rel="noreferrer"
-              className="p-3.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none flex items-center gap-3 hover:bg-white/90 dark:hover:bg-zinc-850 transition-all active:scale-95 cursor-pointer"
-            >
-              <FileSpreadsheet className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-              <div className="min-w-0">
-                <span className="text-xs font-bold text-slate-800 dark:text-zinc-100 block truncate">
-                  myITS Academics
+              {/* 3. Akademik */}
+              <a
+                href="https://mia.its.ac.id/"
+                target="_blank"
+                rel="noreferrer"
+                className="flex flex-col items-center justify-center py-3 px-1 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 hover:bg-white/90 dark:hover:bg-zinc-800 transition-all cursor-pointer active:scale-95 group text-center min-w-0 shadow-xs"
+              >
+                <FileSpreadsheet className="w-6 h-6 text-emerald-500 dark:text-emerald-400 mb-1.5 group-hover:scale-110 transition-transform shrink-0" />
+                <span className="text-xs font-bold text-slate-800 dark:text-zinc-200 leading-tight truncate w-full">
+                  Akademik
                 </span>
-                <span className="text-[10px] text-slate-400 dark:text-zinc-500 block truncate">
-                  Cek Nilai / Isi FRS
-                </span>
-              </div>
-            </a>
+              </a>
 
-            <button
-              onClick={() => setShowMoreMenuModal(true)}
-              className="p-3.5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none flex items-center gap-3 hover:bg-white/90 dark:hover:bg-zinc-850 transition-all active:scale-95 cursor-pointer text-left"
-            >
-              <LayoutGrid className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
-              <div className="min-w-0">
-                <span className="text-xs font-bold text-slate-800 dark:text-zinc-100 block truncate">
-                  Menu Lainnya
+              {/* 4. Games (mbudArcade) */}
+              <button
+                onClick={() => onNavigateTab('mbudarcade' as any)}
+                className="flex flex-col items-center justify-center py-3 px-1 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 hover:bg-white/90 dark:hover:bg-zinc-800 transition-all cursor-pointer active:scale-95 group text-center min-w-0 shadow-xs"
+              >
+                <Gamepad2 className="w-6 h-6 text-purple-500 dark:text-purple-400 mb-1.5 group-hover:scale-110 transition-transform shrink-0" />
+                <span className="text-xs font-bold text-slate-800 dark:text-zinc-200 leading-tight truncate w-full">
+                  Games
                 </span>
-                <span className="text-[10px] text-slate-400 dark:text-zinc-500 block truncate">
-                  Tema, Fitur, dll..
+              </button>
+
+              {/* 5. Lainnya */}
+              <button
+                onClick={() => setShowMoreMenuModal(true)}
+                className="flex flex-col items-center justify-center py-3 px-1 rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 hover:bg-white/90 dark:hover:bg-zinc-800 transition-all cursor-pointer active:scale-95 group text-center min-w-0 shadow-xs"
+              >
+                <LayoutGrid className="w-6 h-6 text-amber-500 dark:text-amber-400 mb-1.5 group-hover:scale-110 transition-transform shrink-0" />
+                <span className="text-xs font-bold text-slate-800 dark:text-zinc-200 leading-tight flex items-center justify-center gap-0.5 w-full">
+                  <span>Lainnya</span>
+                  <ChevronRight className="w-3 h-3 text-slate-400 dark:text-zinc-500 shrink-0 opacity-80" />
                 </span>
-              </div>
-            </button>
-
-            {/* BENTO MBUD ARCADE (2 COL SPAN) */}
-            <button
-              onClick={() => onNavigateTab('mbudarcade' as any)}
-              className="col-span-2 p-3.5 rounded-2xl bg-gradient-to-r from-purple-600/90 via-indigo-600/90 to-blue-600/90 text-white backdrop-blur-md border border-white/20 shadow-md shadow-indigo-500/10 flex items-center justify-between hover:opacity-95 transition-all active:scale-[0.98] cursor-pointer"
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-                  <Gamepad2 className="w-4 h-4 text-amber-300" />
-                </div>
-                <div className="min-w-0 text-left">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-black tracking-tight block truncate">
-                      Mbud Arcade
-                    </span>
-                    <span className="px-1.5 py-0.2 rounded-full bg-amber-400/20 text-amber-300 text-[9px] font-extrabold border border-amber-400/30">
-                      NEW
-                    </span>
-                  </div>
-                  <span className="text-[10px] text-white/80 block truncate">
-                    Game mini 2048, Dino, Brickbreaker & Spacehunter
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-1 text-xs font-extrabold bg-white/20 px-3 py-1.5 rounded-xl border border-white/30 shrink-0 ml-2">
-                <span>Mainkan</span>
-                <span>→</span>
-              </div>
-            </button>
+              </button>
+            </div>
           </div>
 
           {/* BAR INPUT MBUDIARY DESKTOP */}
