@@ -7,6 +7,7 @@ import {
   RotateCcw,
   MoreVertical,
   ExternalLink,
+  ArrowLeft,
 } from 'lucide-react';
 import { MaterialFile } from '../types';
 
@@ -49,6 +50,36 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
     };
   }, []);
 
+  // --- SOLUSI TOMBOL BACK BROWSER / HP ---
+  useEffect(() => {
+    if (material) {
+      // 1. Dorong state baru ke history browser saat modal terbuka
+      window.history.pushState({ pdfModalOpen: true }, '');
+
+      const handlePopState = () => {
+        // 2. Ketika tombol Back HP/Browser ditekan, panggil onClose
+        onClose();
+      };
+
+      window.addEventListener('popstate', handlePopState);
+
+      return () => {
+        window.removeEventListener('popstate', handlePopState);
+        // Reset zoom saat modal ditutup
+        setZoomLevel(1);
+      };
+    }
+  }, [material, onClose]);
+
+  const handleCloseModal = () => {
+    // Jika ditutup manual via tombol X / Panah Kembali, batalkan history state
+    if (window.history.state?.pdfModalOpen) {
+      window.history.back();
+    } else {
+      onClose();
+    }
+  };
+
   const formatPomoTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
@@ -85,9 +116,20 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
           {/* Header Modal */}
           <div className="flex items-center justify-between px-3 sm:px-6 py-3 bg-zinc-950/90 backdrop-blur-md border-b border-zinc-800/80 shrink-0 z-40">
             
-            {/* Sisi Kiri: Menu 3-Dots + Info Matkul */}
+            {/* Sisi Kiri: Tombol Back + Menu 3-Dots + Info Matkul */}
             <div className="flex items-center gap-2.5 min-w-0 pr-3">
               
+              {/* Tombol Back Panah Kiri */}
+              <button
+                type="button"
+                onClick={handleCloseModal}
+                className="p-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-700/60 transition-all cursor-pointer shadow-xs active:scale-95 shrink-0"
+                title="Kembali / Tutup Modal"
+                aria-label="Kembali"
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </button>
+
               {/* 3-Dots Action Sheet */}
               <div className="relative shrink-0">
                 <button
@@ -175,7 +217,7 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({ material, onClos
 
             {/* Tombol Tutup Preview */}
             <button
-              onClick={onClose}
+              onClick={handleCloseModal}
               className="p-2.5 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/30 transition-all shrink-0 cursor-pointer shadow-xs active:scale-95"
               aria-label="Tutup Preview"
             >
